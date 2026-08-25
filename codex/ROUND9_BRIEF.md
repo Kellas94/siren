@@ -1,7 +1,15 @@
 # SIREN Round 9 — the residuals round 8 left behind
 
-Read `ROUND8_METHOD.md` first; the method is unchanged. Only the base moves — it will be pinned at
-handoff, after round 8 plus the fixes it needed lands as a release.
+Read `ROUND8_METHOD.md` first; the method is unchanged. The base has moved:
+
+```
+codex/FROZEN_R9_BASE.html
+8,563,119 bytes
+SHA-256  1C088DAC741F7D216474FDC7F6F58ED941E26F053B0175718F7281BD8B3A1288
+```
+
+That is the shipped v1.69.0 — round 8 plus three patches that landed on top of it before release.
+Two of those are in areas this round touches, and `PROMPT_ROUND9.txt` names them.
 
 Round 8 was good work. Four of five jobs hold on the ship build, the positive control was run before
 anything was claimed, and the handback said what was not done. This round is the tail: every item

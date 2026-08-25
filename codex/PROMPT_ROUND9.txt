@@ -1,0 +1,64 @@
+SIREN round 9. Five jobs, all found by driving your round 8 build with real keyboard and mouse.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\codex\ROUND8_METHOD.md   <- delivery format and the traps; unchanged
+  2. C:\Claude\SIREN\codex\ROUND9_BRIEF.md    <- the five jobs
+
+THE BASE — the shipped v1.69.0, frozen:
+  C:\Claude\SIREN\codex\FROZEN_R9_BASE.html
+  8,563,119 bytes
+  SHA-256  1C088DAC741F7D216474FDC7F6F58ED941E26F053B0175718F7281BD8B3A1288
+
+Work on a private copy. Do not author against the round 8 output: three more patches landed on top
+of it before it shipped. Two of them are yours to be careful around, so read this:
+
+  - The zoom cluster came BACK out onto the toolbar and the grouped button is now called Flow and
+    holds only the two flow directions. Zoom and Fit are no longer menu rows.
+  - A Guided row inside YAML front matter was offering "Insert block below", which wrote a Mermaid
+    node inside the YAML and counted it in the block total - a block sealed where it can never be
+    drawn. That is fixed: mermaidFrontmatterEnd(source) now exposes the span and
+    mermaidSourceLinesForScan consumes it. Job AQ touches that area. Do not undo the gate.
+
+THE FIVE JOBS, in the order they should be done:
+
+  AN  "/" then Space, Enter or Backspace still destroys what you typed in Docs
+  AO  a typed diagram name still dies to one Undo, in a ~560ms window
+  AP  the Docs submenu still opens ~700px from the click on a paragraph
+  AQ  front matter one blank line from the top is invisible again
+  AR  an 8px overflow at the left edge, at narrow widths
+
+AN and AO both destroy what a person wrote. They outrank the rest. If you run short, deliver those
+two properly rather than five partially.
+
+WHAT ROUND 8 GOT RIGHT, SO YOU KEEP DOING IT:
+You ran the positive control on the base before claiming anything - all five defects reproduced, 27
+assertions red - you tested sideways cases, and your "deliberately not done" section said things
+that were not comfortable, including refusing to map C4Container onto the C4 context label because
+that would itself over-promise. That is exactly right. Keep all of it.
+
+ONE THING TO CHANGE: AP was scoped to the blank-page right-click only, which was a defensible call.
+It was not in the "deliberately not done" section, and it should have been. If you scope something
+down this round, say so there.
+
+TWO WARNINGS YOU MUST RESPECT:
+
+  - AN's cheap fix is to stop opening the menu on "/". That passes every typing test and destroys a
+    working feature. A bare "/" must still open the five-row Add block menu, and picking a row must
+    still consume only the marker paragraph.
+  - AQ's scanner has six consumers. Widening what counts as front matter changes all of them at
+    once. Say what each shape does before and after, per consumer.
+
+DELIVERY:
+One SHA-pinned script per job, an APPLY_ORDER.md with every input and output hash, and a handback
+saying what you did AND what you did not. Do not touch APP_VERSION, CHANGELOG or the CSP.
+
+VERIFICATION:
+Test one step sideways from your own fixture, every time - ordinary input, not hostile input. That
+is where round 7 died and where round 8's three residuals live. A check that finds nothing on both
+the patched build and the base has established nothing; say so rather than counting it green. Where
+a fix is visual, render it and look at the picture before reporting.
+
+THE STANDING RULE:
+Nothing in this app may promise what it cannot deliver. A tooltip, a chip, a count, a menu label or
+a disabled state that overstates is a defect of the same kind as a crash. If a job cannot be done
+honestly as briefed, say so and deliver the rest.
