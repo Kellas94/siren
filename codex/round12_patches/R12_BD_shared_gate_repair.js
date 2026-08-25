@@ -16,7 +16,7 @@ const EXPECTED = Object.freeze({
   },
   'codex/qa_round3/run_regression_suite.js': {
     input: '6DDE283FA3A058C57DD54B413A524E1062CB3375501399C342AC8FAED48131CC',
-    output: 'TO_BE_PINNED'
+    output: 'EFCBBAB8F36910A6B5ABE85D92D9697BD167E4E65B3EA030D583DCBF5537FB04'
   },
   'codex/qa_round3/surface_suite_additions.js': {
     input: '5FAAB9ADB3AC55F32040302828218DFC2F8A18F70C9ED18E144124D75914700B',
@@ -24,7 +24,7 @@ const EXPECTED = Object.freeze({
   },
   'codex/qa_round3/run_round3_suite.js': {
     input: '38C34F4BD2563872C51F4D620DDCF25DA9293B88B38542D0894E940382AC1F71',
-    output: 'TO_BE_PINNED'
+    output: '7FBC45A54B18AA482E297C662CA26D6CE77BA69FDA7509078EA30116501F6E0B'
   }
 });
 
@@ -550,4 +550,20 @@ function main() {
     }
   } catch (error) {
     for (const record of committed.reverse()) {
-      const rollback = path.join(path.dirname(record.file), `.r12bd-rollback-${process.pid}-${Date.now()}
+      const rollback = path.join(path.dirname(record.file), `.r12bd-rollback-${process.pid}-${Date.now()}-${path.basename(record.file)}`);
+      fs.writeFileSync(rollback, record.originalBytes, { flag: 'wx' });
+      fs.renameSync(rollback, record.file);
+    }
+    throw error;
+  } finally {
+    for (const temporary of pendingTemps) if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+
+  for (const record of records.values()) {
+    requireTrue(sha256(fs.readFileSync(record.file)) === record.outputSha,
+      `${record.relative} post-write hash mismatch`);
+    process.stdout.write(`R12_BD ${record.relative}: ${record.identity.input} -> ${record.outputSha}\n`);
+  }
+}
+
+main();

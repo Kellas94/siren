@@ -1,0 +1,99 @@
+SIREN round 13. Finish round 11. Six holds, and one of them is my fault.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\codex\ROUND8_METHOD.md    <- delivery format and the traps; unchanged
+  2. C:\Claude\SIREN\codex\ROUND13_BRIEF.md    <- the jobs, with the measurements attached
+
+THE BASE:
+  C:\Claude\SIREN\codex\FROZEN_R13_BASE.html
+  (your round 11 output, frozen unchanged: 8,598,565 bytes,
+   SHA-256 539C3D5F98BCDB465895F2CAE3222E2BE16F2318234D5F667F8E54370F4E4697)
+
+ROUND 11 IS HELD, NOT REJECTED, AND YOU SHOULD KNOW WHAT SURVIVED.
+
+An independent pass verified every job, then a second pass was told to refute every verdict. AV came
+through the hardest attack in this project so far and did not budge: seven fixtures, all real
+keystrokes, 7 of 7 kept every character where the shipped build kept none - including a phrase with
+no space in it, a full reload mid-first-run, a 12.4-second typing window over 620 focus samples, and
+three browser engines. The mechanism was checked, not assumed, down to setTimeout calling with argc=0
+in Chromium 152, Firefox 153 and WebKit 26.5. AY and AZ survived a hostile pass on paths nobody
+designed for. BA really did make the marker clickable, 25 of 25 sampled points. AW's warning state
+machine could not be broken across seven diagram types and twelve sequenced exports.
+
+It is held because two jobs shipped a regression beside their fix, and because four sentences the app
+now says are sentences it cannot keep.
+
+  BE  the document marker must stop being the block          <- ship-blocker, and silent
+  BF  give the line breaks back to shapes and edge labels    <- ship-blocker, and partly my fault
+  BG  do not offer a jump to a block that does not exist
+  BH  the arrival has to bring the block on screen
+  BI  finish AV: one press away, escapable, announced
+  BJ  a navigation key must not edit the document            <- pre-existing, not yours
+
+BE IS FIRST BECAUSE ITS WORST CASE IS SILENT. With connect mode armed, clicking the target block's
+top-right corner destroys the connection you were drawing, opens Docs over the canvas, and leaves
+connect mode armed. No toast, no error, nothing to notice. Double-click rename, Ctrl+click and drag
+are dead at the same pixel. Right-click there gives "Diagram actions" instead of the block menu - and
+the block menu is the only place YOUR OWN AZ Documents rows live, so the marker hides the feature it
+belongs to. On a stateDiagram-v2 node that corner is 27.6% of the width and 46.8% of the height.
+
+BF IS MY FAULT AND I WANT TO SAY SO PLAINLY. The round 11 brief told you the deck route already
+solves the small-type problem, that its parts are the reference implementation, and not to invent a
+second mechanism. You did exactly that and reused deckShapeTextBody. What the brief did not say is
+that the two callers hand it different things: the deck route splits a label into lines BEFORE
+calling it, the diagram route hands over one flat line. wrap="none" is right for the first and wrong
+for the second. I pointed you at a mechanism whose premise does not hold for the new caller, and the
+result is that every diamond, cylinder, pill and edge label now runs outside its own shape on
+ordinary legible diagrams that the old build rendered correctly - 37pt out of each edge on a
+two-node fixture at 18pt, and 43 of 43 edge labels on the 44-block one. The rectangle fix that
+started this must stay fixed; prove both in the same run.
+
+TWO CORRECTIONS TO YOUR EVIDENCE, both about what a number proves rather than about code:
+
+  - "BASE 87 violations, MERGED zero" evidences the attribute flip, not the outcome. "Clipped" was
+    defined as vertOverflow=="clip" AND lines*1.2*sz > cy, and the patch hard-codes
+    vertOverflow="overflow" on every body, so that count cannot be non-zero on MERGED for ANY
+    diagram. "Violation" is sz > cy, and with sz floored at 1pt against a smallest cy of 1.45pt no
+    shape can violate. The numbers are real. They are guaranteed by the two attributes you write.
+  - "Real, selectable, resizable text in a real shape rather than a picture" is vacuous: BASE already
+    gave picCount=0, an empty ppt/media/ and 88 <p:sp> shapes holding their labels at sz="600". You
+    changed the point size and the overflow flags; the text was already real.
+
+Neither of those is a code defect. Both are the difference between a measurement and a proof, and you
+are close enough to the top of this discipline that they are worth saying.
+
+WHAT THE JUDGEMENT CAME BACK AS, on the two things you disclosed honestly rather than dressed up:
+
+  - The 77 Tab presses: "reachable by keyboard" is NOT an honest description and must not ship as a
+    sentence. Both passes measured 76 to Skip and 77 to Next, cold, at three key speeds, with
+    document.hasFocus() true throughout. Escape does nothing. There is no second route. And press 65
+    does not move focus at all - it appends "A --> N1[New step]" to the user's source. Your
+    disclosure was accurate and the word was wrong; BI makes the word true.
+  - The 1.0pt text: a real improvement in the middle of the range and not at the extreme. At 12
+    blocks, 11 of 24 labels stop being clipped away in silence and arrive at a truthful 3.29pt. At
+    44 blocks nobody benefits from the words - what a person gains there is the warning, not the
+    text. And "1.0pt" is the clamp rather than a measurement: 44 blocks and 120 blocks both report
+    it though the boxes differ threefold.
+
+VERIFICATION:
+Test one step sideways from your own fixture, every time. A check that finds nothing on both the
+patched build and the base has established nothing - say so rather than counting it green. Where a
+fix is visual, render it and look. And where a number is guaranteed by the thing you just wrote, say
+that too rather than offering it as proof.
+
+Do not write a probe regex with a single backslash inside a JS template literal. It collapses, so
+/\s+/ becomes /s+/ and eats the letter s out of your own output.
+
+DELIVERY:
+One SHA-pinned script per job, an APPLY_ORDER.md with every input and output hash, and a handback
+saying what you did AND what you did not. Do not touch APP_VERSION, CHANGELOG or the CSP.
+
+NOTE ON ROUND 12: it is pinned to 1.70.0 and is under verification now. Rounds 11, 12 and my own
+interface fix are byte-disjoint - I measured it before asking you to start 12 in parallel, and it
+held: zero overlapping lines in any of the three pairs. Round 12 will need one rebase onto whatever
+ships; nothing in round 13 should move an anchor it uses.
+
+THE STANDING RULE:
+Nothing in this app may promise what it cannot deliver. A tooltip, a chip, a count, a menu label, a
+disabled state or a colour that overstates is a defect of the same kind as a crash. Four of the six
+holds above are that rule, not a bug.
