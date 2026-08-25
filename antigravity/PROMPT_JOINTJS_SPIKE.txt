@@ -1,0 +1,73 @@
+One question, and it has a yes or no answer that can be measured. Nobody needs an opinion on whether
+adopting this library is a good idea — that decision is taken elsewhere and waits on your answer.
+
+    Can @joint/core be inlined into a single-file HTML application, under a default-deny CSP with no
+    unsafe-eval and no external host, and still work with no network at all?
+
+Everything you need is already built. The measuring is written. Your work is to run it, look at what
+comes back, and write it down.
+
+READ THIS FIRST, IT IS THE MAIN DOCUMENT:
+
+    C:\Claude\SIREN\antigravity\JOINTJS_FEASIBILITY_BRIEF.md
+
+It is a procedure in seven steps, not a brief. Follow it literally. It tells you which file to
+download, where exactly to paste it, which single command to run, and what to fill in.
+
+YOU MAY WRITE ONLY INSIDE:
+
+    C:\Claude\SIREN\antigravity\jointjs_spike\
+
+Never write to C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html and never to anything under
+C:\Claude\SIREN\codex\. Another engineer is working in those files right now.
+
+THE WHOLE JOB, IN FOUR LINES:
+
+    cd C:\Claude\SIREN\antigravity\jointjs_spike
+    curl -o joint.min.js https://cdn.jsdelivr.net/npm/@joint/core/dist/joint.min.js
+    copy page.template.html page.html      then paste joint.min.js into the one marked place
+    node run_spike.js
+
+That script prints every answer the report needs and blocks every external request at the browser,
+so "does it reach the internet" is settled by construction rather than by trust.
+
+BEFORE YOU PASTE THE LIBRARY, RUN IT ONCE EMPTY.
+
+It must report "library global found: NO" and mark all eleven steps NOT REACHED. I have checked that
+it does. If it ever reports success with no library present, the harness is broken and nothing after
+it means anything.
+
+CALIBRATION: @joint/core is 468,240 bytes minified, 139,051 gzipped, zero dependencies. If what you
+download differs materially from 468 KB, stop and say so before going further — either the package
+changed or you have the wrong file, and either matters more than the rest of this job.
+
+LOOK AT THE SCREENSHOT. The script writes spike.png. Eleven green steps over a blank canvas look
+exactly like eleven green steps over a working diagram. Open the image before you write anything.
+
+DO NOT relax the CSP to make something work. If the answer is that this cannot run under that
+policy, that is the most valuable outcome of the whole spike, and it belongs on the first line of
+your report.
+
+WRITE THE REPORT HERE, at this exact path:
+
+    C:\Claude\SIREN\antigravity\jointjs_spike\JOINTJS_FEASIBILITY.md
+
+Verdict in one sentence on the first line. Then the eight answers with their evidence, the SVG-shape
+finding, the licence audit, and a final section of what you could not establish — that section must
+not be empty, and it is the one I read first after the verdict.
+
+Two things that went wrong in this exact kind of work before, so they do not happen again:
+
+  - A tool that ran for two seconds was reported as a result. A coverage run clicked Export, closed
+    the dialog immediately, and reported the entire export subsystem as unreachable. If a
+    measurement looks surprising, check whether the instrument reached the state it describes.
+  - A report was written to a path nobody had agreed on, and it took a search to find it. Use the
+    path above.
+
+And the rule underneath both: before reporting that something does not work, show something
+comparable that does, in the same run. The harness gives you that for free — if all eleven steps
+fail, suspect the harness before the library.
+
+Two libraries are already eliminated on licence grounds and are not worth your time: tldraw needs a
+paid licence key in production, and bpmn-js / diagram-js carry a watermark their licence forbids
+removing or obscuring.

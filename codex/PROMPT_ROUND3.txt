@@ -1,0 +1,15 @@
+Read C:\Claude\SIREN\codex\BRIEF_ROUND3.md first, then the job files in
+C:\Claude\SIREN\codex\jobs\ (A, B, C, D, E - in that order).
+
+Your copy for this round: C:\Claude\SIREN\codex\FROZEN_1_63_5.html
+SHA-256 E895B205D6E84F2F0E611164AF66FF29722645AD1073A1C6FB97C3DA1DFBD628, 8,212,700 bytes.
+
+Same process as your round two: exact-count atomic patches against that hash, applied to your
+own copy, verified from the artefact you produced, with an honest section on what you did not
+do. Do not patch the protected regions listed in the brief - five other engineers are inside
+the same file right now; a collision there costs someone their work. Do not touch APP_VERSION
+or CHANGELOG.
+
+Job A is pure test code and protects everything the rest of us are shipping this week - start
+there. Take the rest in order; if one stalls, move on and say so. Hand back patches plus
+evidence, not a merged HTML.

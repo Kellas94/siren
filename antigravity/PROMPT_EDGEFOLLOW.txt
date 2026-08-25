@@ -1,0 +1,54 @@
+You are doing a measurement spike on SIREN, a single-file HTML diagram tool. This is your third
+spike on this problem and the two before it produced real findings, so read the brief before you
+touch anything.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\antigravity\EDGEFOLLOW_BRIEF.md      <- the job
+  2. C:\Claude\SIREN\antigravity\nodeoffset_spike\INTERSECT_FINDING.md   <- what went wrong last time
+  3. C:\Claude\SIREN\antigravity\nodeoffset_spike\run_intersect.js       <- your own harness, reuse it
+
+BUILD TO TEST AGAINST:
+  C:\Claude\SIREN\pending\round7\replay.html
+
+WORK ONLY IN:
+  C:\Claude\SIREN\antigravity\edgefollow_spike\        (create it)
+
+NEVER WRITE TO:
+  - the application, anywhere
+  - C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html
+  - anything under C:\Claude\SIREN\codex\
+  - anything under C:\Claude\SIREN\pending\  (read replay.html, do not modify it)
+Copy what you need into your own folder.
+
+USE PORTS 9640-9659. Other agents are running on other ports; do not stray outside your range.
+
+THE ONE-SENTENCE VERSION OF THE JOB:
+Last time you made the maths right and the picture still came out wrong, because edges were matched
+to the moved node by distance. Match them by their DOM id instead - every edge path is called
+L_<from>_<to>_<index> - then move only the endpoints that really belong to the node, move the edge
+labels too, and show that the picture is right.
+
+THREE FACTS ALREADY MEASURED FOR YOU, SO YOU DO NOT HAVE TO FIND THEM:
+  - edge path id looks like  t_flow_1787644598180_4-L_A_B_0   -> edge from A to B
+  - node id looks like       t_flow_1787644598180_4-flowchart-B-1   -> node B
+  - the invisible .t-edge-hitarea paths have NO id. Filter them out or your counts will be wrong;
+    this already fooled one probe into reporting "6 of 12" when the answer was 6 of 6.
+
+THE RULE THAT MATTERS MOST HERE:
+Your old metric - "edges touching a node at both ends" - reported 12 of 12 on a drawing with a
+MISSING connector, because a line to the wrong box still touches two nodes. Do not reuse it. Assert
+WHICH two nodes each edge joins, and hand back a six-row table.
+
+AND: take screenshots and LOOK at them before you write your report. Both previous spikes were
+saved by someone opening the picture. A coherent set of numbers over a broken drawing is still a
+failure, and reporting it as a success is the worst outcome available to you.
+
+HAND BACK EXACTLY ONE FILE:
+  C:\Claude\SIREN\antigravity\edgefollow_spike\EDGEFOLLOW.md
+
+Its first line is the verdict in one sentence: does the picture come out right, yes or no. Then the
+edge table, the four breakages, the re-render answer in coordinates, the 40-block timing, and what
+you could not establish. That last section must not be empty - it is read first after the verdict.
+
+Do not build the feature. Do not modify the app. Do not recommend whether to adopt this. Measure,
+look, and report - including, and especially, whatever did not work.

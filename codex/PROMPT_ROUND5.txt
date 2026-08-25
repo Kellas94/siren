@@ -1,0 +1,109 @@
+Round 5 — twelve jobs. Three of them break things or report work that never happened. Round 4 is merged and live as v1.66.0.
+
+Your five patches plus your own corrective follow-up applied to the owner's file with every hash
+matching on the first run. I verified the shipped bytes, not the artefact you sent: Job A 48/48
+scenarios and 475/475 assertions, your new targeted suite 5/5 and 95/95, my six probe suites clean,
+and the app boots at 1.66.0 with zero exceptions. Your headline numbers re-measured and held.
+
+You corrected me twice in round 4 and you were right both times — Docs' "Contents" is driven by
+heading count, not document type (I re-measured: four headings is the threshold on a plain note),
+and ten shapes were missing from the canvas, not nine. Keep doing that.
+
+Read these, in this order:
+
+  1. C:\Claude\SIREN\codex\ROUND5_BRIEF.md    — the ten jobs. Read it first: two of them are YOUR
+                                                round-3 findings handed back to you, and the brief
+                                                says plainly which ones I have never reproduced
+                                                myself, so you know which numbers to trust.
+  2. C:\Claude\SIREN\codex\BRIEF_ROUND3.md    — the house rules. Unchanged.
+
+Your base:
+
+  C:\Claude\SIREN\codex\FROZEN_1_66_0.html
+  8,438,995 bytes
+  SHA-256 B9D8FF0AC6D8FB5BA1AF08D3CE386FF617523D0C568509D780D9C7CE7645F208
+
+Pin your first patch's input SHA to that value and chain the rest as before.
+
+The twelve jobs, most damaging first:
+
+  AC the diagram PDF export is a raster image at every size — 0 text, 0 fonts, 10x the size
+  AB a pie, a gantt and a sequence export to PowerPoint as ONE FLAT PICTURE, against a
+     changelog that promises editable shapes — and carry a leaked "Flowchart Preview" title
+  R  a Guided chip CORRUPTS a kanban, and Guided misquotes Block and C4 source
+  S  the app toasts "Style applied to block Planning." having changed nothing
+  T  the kanban status line instructs the person to destroy their own diagram
+  Q  the heading rail you shipped in Round 4 paints over the document
+  K  the canvas deletes a note that was hanging off a deleted block   (your round-3 finding)
+  L  Docs revision restore hands focus to a hidden button             (your round-3 finding)
+  M  the zoom control says "fit the whole diagram" and fits the width
+  N  the welcome tour follows you into Docs and points at nothing
+  O  two disclosed Docs defects: the read-only pill's x deletes a block, and a leading "/" is
+     swallowed on Escape
+  P  the window title never changes and the tab icon is the wrong brand mark
+
+R, S and T come from a survey of all 19 diagram types this app can render, measured by five
+agents and re-measured by five adversarial verifiers. They are ordered first because R corrupts a
+file, S reports success for work that did not happen, and T tells the person to break their own
+diagram. Q is a regression in the rail you shipped in Round 4. The brief
+carries the measurements and, more usefully, the assertion your own tests were missing.
+
+K and L are yours from round 3 and I have never reproduced either. Establish what actually happens
+before fixing anything, and if my description of the defect is wrong, say so — that is a finding in
+itself.
+
+What I need back, same as always:
+
+  1. Anchor-guarded patch scripts, each with a pinned input SHA and an exact output SHA.
+  2. Every anchor you had to move, named, with why.
+  3. The Job A gate re-run against your final build, with the report JSON.
+     (The suite refuses an --app outside its own workspace. Copy the build in.)
+  4. Anything the suite flags that is mine rather than yours.
+
+Not yours this round, and each for a reason:
+
+  • The preview toolbar is mine. I have finished re-measuring it and the numbers corrected me
+    twice — #status is 0 px wide in the steady state, not the 400 px occupant I told you about, and
+    "Advanced direction" in Style is dead UI inside a hidden div. What goes in that space is a
+    design decision, not a patch.
+  • The visual builder panel, the canvas type gating and the Style card. The survey found four of
+    nineteen types can use that panel fully, and that Guided already works structurally on all of
+    them. What the section becomes is being decided; touching it now would collide with that.
+  • Round 6 — the rest of the survey's findings — is written and waiting. Do not start it and do
+    not fold it into this round. Keeping them separate is what lets me verify each one cleanly.
+  • Fixed-block placement is parked by the owner. Do not start it.
+
+If twelve jobs is not a full round, say so and I will send more.
+
+One thing about how I will read what you send back.
+
+I verify your work on the exact bytes that ship, not on the artefact you hand me, and I re-measure
+your headline numbers myself. That is not distrust — it is the same standard I hold my own work to,
+and this round exists because I applied it to mine and found five instruments lying to me in one
+night. When you corrected me twice in Round 4 you were right both times, and both corrections made
+the product better. Do it again wherever I have got something wrong here.
+
+The five at the top are not ordinary defects. AB ships a client deliverable that cannot be edited
+under a promise that it can. R corrupts a file. S tells the owner his work was
+saved when it was not. T instructs him to destroy his own diagram. In a tool whose first rule is
+that nothing is ever silently lost, those three outrank everything else in this round — including
+the regression in your own work.
+
+One new thing since the brief was written: there is now an export gate, and it is red.
+
+  node qa_exports/run_export_fidelity.js --app <build> --port 9931 --output <dir>
+
+Baseline on the shipped 1.66.0: 25 assertions, 10 pass, 15 fail. It asks the question none of our
+other checks ever asked — not "is this a valid PDF" but "is there any text in it". Both AC and AB
+are measured by it, and it is the acceptance criterion for both. Run it before you start so you see
+the red, and run it at the end.
+
+It also corrected me three times, and the corrections are in the brief: the PDF is raster for EVERY
+type including flowchart; mindmap makes real shapes in PowerPoint but none in Excel, so the two
+writers disagree on the same diagram; and the leaked "Flowchart Preview" only appears when the
+default title is still in place, so it is a default-value problem and not something to chase inside
+the export writer.
+
+The gate has an exemption map that is empty on purpose. If a type genuinely cannot be vector, the
+exemption is allowed — but only together with UI text telling the person that this export is an
+image, and the exemption has to name that text. Widening it silently would recreate the defect.

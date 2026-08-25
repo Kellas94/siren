@@ -1,0 +1,67 @@
+SIREN round 8. Five jobs, all re-measured on the exact base you will be patching.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\codex\ROUND8_METHOD.md   <- base SHA, delivery format, the traps
+  2. C:\Claude\SIREN\codex\ROUND8_BRIEF.md    <- the five jobs
+
+THE BASE — the shipped v1.68.0, frozen:
+  C:\Claude\SIREN\codex\FROZEN_R8_BASE.html
+  8,552,615 bytes
+  SHA-256  F93B2CD12E05297907D01D965D21C39683048C344FB830797849662AB3886A56
+
+Work on a private copy. Do not touch the file in Downloads, and do not author against 1.67.0 or any
+round-7 intermediate — twelve patches separate them and four of those moved code you will be
+anchoring near. The method document lists exactly which.
+
+THE FIVE JOBS, in the order they should be done:
+
+  AI  typing after "/" in a Docs paragraph destroys the text, including in storage
+  AJ  one press of Undo destroys a diagram title somebody typed
+  AK  "Delete block" is not drawn at all on a 620px-tall window
+  AL  a second-level Docs menu opens ~800px from the click
+  AM  YAML frontmatter demotes a valid diagram to "Advanced Mermaid"
+
+AI and AJ both destroy something a person wrote. They outrank the other three. If you run short,
+deliver those two properly rather than five partially — scaling the round down is fine, saying you
+did something you did not is not.
+
+WHAT EVERY JOB ALREADY HAS, so you do not rediscover it:
+Each job in the brief carries the reproduction that works, the measured values on this exact base,
+the ids and unique anchor snippets, a browser-measurable definition of "done", and the specific way a
+careless fix looks right while still being wrong. Those traps are not hypothetical — each was found
+by a probe that first got it wrong.
+
+Two blast-radius warnings you must respect:
+  - openStructureMenu( occurs 35 times and closeStructureMenu( 15 times. It is the engine behind the
+    theme menu, every right-click menu, the toolbar and the new preview View/Inspect menus. AI is NOT
+    fixed by changing its focus or key handling.
+  - The .struct-menu max-height cap is global and was itself the fix for an earlier clipping bug. AK
+    is not fixed by raising the number; the brief explains what that breaks one size down.
+
+DELIVERY:
+One SHA-pinned script per job, an APPLY_ORDER.md with every input and output hash, and a handback
+that says what you did AND what you did not. Round 7's handback is the model — its "Deliberately not
+done or claimed" section was the most useful part of it. Do not touch APP_VERSION, CHANGELOG or the
+CSP; those are cut at release time so a version number never claims unverified work.
+
+VERIFICATION, and this is where round 7 was sent back:
+Round 7 was delivered as complete and two of its four jobs were not. Both failures were one step
+sideways from the fixture the patch was written for — a sequence diagram with no `participant` lines
+(which is how most people write one) reported "0 participants" beside a picture of three people, and
+a chip whose sentence was composed once still promised branch colours over a pie chart. The numbers
+on the chosen fixtures were all green.
+
+So: test one step sideways from your own fixture, every time. Ordinary input, not hostile input — a
+comment line, a missing declaration, a second diagram opened within nine seconds. And a check that
+finds nothing on both the patched build and the base has established nothing; say so out loud rather
+than counting it green.
+
+Where a fix is visual, render it and look at the picture before reporting. Two defects in the last
+release were found only that way and neither was visible in any failing number.
+
+THE STANDING RULE, which two of round 7's jobs existed to serve:
+Nothing in this app may promise what it cannot deliver. A tooltip, a chip, a count, a menu label or a
+disabled state that overstates is a defect of the same kind as a crash. A confidently wrong number is
+worse than an obviously wrong one.
+
+If a job cannot be done honestly as briefed, say so and deliver the rest.

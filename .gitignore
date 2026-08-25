@@ -1,0 +1,62 @@
+# Nothing is tracked unless it is named here.
+#
+# This started as a deny-list and that was the wrong shape. The working folder holds 21.6 GB of
+# agent scratch across 156,348 files - full copies of the application, npm caches, generated import
+# fixtures, a 231 MB probe result - and a deny-list against that is a list you lose. First attempt
+# staged 927 MB.
+#
+# So: ignore everything, then name what belongs. Anything new an agent drops in the tree is invisible
+# to git until somebody decides otherwise, which is the correct default for this project.
+#
+# The rule for deciding: track what is DURABLE and TEXT. The patch scripts, the harnesses, the
+# briefs, the handbacks, the docs. Every application build is reproducible by replaying the tracked
+# scripts against the frozen base its APPLY_ORDER.md names - if a build cannot be reproduced that
+# way, that is a defect in the round, not a reason to commit the artefact.
+
+*
+!*/
+
+# ---- the documents that say what this is ----------------------------------------------------
+!.gitignore
+!README.md
+!AGENT_CONVENTIONS.md
+!RESUME_HERE.md
+!mpl.txt
+
+# ---- the patch scripts: how every release was actually built ---------------------------------
+!tools/**/*.py
+!tools/**/*.js
+
+# ---- the verification harnesses: how every claim was proved ----------------------------------
+!qa_exports/*.js
+
+# ---- the briefs, the handbacks, and the pinned patch chains -----------------------------------
+!codex/*.md
+!codex/*.txt
+!codex/round*_patches/**/*.js
+!codex/round*_patches/**/*.md
+!antigravity/*.md
+!antigravity/*.txt
+!audit/*.md
+
+# ---- design work in progress ------------------------------------------------------------------
+!pending/wonders/*.md
+!pending/wonders/*.py
+!pending/wonders/wonders_scene.html
+!pending/thememenu/*.md
+!pending/thememenu/*.py
+
+# ---- the shipped application ------------------------------------------------------------------
+# From 1.69.0 onward, which is where this repository starts. The 62 earlier snapshots stay on disk
+# in releases/ and backups/; importing 343 MB of history nobody will check out would make every
+# clone pay for it, and how each was BUILT is tracked above.
+!releases/SIREN_v1.69.0.html
+
+# ---- never, regardless of anything above ------------------------------------------------------
+# The owner's real audit work, not a fixture. A private repository is private; it is not a decision
+# to store a live engagement in one. This sits last so no rule above can re-admit it.
+WP-001_*.json
+*_Audit_*.json
+**/node_modules/
+**/.npm-cache/
+**/npm-cache/

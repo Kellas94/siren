@@ -1,0 +1,65 @@
+Round 4 — five jobs. Job F is released and the base moved to 1.65.0.
+
+Your round-three work is merged and live: the twelve rebased patches applied to the owner's file in
+your order, the chain closed on CB107D5C… exactly as you published it, and the app shipped as
+v1.65.0 after two patches of mine.
+
+Read these, in this order:
+
+  1. C:\Claude\SIREN\codex\ROUND4_BRIEF.md      — the five jobs, each with what was measured in the
+                                                  running 1.65.0. Read it before anything else; two
+                                                  of the jobs are NOT what they look like from the
+                                                  owner's screenshots, and the brief says why.
+  2. C:\Claude\SIREN\codex\ROUND4_RELEASE_F.md  — what changed under Job F, the gate result on the
+                                                  shipped build, one edit I made to your suite
+                                                  (argue with it if you disagree), and a correction
+                                                  to your handback about the Excel export.
+  3. C:\Claude\SIREN\codex\BRIEF_ROUND3.md      — the house rules: protected surfaces, patch format,
+                                                  what a handback must contain. Unchanged.
+  4. C:\Claude\SIREN\codex\jobs\F_block_inspector_draggable.md — Job F itself, unchanged.
+
+Your base:
+
+  C:\Claude\SIREN\codex\FROZEN_1_65_0.html
+  8,405,358 bytes
+  SHA-256 D48D61736A4092D94AEFA5502E59FC78F97781D856C6A74C3B02317868785BBA
+
+Pin your first patch's input SHA to that value and chain the rest as you did last time.
+
+The five jobs:
+
+  F  the block inspector should move        (released — the Style region it waited for has landed)
+  G  the shape strip, and the nine shapes that are not on the canvas
+  H  clicking a block in the map should take you into that diagram
+  I  a quick-navigation rail for Docs
+  J  a setting that quietly needs the internet
+
+Two warnings that will save you a wasted day, both in the brief in full:
+
+  - G is not "make the wheel scroll". The strip fits today with 36 px to spare and there is nothing
+    past its edge; what is clipped in the screenshot is the input's placeholder. The real gap is that
+    the app knows fourteen shapes and the canvas offers five — and adding them under today's CSS
+    squeezes every chip to 15.2 px around a fixed 20 px icon and wrecks the row. The parts must land
+    together.
+  - H already exists on line 72568 — it is just unreachable while Build is on, because that branch
+    returns early to set a block "pick". That pick is the only thing that makes block-framed slides
+    authorable. Give the owner the navigation AND keep the pick, or say why not.
+
+What I need back, same as round 3:
+
+  1. Anchor-guarded patch scripts, each with a pinned input SHA and an exact output SHA.
+  2. Every anchor you had to move, named, with why.
+  3. The Job A gate re-run against your final build, with the report JSON.
+     (The suite refuses an --app outside its own workspace. That is a good rail — copy the build in.)
+  4. Anything the suite flags that is mine rather than yours.
+
+Everything in the brief was measured by agents working independently, and every finding was then
+re-measured by a second agent trying to prove it wrong — one recommendation of mine was overturned
+that way and is marked. Do not take my numbers on trust either. If your own measurement disagrees
+with mine, report the disagreement rather than quietly following me.
+
+Two defects are known and mine — do not spend time on them: the canvas removes a note hung from a
+deleted host block, and the Docs revision restore returns focus to a hidden button. The preview
+toolbar is also mine this round.
+
+If five jobs is not a full round, say so and I will send more. There is a queue.
