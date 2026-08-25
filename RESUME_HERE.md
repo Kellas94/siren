@@ -1,3 +1,93 @@
+# Resume here — 25 August 2026 (v1.70.0 SHIPPED, round 11 staged)
+
+**Read this block first.** Everything below it describes earlier releases and is kept for history.
+
+## Shipped
+
+**Live app:** `C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html` — **v1.70.0**, 8,591,186 bytes,
+SHA-256 `2F2DA0BDA18427E3262EB97D06401723183D1938A09083654C64AFE791223030`.
+Snapshot `releases\SIREN_v1.70.0.html`. Rollback point `backups\siren_pre_1_70_0.html`, verified
+byte-identical to the live 1.69.0 before anything was written.
+
+Clean replay from `codex\FROZEN_R10_BASE.html` (`BAC0C559…F9AB`), byte-exact:
+
+| # | script | output |
+|---:|---|---|
+| 1 | `codex\round10_patches\R10_AS_slash_recovery_reopen.js` | `4E4DE340…` |
+| 2 | `codex\round10_patches\R10_AT_remaining_docs_submenu_points.js` | `D7C047E6…` |
+| 3 | `codex\round10_patches\R10_AU_post_squeeze_scrollability.js` | `D5F5B7DC…` |
+| 4 | `tools\patch_second_editor_slot.py` | `8B1575FC…` |
+| 5 | `tools\patch_window_title.py` | `55AC7C70…` |
+| 6 | `tools\patch_theme_groups.py` | `072DD854…` |
+| 7 | `tools\patch_slot_honest_tab.py` | `E91A2297…` |
+| 8 | `tools\patch_editor_heading.py` | `0BF4D9D6…` |
+| 9 | `tools\patch_menu_heading_wrap.py` | `21AECA0E…` |
+| 10 | `tools\patch_theme_groups_select.py` | `A771BA80…` |
+| 11 | `tools\ship_1_70_0.py` | `2F2DA0BD…` |
+
+**Verified on the shipped bytes:** syntax gate clean (2 blocks, 7,584,004 chars, `node --check` 0);
+`verify_shipped_170` 11/11, reading the release notes out of the app's own Guide; `r7_smoke` 4/4;
+`verify_theme_groups` 6/6; `verify_second_slot` 5/5; `verify_wonders` 14/14; `verify_theme_menu` all
+pass; `verify_170_fixes` clean with zero console errors. CSP byte-identical to 1.69.0.
+
+## What the verification caught, and it was mine
+
+Round 10 (AS, AT, AU) held under an adversarial pass. The **ship-blocker was in my own patch**: the
+new second editor tab was still being painted `aria-disabled` + `is-unavailable` by a block written
+for the old tab, so on sixteen diagram types it read "Guided", said the visual builder does not cover
+this type, and worked anyway when clicked. Playwright refused the click on aria-disabled grounds —
+a fair proxy for keyboard and screen-reader users, who were being told the control was dead.
+
+Three further fixes came out of the same pass: the editor heading said "Mermaid source" above the
+Guided rows; `slot.title` was dead code, so all three tabs described the visual builder, including on
+a sequence diagram; and the theme groups had been renamed on the desktop menu only, leaving the phone
+list on the old five.
+
+**Two changelog sentences were corrected before shipping**, both by measuring the shipped 1.69.0
+rather than trusting the draft: "pressing the greyed tab did nothing" is false — it opens the builder
+panel, which then says it cannot help — and the long-name menu heading was not cut past a border on
+1.69.0; the menu hung 75px off the left edge of a 412px screen instead. That check has now caught
+eighteen would-be broken promises across four rounds.
+
+**Three harness bugs were fixed, all of which had been reporting a working app as broken:**
+`r7_smoke` read its path positionally, so the usual `--app <path>` made `'--app'` the filename and
+the server 404'd every request; its intro assertion had been red on every build for the same reason;
+and `verify_shipped_170` hunted for a changelog button when the notes live inside the Guide under a
+collapsed `<details>`. Check the harness before blaming the build.
+
+## Round 11 is staged, rebased on the shipped build
+
+`codex\PROMPT_ROUND11.txt` + `codex\ROUND11_BRIEF.md`, base `codex\FROZEN_R11_BASE.html` =
+the shipped 1.70.0, byte-identical. Jobs, in order:
+
+- **AV** — the welcome tour steals the keyboard ~2.3s into a first visit and eats what is being
+  typed: "Review request" lands as "Revie", focus on the tour's Next button, the tour advanced to
+  3/6 by the person's own keystrokes. **First-run only** — every measurement needs a fresh context
+  with empty storage, and the shared harness dismisses tour cards during settle, which is why this
+  survived a full day of probing. It also arrives *after* that settle finishes, so it can swallow
+  clicks mid-probe; `verify_170_fixes.js` carries a `killTour()` sweep for exactly this.
+- **AW** — a 44-block flowchart exports to PowerPoint as ~15.8 × 4.7pt boxes with 6pt text and
+  `clip` on both overflow attributes; the deck route already solves it correctly.
+- **AX** — following a reference chip opens the diagram but selects nothing; the four-line
+  `kind === 'diagram'` branch discards the node `resolveWorkpaperLink()` already resolved.
+- **AY** — right-clicking that chip offers no jump row. Worthless unless AX lands.
+- optional **AZ** (a block's right-click menu has no route to its documents) and **BA** (the ▤ mark
+  on a block is not clickable).
+
+Two notes in the prompt are for Codex's harness, not the app: `au_lib.js` measures the content box
+where `overflow:auto` clips at the padding box, so every emitted cut is 5px too large; and the x=240
+column of the AT matrix landed on `#wpList`, not on a block.
+
+## Still open, not in round 11
+
+- Per-block references in Docs — a product decision before a patch; two incompatible shapes.
+- Node dragging / edge routing — parked after five spikes: a crude router removes crossings but
+  destroys topology. 5.1ms median, so speed is not the blocker; channel separation is.
+- The QA harness's stale `.doc` name in `qa/run_regression_suite.js:2111`.
+- Docs chrome density and the 1,750ms brand opening — owner decisions.
+
+---
+
 # Resume here — 24 August 2026, late (v1.67.0 SHIPPED, round 6 staged)
 
 **Read this block first.** The block below it describes the state before this release.

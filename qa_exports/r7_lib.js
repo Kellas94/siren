@@ -26,8 +26,15 @@ const SETTLE = `(async () => {
     if (!b) break; b.click(); await new Promise(r => setTimeout(r, 220));
   }
   document.querySelectorAll('dialog[open]').forEach(d => { try { d.close(); } catch (e) {} });
-  const intro = document.getElementById('sirenIntroOverlay');
-  for (let i = 0; i < 60 && intro && !intro.hidden; i++) await new Promise(r => setTimeout(r, 100));
+  // Re-queried each pass rather than captured once. On a healthy build this ends on the first
+  // pass with hidden === true; but if the overlay is ever removed instead of hidden, a captured
+  // reference to a detached node reports hidden === false forever, and the loop would spend its
+  // full six seconds waiting for a condition that can no longer be met.
+  for (let i = 0; i < 60; i++) {
+    const intro = document.getElementById('sirenIntroOverlay');
+    if (!intro || intro.hidden) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
   document.body.click(); await new Promise(r => setTimeout(r, 800));
   return 1;
 })()`;

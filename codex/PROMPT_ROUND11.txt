@@ -1,0 +1,86 @@
+SIREN round 11. Four jobs, two optional. One of them destroys what a person typed.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\codex\ROUND8_METHOD.md    <- delivery format and the traps; unchanged
+  2. C:\Claude\SIREN\codex\ROUND11_BRIEF.md    <- the jobs
+
+THE BASE:
+  C:\Claude\SIREN\codex\FROZEN_R11_BASE.html
+  8,591,186 bytes
+  SHA-256  2F2DA0BDA18427E3262EB97D06401723183D1938A09083654C64AFE791223030
+
+THIS IS THE SHIPPED 1.70.0, not the build you were given last time. Your round 10 went out in it,
+together with seven of my patches. Do not touch APP_VERSION or CHANGELOG - they are already correct
+for this release.
+
+Round 10 was verified by an independent pass that drove it with real keyboard and mouse. AS, AT and
+AU all held. What it also found was a SHIP-BLOCKER IN MY OWN WORK, eight lines below yours: the new
+second editor tab was still being painted aria-disabled by a block written for the old tab, so it
+read "Guided", said the visual builder could not help, and worked anyway when clicked. That is why
+this base is not the one in the earlier prompt.
+
+Two things from that pass are for you rather than for the app:
+
+  - Your au_lib.js computes portRight from the CONTENT box (rect.left + borderLeft + clientWidth -
+    paddingRight) but overflow:auto clips at the PADDING box. Every cut your probes emit is 5px too
+    large. The numbers in your AU prose are the correct ones and were re-measured independently, so
+    the report is right and the artifacts on disk contradict it. Fix the library, not the prose.
+  - Your x=240 column in the AT matrix landed on ASIDE.wp-list, not on a block: #wpList spans 0..300
+    and the block starts at 352, so no right-click at x=240 could reach those rows at 1440. The fix
+    is confirmed by the other ten cells; that one column measured a different menu.
+
+THE JOBS, in order:
+
+  AV  the welcome tour takes the keyboard at ~2.3s and eats what a first-time user is typing
+  AW  a large diagram exports to PowerPoint as unreadable clipped slides, and says nothing
+  AX  clicking a document's reference chip opens the diagram but not the block it names
+  AY  right-clicking that chip offers no way to jump to the block  (worthless unless AX lands)
+
+  if there is room:
+  AZ  right-clicking a diagram block gives no route to the documents it advertises
+  BA  the small document mark on a block cannot be clicked
+
+AV IS FIRST AND IT IS NOT CLOSE. Typing "Review request" into the default screen leaves "Revie" -
+nine characters destroyed, focus stolen onto a tour button, and the tour advanced two steps by the
+person's own keystrokes. In the first minute, in the box the product points them at, while the
+status strip still says the syntax is valid.
+
+THE ONE THING THAT WILL WASTE YOUR ROUND IF YOU MISS IT:
+The tour is FIRST-RUN ONLY, gated on state.tourDone. Verify by pressing F5 and you measure a path
+where the tour never appears - the check passes on the unfixed build and proves nothing. Every AV
+measurement needs a NEW browser context with EMPTY storage. This is also why the defect survived a
+whole day of testing here: the shared harness dismisses tour cards during settle, so every probe
+built on it was blind to it.
+
+ROUND 10, AND WHY IT WAS GOOD:
+The brief told you that moving three lines was the whole AU job. You measured it, found the Present
+row still clipped at four widths, did the extra work, and said the brief had been wrong. Keep doing
+exactly that - a brief here is the best current understanding, not an instruction. You also corrected
+your own round 9 wording about the non-breaking space rather than leaving it standing.
+
+ONE THING TO CARRY FORWARD:
+Your AT coverage dispatched contextmenu events with explicit coordinates for the wide x-matrix
+because editable text keeps the browser's native menu, and only some routes got physical clicks. You
+disclosed it, which is right. But a synthetic event carrying coordinates can pass where a real one
+would not, so where a job is ABOUT pointer position, at least a sample must be a physical click.
+
+VERIFICATION:
+Test one step sideways from your own fixture, every time. A check that finds nothing on both the
+patched build and the base has established nothing - say so rather than counting it green. Where a
+fix is visual, render it and look.
+
+For AW specifically: there is no LibreOffice on this machine, so a picture of a slide is a
+reconstruction, not proof. Read the OOXML numbers.
+
+And do not write a probe regex with a single backslash inside a JS template literal. It collapses,
+so /\s+/ becomes /s+/ and eats the letter s out of your own output - five false readings here in one
+day.
+
+DELIVERY:
+One SHA-pinned script per job, an APPLY_ORDER.md with every input and output hash, and a handback
+saying what you did AND what you did not. Do not touch APP_VERSION, CHANGELOG or the CSP.
+
+THE STANDING RULE:
+Nothing in this app may promise what it cannot deliver. A tooltip, a chip, a count, a menu label or a
+disabled state that overstates is a defect of the same kind as a crash. If a job cannot be done
+honestly as briefed, say so and deliver the rest.

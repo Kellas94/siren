@@ -11,12 +11,18 @@ const { createRequire } = require('module');
 const { chromium } = createRequire('file:///C:/Users/tsinc/AppData/Roaming/npm/node_modules/@playwright/cli/node_modules/')('playwright');
 const argv = process.argv.slice(2);
 const arg = (n, d) => { const i = argv.indexOf('--' + n); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
+
+/* How many themes this build offers. Established from the first viewport and reused, so adding
+   a theme cannot make this suite report a working menu as broken - which is exactly what a
+   hardcoded 37 did the day two were added. */
+let TOTAL = 0;
 const APP = arg('app'), PORT = Number(arg('port', '9892'));
 
 let fail = 0;
 const check = (id, ok, exp, act) => { if (!ok) fail++; console.log(`[${ok ? 'PASS' : 'FAIL'}] ${id} | expected=${exp} | actual=${act}`); };
 
 const SETTLE = `(async () => {
+
   for (let i = 0; i < 80; i++) { if (document.querySelector('#diagram svg')) break; await new Promise(r => setTimeout(r, 300)); }
   for (let p = 0; p < 12; p++) {
     const b = Array.from(document.querySelectorAll('.tour-card button')).find(x => /skip|done|got it|close|next|finish/i.test(x.textContent));
@@ -66,9 +72,17 @@ const OPEN_AND_READ = `(async () => {
       const q = JSON.parse(await page.evaluate(OPEN_AND_READ));
       if (q.error) { check(`${w}.menu.opens`, false, 'the theme menu opens', q.error); await ctx.close(); continue; }
 
+      // The first viewport establishes how many themes this build offers; the rest compare
+      // against the same figure, so the suite measures the cap rather than a remembered total.
+      if (!TOTAL) TOTAL = q.inDom;
       check(`${w}.quick.eightRows`, q.visible === 8, 'exactly 8 rows a person can use', `${q.visible} of ${q.inDom} in the DOM`);
       check(`${w}.quick.noOverflow`, q.hidden === 0, 'nothing below the fold', `${q.hidden}px hidden (box ${q.box}, scrollH ${q.scrollH})`);
-      check(`${w}.quick.allStillInDom`, q.inDom === 37, 'all 37 themes still present', q.inDom);
+      // Derived, not hardcoded. This suite asserted 37 and broke the day two themes were added,
+    // reporting a correct app as four failures. What it defends is that the cap hides nothing
+    // PERMANENTLY - a relationship between shown and total - so the total is read from the
+    // page and the same number is used on both sides.
+    check(`${w}.quick.allStillInDom`, q.inDom === TOTAL,
+      `all ${TOTAL} themes still present`, q.inDom);
       check(`${w}.more.offered`, q.moreVisible, 'a visible route to the rest', JSON.stringify(q.moreText));
       if (w === 1440) console.log('        the eight: ' + q.visibleIds.join(', '));
 
@@ -82,7 +96,8 @@ const OPEN_AND_READ = `(async () => {
           .filter(o => { const r = o.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
         return JSON.stringify({ visible: shown.length, ids: shown.map(o => o.dataset.themeValue) });
       })()`));
-      check(`${w}.more.revealsAll`, expanded.visible === 37, 'all 37 reachable after More themes', expanded.visible);
+      check(`${w}.more.revealsAll`, expanded.visible === TOTAL,
+      `all ${TOTAL} reachable after More themes`, expanded.visible);
 
       // ---- picking a theme from behind the cap must apply it ----
       const applied = JSON.parse(await page.evaluate(`(async () => {
@@ -130,7 +145,7 @@ const OPEN_AND_READ = `(async () => {
         selectOptions: sel ? sel.options.length : 0
       });
     })()`));
-    check('375.phoneRouteIntact', phone.selectOptions >= 37,
+    check('375.phoneRouteIntact', phone.selectOptions >= TOTAL,
       'the phone select still lists every theme', `${phone.selectOptions} options, quick menu usable=${phone.quickMenuUsable}`);
     check('375.noErrors', errs.length === 0, 'no page errors at 375', errs.length ? errs.join(' // ') : 'none');
     await ctx.close();
