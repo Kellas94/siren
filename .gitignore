@@ -18,6 +18,7 @@
 
 # ---- the documents that say what this is ----------------------------------------------------
 !.gitignore
+!.gitattributes
 !README.md
 !AGENT_CONVENTIONS.md
 !RESUME_HERE.md
