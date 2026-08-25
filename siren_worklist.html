@@ -856,7 +856,7 @@
     <div class="sec-head">
       <h2>From the outside audit</h2>
       <p class="sec-note">A UI/UX and product review of 1.66.0 by an outside model. Every checkable claim was re-measured here before anything was kept.</p>
-      <span class="tally">4 kept &#183; 4 rejected</span>
+      <span class="tally">3 open &#183; 2 closed &#183; 4 rejected</span>
     </div>
     <div class="queue">
 
@@ -867,33 +867,20 @@
         <div class="effort">small</div>
       </div>
 
-      <div class="item" data-sev="3">
-        <div class="rank">02</div>
-        <div class="body"><b>Cap the theme menu, and split the palette from the scene &#8212; <i>done, 1.68.0</i></b>
-          <p>The audit said the menu was too long and recommended about eight with the rest in a gallery. It was right about the shape and wrong about the number &#8212; there are <b>37</b> themes, not 36, confirmed independently.</p>
-          <p><b>What the measurement added was the part that mattered.</b> The menu opened 520&#215;800 with <b>263px permanently below the fold at every desktop size</b>: themes nobody could reach and had no way to know were there. It is now 312&#215;427 with nothing hidden, eight shown, &#8220;More themes&#8230; (29)&#8221; at the foot of the list, and the menu auto-expands when the theme you are using is one of the twenty-nine. Verified 19 of 19 at 1440, 960 and 375, with all 37 still in the DOM and their ids unchanged.</p>
-          <p>Splitting palette from scene was <b>not</b> done and is not planned: it is a second control for something one control already does.</p></div>
-        <div class="effort">shipped</div>
-      </div>
 
       <div class="item" data-sev="3">
-        <div class="rank">03</div>
+        <div class="rank">02</div>
         <div class="body"><b>The acceptance thresholds, next to the rule</b>
           <p>The review ends with the same idea as the standing rule, written as numbers you can check: at most three primary workspaces and seven permanent actions in the active toolbar; no operation that loses or omits content without a message and a way back; a chosen export scope is honoured or the format is disabled with a reason; <b>no standard navigation key modifies data</b>. And a short list of what must <i>not</i> count as success &#8212; the number of themes, formats, dialogs or buttons, the length of the code, or a feature demonstrated once without regression coverage. That last list is worth keeping verbatim.</p></div>
         <div class="effort">tiny</div>
       </div>
 
-      <div class="item" data-sev="3">
-        <div class="rank">04</div>
-        <div class="body"><b>A theme the owner asked for: the human record, antiquity to AI</b>
-          <p>Inspired by the Civilization games and their wonders &#8212; an arc that starts before the common era and arrives at the present. This is the owner&#8217;s call, and it is <b>not blocked by item 02</b> &#8212; an earlier note here said it was, and that overstated the dependency. Half the palette/scene split already ships: <code>#ambientSoftToggle</code> (&#8220;Soften the scene behind the diagram&#8221;) applies a per-theme blur, tuned from 8px on Kintsugi to 22px on Art Deco, because the gold hairlines there read at 6:1 behind the schematic. Capping the menu is hygiene, not a gate: it only decides whether theme thirty-seven makes the menu worse. What the theme <i>does</i> need is its own blur entry, and a decision on whether &#8220;soften&#8221; should also mean <b>stop moving</b> rather than only blur &#8212; a horizon of silhouettes blurred at 14px is still a horizon in motion, and that is the difference between a theme you can build a diagram against and one you can open in front of a client.</p></div>
-        <div class="effort">medium</div>
-      </div>
 
       <div class="item" data-sev="2">
-        <div class="rank">05</div>
+        <div class="rank">03</div>
         <div class="body"><b>The central surface: three workspaces instead of one flat plane</b>
-          <p>The review&#8217;s largest recommendation, and the one that sounded biggest until it was measured. At 1440&#215;900 with nothing open the app shows <b>43 controls of chrome</b> (plus 13 clickable drawing elements, which are content and belong there): header 5, workspace bar 5, editor pane 21, <b>preview toolbar 12</b>. The review&#8217;s threshold is seven permanent actions in the active toolbar, so <b>the preview toolbar is the only region measurably over budget</b> &#8212; and it is the same bar with 585px of empty space that has been an open design decision here for two days.</p>
+          <p>The review&#8217;s largest recommendation, and the one that sounded biggest until it was measured. Its one measurably over-budget region was the preview toolbar, at 12 permanent controls against a threshold of seven. <b>That part is closed.</b> Re-measured on the shipped 1.70.0: the bar holds <b>six named actions</b> &#8212; Filters, Flow, Inspect, Present, Hide panel and the walk-through hint &#8212; plus the zoom cluster, which came back onto the bar in 1.69.0 at your request because folding it into a menu cost both a press and the readout.</p>
+          <p>The 1.66.0 census of <b>43 controls of chrome</b> is deliberately not restated. Counting it again today gave 127 in the editor pane alone, which means the selector I used counts content the original census excluded &#8212; a different definition, not a changed app. A number whose method cannot be reproduced does not belong on this page.</p>
           <p>Checked in the shipped file rather than assumed: <b>nine of the eleven proposed items are moves, not builds</b>. Diagram, Documentation and Present all exist &#8212; in three different bars, so nothing tells a newcomer these are the three things the app does. Visual, Code and All previews all exist; the third simply sits elsewhere. Style, Comments and Review are three equal buttons that were always three tabs of one panel. A command palette already exists (<code>commandPalette</code> &#215;26, Ctrl+K) and so does a review dialog (&#215;13).</p>
           <p><b>Exactly two are new</b>: Named Views (<code>namedView</code> &#215;0, <code>savedView</code> &#215;0 &#8212; not a line of it, and parked by the owner) and Delivery Preflight (<code>preflight</code> &#215;3, three occurrences of the word and no feature). The outside prototype draws both as working panels; they are kept out of ours on purpose. So this is smaller than the review&#8217;s roadmap implies &#8212; and more disruptive than a feature would be, because moving controls someone already knows costs muscle memory. <b>Start at the preview toolbar</b>: it is the only part that can be verified finished rather than argued about. &#8212; <a href="https://claude.ai/code/artifact/a8caf4f4-fc06-4ef2-9795-6a810f8994fd" style="color:var(--accent)">the measured mock-up</a></p></div>
         <div class="effort">design</div>
@@ -910,6 +897,14 @@
         <li><b>Named Views &#8212; parked by the owner, and this is the second time it has been recommended.</b><span>Not wrong; deliberately held. The prototype that came with the review is a mock-up with absolutely-positioned boxes and no Mermaid, useful as a picture of the three-workspace layout and not as code.</span></li>
       </ul>
     </div>
+
+      <div class="panel" style="margin-top:6px">
+        <h3>Closed since the review &#8212; measured, not assumed</h3>
+        <ul>
+          <li><b>The theme menu is capped</b><span>It opened 520&#215;800 with 263px permanently below the fold at every desktop size. Eight are shown now, the rest one press away, and it opens on the theme you are using &#8212; 39 themes, nothing hidden, nothing lost. <b>1.68.0</b></span></li>
+          <li><b>The theme you asked for is in the app</b><span>Wonders, night and day. Its own scene is &#8220;a horizon of the human record drifting past, the era changing as it goes &#8212; ten silhouettes in order, from before the common era to the rack that runs the model reading this.&#8221; Antiquity to AI, which is what you asked for. <b>1.70.0</b></span></li>
+        </ul>
+      </div>
   </section>
 
   <section>
@@ -933,88 +928,67 @@
     <div class="sec-head">
       <h2>Ideas &#8212; not now</h2>
       <p class="sec-note">Real, and deliberately parked. Each one depends on the question above, or is a decision that is yours to make rather than work to schedule.</p>
-      <span class="tally">3 items</span>
+      <span class="tally">3 items &#183; 4 closed</span>
     </div>
     <div class="queue">
 
-      <div class="item" data-sev="1">
-        <div class="rank">04</div>
-        <div class="body"><b>The builder is not the problem &#8212; being universal is</b>
-          <p>Nineteen diagram types measured, each by one agent and re-measured by a second told to prove the first wrong. <b>Four types can use the builder fully</b> &#8212; flowchart, graph, swimlane and ishikawa (they all compile to a flowchart underneath). Sequence has its own builder. <b>The other thirteen get the same panel, the same promise &#8212; &#8220;Add blocks, choose their shapes, then connect them&#8221; &#8212; and 44 dead controls.</b> And the answer to what replaces it was already in the app: <b>Guided works structurally on every type</b> &#8212; one row per line, clickable chips, on a mindmap as on a flowchart. (I told you it gave zero rows on a mindmap. Wrong &#8212; it gives eleven; my probe measured too early.) What Guided does is <i>lie</i>: its counter is false on <b>14 of the 19</b>. So the shape is: builder for the four types that can use it, the Sequence builder for sequence, and <b>Guided promoted from a hidden switch to the primary editor</b> for the rest &#8212; once it stops lying.</p></div>
-        <div class="effort">design</div>
-      </div>
 
-      <div class="item" data-sev="1">
-        <div class="rank">05</div>
-        <div class="body"><b>Two exports promise one thing and deliver another</b>
-          <p><b>A diagram exported as PDF is a picture.</b> Measured three times on the shipped build &#8212; 3 blocks, 12 blocks, and your real 30-block audit map with subgraphs: <b>zero extractable text and zero embedded fonts</b> every time. Not a scale problem, the path itself. It cannot be searched or selected, your Romanian diacritics are pixels rather than letters, a screen reader gets nothing, and it is roughly ten times the size it needs to be &#8212; 1.3 MB for four pages. The contrast proves it is fixable: the <i>deck</i> PDF on the same app writes real vector text, 9 pages in 72 KB with the diacritics extracting perfectly. There are two PDF writers and only one makes a document.</p>
-          <p><b>And &#8220;editable PowerPoint shapes&#8221; is a flat image for three types.</b> Unzipped and counted: a mindmap exports as <b>7 real shapes</b>; a pie, a gantt and a sequence each export as <b>zero shapes and one raster picture</b> on a single slide. Nothing in them can be selected or restyled. And the leaked default title &#8220;Flowchart Preview&#8221; appears in the XML of exactly those three &#8212; not in the mindmap &#8212; so the picture fallback looks like the code that writes it.</p>
-          <p class="hint">Both are first in the next Codex round. Either the export does what it promises, or the app says plainly that this one is an image &#8212; shipping a picture in silence is the part that is not acceptable.</p></div>
-        <div class="effort">codex</div>
-      </div>
 
-      <div class="item" data-sev="1">
-        <div class="rank">06</div>
-        <div class="body"><b>Three things that break or claim work they never did</b>
-          <p><b>A Guided chip corrupts a kanban:</b> it offers the 14 flowchart shapes over a kanban card and picking one damages the source &#8212; while the same editor&#8217;s row menu, one click away, already knows &#8220;this diagram type is different&#8221;. <b>The app reports success for nothing:</b> on a gantt, styling a phantom block toasted &#8220;Style applied to block Planning&#8221; with the source byte-identical and the preview unchanged. <b>And the kanban status line tells you to destroy your own diagram:</b> &#8220;Add a flowchart declaration such as &#8216;flowchart TD&#8217;&#8221;. All three are first in the next Codex round.</p></div>
-        <div class="effort">codex</div>
-      </div>
 
       <div class="item" data-sev="3">
-        <div class="rank">07</div>
+        <div class="rank">04</div>
         <div class="body"><b>What the same test proved is solid</b>
           <p>Your real 30-block audit map, in Romanian, through every export. <b>PowerPoint: 43 native shapes, no picture</b>, diacritics as real text. <b>Excel: one sheet, a 32-column audit table, 43 native shapes and 2,016 text cells</b>, diacritics intact everywhere. <b>SVG</b> carries 35 text elements and the title. <b>CSV</b> has all 32 columns. <b>The project file round-trips</b> with every diacritic. Zero page errors throughout. Worth writing down so nobody breaks it later &#8212; and worth noting that the failures above are specific paths, not a general weakness in the exports.</p></div>
         <div class="effort">keep</div>
       </div>
 
-      <div class="item" data-sev="2">
-        <div class="rank">08</div>
-        <div class="body"><b>An honesty pass, written and waiting</b>
-          <p>The rest of what the survey found, as a round of its own. <b>Every diagram is titled &#8220;Flowchart Preview&#8221;</b> &#8212; over a pie chart, a gantt, a C4 &#8212; and that string is what gets exported. <b>The app forgets the type you just picked:</b> choose Block, Mindmap, Kanban or five others and a second later it calls it &#8220;Advanced / other Mermaid&#8221; and disables &#8220;New starter&#8221;. <b>The clearest honesty text is invisible</b> &#8212; the type chip carries &#8220;Full visual editing is available&#8221; and is <code>hidden</code> in the markup, never revealed. <b>The preview chip is wrong twice</b> and appears once per browser profile, ever. <b>And a beginner cannot find the diagram types at all:</b> &#8220;+ Diagram&#8221; never asks, and the only picker sits inside a collapsed card called &#8220;tools&#8221;.</p></div>
-        <div class="effort">codex</div>
-      </div>
 
       <div class="item" data-sev="2">
-        <div class="rank">09</div>
+        <div class="rank">05</div>
         <div class="body"><b>One click on a block does two jobs</b>
           <p>Clicking a block lights the handles <i>and</i> opens a fourteen-control form over the diagram, with one handle under its edge. Same region as the above, and it should be decided once, not twice.</p></div>
         <div class="effort">idea</div>
       </div>
 
       <div class="item" data-sev="3">
-        <div class="rank">10</div>
+        <div class="rank">06</div>
         <div class="body"><b>The first thing a new person sees is a Romanian public-finance map</b>
           <p>For a general audience that is a strange welcome and it teaches none of the shapes. A neutral starter already exists in the file &#8212; but which one greets a stranger is your call, not mine.</p></div>
         <div class="effort">idea</div>
       </div>
     </div>
+
+      <div class="panel" style="margin-top:6px">
+        <h3>Closed since these were written &#8212; re-measured on the shipped 1.70.0</h3>
+        <ul>
+          <li><b>The universal builder panel</b><span>Thirteen types used to get the same panel, the same promise and 44 dead controls. Measured today across pie, kanban, gantt, class, state, mindmap, timeline and ER: every one reaches Guided with 2&#8211;5 real rows and the builder panel is not shown on any of them. Flowchart keeps the builder; sequence keeps its own. <b>1.70.0</b></span></li>
+          <li><b>A diagram exported as PDF was a picture</b><span>Zero extractable text, zero embedded fonts, three times over. The export fidelity gate now reads <code>fonts=4 images=0 &#8594; vector</code> on all five types. The six remaining reds in that gate are pie, gantt and sequence through PowerPoint and Excel, which are pictures and say so on screen before you download. <b>1.67.0</b></span></li>
+          <li><b>Three things that broke or claimed work they never did</b><span>On a gantt, pressing the style control now raises no &#8220;Style applied to block&#8221; and leaves the source byte-identical &#8212; it says the type is code-first and that nothing was changed. The kanban status line no longer tells you to add a flowchart declaration; it names your own type back to you. <b>1.67.0</b></span></li>
+          <li><b>The honesty pass</b><span>A pie chart is titled &#8220;Pie chart Preview&#8221;, not &#8220;Flowchart Preview&#8221;. Choosing Kanban, Mindmap or Block keeps it, with New starter enabled. The type chip is visible and its tooltip is honest per type &#8212; &#8220;Full visual editing is available&#8221; only where it is. <b>1.67.0&#8211;1.68.0</b></span></li>
+          <li><b>Fit fitted only the width</b><span>A 3,208px-tall diagram now comes down to 545px and fits both axes, under a tooltip that says &#8220;Fit the whole diagram in the pane&#8221;. Fitting the width is a separate button with its own wording. <b>1.67.0</b></span></li>
+        </ul>
+      </div>
   </section>
 
   <section>
     <div class="sec-head">
       <h2>Cheap &#8212; when we are passing</h2>
       <p class="sec-note">Small, real, and not worth a round of their own.</p>
-      <span class="tally">3 items</span>
+      <span class="tally">2 items &#183; 1 closed</span>
     </div>
     <div class="queue">
 
       <div class="item" data-sev="3">
-        <div class="rank">11</div>
+        <div class="rank">07</div>
         <div class="body"><b>The tab icon is not the brand mark</b>
           <p><b>The title half of this is done</b> &#8212; the window carries the diagram you are in, and since 1.70.0 it prefers the name you typed over the one the app generates, keeping up while you are still typing it. What is left is the icon.</p>
           <p><b>The icon is the wrong mark:</b> your brand guide says the symbol is three rules ending in a <i>square, a circle and a diamond</i>; the one in the tab has three rules all ending in squares, on a white tile, in a dark tab strip. The pack already contains <code>ico/favicon.ico</code> for 16&#8211;48 px and <code>06_siren_app_icon_dark.svg</code> made for exactly this &#8212; and the app embeds <b>none</b> of the brand files. A <code>theme-color</code> would tint the browser chrome to match; there is none.</p></div>
         <div class="effort">next</div>
       </div>
 
-      <div class="item" data-sev="3">
-        <div class="rank">12</div>
-        <div class="body"><b>The zoom button says one thing and does another</b>
-          <p>Its tooltip and the tour say it fits the whole diagram; the code fits the width. On a tall chart the click appears to do nothing.</p></div>
-        <div class="effort">next</div>
-      </div>
 
       <div class="item" data-sev="3">
-        <div class="rank">13</div>
+        <div class="rank">08</div>
         <div class="body"><b>The welcome tour follows you into Docs &#8212; and it also eats what you type</b>
           <p>Open Docs while the first-run tour is up and card 1 of 6 stays on screen at 300&#215;163, over the Docs sidebar, explaining a Visual / Code switch that is no longer there.</p>
           <p><b>Measuring that turned up something far worse, and it is round 11&#8217;s first job.</b> The card takes the keyboard about 2.3 seconds in: typing &#8220;Review request&#8221; leaves &#8220;Revie&#8221;, focus lands on the tour&#8217;s Next button, and the person&#8217;s own keystrokes advance the tour to 3/6. It stayed invisible for a full day of testing because the shared harness dismisses tour cards during settle, so every probe built on it was blind to it.</p></div>
@@ -1032,14 +1006,14 @@
     <div class="queue">
 
       <div class="item" data-sev="2">
-        <div class="rank">14</div>
+        <div class="rank">09</div>
         <div class="body"><b>Opening the app takes twice as long as it did</b>
           <p>Still unmeasured, and tonight showed why. Three runs of the <i>same</i> build gave first paint at <b>852, 952 and 2,388 ms</b> &#8212; a 2.8&#215; spread, with 1.65.0 and 1.66.0 overlapping completely. The machine was busy with agents and browsers, so no reading taken tonight means anything. This needs one careful measurement on a quiet machine before anyone works on it, and until then <b>no number about boot should be believed</b> &#8212; including the 717 ms that started this item.</p></div>
         <div class="effort">watch</div>
       </div>
 
       <div class="item" data-sev="3">
-        <div class="rank">15</div>
+        <div class="rank">10</div>
         <div class="body"><b>Small things the agents disclosed rather than hid</b>
           <p>The Docs block menu scrolls on a short screen (1100&#215;620). &#8220;Document type&#8230;&#8221; opens at the page&#8217;s left edge. The confirm button is red even when the choice loses nothing.</p></div>
         <div class="effort">watch</div>
