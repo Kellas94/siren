@@ -978,7 +978,8 @@ started with `nohup ... &` from a Bash call does not survive - start it with
 Live = **1.68.0**, 8,552,615 bytes, `F93B2CD12E05297907D01D965D21C39683048C344FB830797849662AB3886A56`.
 Snapshot `releases\SIREN_v1.68.0.html`. Backup of 1.67.0 at `backups\siren_pre_1_68_0.html`.
 Twelve steps, replayed byte-exact from FROZEN_R6_BASE twice; order in
-`pendingound7\APPLY_ORDER_COMBINED.md` (steps 1-8 there, plus label-class, honesty, theme menu, ship).
+`pending
+ound7\APPLY_ORDER_COMBINED.md` (steps 1-8 there, plus label-class, honesty, theme menu, ship).
 
 **Round 7 did not pass verification as delivered.** A 13-agent adversarial pass found two things the
 handback claimed as done and were not, both confirmed by me independently:
@@ -1017,6 +1018,56 @@ as Advanced Mermaid across the chip, the title and the context menu. A title typ
 family default is still rewritten, and Undo after a type change wipes a typed title, because title
 edits never enter the undo stack — both need a real "a person touched this" flag. Swimlane/Ishikawa
 identity ends at the first structural edit; the release note says what survives instead.
+
+## 2026-08-25 (afternoon) - three rounds verified, three sent back, and the tail closed
+
+Live is **1.69.0**. Working build sits at `pending\slotpp.html`, which is round 9 plus six
+patches; round 10 is out with Codex against `codex\FROZEN_R10_BASE.html`
+(`BAC0C5591C5F9CAECDCD031BE38FFE4EF6221F06C239437CDBFB7BF9BADFF9AB`).
+
+**Not one of rounds 7, 8 or 9 passed verification as delivered.** Round 7 had two of four jobs
+wrong. Round 8 turned on a Guided row that wrote a Mermaid node inside YAML front matter and counted
+it. Round 9 stored a literal `&nbsp;` in every paragraph that ended in a space, so the phrase on
+screen never matched a search while the string "nbsp" did. Every one was caught by driving the build
+with real keyboard and mouse - none of them by reading the diff, and none by the handbacks, which
+were honest and thorough and still wrong.
+
+**The gate in 1.69.0 was mine and it was too narrow.** `index <= frontmatterEnd` stops at the closing
+delimiter, so the blank line beneath it was never covered. It had been protected by accident: the old
+build could not see front matter after a leading blank, called the whole document code-first, and
+disabled every row for the wrong reason. Round 9 fixed the detection correctly and the unguarded row
+came back with the body rows. Now `tools\patch_declaration_gate.py` reads "at or before the
+declaration", which is what is actually true - nothing goes above the line that names the diagram.
+
+**The second editor slot** now says Build, Sequence or Guided and goes where the label says. Measured
+first: of twenty types the builder can edit three, sequence has its own editor, and sixteen opened a
+panel announcing "Build without code" before explaining it could make none. Guided was verified as a
+real destination before the change, not assumed - rows on all twenty, count equal to source lines on
+every one. The app already carried the idea (`// The tab names itself after the builder it actually
+opens`) with two answers available to it; the patch extends that line rather than adding a second
+writer, because a first draft did the latter and lost every time.
+
+**Themes.** `wonders` night and day shipped into the working build, from measured contrast. The star
+now marks every animated theme (KPMG Blue was the only one missing it) and carries a legend plus
+`content: "º6" / "animated"` - it was a pseudo-element, so a screen reader never mentioned it.
+Five groups became four: "Signature" held seventeen places with weather and "Worlds" held four static
+palettes, so the names were nearly swapped, and what separated them - motion - is already written on
+every row. 39 themes, nothing lost, quick view still hides nothing.
+
+**A theme lives in four places that must agree**: the visible menu, BOTH legacy selects, and
+`themePresets`. Missing the selects is why the wonders palette reached the chrome, the scene, the
+star and `color-scheme` while the diagram kept Dark's colours - `syncStateFromControls()` does
+`state.theme = el.themePreset.value` before every render. Found only by a positive control: matrix
+gave rgb(2,26,8), kpmg gave rgb(237,244,255), both new themes gave Dark's rgb(23,34,48).
+
+**The list is staler than it looks.** The "cheap, when passing" section had four items; three were
+already fixed. Earlier, eight of sixteen triaged items were already fixed or not reproducible. Re-
+measure a section before handing it to anyone.
+
+**Harness discipline, said again because it cost five false readings in one day:** a single-backslash
+regex inside a JS template literal collapses, so `/\s+/` becomes `/s+/` and eats the letter s out of
+your own output. It reported a legend as "move  gently" and a panel as "Add block , choo e their
+ hape ". Write probe files with the Write tool, never a shell heredoc.
 
 ## Two pieces held, waiting on Codex (added 25 August)
 
