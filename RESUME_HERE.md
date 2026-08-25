@@ -1,3 +1,105 @@
+# Resume here — 26 August 2026 (three rounds held, round 14 staged)
+
+**Read this block first.** Everything below it is history.
+
+## Nothing has shipped since 1.70.0, and that is the correct state
+
+**Live app:** `C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html` — **v1.70.0**, 8,591,186 bytes,
+SHA-256 `2F2DA0BDA18427E3262EB97D06401723183D1938A09083654C64AFE791223030`. Verified unchanged today.
+Snapshot `releases\SIREN_v1.70.0.html`.
+
+Three rounds are held. None of their defects reached the live file.
+
+| round | what it was | state | why |
+|---|---|---|---|
+| 11 | AV–BA: tour focus, PPTX small type, Docs references, block markers | **held** | two regressions, four false promises |
+| 12 | BB–BD: offline mode, confirmation colour, gate repair | **held** | offline switch is a no-op under a URL fragment; seven destroying actions repainted safe |
+| 13 | BE–BJ: the six repairs to round 11 | **held** | four of six broke the capability they repaired |
+
+**Round 14 is written and staged**: `codex\PROMPT_ROUND14.txt` + `codex\ROUND14_BRIEF.md`, base
+`codex\FROZEN_R14_BASE.html` (= round 13's output, `60585A8B…`, 8,601,839 bytes). **It adds nothing
+— eight deletions**, each removing or narrowing something round 13 added. Nothing needs designing.
+
+## Everything is reproducible from tracked artefacts
+
+- `codex\FROZEN_R11_BASE.html` is **byte-identical** to `releases\SIREN_v1.70.0.html` (tracked).
+- `FROZEN_R13_BASE` = that + `codex\round11_patches\` (tracked, SHA-pinned).
+- `FROZEN_R14_BASE` = that + `codex\round13_patches\` (tracked, SHA-pinned).
+
+Copies also sit in `backups\2026-08-26_three_rounds_held\` with their hashes in the filenames.
+
+## One thing of mine is finished, verified and NOT shipped
+
+`tools\patch_guided_tab_selected.py` — anchor-guarded, applies to 1.70.0 → `C8395903…`. Build at
+`backups\2026-08-26_three_rounds_held\my_guided_tab_fix_UNSHIPPED.html`.
+
+It fixes two dead buttons the owner reported from a screenshot: pressing **Guided** lit up **Code**
+instead (the tab you pressed stayed dark — measured on pie, kanban and every non-flowchart type),
+and pressing **Code** while the Guided rows were showing did nothing at all. Both measured before and
+after with positive controls. **It should ride out with whatever ships next.**
+
+## What round 14 must delete, in one line each
+
+1. the 520ms timer at `37930` — kills five defects at once
+2. the drag-suppress guard back below the marker branch, `37910`
+3. exclude the marker from the body-drag press
+4. the `fullyVisible` refusal at `62473-62480` — kills two blockers
+5. `selectVisualNode` + `canvasFocusBlock` from the arrival, `62458-62459`
+6. the Tab branch at `22651-22658`
+7. widen the Escape guard at `22643`, or move it off the capture phase
+8. stop disabling the menu row on `nodeResolvable` at `29542`
+
+Three of those lose or falsify typed words and are the reason round 11 cannot ship: Escape-to-cancel
+became Escape-to-commit; the 520ms timer swallows typing mid-word and leaves a broken fragment in the
+source; and arriving at a block overwrites an unapplied label with no undo, because the source never
+changed so there is nothing to undo.
+
+## Round 12 needs rework, and the shape of it was decided by the owner
+
+**Two builds.** The offline one does **not contain the external host at all** — not opt-in, not
+default-on, absent from the code and the policy, so a firm's IT department can verify it by reading
+one line. ELK leaves that build with it. A second build labelled **Connected** keeps it.
+
+That decision deletes three of BB's five blockers rather than repairing them. Two routes reached it
+at once: an outside competitive analysis said an opt-in switch is not procurement-true, and the
+verification then found the opt-in switch does not work — under any URL fragment it silently does
+nothing while writing the opposite preference, so somebody leaving strict mode is told on screen they
+are still protected and the protection drops by itself at the next reload. **I reproduced that
+myself.** Round 12's BC also repainted seven destroying actions as safe and must be redone.
+
+## The plan, and the interface answer
+
+Two artifacts hold the thinking, both current:
+
+- **the consolidated plan** — https://claude.ai/code/artifact/178a9983-6f3b-4e89-a245-8cb9c7781dbd
+  27 items from four investigations, ranked by one rule: anything that loses work or says what the
+  app cannot do comes before anything merely better.
+- **the interface investigation** — https://claude.ai/code/artifact/15e89d8b-8039-4e05-a78b-9f7e06cd2cee
+  Clutter was fought on the wrong axis. **112 of 260 style controls do nothing** on the diagram in
+  front of you and 79 of those give no sign at all.
+- the worklist stays at https://claude.ai/code/artifact/f6a81e75-4aba-4094-9f3e-1e66f5710db4
+
+**The UI recommendation, in three moves:** show only the style controls that work on this diagram
+type (hide, never grey — 13 on a flowchart, 5 on a sequence, 3 on C4); put a visible bar above the
+preview whose chips show their current values and expand in place; and keep one control per verb.
+
+**One question is open and it blocks the second move.** If what the owner touches most is genuinely
+nine settings, the expandable chip bar wins. If it is three, put those three flat on the bar with no
+expansion — 40px, zero clicks, and it beats the chips outright. He was asked and has not answered.
+
+## Method notes worth carrying
+
+- The **refute** pass is earning its cost every round. Round 13's first pass measured that BE let
+  gestures through to the block — true. The skeptic asked a different question: *does the marker still
+  do its own job?* It did not.
+- Three times now Codex has corrected a diagnosis in my brief and been right each time. The last:
+  I said the deck route pre-splits label lines and the diagram route does not. Both routes can hand
+  over one flat line; the guard belongs on `shape.lines.length`, not on the caller.
+- `au_lib.js` at `qa_exports\r10_verify\` is **mine**, not his. I read a report that named it and
+  passed the blame on without checking. Fixed, with the reason in the code.
+
+---
+
 # Resume here — 25 August 2026 (v1.70.0 SHIPPED, round 11 staged)
 
 **Read this block first.** Everything below it describes earlier releases and is kept for history.
