@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const EXPECTED_INPUT_SHA256 = '3E7AFBE6F60BA1E464C5C758AABD5F2DF68F26F1B3F8572C723FFCEFBB0BB88D';
-const EXPECTED_OUTPUT_SHA256 = 'AAE20B23D195C73C385040074BEB9B92C923E49C1AEE9FB83C56DC1C5CEBA52B';
+const EXPECTED_INPUT_SHA256 = '178F8BB844AD532FC6C0CAA9E6D61244FB5B82F78790B5722B925215B349E3F1';
+const EXPECTED_OUTPUT_SHA256 = '7E1A4A4FF0B30B853227C00F6FF770A1BB315574D08D539368E9F913C7C6AD9B';
 const target = path.resolve(process.argv[2] || '');
 const requireTrue = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase();

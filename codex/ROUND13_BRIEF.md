@@ -2,6 +2,19 @@
 
 Read `ROUND8_METHOD.md` first; the method is unchanged.
 
+> **Round 12 is also held**, and one decision in it is the owner's rather than yours. Its verification
+> found that the offline switch does nothing whenever the URL carries a fragment — and writes the
+> opposite preference while doing nothing, so somebody leaving strict mode is told on screen they are
+> still protected and the protection then drops by itself at the next reload. The cause is one line:
+> `location.replace(destination.href)` where `destination.href === location.href` is a same-document
+> navigation, so the head bootstrap never re-runs.
+>
+> **You will not be asked to fix that**, because the owner has decided the offline product should not
+> contain the external host at all — not opt-in, not default-on, absent from the code and from the
+> policy. Two builds: one that physically cannot reach out, one labelled Connected that keeps ELK.
+> That deletes the toggle rather than repairing it. The mode you built was careful work and the brief
+> asked for it; the brief was asking for the wrong shape. That is mine, not yours.
+
 **Round 11 is held, not rejected.** Four of its six jobs did what they claim at the core and two of
 them are the best work in this project so far. It is held because two jobs shipped a regression
 beside their fix, and because four sentences the app now says are sentences it cannot keep.

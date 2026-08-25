@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const EXPECTED_INPUT_SHA256 = '539C3D5F98BCDB465895F2CAE3222E2BE16F2318234D5F667F8E54370F4E4697';
-const EXPECTED_OUTPUT_SHA256 = '3E7AFBE6F60BA1E464C5C758AABD5F2DF68F26F1B3F8572C723FFCEFBB0BB88D';
+const EXPECTED_OUTPUT_SHA256 = '178F8BB844AD532FC6C0CAA9E6D61244FB5B82F78790B5722B925215B349E3F1';
 const target = path.resolve(process.argv[2] || '');
 const requireTrue = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase();
@@ -92,7 +92,7 @@ function main() {
         const plainMarkerClick = Boolean(workpaperMarker)
           && event.button === 0 && event.detail <= 1
           && !connectMode && !edgeWaypointMode
-          && !platformModifierClick(event) && !event.shiftKey && !event.altKey;
+          && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey;
         if (plainMarkerClick) {
           const nodeId = workpaperMarker.getAttribute('data-t-workpaper-node') || '';
           const diagramId = state.activeDiagramId;
@@ -146,6 +146,8 @@ function main() {
     'plain marker click gate changed');
   requireTrue((text.match(/!connectMode && !edgeWaypointMode/g) || []).length === 1,
     'active canvas modes are not excluded from the marker route');
+  requireTrue((text.match(/!event\.ctrlKey && !event\.metaKey && !event\.shiftKey && !event\.altKey/g) || []).length === 1,
+    'marker route does not require a genuinely unmodified click on every platform');
   requireTrue((text.match(/\}, 520\);/g) || []).length >= 1,
     'marker single-click arbitration delay missing');
   requireTrue((text.match(/clearTimeout\(workpaperMarkerClickTimer\);/g) || []).length === 3,
