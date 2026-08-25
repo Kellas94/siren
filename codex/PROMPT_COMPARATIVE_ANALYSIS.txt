@@ -1,0 +1,134 @@
+COMPARATIVE ANALYSIS — T-Industries SIREN
+
+You are being asked for a hard, evidence-based competitive and positioning analysis. Research the
+current market yourself; do not answer from memory of how these tools worked two years ago. Cite
+what you check, with dates. The person commissioning this is the tool's author and would rather be
+told it has no reason to exist than be flattered into building the wrong thing for another month.
+
+Do not open with a summary of what I have written below. Start with your answer.
+
+────────────────────────────────────────────────────────────────────────────
+WHAT THE THING IS
+
+A single HTML file, 8.59 MB, opened by double-clicking it. No installation, no account, no server,
+no build step, no network. Mermaid 11.16.1 is embedded inside it, so it renders diagrams with no
+internet at all. Content-Security-Policy is `default-src 'none'` with a strict allow-list.
+
+It is built by and for a KPMG auditor who uses it on real engagements, and is intended to be sold —
+a hosted version for a general audience, and the offline single-file version separately.
+
+It does three things, in this order of intent:
+
+  1. DIAGRAMS. Twenty Mermaid types (flowchart, sequence, class, state, ER, C4, gantt, timeline,
+     kanban, mindmap, gitgraph, journey, requirement, XY, pie, block, architecture, swimlane,
+     ishikawa, plus raw Mermaid). Three of those twenty have a full click-and-drag visual builder;
+     sequence has its own form-based editor; the other sixteen are edited as code, or through a
+     line-by-line "Guided" editor where every line's parts are clickable. 39 visual themes, several
+     with slow ambient animation behind the canvas.
+
+  2. DOCUMENTS ("Docs" / workpapers). A block-based rich text editor living beside the diagram, with
+     sign-off fields (prepared by / reviewed by), typed document kinds, and two-way links between a
+     document and a specific BLOCK inside a diagram — click a reference chip and it takes you to
+     that block; right-click a block and it offers the documents attached to it.
+
+  3. PRESENTATION AND EXPORT. A slide deck built from the diagrams, and export to PDF, PowerPoint,
+     Excel, Word, SVG, PNG, CSV, Markdown and a project file.
+
+────────────────────────────────────────────────────────────────────────────
+WHAT HAS ACTUALLY BEEN MEASURED (not claimed — these are instrument readings)
+
+  - Diagram PDF export carries real embedded fonts and zero images: `fonts=4 images=0` on all five
+    tested types. Text is selectable and searchable; Romanian diacritics survive as characters.
+  - PowerPoint export of a 30-block Romanian audit map: 43 NATIVE editable shapes, no picture,
+    diacritics as text. Excel: one sheet per diagram, 43 native shapes plus a 32-column audit table,
+    2,016 text cells.
+  - Three diagram types (pie, gantt, sequence) still export to PowerPoint and Excel as a single
+    picture. The app says so on screen before you download rather than hiding it.
+  - Through boot, typing a diagram, changing theme, opening the documents editor and opening the
+    export dialog: ZERO external network requests. The only outbound request in the entire product
+    is an optional alternative layout engine, fetched only if the user explicitly selects it.
+
+────────────────────────────────────────────────────────────────────────────
+WHAT IT DOES NOT DO — read this before answering, it changes the analysis
+
+  - No accounts, no login, no permissions. Planned, not present.
+  - No real-time collaboration of any kind. No comments-from-other-people, no presence, no merge.
+  - No mobile app; it is a web page that works on a phone.
+  - No AI features. No natural-language "make me a diagram".
+  - No template library or content marketplace.
+  - No integrations: no Jira, Confluence, SharePoint, Slack, Google Drive.
+  - No version control beyond in-app undo and local snapshots.
+  - Sixteen of its twenty diagram types cannot be edited by dragging; you edit text or guided rows.
+  - The interface is the current weak point and the author knows it. Frequently-used controls have
+    been progressively moved into menus and collapsible sections to reduce clutter, and the result is
+    that common actions now cost three presses and two acts of reading. Formatting options are
+    offered on diagram types they cannot affect.
+
+────────────────────────────────────────────────────────────────────────────
+CONSTRAINTS THAT ARE NOT NEGOTIABLE
+
+Anything you recommend must survive these, or you must say explicitly that it requires breaking one:
+
+  - It stays a single self-contained HTML file for the offline product. No npm, no bundler, no CDN,
+    no external fonts, no telemetry.
+  - Client material is opened inside it. "Can this document phone home?" is a procurement question,
+    not a feature question.
+  - Nothing in the product may promise what it cannot deliver. A tooltip, a chip, a count, a menu
+    label or a disabled state that overstates is treated as a defect of the same severity as a crash.
+
+────────────────────────────────────────────────────────────────────────────
+THE QUESTIONS, IN ORDER OF WHAT I NEED MOST
+
+1. WHERE DOES THIS ACTUALLY STAND ALONE, AND WHERE IS IT ONE OF FIFTY?
+   Split the product into its capabilities and put each into one of three buckets: genuinely rare,
+   matched by a few, and commodity. Be specific about who matches it. If "diagram → editable Office
+   deliverable, offline, single file" is in fact offered by something I have not named, say so and
+   name it — that is the single most valuable thing you can tell me.
+
+2. WHO ELSE CLAIMS THE DIAGRAM-TO-DELIVERABLE GROUND?
+   Not diagram editors — tools that take you from a diagram to something you hand to a client or a
+   regulator. Consider at minimum: Lucidchart, draw.io/diagrams.net, Miro, Visio, Whimsical,
+   Excalidraw, Mermaid Live/Mermaid Chart, Eraser, Multiplayer, Structurizr, ICEPANEL, Terrastruct/D2,
+   plus the audit and GRC side — AuditBoard, Workiva, CaseWare, TeamMate, Diligent — where "the
+   workpaper" is the actual product. Which of these produce *editable* Office artefacts rather than
+   embedded pictures? Verify rather than assume; this is where most tools quietly fail.
+
+3. WHAT IS THE HONEST ONE-SENTENCE POSITION?
+   Give me two or three candidate sentences a user could repeat to a colleague, and say which you
+   would pick and why. Then say what each sentence commits the product to building, and what it
+   commits it to abandoning.
+
+4. WHAT WOULD HAVE TO BE TRUE FOR AN AUDITOR TO SWITCH?
+   Not features — conditions. What does a Big Four engagement team actually require before a file
+   like this may touch client data? What kills adoption in that setting regardless of quality? Where
+   does "no server, no account" help, and where is it disqualifying (retention, audit trail,
+   e-discovery, independence, sign-off evidence)?
+
+5. THE INTERFACE, AND WHETHER BEAUTY MATTERS HERE.
+   The author's position is that a tool which is not intuitive and not enjoyable will not be used at
+   all, and that visual quality is itself part of enjoyment — Apple as the reference. Research
+   whether that holds in PROFESSIONAL tools specifically, or only in consumer ones. Is there evidence
+   that visual craft drives adoption or retention in tools people are paid to use? Where is the
+   actual bar in this category today — what do users notice, and what do they not? And what is the
+   difference between a tool that looks good in a screenshot and one that feels good in the hand?
+
+6. WHAT SHOULD BE KILLED?
+   Given everything above, what in the current product is effort spent on ground that cannot be won?
+   Name it plainly. Twenty diagram types, 39 themes, a presentation mode, an Excel export — say which
+   of these are the reason to exist and which are weight.
+
+7. THE THREE-YEAR RISK.
+   What makes this obsolete? Be concrete: a specific competitor move, a platform change, a shift in
+   how this work is done. Not "AI will change everything" — what specifically, and what would be the
+   first visible sign of it.
+
+────────────────────────────────────────────────────────────────────────────
+HOW TO ANSWER
+
+  - Evidence, with links and dates. Where you are inferring rather than verifying, mark it as such
+    in that sentence, not in a disclaimer at the end.
+  - Where two of my stated facts conflict with what you find, say which of mine is wrong.
+  - No summary of my brief, no restating the question, no encouragement. If the honest answer to
+    question 1 is "nothing here is rare", that is the most useful thing you could write.
+  - End with the three things you would do first if this were yours, ranked, each with what it
+    replaces or removes — not just what it adds.
