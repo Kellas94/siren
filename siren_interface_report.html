@@ -1,0 +1,459 @@
+<title>The Wrong Axis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --ground:      #F4F6F9;
+    --plate:       #FFFFFF;
+    --sunk:        #EDF1F6;
+    --ink:         #0B1B2E;
+    --ink-soft:    #46617E;
+    --ink-faint:   #7B93AC;
+    --rule:        #D8E0EA;
+    --rule-strong: #BDCAD9;
+    --brand:       #071B33;
+    --accent:      #1E6FB8;
+
+    --live:        #16704A;
+    --live-bg:     #D6EDE1;
+    --silent:      #B3403A;
+    --silent-bg:   #F7DEDC;
+    --said:        #B26A00;
+    --said-bg:     #FBEBD4;
+
+    --shadow: 0 1px 2px rgba(11,27,46,.06), 0 8px 24px -12px rgba(11,27,46,.18);
+    --radius: 10px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #071B33;
+      --plate:       #0C2440;
+      --sunk:        #09203A;
+      --ink:         #F3F7FB;
+      --ink-soft:    #A6C0D9;
+      --ink-faint:   #6E8CAB;
+      --rule:        #16375C;
+      --rule-strong: #1E4874;
+      --brand:       #F3F7FB;
+      --accent:      #6FB3F0;
+
+      --live:        #6FD3A6;
+      --live-bg:     #0D2E22;
+      --silent:      #F0837C;
+      --silent-bg:   #331614;
+      --said:        #F0B45E;
+      --said-bg:     #33260E;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #071B33;
+    --plate:       #0C2440;
+    --sunk:        #09203A;
+    --ink:         #F3F7FB;
+    --ink-soft:    #A6C0D9;
+    --ink-faint:   #6E8CAB;
+    --rule:        #16375C;
+    --rule-strong: #1E4874;
+    --brand:       #F3F7FB;
+    --accent:      #6FB3F0;
+
+    --live:        #6FD3A6;
+    --live-bg:     #0D2E22;
+    --silent:      #F0837C;
+    --silent-bg:   #331614;
+    --said:        #F0B45E;
+    --said-bg:     #33260E;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 44px 24px 96px; display: flex; flex-direction: column; gap: 48px; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+
+  h1 {
+    margin: 8px 0 0;
+    font-size: clamp(30px, 5vw, 46px); font-weight: 700;
+    letter-spacing: -.025em; line-height: 1.1;
+    text-wrap: balance; color: var(--brand);
+  }
+
+  .thesis { margin: 18px 0 0; max-width: 66ch; font-size: 17px; color: var(--ink-soft); }
+  .thesis b { color: var(--ink); font-weight: 600; }
+
+  .stamp {
+    display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px; color: var(--ink-faint); font-variant-numeric: tabular-nums;
+  }
+  .stamp b { color: var(--ink-soft); font-weight: 500; }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2 {
+    margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--rule-strong);
+    font-size: 20px; font-weight: 600; letter-spacing: -.012em;
+  }
+  h2 span { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--ink-faint); font-weight: 400; margin-left: 10px; }
+
+  p { margin: 0; max-width: 74ch; }
+  p + p { margin-top: 12px; }
+
+  .card {
+    background: var(--plate); border: 1px solid var(--rule);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px;
+  }
+
+  /* ---- the number band ---- */
+  .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .fig { background: var(--plate); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+  .fig .n {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 30px; font-weight: 600; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .fig.bad .n { color: var(--silent); }
+  .fig .l { margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
+
+  /* ---- the matrix ---- */
+  .matrix-scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--plate); box-shadow: var(--shadow); }
+  /* Sized to its content, not stretched: at 100% the thirteen columns spread past the
+     container and the centrepiece arrived half cut off. */
+  table.matrix { border-collapse: collapse; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; width: auto; min-width: 100%; }
+  table.matrix th, table.matrix td { padding: 0; }
+  table.matrix thead th {
+    text-align: left; font-weight: 500; color: var(--ink-faint);
+    padding: 12px 4px 10px; vertical-align: bottom; white-space: nowrap;
+  }
+  /* The label is taken OUT OF FLOW. A rotated block still contributes its unrotated width to
+     the column, so a 118px label made every column 118px wide and the table 2,091px in a 990px
+     container - the picture arrived cut in half. transform runs after layout; position does not. */
+  table.matrix thead th.rot { position: relative; height: 122px; width: 28px; min-width: 28px; }
+  table.matrix thead th.rot > div {
+    position: absolute; bottom: 8px; left: 50%;
+    transform-origin: 0 0; transform: rotate(-90deg) translateX(0) translateY(-50%);
+    white-space: nowrap; font-size: 10.5px;
+  }
+  table.matrix tbody th {
+    text-align: left; font-weight: 500; color: var(--ink);
+    padding: 0 14px 0 16px; white-space: nowrap; font-size: 11.5px;
+  }
+  table.matrix tbody tr { border-top: 1px solid var(--rule); }
+  table.matrix tbody tr:hover { background: var(--sunk); }
+  .cell { display: block; width: 20px; height: 20px; margin: 3px auto; border-radius: 4px; }
+  .cell.L { background: var(--live-bg);   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--live) 45%, transparent); }
+  .cell.S { background: var(--silent-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--silent) 55%, transparent); }
+  .cell.D { background: var(--said-bg);   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--said) 50%, transparent); }
+  /* The tally soaks up the slack from min-width:100%, so the type names stay next to their
+     own row of cells instead of being pushed a hundred pixels away from it. */
+  .tally { width: 100%; padding: 0 16px 0 12px; color: var(--ink-faint); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--ink-soft); }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 7px; vertical-align: -2px; font-style: normal; }
+  .legend i.L { background: var(--live-bg);   box-shadow: inset 0 0 0 1px var(--live); }
+  .legend i.S { background: var(--silent-bg); box-shadow: inset 0 0 0 1px var(--silent); }
+  .legend i.D { background: var(--said-bg);   box-shadow: inset 0 0 0 1px var(--said); }
+
+  /* ---- ranked changes ---- */
+  .change { background: var(--plate); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px 22px; display: grid; grid-template-columns: 42px 1fr; gap: 4px 16px; }
+  .change .rank { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 22px; font-weight: 600; color: var(--ink-faint); line-height: 1.2; }
+  .change h3 { grid-column: 2; margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .change .body { grid-column: 2; display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .change dl { margin: 6px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 13.5px; }
+  .change dt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px; }
+  .change dd { margin: 0; color: var(--ink-soft); }
+  .change dd b { color: var(--ink); font-weight: 600; }
+  .cost { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; color: var(--ink-faint); }
+
+  /* ---- verdicts ---- */
+  .verdict { background: var(--plate); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; }
+  .verdict h3 { margin: 0 0 4px; font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .verdict .answer { font-size: 19px; font-weight: 600; letter-spacing: -.012em; margin-bottom: 10px; }
+  .verdict p { font-size: 14px; color: var(--ink-soft); }
+  .verdict p b { color: var(--ink); font-weight: 600; }
+
+  code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .87em; background: var(--sunk); padding: 1.5px 5px; border-radius: 4px; }
+
+  .checked { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .checked > div { background: var(--plate); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .checked h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: .07em; text-transform: uppercase; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .checked.ok h4 { color: var(--live); }
+  .checked ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13.5px; color: var(--ink-soft); }
+  .checked li b { color: var(--ink); font-weight: 600; }
+
+  footer.page { border-top: 1px solid var(--rule); padding-top: 18px; color: var(--ink-faint); font-size: 13px; max-width: 72ch; }
+
+  @media (max-width: 620px) {
+    .change { grid-template-columns: 1fr; }
+    .change .rank { grid-column: 1; }
+    .change h3, .change .body { grid-column: 1; }
+    .change dl { grid-template-columns: 1fr; gap: 2px; }
+    .change dt { padding-top: 8px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">T-Industries SIREN &middot; interface investigation</div>
+    <h1>Clutter was fought on the wrong axis</h1>
+    <p class="thesis">Every reduction of the last rounds moved controls further <b>away</b> — twelve
+    toolbar controls became four, the Style card became a shut fold inside a shut fold — while the set
+    of controls itself never shrank by a single item. The same panel is rendered on all twenty diagram
+    types, so <b>112 of its 260 type-and-control pairs change nothing at all</b>, and 79 of those press
+    back completely normally. Depth-hiding never asks whether a control applies, only whether it fits.
+    So it took away the things used every session and kept every control that does nothing.</p>
+    <div class="stamp">
+      <span><b>25 August 2026</b></span>
+      <span>measured on <b>v1.70.0</b></span>
+      <span>five investigations, <b>345</b> tool calls</span>
+      <span>matrix recomputed independently</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>What the Style panel actually offers <span>260 pairs, 20 types, 13 controls</span></h2>
+
+    <div class="figures">
+      <div class="fig"><div class="n">148</div><div class="l">pairs that change the diagram in front of you</div></div>
+      <div class="fig bad"><div class="n">112</div><div class="l">that change nothing — 43% of the panel</div></div>
+      <div class="fig bad"><div class="n">79</div><div class="l">of those give <b>no sign at all</b>: enabled, full opacity, no hint, no toast, no status line</div></div>
+      <div class="fig"><div class="n">1</div><div class="l">honestly disabled control in the whole app — and its stated reason is false on most types</div></div>
+    </div>
+
+    <div class="matrix-scroll">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="rot"><div>curve</div></th>
+            <th class="rot"><div>font family</div></th>
+            <th class="rot"><div>font size</div></th>
+            <th class="rot"><div>font weight</div></th>
+            <th class="rot"><div>palette colour</div></th>
+            <th class="rot"><div>title</div></th>
+            <th class="rot"><div>alignment</div></th>
+            <th class="rot"><div>density</div></th>
+            <th class="rot"><div>node spacing</div></th>
+            <th class="rot"><div>rank spacing</div></th>
+            <th class="rot"><div>routing</div></th>
+            <th class="rot"><div>legend</div></th>
+            <th class="rot"><div>numbering</div></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+
+    <div class="legend">
+      <span><i class="L"></i>changes the diagram</span>
+      <span><i class="S"></i>does nothing, and says nothing</span>
+      <span><i class="D"></i>does nothing, but does say so</span>
+    </div>
+
+    <p><b>Alignment is dead on 18 of the 20 types</b> and it is the one control the app disables
+    honestly — under a reason, <code>spacing and routing still apply</code>, that is itself false on
+    most of them. Routing is dead on 16, numbering on 15, node spacing on 14. Only <b>flowchart</b>
+    and <b>pie</b> use the whole panel. <b>C4 uses three controls of thirteen</b> and is offered all
+    thirteen.</p>
+  </section>
+
+  <section>
+    <h2>How far away it all is</h2>
+    <div class="card">
+      <p>Changing the diagram font is <b>three presses to bring it on screen and four to have changed
+      anything</b> — Inspect, then “Style · fonts, colours, legend”, then the Fonts fold, then the
+      control.</p>
+      <p style="margin-top:14px">Seven controls in the app have the word <i>Style</i> in their label.
+      Re-measured against the viewport rather than the layout: <b>not one of them is visible without
+      scrolling.</b> The nearest, a fold reading “Style · how this diagram looks”, sits 1,401px down.
+      The font control itself is at <b>1,925px</b>. The button actually labelled <code>⚙ Style</code>
+      is <code>display: none</code> behind a menu labelled Inspect, so the only signpost is a
+      tooltip — which does not exist on a touch screen.</p>
+      <p style="margin-top:14px">And a second cost that has nothing to do with distance: set a fill
+      colour in the Style panel, then click the block to look at it, and <b>the colour is gone with
+      no message</b>. Measured — <code>nodeFillColor</code> set to <code>#ff0000</code>, click the
+      block, back to <code>#172230</code>. The two things the app does say at that moment are a sync
+      count and a drag hint. Neither mentions what was just discarded.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Three changes, ranked by impact</h2>
+
+    <div class="change">
+      <div class="rank">01</div>
+      <h3>Make the Style panel type-true</h3>
+      <div class="body">
+        <p>Render only the controls that actually change <i>this</i> diagram type — per control, not
+        per fold. The panel then shows 13 on a flowchart, 5 on a sequence, 3 on C4, and the number of
+        controls on screen becomes a true statement about the diagram in front of you.</p>
+        <dl>
+          <dt>Today</dt><dd>A sequence diagram is offered node spacing, rank spacing, connector curve, routing, the palette swatches and class assignment. <b>All inert. All fully enabled.</b></dd>
+          <dt>Removes</dt><dd>Alignment entirely. The palette fold on the 13 types where it is inert. The spacing fold where none of its controls bite. Every hint that exists only to apologise for a control that should not have been rendered.</dd>
+          <dt>Note</dt><dd>The lookup table already exists — it is the measured matrix above.</dd>
+        </dl>
+        <div class="cost">several days</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <div class="rank">02</div>
+      <h3>The Look bar — and delete the depth it replaces</h3>
+      <div class="body">
+        <p>One permanently visible row above the preview. Each chip shows its <i>current value</i> at
+        rest — “Spacing Comfortable”, not “Spacing” — and expands in place into a tray that pushes the
+        preview down and never covers it. A chip with nothing relevant for the current type is absent,
+        not greyed.</p>
+        <dl>
+          <dt>Measured</dt><dd>The prototype is real and rendered: <b>47px at rest, 193px open</b>, tray bottom exactly at preview top, no overlap, zero console errors.</dd>
+          <dt>Why not flat</dt><dd>A flat row of nine controls costs 140px permanently — about 21% of the drawing area — and reflows every time the type changes. The chip bar costs 7%.</dd>
+          <dt>Removes</dt><dd>One of the two nested fold levels. The Style row in the Inspect menu. The hidden <code>⚙ Style</code> button and the CSS rule that hides it. Tour step 6, which is why the tour counts to six and shows four cards. And the duplicate direction control.</dd>
+        </dl>
+        <div class="cost">a week or more</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <div class="rank">03</div>
+      <h3>One control per verb</h3>
+      <div class="body">
+        <p>Two block editors carry the same ten fields and two identically labelled “Reset block”
+        buttons, with two different commit models — the inspector commits on change, the panel needs
+        “Apply to block”. That mismatch is what silently eats the fill colour above.</p>
+        <dl>
+          <dt>Same disease</dt><dd>Two controls named Guided, of which the working one reported itself unselected until this morning. A command palette harvesting 229 buttons, <b>181 of which are not on screen</b>.</dd>
+          <dt>Removes</dt><dd>The duplicate route, not the capability. Per-block styling belongs to the inspector; diagram-level styling to the bar.</dd>
+        </dl>
+        <div class="cost">several days</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The two questions that needed an answer, not a survey</h2>
+
+    <div class="verdict">
+      <h3>Hide, disable, or restructure?</h3>
+      <div class="answer">Hide. A control that cannot affect the diagram on screen is not rendered.</div>
+      <p>It is the same rule you stated yourself about the Guided button, applied to the other 111
+      cases. <b>Disable-with-a-reason loses on arithmetic</b>: it leaves all 79 silent controls on
+      screen, so nothing gets less dense, and it commits you to writing and maintaining 112 true
+      sentences — where the app’s single existing attempt is already false. Greying is right when
+      somebody expects a control to apply and can deduce how to enable it. That describes an unsaved
+      file, not a pie chart that will never accept connector routing.</p>
+      <p style="margin-top:12px"><b>Two guards.</b> The panel is never empty — title, font and font
+      size work on all twenty types. And the gate is per control, not per fold: the prototype failed
+      this exact test on gitGraph, showing a dead “Between rows” slider inside an otherwise relevant
+      chip. Get that wrong and the lie is rebuilt one level down.</p>
+    </div>
+
+    <div class="verdict">
+      <h3>Your expandable button</h3>
+      <div class="answer">Yes — but only here, and one question could overturn it.</div>
+      <p>It works over the small, type-varying style controls because a chip can show its current
+      value at rest, which is the one thing a flat bar cannot do. It does <b>not</b> work for Theme
+      (39 presets), reusable block styles (37 controls) or the legend (23). An expandable holding any
+      of those is the fold you are complaining about wearing a different chevron.</p>
+      <p style="margin-top:12px"><b>The condition.</b> If your honest answer to “what do you touch
+      most” is <i>three</i> controls rather than nine, put those three flat on the bar with no
+      expansion at all — about 40px, zero clicks, and it beats the chip bar outright. The chip earns
+      its one click only if the set is genuinely nine to thirteen and genuinely varies by type.
+      Answer that before anyone writes the chips.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What I checked myself before showing you this</h2>
+    <div class="checked ok">
+      <div>
+        <h4>Confirmed independently</h4>
+        <ul>
+          <li><b>The matrix.</b> Recomputed from the raw measurement files: 260 distinct pairs, 112 dead, 79 silent. Slightly more conservative than the investigation’s own 122 and 102, and the same shape.</li>
+          <li><b>The word “Style” is not visible at rest.</b> Seven candidates, nearest at 1,401px, none in the viewport.</li>
+          <li><b>The fill colour is silently lost.</b> Driven with a real click.</li>
+          <li><b>The prototype exists and renders</b> — opened it, looked at it, chips read their values.</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--said)">Not verified by me</h4>
+        <ul>
+          <li>The exact editor-column heights. My own reading disagreed with theirs, which means one of the two measured the wrong scrolling element — most likely mine.</li>
+          <li>The 375px dead-end mechanism. What I <i>can</i> say is that at phone width no Inspect control is on screen at all, and my probe found no route to the Style panel.</li>
+          <li>The 229-button palette census and the per-type control counts inside the Look bar proposal.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page">
+    Every figure here comes from driving the shipped v1.70.0 in a real browser, not from reading its
+    source. Where a number could not be reproduced it is named above rather than repeated.
+  </footer>
+</div>
+
+<script>
+  const M = {
+    types: ["flowchart","pie","advanced","swimlane","ishikawa","mindmap","requirement","state","class","gitgraph","timeline","xy","architecture","block","er","gantt","journey","kanban","sequence","c4"],
+    rows: {
+      flowchart:"LLLLLLLLLLLLL", pie:"LLLLLLLLLLLLL", advanced:"LLLLLLDLLLLLL",
+      swimlane:"LLLLSLDLLLSLL", ishikawa:"LLLLSLDLLLSLL", mindmap:"SLLLLLDLLLSLD",
+      requirement:"LLLLSLDLSLLLD", state:"LLLLSLDLSLSLD", class:"LLLLSLDLSLSLD",
+      gitgraph:"SLLLLLDSSSSLD", timeline:"SLLLLLDSSSSLD", xy:"SLLLLLDSSSSLD",
+      architecture:"SLLLSLDSSSSLD", block:"SLLLSLDSSSSLD", er:"SLLLSLDSSSSLD",
+      gantt:"SLLLSLDSSSSLD", journey:"SLLLSLDSSSSLD", kanban:"SLLLSLDSSSSLD",
+      sequence:"SLLLSLDSSSSLD", c4:"SLLSSLDSSSSSD"
+    },
+    label: { flowchart:"Flowchart", pie:"Pie", advanced:"Advanced Mermaid", swimlane:"Swimlane",
+      ishikawa:"Ishikawa", mindmap:"Mindmap", requirement:"Requirement", state:"State diagram",
+      class:"Class diagram", gitgraph:"Git graph", timeline:"Timeline", xy:"XY chart",
+      architecture:"Architecture", block:"Block", er:"ER diagram", gantt:"Gantt",
+      journey:"Journey", kanban:"Kanban", sequence:"Sequence", c4:"C4 context" }
+  };
+  const body = document.getElementById('matrixBody');
+  M.types.forEach(t => {
+    const row = M.rows[t];
+    const live = (row.match(/L/g) || []).length;
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = M.label[t];
+    tr.appendChild(th);
+    for (const ch of row) {
+      const td = document.createElement('td');
+      const b = document.createElement('span');
+      b.className = 'cell ' + ch;
+      b.title = M.label[t] + ' — ' + (ch === 'L' ? 'changes the diagram'
+        : ch === 'S' ? 'does nothing, and says nothing' : 'does nothing, but says so');
+      td.appendChild(b);
+      tr.appendChild(td);
+    }
+    const tally = document.createElement('td');
+    tally.className = 'tally';
+    tally.textContent = live + ' of 13';
+    tr.appendChild(tally);
+    body.appendChild(tr);
+  });
+</script>

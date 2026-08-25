@@ -71,7 +71,8 @@ async function killTour(page) {
       (col.styleTop > col.clientHeight ? '  (below the fold)' : '  (visible at rest)'));
     console.log('   words painted on screen at rest:');
     words.forEach(w => {
-      const hits = text.filter(t => new RegExp('\\\\b' + w, 'i').test(t));
+      const needle = w.toLowerCase();
+      const hits = text.filter(t => t.toLowerCase().indexOf(needle) >= 0);
       console.log('      ' + w.padEnd(9) + (hits.length ? 'YES  e.g. "' + hits[0].slice(0, 44) + '"' : 'not on screen'));
     });
     console.log('');
