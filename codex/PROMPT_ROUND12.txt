@@ -1,0 +1,70 @@
+SIREN round 12. Two jobs. Do not start until round 11 is shipped and its base is frozen.
+
+READ FIRST, IN THIS ORDER:
+  1. C:\Claude\SIREN\codex\ROUND8_METHOD.md     <- delivery format and the traps; unchanged
+  2. C:\Claude\SIREN\codex\ROUND12_BRIEF.md     <- the jobs
+
+THE BASE:
+  C:\Claude\SIREN\codex\FROZEN_R12_BASE.html
+  (frozen from your round 11 output once it has shipped; hash and byte count are written into this
+   prompt at that point. If the file is not there yet, round 11 has not landed - stop and say so.)
+
+THE JOBS:
+
+  BB  a mode in which the file cannot reach the internet, and says so
+  BC  a red button on a choice that loses nothing
+
+BB IS FIRST. The owner is an auditor and this file gets opened with a client's material inside it.
+The policy currently permits cdn.jsdelivr.net and unpkg.com for both script-src and connect-src.
+
+Three facts, measured on the shipped 1.70.0 with a request log attached, so you do not have to
+rediscover them:
+
+  - through boot, typing a diagram, changing theme, opening Docs and opening the export dialog:
+    ZERO external requests.
+  - the only thing that reaches out is ELK, and only when chosen: three GETs to jsdelivr from a
+    dynamic import().
+  - unpkg.com is granted and NEVER USED. It is a fallback for fetching Mermaid, and Mermaid has
+    been embedded in the file since 1.51.0. Remove it by proving it is unused, not by assuming it.
+
+THE ONE THING THAT WILL WASTE YOUR ROUND IF YOU MISS IT:
+A <meta> CSP cannot be relaxed at runtime and cannot usefully be rewritten after parse. It CAN be
+intersected - a second policy added before anything loads applies alongside the first, strictest
+wins. A probe that checks the meta's content attribute will report a rewrite as working when the
+browser is still enforcing the original. Read the violation, not the string.
+
+BC IS THE STANDING RULE WITH A COLOUR INSTEAD OF A SENTENCE. requestConfirmation() has 46 callers
+and the confirm button is red for all of them. Several lose nothing and say so themselves: "A
+snapshot of the current diagram is saved first", "No diagram will be deleted", "Undo restores it".
+The app already has half the machinery - requestNotice() removes the class for a one-button refusal.
+What is missing is the middle case. Do not classify by the word "Delete": "Delete <folder>?" deletes
+no diagram. The message is the evidence, not the title. And check what closeConfirmDialog() does to
+the class on the way out.
+
+ROUND 11, AND WHAT CAME OF IT:
+(filled in here after round 11 is verified, with the same honesty as round 10's entry - including
+anything the verification found in MY work rather than yours.)
+
+ROUND 10, AND WHY IT WAS GOOD:
+The brief told you moving three lines was the whole AU job. You measured it, found the Present row
+still clipped at four widths, did the extra work and said the brief had been wrong. You also
+corrected your own round 9 wording rather than leaving it standing. Keep doing exactly that - a
+brief here is the best current understanding, not an instruction.
+
+VERIFICATION:
+Test one step sideways from your own fixture, every time. A check that finds nothing on both the
+patched build and the base has established nothing - say so rather than counting it green. Where a
+fix is visual, render it and look.
+
+And do not write a probe regex with a single backslash inside a JS template literal. It collapses,
+so /\s+/ becomes /s+/ and eats the letter s out of your own output.
+
+DELIVERY:
+One SHA-pinned script per job, an APPLY_ORDER.md with every input and output hash, and a handback
+saying what you did AND what you did not. Do not touch APP_VERSION or CHANGELOG. The CSP is BB's
+whole subject and is the one exception to the usual rule about it.
+
+THE STANDING RULE:
+Nothing in this app may promise what it cannot deliver. A tooltip, a chip, a count, a menu label, a
+disabled state or a colour that overstates is a defect of the same kind as a crash. If a job cannot
+be done honestly as briefed, say so and deliver the rest.
