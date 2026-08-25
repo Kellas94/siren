@@ -52,6 +52,12 @@
 # in releases/ and backups/; importing 343 MB of history nobody will check out would make every
 # clone pay for it, and how each was BUILT is tracked above.
 !releases/SIREN_v1.69.0.html
+!releases/SIREN_v1.70.0.html
+
+# ---- the status page --------------------------------------------------------------------------
+# The source of the published worklist artifact. It lived only in a session scratchpad, which is
+# temporary; the artifact is the thing everybody reads, so its source belongs with the project.
+!siren_worklist.html
 
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
