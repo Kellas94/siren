@@ -4,17 +4,19 @@
 
 - Six self-contained, exact-count, SHA-pinned patch scripts in `round13_patches/`.
 - `round13_patches/APPLY_ORDER.md` with every script SHA and the complete application hash chain.
-- Targeted browser probes and reports under `qa_round13/` and `round13_work/final_*`.
-- `round13_replay/SIREN_R13_REPLAY.html` is verification-only. The deliverable is the patch chain, not a merged application.
+- Targeted browser probes and reports under `qa_round13/` and `round13_work/final2_*`.
+- `round13_replay_final2/SIREN_R13_FINAL_REPLAY.html` is verification-only. The deliverable is the patch chain, not a merged application.
 
 Frozen base: `8,598,565` bytes, SHA-256 `539C3D5F98BCDB465895F2CAE3222E2BE16F2318234D5F667F8E54370F4E4697`.  
-Replayed final: `8,601,836` bytes, SHA-256 `1638793CF08989F68D8CEA7A8D621067EF5A11F18483F54DFD39B8BD6B2F02F3`.
+Replayed final: `8,601,839` bytes, SHA-256 `60585A8B7764AE989F96BE07447878F6CDBFF9796A36484BDC7AE52A6479E77A`.
+
+An independent final audit found one real gap before delivery: BE's first version reused the platform-specific multi-select helper, which intentionally ignores Ctrl on macOS. I changed the document route to reject Ctrl and Meta explicitly, added a macOS-emulated sideways case that waits beyond the 520ms arbitration window, re-pinned the complete BE→BJ chain, and reran every acceptance check on the new exact hash above.
 
 ## What landed
 
 | Job | Change | Evidence on the exact final hash |
 |---|---|---|
-| BE | The document marker claims only a plain unmodified click when no canvas mode is active. Connect, Ctrl-click, double-click, drag and context-menu gestures resolve to the underlying block. The glyph is optically centred without moving the hit target. | 13/13 gesture observations; D→B is written through the marker while continuous Connect mode remains armed; Docs stays closed; marker and block context menus both expose the named Documents row. Measured glyph-to-hit-centre delta: x `-0.578px`, y `-0.5px`. |
+| BE | The document marker claims only a plain unmodified click when no canvas mode is active. Connect, Ctrl-click, double-click, drag and context-menu gestures resolve to the underlying block. The glyph is optically centred without moving the hit target. | 14/14 gesture observations; D→B is written through the marker while continuous Connect mode remains armed; Docs stays closed; marker and block context menus both expose the named Documents row. The sideways macOS Ctrl-click case also keeps Docs closed after 700ms and resolves block B. Measured glyph-to-hit-centre delta: x `-0.578px`, y `-0.5px`. |
 | BF | `deckShapeTextBody` uses square wrapping for a single flat collector line and keeps `wrap="none"` only for genuinely pre-split multi-line text. The Round 11 dense-rectangle behaviour remains. | 27/27 assertions, 0 vacuous. Cylinder, diamond and sideways pill flat labels use square wrapping; a three-line edge label remains `none`; 44 dense rectangles stay editable at the 1pt floor with visible overflow. Both emitted PPTX files rendered successfully and the slide overflow check passed. |
 | BG | A block promise now requires a real node group in the current signature-valid SVG or its signature-valid preview cache. Unresolvable source tokens keep the honest diagram wording, the context jump is disabled with the existing dangling reason, and a primary click reports the failed landing. | flowchart/state/class remain enabled and land; sequence/ER/mindmap/journey/numbered-flow no longer promise a block. Final BG/BH verifier: 12/12 assertions; signature-valid cached cross-diagram probe: 8/8. |
 | BH | One arrival helper synchronises the canvas ring, Style target, Build dropdown/card and inspector, centres the destination in `#zoomViewport`, remeasures after two animation frames, and refuses an off-screen inspector. | At 1024×700, CHARLIE moved from y `689–748` to `444–503`, scrollTop `0→245`; DONE sideways case moved from y `810–868` to `565–623`. Both were fully visible and all four selection surfaces agreed. Sideways verifier: 4/4. |
@@ -23,7 +25,7 @@ Replayed final: `8,601,836` bytes, SHA-256 `1638793CF08989F68D8CEA7A8D621067EF5A
 
 ## Correction to the brief
 
-The BF diagnosis in the brief says the deck route supplies pre-split lines while the diagram route supplies one flat line. The real writers contradicted that: both routes can reach `deckShapeTextBody` with a one-line flat label. Cylinder, diamond and pill exports all did so. The shared guard therefore keys on `shape.lines.length <= 1`; only an already split array with more than one line retains `wrap="none"`. This is a re-cut of the proposed condition, not an anchor move.
+The BF diagnosis in the brief says the deck route supplies pre-split lines while the diagram route supplies one flat line. The real writers contradicted that: both routes can reach `deckShapeTextBody` with a one-line flat label. Cylinder, diamond and pill exports all did so. The shared guard therefore keys on `shape.lines.length <= 1`; only an already split array with more than one line retains `wrap="none"`. This is a re-cut of the proposed condition, not an anchor move. It is a collector-contract guard, not a per-label font-width measurement: every collected input of at most one line receives square wrapping.
 
 ## Anchors
 
@@ -40,7 +42,7 @@ No line-number anchor was used.
 
 ## Verification
 
-- Fresh-base replay reached the exact final SHA above, byte-identical to the working artefact.
+- A second fresh-base replay with all six scripts already pinned reached the exact final SHA above, byte-identical to the working artefact.
 - All six scripts rejected a deliberately wrong input SHA with a non-zero exit and left the target unchanged.
 - All six patch scripts pass `node --check`.
 - `syncheck.py` on the replayed application: 2 script blocks, 7,584,004 JavaScript characters, `node --check exit 0`.
@@ -50,11 +52,11 @@ No line-number anchor was used.
 
 Primary evidence files:
 
-- `round13_work/final_be/report.json`
-- `round13_work/final_bf/report.json` and the rendered `round13_work/final_bf/bf-target/slide-1.png`
-- `round13_work/final_bg_bh/report.json`, `round13_work/final_bh_done/report.json`, and `round13_work/bg_bh_audit_cross/report.json`
-- `round13_work/final_bi_bj_v4/report.json`
-- `round13_work/final_av_interaction/report.json`
+- `round13_work/final2_be/report.json`
+- `round13_work/final2_bf/report.json` and the rendered `round13_work/final2_bf/bf-target/slide-1.png` plus `bf-dense-rectangles/slide-1.png`
+- `round13_work/final2_bg_bh/report.json`, `round13_work/final2_bh_done/report.json`, and `round13_work/final2_bg_bh_cross/report.json`
+- `round13_work/final2_bi_bj/report.json`
+- `round13_work/final2_av/report.json`
 
 The broad legacy regression suite was also run as a diagnostic, not used as the Round 13 acceptance gate. Its result and the exact frozen-base comparison are recorded below.
 
@@ -67,15 +69,15 @@ The unmodified legacy suite finished `19/31` scenarios and `206/227` assertions 
 - The only additional red assertion is intentionally obsolete after BJ: `R2.ITEM3.NARROW.12` still requires bare Tab to create a child block. The accepted Round 13 contract removes that mutation and retains Ctrl/Cmd+Enter instead; the targeted final probe proves both halves.
 - Therefore none of the broad-suite reds identifies an application regression introduced by BE–BJ. The suite needs maintenance before it can be used as a release gate for this base.
 
-Reports: `round13_work/final_regression/report.json`, `round13_work/base_regression_failures/report.json`, and `round13_work/base_export_validator/report.json`.
+Reports: `round13_work/final2_regression/report.json`, `round13_work/base_regression_failures/report.json`, and `round13_work/base_export_validator/report.json`.
 
 ## Deliberately not done or claimed
 
 - I did not filter the reference picker. It still offers source tokens such as `TD`, `mindmap`, `Day`, relationship/message labels and class members. BG makes the downstream promise honest and leaves that optional cleanup visible.
-- I did not change the Presentation-stage/static-SVG marker promise, fuzzy hyphen-fragment node matching, the tour's 6-versus-4 step counter, the PPTX run-level Arial omission, or the other smaller findings listed at the end of the brief.
+- I did not take any of the brief's nine smaller measured findings: the status-bar warning is still ellipsized before its under-9pt number; `1.0pt` is still a clamp rather than an informative measurement; the warning toast still uses success styling; the advice still recommends horizontal layout even when already horizontal; Shift+F10 then Enter can remove a dangling reference without confirmation; the Presentation-stage and exported-static-SVG marker still promise a dead click; fuzzy hyphen-fragment ids such as `PAY`/`PAY-LATER` can still resolve to the wrong block; the tour still counts six while rendering four and ends with `Next`; and PPTX diagram labels still omit the run-level Arial declaration.
 - I did not make dense 44-block text legible. It remains at the truthful 1pt floor; the warning is the useful outcome there.
 - I did not change the very pale edge-label colour visible on the white BF render. That contrast and the dense 1pt readability limit predate BF; the job restores containment, not full visual legibility.
-- I did not claim that NVDA or Narrator spoke the live region. Automated checks establish the keyboard and ARIA contract; no manual screen-reader session was run.
+- I did not claim that NVDA or Narrator spoke the live region. Automated checks establish the keyboard and ARIA contract; no manual screen-reader session was run. Escape dismisses and persists the tour, but when focus was on a tour action the current implementation leaves focus on `BODY`; focus restoration was not part of BI and is not claimed.
 - I did not prove a cold-cache cross-diagram block reference. Its conservative fallback is diagram wording until a signature-valid SVG exists. A signature-valid cached cross-diagram arrival was separately UI-tested at 8/8; the cold-cache fallback was not.
 - I did not prove BH below the 720px inspector breakpoint. The measured 1024×700 arrivals are fully visible before the inspector opens; on phone layouts the later bottom-sheet inspector may occlude a centred node. A target disappearing during the two-animation-frame recheck also fails closed without an inspector, but that narrow rerender race has no dedicated toast.
 - I did not rebase Round 12 or modify its artefacts.
