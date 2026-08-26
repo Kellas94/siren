@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const EXPECTED_INPUT_SHA256 = '60585A8B7764AE989F96BE07447878F6CDBFF9796A36484BDC7AE52A6479E77A';
-const EXPECTED_OUTPUT_SHA256 = 'TO_BE_PINNED';
+const EXPECTED_OUTPUT_SHA256 = 'FE8715E1C7F2CD5F942D8097C74089B27A272A39F6CC839D975A64EB3D49BEEC';
 const target = path.resolve(process.argv[2] || '');
 const requireTrue = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase();

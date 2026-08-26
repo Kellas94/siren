@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const EXPECTED_INPUT_SHA256 = 'D3123A9C9358386C4ACA4D236A20EB92199EC2EF712768074F706CA4EE7161EC';
-const EXPECTED_OUTPUT_SHA256 = 'DD662E4A2C68759DC669D92CE39C30D23191A4A8F28FBB97E33E32E6073C275C';
+const EXPECTED_INPUT_SHA256 = '7A87A3F1E956FE7E6BF5A46FE5365B0F38805A6A0400599106AEA1691679F1AA';
+const EXPECTED_OUTPUT_SHA256 = '6F309203CFB51A19EECF11AF68531448C3A26082E9DDC7677F6237724A9FE064';
 const target = path.resolve(process.argv[2] || '');
 const requireTrue = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase();
@@ -26,18 +26,30 @@ function main() {
   let text = original;
 
   text = replaceExact(text,
-`        if (target.closest('a, button, input, select, textarea')) return;
-        const id = resolveNodeIdFromElement(target);`,
-`        if (target.closest('a, button, input, select, textarea, [data-t-workpaper-node]')) return;
-        const id = resolveNodeIdFromElement(target);`);
+`        if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey
+            || tourCard.contains(document.activeElement)) return;
+        const actions = Array.from(tourCard.querySelectorAll('button:not([disabled])'));
+        const destination = event.shiftKey ? actions[actions.length - 1] : actions[0];
+        if (!destination) return;
+        // Capture before the source editor or the legacy canvas route can consume Tab.
+        event.preventDefault();
+        event.stopPropagation();
+        destination.focus();
+`,
+``);
 
   requireTrue(text !== original, 'patch made no change');
-  requireTrue((text.match(/textarea, \[data-t-workpaper-node\]/g) || []).length === 1,
-    'marker exclusion from body drag missing');
-  requireTrue((text.match(/function canvasBeginBodyPress\(event, target\)/g) || []).length === 1,
-    'body drag press route moved or duplicated');
-  requireTrue((text.match(/canvasMove = \{ id, pointerId: event\.pointerId/g) || []).length === 1,
-    'real block body drag route changed');
+  requireTrue(!text.includes('tourCard.contains(document.activeElement)'), 'global tour Tab interception remains');
+  requireTrue(!text.includes("const destination = event.shiftKey ? actions[actions.length - 1] : actions[0]"),
+    'tour still diverts external Tab');
+  requireTrue((text.match(/if \(event\.key === 'Escape'\)/g) || []).length >= 1,
+    'tour Escape route was removed');
+  requireTrue((text.match(/tourCard\.setAttribute\('tabindex', '-1'\)/g) || []).length === 1,
+    'tour programmatic focus target changed');
+  requireTrue((text.match(/tourCard\.setAttribute\('aria-live', 'polite'\)/g) || []).length === 1,
+    'tour live-region contract changed');
+  requireTrue((text.match(/if \(focusNext\) next\.focus\(\);/g) || []).length === 1,
+    'explicit tour replay focus changed');
   requireTrue(text.split('const APP_VERSION =').length === original.split('const APP_VERSION =').length, 'APP_VERSION structure changed');
   requireTrue(text.split('const CHANGELOG =').length === original.split('const CHANGELOG =').length, 'CHANGELOG structure changed');
   requireTrue(text.split('Content-Security-Policy').length === original.split('Content-Security-Policy').length, 'CSP structure changed');
@@ -45,10 +57,10 @@ function main() {
   const outputBytes = Buffer.from(text, 'utf8');
   const afterHash = sha256(outputBytes);
   if (EXPECTED_OUTPUT_SHA256 !== 'TO_BE_PINNED') requireTrue(afterHash === EXPECTED_OUTPUT_SHA256, `output SHA-256 ${afterHash}, expected ${EXPECTED_OUTPUT_SHA256}`);
-  const temporary = path.join(path.dirname(target), `.r14-03-${process.pid}-${Date.now()}.html`);
+  const temporary = path.join(path.dirname(target), `.r14-06-${process.pid}-${Date.now()}.html`);
   fs.writeFileSync(temporary, outputBytes, { flag: 'wx' });
   try { fs.renameSync(temporary, target); } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
-  process.stdout.write(`R14_03 applied: ${beforeHash} -> ${afterHash}\n`);
+  process.stdout.write(`R14_06 applied: ${beforeHash} -> ${afterHash}\n`);
 }
 
 main();

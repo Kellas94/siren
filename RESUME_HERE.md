@@ -88,10 +88,25 @@ settles the second move — a flat row of three wins outright, so **the expandab
 About 40px, zero clicks, no tray. The prototype at `prototypes\look_bar.html` stays as evidence of
 what was compared, not as the thing to build.
 
-**The one question left is WHICH three.** Nothing else stands between here and building it. Likely
-candidates, to be confirmed rather than assumed: theme, font size, and flow direction — but the
-measured matrix covers a different thirteen controls (direction and theme live elsewhere in the app),
-so this needs his answer, not an inference from the data.
+**He named his three on 26 August: ELK on/off, block colour, font** — and added the constraint that
+matters: on other diagram types some of these will not be available, and a control that does nothing
+must not appear. Measured against all twenty types:
+
+| control | actually works on | currently offered on |
+|---|---|---|
+| font | **20/20** | 20/20 |
+| block colour | **9/20** | 9/20 — the app already says "no styleable blocks" on the rest |
+| ELK | **7/20** | **20/20** |
+
+**ELK is a NEW finding.** It is offered on every type and changes the drawing on seven — flowchart,
+swimlane, state, ishikawa, class, ER, requirement. On the other thirteen you select it, half a
+megabyte is fetched, and the rendered geometry is byte-identical. It also will not exist at all in
+the offline build after today's decision.
+
+**The resolution, and it answers his constraint directly: three slots, type-dependent contents.**
+Font is always slot one — it is the only one of the thirteen measured controls live on all twenty.
+The other two are filled by what actually bites on the diagram in front of you. The bar never
+shrinks and never jumps when the type changes; only its contents do. Nothing inert ever appears.
 
 ## Method notes worth carrying
 

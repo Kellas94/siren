@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const EXPECTED_INPUT_SHA256 = 'FE8715E1C7F2CD5F942D8097C74089B27A272A39F6CC839D975A64EB3D49BEEC';
-const EXPECTED_OUTPUT_SHA256 = 'D3123A9C9358386C4ACA4D236A20EB92199EC2EF712768074F706CA4EE7161EC';
+const EXPECTED_INPUT_SHA256 = '6F309203CFB51A19EECF11AF68531448C3A26082E9DDC7677F6237724A9FE064';
+const EXPECTED_OUTPUT_SHA256 = '9E7DB5F87F39BA8C0FA597C81CE0A5FE6981EFDBA62523D7C5FE161F3299E41F';
 const target = path.resolve(process.argv[2] || '');
 const requireTrue = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase();
@@ -26,35 +26,28 @@ function main() {
   let text = original;
 
   text = replaceExact(text,
-`      function handlePreviewNodeClick(event) {
-        // The click that ends a body drag on the canvas is the drag's release, not a
-        // document request. This guard must run before the marker-specific route.
-        if (performance.now() < canvasMoveSuppressClickUntil) { event.preventDefault(); event.stopPropagation(); return; }
-        const workpaperMarker = event.target instanceof Element`,
-`      function handlePreviewNodeClick(event) {
-        const workpaperMarker = event.target instanceof Element`);
+`        if (!tourCard || document.querySelector('dialog[open]')) return;`,
+`        if (!tourCard || event.defaultPrevented || document.querySelector('dialog[open]')) return;`);
 
   text = replaceExact(text,
-`          return;
-        }
-        const id = resolveNodeIdFromElement(event.target);`,
-`          return;
-        }
-        // Suppress only the body drag's own release click. A separate marker click
-        // is an explicit request and must remain available during this short window.
-        if (performance.now() < canvasMoveSuppressClickUntil) { event.preventDefault(); event.stopPropagation(); return; }
-        const id = resolveNodeIdFromElement(event.target);`);
+`        document.removeEventListener('keydown', handleWelcomeTourKeydown, true);`,
+`        document.removeEventListener('keydown', handleWelcomeTourKeydown, false);`);
+
+  text = replaceExact(text,
+`          document.addEventListener('keydown', handleWelcomeTourKeydown, true);`,
+`          document.addEventListener('keydown', handleWelcomeTourKeydown, false);`);
 
   requireTrue(text !== original, 'patch made no change');
-  requireTrue((text.match(/performance\.now\(\) < canvasMoveSuppressClickUntil/g) || []).length === 1,
-    'drag release suppression census changed');
-  const markerAt = text.indexOf('if (plainMarkerClick) {');
-  const suppressAt = text.indexOf('if (performance.now() < canvasMoveSuppressClickUntil)');
-  const resolveAt = text.indexOf('const id = resolveNodeIdFromElement(event.target);', suppressAt);
-  requireTrue(markerAt >= 0 && suppressAt > markerAt && resolveAt > suppressAt,
-    'drag suppression is not below the marker branch and above the body route');
-  requireTrue((text.match(/const plainMarkerClick = Boolean\(workpaperMarker\)/g) || []).length === 1,
-    'plain marker gate changed');
+  requireTrue((text.match(/!tourCard \|\| event\.defaultPrevented \|\| document\.querySelector\('dialog\[open\]'\)/g) || []).length === 1,
+    'tour does not yield a claimed Escape');
+  requireTrue((text.match(/addEventListener\('keydown', handleWelcomeTourKeydown, false\)/g) || []).length === 1,
+    'tour listener is not on bubble phase');
+  requireTrue((text.match(/removeEventListener\('keydown', handleWelcomeTourKeydown, false\)/g) || []).length === 1,
+    'tour listener teardown phase does not match installation');
+  requireTrue(!text.includes("addEventListener('keydown', handleWelcomeTourKeydown, true)"),
+    'capture-phase tour listener remains');
+  requireTrue((text.match(/tourCard\.setAttribute\('aria-live', 'polite'\)/g) || []).length === 1,
+    'tour live region changed');
   requireTrue(text.split('const APP_VERSION =').length === original.split('const APP_VERSION =').length, 'APP_VERSION structure changed');
   requireTrue(text.split('const CHANGELOG =').length === original.split('const CHANGELOG =').length, 'CHANGELOG structure changed');
   requireTrue(text.split('Content-Security-Policy').length === original.split('Content-Security-Policy').length, 'CSP structure changed');
@@ -62,10 +55,10 @@ function main() {
   const outputBytes = Buffer.from(text, 'utf8');
   const afterHash = sha256(outputBytes);
   if (EXPECTED_OUTPUT_SHA256 !== 'TO_BE_PINNED') requireTrue(afterHash === EXPECTED_OUTPUT_SHA256, `output SHA-256 ${afterHash}, expected ${EXPECTED_OUTPUT_SHA256}`);
-  const temporary = path.join(path.dirname(target), `.r14-02-${process.pid}-${Date.now()}.html`);
+  const temporary = path.join(path.dirname(target), `.r14-07-${process.pid}-${Date.now()}.html`);
   fs.writeFileSync(temporary, outputBytes, { flag: 'wx' });
   try { fs.renameSync(temporary, target); } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
-  process.stdout.write(`R14_02 applied: ${beforeHash} -> ${afterHash}\n`);
+  process.stdout.write(`R14_07 applied: ${beforeHash} -> ${afterHash}\n`);
 }
 
 main();
