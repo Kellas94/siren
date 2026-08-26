@@ -60,6 +60,7 @@
 !siren_worklist.html
 !siren_interface_report.html
 !siren_plan.html
+!docs/**/*.md
 
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
