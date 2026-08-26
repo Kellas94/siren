@@ -1,135 +1,180 @@
-# SIREN Round 15 — one build that cannot reach the internet
+# SIREN Round 15 — finish it: four repairs and one decision
 
-Read `ROUND8_METHOD.md` first; the method is unchanged. The base will be round 14's output once its
-verification lands; it is written here against `codex/FROZEN_R14_BASE.html` + the round 14 chain and
-will be re-pinned before you start.
+Read `ROUND8_METHOD.md` first; the method is unchanged. The base is round 14's output, frozen:
 
-**The owner's decision, 26 August: one build, not two.** The layout engine travels inside the file
-and the Content-Security-Policy stops naming a host at all. Yesterday's answer — remove ELK from an
-offline edition and ship two — is withdrawn. He asked why it could not simply be embedded, and the
-honest answer was that it can.
+```
+codex/FROZEN_R15_BASE.html
+8,599,649 bytes
+SHA-256  0C17FB6673FD1FC5DE24CC5C474B49EAE85505589E373E7ABA870BE345338F97
+```
+
+**This round is scoped as repairs only. No new capability, no new guard.** Round 11 has now been held
+three times; this is what stands between it and shipping. The ELK work and the round 12 rework are
+written separately as round 16 and deliberately kept out of here — round 13 failed partly because a
+round tried to do too much, and this one ends with something you can ship.
+
+
+**Round 14 is the right direction and nothing in it is reverted.** Six of the eight deletions land
+cleanly and make the app better than round 13 *and* better than round 11: the marker opens its
+document in **17–20ms instead of 543–555ms**, Escape stops committing text nobody asked to commit,
+Tab works in the editor and the builder again, and a reference row stops calling a diagram two inches
+away "no longer in this workspace".
+
+The framing the verification landed on, and it is the useful sentence: **rounds 13 and 14 were both
+correct about what was wrong and both wrong about what to do. Round 13 added a gate everywhere.
+Round 14 removed them.** None of the fixes below adds a gate, and that is a constraint, not a
+preference. If your answer to any of them is a new guard, stop and say so instead.
 
 ---
 
-## BL — embed ELK, delete both hosts, and let the policy name nothing
+## BO — a double-click on the marker presses whatever Docs puts under the cursor
 
-**This has been prototyped and measured, not reasoned about. Start from the spike; do not
-rediscover it.**
+**Ship-blocker, and the writing it destroys survives closing and reopening the document.**
 
-- `tools/build_elk_inline.py` flattens `@mermaid-js/layout-elk@0.1.7` into one inline script
-- `tools/patch_elk_embedded.py` applies it and strips the hosts from the policy
-- `qa_exports/verify_elk_embedded.js` proves it with the network **cut at the browser**, not observed
-
-### What the spike measured
+Docs is a full-viewport overlay (0,0,1440,900) while the canvas viewport starts at x=508. So the
+first click opens Docs, and the second click of a double-click lands on whatever the document renders
+at that pixel — a heading with a word selected, a caret in rich text, a table insert bar, the
+Add-block menu, or the document's own Undo button.
 
 ```
-the app booted and drew a diagram with the network dead     yes
-window.__SIREN_ELK present                                  yes, 5 layout entries
-chose ELK, selector reads 'elk'
-  geometry before   viewBox  0 0 432.640625 641.71875
-  geometry after    viewBox  4 4 417.640625 568.71875      it re-laid the diagram
-requests the browser had to abort                           NONE
-page and console errors                                     none
-resulting file        10,239,589 bytes   (+19.1%)
-resulting policy      default-src 'none'; script-src 'self' 'unsafe-inline'; style-src
-                      'unsafe-inline'; img-src data: blob:; connect-src 'self' blob:; …
-                      no external host anywhere in it
+real detail=2 double-click, marker centre over #wpUndoButton (682.9, 255)
+  round 14   Docs opens, elementFromPoint at release = button#wpUndoButton,
+             toast "Undone.", the 11 characters typed into the document are GONE,
+             the block flagged edited and empty, Undo greys out, Redo goes live
+             — and still gone after closing and reopening the document.  2 of 2 runs.
+  round 13   at the identical pixel: no Docs, the canvas rename opens, text intact.
 ```
 
-Nothing even *tried* to leave. That is the difference the owner is buying: not "it makes no
-requests" but "there is no address in it to request".
+Reproduced on flowchart TD, stateDiagram-v2, classDiagram and flowchart LR with subgraphs. Single-
+document markers only; a two-document marker behaves identically on both builds.
 
-### The one trap, and it fails silently
+**Done means, and the shape matters:** `handlePreviewNodeClick` already guards `event.detail <= 1`,
+but the second click never reaches it — the overlay is already covering the marker. So the fix is
+**overlay-side**: after a marker click opens a document, discard pointer events arriving on the Docs
+surface with `event.detail >= 2` for one double-click interval, about 400ms.
 
-ELK is three ES modules. The helper chunk declares its own `o` (`__commonJS`), and the entry module
-imports a **different** helper under the name `o` (`__name`). Concatenated into one scope they
-collide, the wrong function is called, and **there is no error** — you get a broken engine that
-looks installed. Each module must keep its own scope with the bindings passed in explicitly. The
-builder already does this; if you rewrite it, keep that property and prove it.
+**This is not round 13's timer and the difference is the whole point.** It delays nothing, it opens
+nothing invisibly, it touches no single click, and it adds no state object. Round 13 delayed the
+*open*, which is what created the invisible window a person typed into.
 
-The entry module's `await import("./chunks/…/render-….mjs")` is replaced by the already-evaluated
-render namespace. Mermaid only requires that `await loader()` yields an object carrying `render`, so
-an async function returning one is a faithful stand-in for a module namespace.
-
-### Also delete the dead Mermaid fallback
-
-Two mentions of `jsdelivr` and `unpkg` survive the spike, and neither is ELK. They are
-`CDN_MERMAID_SOURCES`, a fallback chain for fetching Mermaid — which has been embedded in the file
-since 1.51.0. Round 12's verification already measured that unpkg is never used at all. Remove the
-chain and its now-dead helpers, and **keep the local `./mermaid.min.js` route**: someone who drops
-that file beside the HTML must still be served by it.
-
-When this job is done, `grep -c 'jsdelivr\|unpkg'` over the whole file must return **0**.
-
-### Done means
-
-- The file contains no external URL, and the policy names no host.
-- ELK still re-lays a flowchart, proved with every non-local request **aborted** at the browser.
-- The app boots, renders every diagram type, exports PDF/PPTX/XLSX/DOCX/SVG/PNG and opens Present,
-  all with the network dead.
-- `?offline=1` and any local-Mermaid route still behave.
-- Byte size and the exact policy string are stated in the handback.
-
-### Not in this job
-
-ELK is offered on all twenty diagram types and **measurably changes the drawing on seven** —
-flowchart, swimlane, state, ishikawa, class, ER, requirement. On the other thirteen you select it and
-the rendered geometry is byte-identical. Hiding it where it does nothing is the honest follow-up and
-belongs with the type-true style work, not here. Do not fold it in.
+Re-measure to close: double-click a marker positioned over `#wpUndoButton`, expect no "Undone." and
+the document text intact, on all four diagram types.
 
 ---
 
-## BM — a red button that means it, redone
+## BP — after a jump, Update block edits the block you did not go to
 
-Round 12's BC is held. Its machinery was right — `requestConfirmation` taking `destructive` with a
-safe default of `true`, and the presentation reset that fixed a real notice-to-confirmation leak on
-the base. **The classification was wrong on seven callers**, and a destructive action wrongly marked
-neutral is worse than the original defect, because it removes the warning from something that does
-destroy.
+**Ship-blocker.** Deletion 5 removed `selectVisualNode(nodeId)` and `canvasFocusBlock(nodeId)` from
+`landWorkpaperDiagramNode` to protect an unapplied label draft. Those two calls were also doing the
+selection sync, **and only one of them was ever the threat to the draft.**
 
 ```
-create a class, delete it through the real dialog, six ordinary source edits, reload
-  selectOptions []        persistedClasses [[]]        #undoButton.disabled === true
-  five real clicks on Undo do nothing; all five restore points carry classes:[]
-  dialog colour   BASE okDanger=true, red        MERGED okDanger=false, solid rgb(37,99,235)
+jump to 'Sign off', then open "2 Edit a block", triple-click Label, type 'RENAMED HERE', Update block
+  round 13   Build panel SIGN, ring on SIGN, focus on the SIGN group  ->  writes SIGN[RENAMED HERE]
+  round 14   Build panel START, ringCount 0, focus on #workpapersButton,
+             inspector still reads 'Block SIGN'                       ->  writes START[RENAMED HERE]
+             and SIGN is untouched. Same green "Block updated" toast on both.
 ```
 
-The state dies because the action calls `renderDiagram({ saveVersion: false })` and
-`scheduleUndoSnapshot()` only; `undoHistoryByDiagram` is an in-memory Map that dies at reload; and
-`saveVersionSnapshot` short-circuits when the Mermaid source has not changed — and creating or
-deleting a class does not change the source.
+At 800px the two panels physically overlap: a red **Delete** button for one block sits inches under a
+heading naming another.
 
-**The seven**: Reset every block style, Delete class, Delete scenario, Reset presentation sequence,
-Remove slide, Delete this card, Delete folder. Only Delete folder was ever driven. Two of the
-untested ones — Delete scenario, Delete this card — can hold substantial typed content.
+**Done means:** the two calls are not equivalent and must not be restored together blindly.
+`canvasFocusBlock` only sets `canvasSelectedId`, repaints the overlay and moves keyboard focus — it
+**destroys nothing**, so restore it unconditionally; that alone brings back the ring, the handles and
+keyboard reach. `selectVisualNode` calls `refreshVisualBuilder(id)`, which is what wiped the draft —
+restore it too, but read `#visualNodeEditLabel` before the refresh and write the value back
+afterwards when it holds an uncommitted edit.
 
-**Done means** either the recovery is made real — these callers write a forced restore point,
-`saveVersionSnapshot(reason, true)`, so the state survives a reload — or all seven carry
-`destructive: true` until it is. **Do not ship the blue without one of the two.** Prove it by
-capturing full state before, confirming, doing several ordinary edits, reloading, and showing the
-thing is recoverable.
+Prove **both** in the same run: `SIGN[RENAMED HERE]` after the arrival, **and** `UNSAVED WORK 2026`
+still in the label field after the arrival and after pressing Done.
 
 ---
 
-## BN — one false sentence, and a stale Guide
+## BQ — an editing panel for a block that is nowhere on screen, and it says nothing
 
-**The merge sentence.** Merging into an inactive diagram says *"The current source of that diagram is
-saved in the restore points first."* It is not: the snapshot written is of the diagram on screen, not
-of the target about to be overwritten. Measured — target's source changed, real Undo did not restore
-it, and both restore points afterwards carried the **active** diagram's id and length. The loss is
-pre-existing; the sentence is one line. Cheapest honest fix: delete it and say "This cannot be
-undone." Proper fix: snapshot the target, and then it can go blue.
+Deletion 4 removed the visibility refusal, which was right — the refusal was measuring against a pane
+the stylesheet hides below 900px, so the whole feature was dead there. But it was also protecting
+against something real.
 
-**The Guide contradicts the product.** It tells the reader other diagram types need a renderer
-"which loads when internet access is available", and to save `mermaid.min.js` beside the file or open
-it once with `?offline=1`. After BL none of that is true and the renderer travels inside the file.
-Rewrite the callout, and unify the flag name — the Guide teaches `?offline=1` while the newer code
-used `?nointernet=1`. Keep the old one as a silent alias so existing links do not break.
+```
+Filters set to "Hide them", 1440x900
+  round 13   refuses with a red toast
+  round 14   opens a live panel with NO message, then accepts an edit that changes the source
+             while the canvas does not move
+700px
+  round 14   opens 'Block N60' with scrollTop 0 of 6721; tapping Preview closes the panel and
+             leaves the person 6,928px from the block
+```
+
+**Done means:** when the landed block's rectangle is 0×0, or the preview pane is not displayed, or
+the block is filtered out — **open the panel and say so.** One sentence, not a refusal. The whole
+lesson of round 13 is that refusing is worse than explaining.
 
 ---
 
-## The standing rule
+## BR — Tab over a selection in the code editor deletes the selected text
 
-Nothing in this app may promise what it cannot deliver, and nothing may ever silently lose what
-somebody wrote. BM is the second half of that rule. BL is the first half made into a property of the
-document rather than a claim about it.
+**Pre-existing, and it is in what is live today.** Round 14 does not cause it; it hands the gesture
+back during the first-run tour, which is where a person is most likely to meet it.
+
+**Done means:** when Tab has a selection, indent the whole lines. The symmetric function for
+Shift+Tab already exists — find it and mirror it.
+
+---
+
+## Two one-liners that should ride along
+
+**The tour card's reachability.** `document.body.insertBefore` instead of `appendChild`. It is
+`position: fixed`, so nothing moves on screen, and the card goes from **72–81 Tab presses away to
+about one** — without stealing focus from anyone typing, which is the property round 11 fought for
+and must keep.
+
+**Two places where the app's own words are now false.** The comment above `resolveNodeIdFromElement`
+and the v1.59.1 release note. See the decision below.
+
+---
+
+## The decision: abandon a claim, not the feature
+
+Three rounds have now proved that those 324 pixels **cannot honour both contracts at once**. Round 11
+made the click a no-op on a wobble. Round 13 bought reliability with a 520ms window that silently
+renamed blocks. Round 14 bought instant opening and lost the drag and the rename at that corner.
+
+**So decide it instead of repairing it a fourth time.** The marker corner is a single-purpose
+control:
+
+- one click opens the document
+- right-click and Ctrl+click fall through to the block — both already work correctly on both builds
+- drag and double-click-rename belong to the block's **body**, not its corner
+
+Fix the comment above `resolveNodeIdFromElement`, which still claims "every non-plain gesture still
+belongs to the block underneath it", and fix the v1.59.1 release note, which still says "F2 or a
+double-click renames in place". **The dead drag corner and the unreachable rename then stop being
+defects and become documented behaviour**, at zero engineering cost, and two open items leave this
+list.
+
+### And a pre-committed exit rule for BO
+
+The marker click gets **one attempt**. It works, it is twenty-five times faster than round 13, and
+BO's fix is genuinely different in shape from round 13's timer.
+
+**If the re-measure is not clean — double-click a marker sitting over the Docs Undo button, expect no
+"Undone." and no lost text, on all four diagram types — then the marker click is dropped entirely.**
+The glyph stays as an indicator that a document exists, and documents open from the block's
+right-click **Documents** row, which already works identically on both builds and names the document.
+Deletions 1, 2 and 3 all become unnecessary at that point, and nothing is lost but one shortcut with
+three rounds of blood on it.
+
+Say in the handback which of the two happened. Do not attempt it twice.
+
+---
+
+## What is explicitly NOT abandoned
+
+- **The reference chips and the arrival.** Deletion 8 is the cleanest work in round 14 — it removed a
+  refusal that was lying, made the menu row and the button beside it agree, and eliminated a keyboard
+  path that deleted the reference on the first Enter. Its one open problem is BP, in a different
+  group, with a precise fix.
+- **The welcome tour.** And round 13's Tab capture must not be reinstated under any circumstance — it
+  cost 19 of 19 keyboard controls and made a typed block impossible to add.

@@ -1,3 +1,100 @@
+# Resume here — 26 August 2026, evening. START WITH THIS BLOCK.
+
+**Live app:** `C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html` — **v1.70.0**, 8,591,186 bytes,
+SHA-256 `2F2DA0BDA18427E3262EB97D06401723183D1938A09083654C64AFE791223030`. Untouched. Snapshot at
+`releases\SIREN_v1.70.0.html`.
+
+## Where we actually are, in one paragraph
+
+Round 11 added six features and has been **held three times**. Round 13 repaired it and four of six
+repairs broke what they repaired. Round 14 deleted round 13's damage and six of its eight deletions
+landed cleanly — but reopened four holes. **Round 15 is written and is the last step**: four repairs,
+two one-liners and one decision, all small, none of them a new guard. Nothing broken has ever reached
+the live file, which is the point of the whole arrangement.
+
+## The one sentence to carry into the next round
+
+> **Rounds 13 and 14 were both correct about what was wrong and both wrong about what to do.
+> Round 13 added a gate everywhere. Round 14 removed them.**
+
+Round 13 answered every problem with a new gate — a 520ms timer, a visibility refusal, a Tab capture,
+a disabled menu row — and each gate broke something bigger than it protected. **Round 15 must not add
+a gate.** If a fix's shape is a new guard, that is the signal to stop and say so.
+
+## What to hand out next
+
+`codex\PROMPT_ROUND15.txt` — four repairs and one decision. Base `codex\FROZEN_R15_BASE.html`,
+`0C17FB66…`, 8,599,649 bytes (= round 14's output). **Not yet given to Codex; the owner is reviewing.**
+
+| job | what |
+|---|---|
+| **BO** | a double-click on the document marker presses whatever Docs renders under the cursor — aimed at the document's own Undo button it destroyed 11 characters of writing, **still gone after closing and reopening**. Ship-blocker. |
+| **BP** | after following a reference chip, "Update block" and Delete act on the block you did *not* navigate to — writes `START[RENAMED HERE]` instead of `SIGN[…]`. Ship-blocker. |
+| **BQ** | a chip promising "Go to this block" opens a live editing panel for a block nowhere on screen, says nothing, and accepts the edit. |
+| **BR** | Tab over a selection in the code editor deletes the selected text. Pre-existing, live today. |
+| + | two one-liners: the tour card's DOM position (72–81 Tab presses → about one) and two sentences the app says that are false. |
+
+**The decision inside it, which removes two items at zero cost:** three rounds have proved those 324
+marker pixels cannot honour both contracts at once. The corner becomes a **single-purpose control** —
+one click opens the document; right-click and Ctrl+click fall through to the block. Drag and
+double-click-rename belong to the block's body. Fix the comment above `resolveNodeIdFromElement` and
+the v1.59.1 release note, and two defects become documented behaviour.
+
+**And a pre-committed exit rule:** BO gets **one attempt**. If the re-measure is not clean, the marker
+click is dropped entirely — the glyph stays as an indicator and documents open from the block's
+right-click Documents row, which already works. Do not attempt it twice.
+
+## Behind it
+
+`codex\PROMPT_ROUND16.txt` is not written yet; `codex\ROUND16_BRIEF.md` is. It carries:
+
+- **BL — embed ELK, one build, no external host.** The owner decided this on 26 August after asking
+  why it could not simply be embedded. **It is prototyped and proved**, not reasoned about:
+  `tools\build_elk_inline.py`, `tools\patch_elk_embedded.py`, `qa_exports\verify_elk_embedded.js`.
+  Measured with every non-local request **aborted at the browser**: the app boots and draws, ELK
+  re-lays the diagram (viewBox `0 0 432.64 641.72` → `4 4 417.64 568.72`), **zero requests had to be
+  aborted**, no errors. Result 10,239,589 bytes (+19.1%) and a policy naming no host at all.
+  **The trap, and it fails silently:** ELK's helper chunk declares its own `o` and the entry module
+  imports a *different* helper under the same name. Concatenated in one scope the wrong function is
+  called with no error. Each module keeps its own scope.
+- **BM** — round 12's confirmation work redone: seven destroying actions were repainted safe.
+- **BN** — the merge sentence that promises a snapshot of the wrong diagram, and a stale Guide.
+
+## Everything is reproducible from tracked artefacts
+
+`codex\FROZEN_R11_BASE.html` is byte-identical to `releases\SIREN_v1.70.0.html`. Each later base is
+the previous one plus a SHA-pinned chain in `codex\round11_patches\`, `round13_patches\`,
+`round14_patches\`. Copies with hashes in the filenames are in `backups\2026-08-26_*`.
+
+## One finished thing of mine, unshipped
+
+`tools\patch_guided_tab_selected.py` — pressing **Guided** lit up **Code**, and pressing **Code**
+while the Guided rows showed did nothing. Both measured with positive controls. **It rides out with
+whatever ships next.**
+
+## The interface work, decided but not started
+
+Three moves, in order. **Show only the style controls that work on this diagram type** — 112 of 260
+pairs do nothing and 79 of those give no sign at all; hide, never grey. **A flat bar of three
+controls above the preview** — the owner answered "three, personally" on 26 August, which fires the
+condition the investigation set and kills the expandable chip bar. **One control per verb.**
+
+He named his three: ELK on/off, block colour, font. Measured: font works on 20/20, block colour on
+9/20 (and the app *already* says "no styleable blocks" on the rest — the one place in the panel that
+gets this right), **ELK on 7/20 while offered on 20**. So the bar is **three slots with type-dependent
+contents**: font always first, the other two filled by what actually bites on this diagram.
+
+## Method notes
+
+- The **refute** pass has now changed the verdict in four consecutive rounds. Do not skip it.
+- Codex has corrected a diagnosis in my brief three times and been right every time. Keep telling him
+  to argue with my measurements.
+- `au_lib.js` in `qa_exports\r10_verify\` is **mine**, not his — I read a report naming it and passed
+  the blame on without checking. Fixed, with the reason in the code.
+- The Bash tool collapses backslashes in heredocs. Write probe and patch files with the Write tool.
+
+---
+
 # Resume here — 26 August 2026 (three rounds held, round 14 staged)
 
 **Read this block first.** Everything below it is history.

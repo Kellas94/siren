@@ -91,10 +91,10 @@ async function clickSel(page, sel, opts = {}) {
 }
 
 /* Press Tab n times with REAL key presses, recording who ends up with focus each time. */
-async function tabWalk(page, n) {
+async function tabWalk(page, n, back) {
   const seq = [];
   for (let i = 0; i < n; i++) {
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(back ? 'Shift+Tab' : 'Tab');
     await page.waitForTimeout(45);
     seq.push(await page.evaluate(ACTIVE));
   }
@@ -172,8 +172,36 @@ async function measureTabWork(page, rec, tag) {
   await clickSel(page, '#textModeButton');
   await clickNeutral(page);
   rec[tag + '_ring'] = await page.evaluate(TABBABLES);
-  const seq = await tabWalk(page, 30);
-  rec[tag + '_walk'] = seq;
+  const fwd = await tabWalk(page, 22, false);
+  // Forwards, Tab is legitimately swallowed by the code editor - that is the editor's own indent,
+  // not a refusal. The preview-side controls sit past it, so they are counted on a BACKWARDS walk
+  // from the same neutral start, which wraps round the end of the document. Same two walks on
+  // both builds; nothing here is build-specific.
+  await clickNeutral(page);
+  const back = await tabWalk(page, 14, true);
+  // The preview toolbar sits past the editor in document order, so neither of the two walks above
+  // arrives there. Start a third one from empty preview space and step backwards into it.
+  const pv = await page.evaluate(`(() => {
+    const pane = document.querySelector('#zoomViewport, .preview-pane');
+    if (!pane) return null;
+    const r = pane.getBoundingClientRect();
+    for (let dy = 12; dy < r.height - 12; dy += 14) {
+      for (let dx = 8; dx < r.width - 8; dx += 18) {
+        const x = r.left + dx, y = r.top + dy;
+        const e = document.elementFromPoint(x, y);
+        if (!e) continue;
+        if (e.closest('.tour-card, #nodeInspector, g.node, [data-node-id], path, button, a, input')) continue;
+        return { x, y };
+      }
+    }
+    return null;
+  })()`);
+  if (pv) { await page.mouse.click(pv.x, pv.y); await page.waitForTimeout(400); }
+  const prev = pv ? await tabWalk(page, 12, false) : [];
+  const seq = fwd.concat(back, prev);
+  rec[tag + '_walkForward'] = fwd;
+  rec[tag + '_walkBackward'] = back;
+  rec[tag + '_walkPreview'] = prev;
   const distinct = Array.from(new Set(seq.filter(s => s !== 'BODY' && s.indexOf('TOURCARD:') !== 0)));
   rec[tag + '_distinctAppStops'] = distinct.length;
   rec[tag + '_stopsInCard'] = seq.filter(s => s.indexOf('TOURCARD:') === 0).length;
@@ -227,6 +255,33 @@ SCENARIOS['tab-work-tour-gone'] = async (page, rec) => {
   rec.skipped = await skipTour(page);
   rec.tourAtStart = await page.evaluate(TOUR);
   await measureTabWork(page, rec, 'gone');
+};
+
+/* One step sideways: somebody typing a block label presses Tab expecting Add block, then presses
+   Enter on whatever it landed on. On a build that yanks focus to the tour card, that Enter is
+   Skip - and the label they typed has to survive it. */
+SCENARIOS['visual-label-tab-then-enter'] = async (page, rec) => {
+  rec.tourAtStart = await page.evaluate(TOUR);
+  await setSourceChecked(page, FIXTURE, 1800);
+  await clickSel(page, '#visualModeButton', { wait: 1000 });
+  rec.visualPanel = await page.evaluate("(() => { const p = document.getElementById('visualModePanel'); return !!p && !p.hidden; })()");
+  const lab = await clickSel(page, '#visualNodeLabel', { wait: 300 });
+  rec.labelClicked = !!lab;
+  if (!lab) { rec.skip = 'no label field'; return; }
+  await page.keyboard.type('Review request', { delay: 45 });
+  rec.labelTyped = await page.evaluate("document.getElementById('visualNodeLabel').value");
+  rec.nodesBefore = await page.evaluate("(document.getElementById('visualNodeCount')||{}).textContent");
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(400);
+  rec.focusAfterTab = await page.evaluate(ACTIVE);
+  rec.labelAfterTab = await page.evaluate("document.getElementById('visualNodeLabel').value");
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1400);
+  rec.tourAfterEnter = await page.evaluate(TOUR);
+  rec.labelAfterEnter = await page.evaluate("document.getElementById('visualNodeLabel').value");
+  rec.nodesAfterEnter = await page.evaluate("(document.getElementById('visualNodeCount')||{}).textContent");
+  rec.sourceHasBlock = (await page.evaluate("document.getElementById('source').value")).indexOf('Review request') >= 0;
+  rec.labelSurvived = rec.labelAfterEnter === 'Review request';
 };
 
 /* Shift+Tab, one step sideways from the fixture the branch was written for. */
