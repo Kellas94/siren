@@ -83,9 +83,15 @@ Two artifacts hold the thinking, both current:
 type (hide, never grey — 13 on a flowchart, 5 on a sequence, 3 on C4); put a visible bar above the
 preview whose chips show their current values and expand in place; and keep one control per verb.
 
-**One question is open and it blocks the second move.** If what the owner touches most is genuinely
-nine settings, the expandable chip bar wins. If it is three, put those three flat on the bar with no
-expansion — 40px, zero clicks, and it beats the chips outright. He was asked and has not answered.
+**ANSWERED 26 August: three, personally.** That fires the condition the investigation set and
+settles the second move — a flat row of three wins outright, so **the expandable chip bar is out**.
+About 40px, zero clicks, no tray. The prototype at `prototypes\look_bar.html` stays as evidence of
+what was compared, not as the thing to build.
+
+**The one question left is WHICH three.** Nothing else stands between here and building it. Likely
+candidates, to be confirmed rather than assumed: theme, font size, and flow direction — but the
+measured matrix covers a different thirteen controls (direction and theme live elsewhere in the app),
+so this needs his answer, not an inference from the data.
 
 ## Method notes worth carrying
 
