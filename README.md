@@ -1,11 +1,21 @@
 # T-Industries SIREN
 
-A single-file HTML tool for diagrams, documentation and presentation. One file, opened in any
-browser, working entirely offline: `T_Industries_SIREN_v1.html`, currently **1.69.0**, 8,563,119
-bytes, SHA-256 `1C088DAC741F7D216474FDC7F6F58ED941E26F053B0175718F7281BD8B3A1288`.
+SIREN provides diagrams, Docs, presentations and a desktop-oriented Code workspace.
+The current qualified local HTML release is **v1.131.0 / R78**, 13,626,609 bytes,
+SHA-256 `5FCE39D9AFC9D8D9A7367647A23AA5B07A00C61BDC357E369805D0BD3754FAA4`.
+The live file is replaced only by the qualified release process; it is not edited in place.
 
-The live copy is not in this repository — it lives at
-`C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html` and is replaced only by a verified release.
+The next edition is **planned**, not shipped: Windows portable Electron/Chromium,
+local projects, online activation with 30 days offline, Disaster Recovery and signed
+updates with a **Check for Updates** button. Source remains private; the user selected
+public signed binary packages through a separate GitHub Releases repository.
+No production desktop package, issuer, signing keys or update feed is available yet.
+
+Read the [current specification](docs/superpowers/specs/2026-10-02-siren-portable-foundation-design-v4.md)
+and [implementation plan](docs/superpowers/plans/2026-10-02-siren-portable-foundation-v2.md).
+The written plan awaits human review before product scaffolding/dependency installation.
+See [synchronization scope](docs/releases/2026-10-02-github-sync-scope.md) for what this update includes;
+it does not claim the complete local release/verification history has been uploaded.
 
 ## What this repository is for
 

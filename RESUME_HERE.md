@@ -1,3 +1,31 @@
+# Current checkpoint — 2 October 2026
+
+**Qualified installed HTML:** v1.131.0/R78, 13,626,609 bytes,
+SHA-256 `5FCE39D9AFC9D8D9A7367647A23AA5B07A00C61BDC357E369805D0BD3754FAA4`.
+The local live and frozen R78 files were read back unchanged during this documentation update.
+
+Only T248–T255 close in R78. Remaining defect IDs: G-14, G-6, T116, T157, T234, T256, T85;
+nine historical owner requests remain separately recorded. T256 large native input latency is unresolved.
+The existing application does not yet support the proposed hundreds-of-thousands-line targets.
+Read the [installed verification consolidation](docs/releases/2026-10-02-v1.131.0-installed-verification.md),
+[release note](RELEASE_NOTE_v1.131.0_FINAL.md) and [compose record](COMPOSE_MANIFEST_R78.md).
+These are copied records with their original authorship/scope, not new independent approvals.
+
+**Next development:** portable first, web later; Electron/Chromium runtime patches belong to SIREN;
+private source and public signed binary releases; online activation, 30 days offline;
+manual Check for Updates; an explicit Disaster Recovery module (crash/corruption/safe startup,
+verified restored copy and recovery/export after expiry). No Python execution or automatic project upload.
+
+The [updated written plan](docs/superpowers/plans/2026-10-02-siren-portable-foundation-v2.md)
+contains nine tasks in substantial batches, with genuine independent qualification before public delivery.
+Spec/scope were approved; the actual written plan is pending human review. No new desktop package,
+product dependencies, external distribution repository, authentication service or updater was created.
+[Sync scope](docs/releases/2026-10-02-github-sync-scope.md) lists precisely what was brought into GitHub.
+
+Everything below is preserved historical context, superseded for current state by this block.
+
+---
+
 # Resume here — 26 August 2026, evening. START WITH THIS BLOCK.
 
 **Live app:** `C:\Users\tsinc\Downloads\T_Industries_SIREN_v1.html` — **v1.70.0**, 8,591,186 bytes,
