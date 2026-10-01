@@ -63,6 +63,10 @@
 !docs/**/*.md
 !.claude/skills/**/*.md
 
+# ---- current qualification records (text only) -----------------------------------------------
+!RELEASE_NOTE_*.md
+!COMPOSE_MANIFEST_*.md
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.
