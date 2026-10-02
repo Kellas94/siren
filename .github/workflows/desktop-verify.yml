@@ -24,6 +24,12 @@ jobs:
           cache-dependency-path: desktop/package-lock.json
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
+      - name: Diagnose owned temporary fixture paths
+        timeout-minutes: 1
+        run: |
+          node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
+          node --test --test-reporter=tap tests/io.test.mjs
+          exit $LASTEXITCODE
       - name: Unit and protocol behavior (includes real 180-second timeout)
         timeout-minutes: 6
         run: |
