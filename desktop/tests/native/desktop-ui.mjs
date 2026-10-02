@@ -18,7 +18,12 @@ try {
   await driver.evaluate(`(()=>{const e=document.getElementById('desktopOptions'),r=e.getBoundingClientRect(),cover=document.createElement('div');cover.id='intentionalOcclusion';Object.assign(cover.style,{position:'fixed',left:r.x+'px',top:r.y+'px',width:r.width+'px',height:r.height+'px',zIndex:2147483647,background:'red'});document.body.append(cover)})()`);
   await assert.rejects(driver.click('#desktopOptions'), /Occluded/); await driver.evaluate('document.getElementById("intentionalOcclusion").remove()');
   for (const theme of ['dark', 'light']) {
-    await driver.click('#themeMenuButton'); await driver.click(`[data-theme-value="${theme}"]`);
+    await driver.click('#themeMenuButton');
+    // Theme-menu placement explicitly schedules another animation frame. Keep
+    // one real pointer click, after the same hit/animation sensor as Code uses.
+    const themeSelector = `[data-theme-value="${theme}"]`;
+    await driver.waitFor(`(()=>{const e=document.querySelector(${JSON.stringify(themeSelector)}),m=document.getElementById('themeMenu');if(!e||!m||m.hidden)return false;const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return r.width>0&&r.height>0&&x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&e.contains(document.elementFromPoint(x,y))&&m.getAnimations().length===0})()`);
+    await driver.click(themeSelector);
     await driver.waitFor(`document.body.dataset.theme === '${theme}'`);
     await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
     await driver.click('#desktopOptions'); await driver.click('#desktopCheckUpdates');
@@ -56,4 +61,12 @@ try {
   await driver.waitFor('document.getElementById("desktopControlsPanel")?.open && document.querySelector(".desktop-state").textContent.includes("not configured")');
   await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Dark/Warm Light actual pointer controls and Code opacity, negative occlusion oracle, real Find Ctrl+K keyboard update route; production states covered by separate actual HTTP service tests', projectId: first.project.id }, null, 2));
   console.log(JSON.stringify({ completed: true, evidence }));
+} catch (error) {
+  if (driver) {
+    await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
+    const state = await driver.evaluate(`({theme:document.body.dataset.theme,menu:{hidden:document.getElementById('themeMenu')?.hidden,expanded:document.getElementById('themeMenuButton')?.getAttribute('aria-expanded'),rect:document.getElementById('themeMenu')?.getBoundingClientRect().toJSON()},options:[...document.querySelectorAll('[data-theme-value="dark"],[data-theme-value="light"]')].map(e=>{const r=e.getBoundingClientRect(),h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {theme:e.dataset.themeValue,rect:r.toJSON(),hit:e.contains(h),cover:h?.id||h?.className||h?.tagName}})})`).catch(() => null);
+    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ error: String(error.stack || error), state }, null, 2));
+    console.error('SIREN_DESKTOP_UI_DIAGNOSTIC ' + JSON.stringify(state));
+  }
+  throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }

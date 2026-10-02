@@ -8,6 +8,55 @@
     parent.append(element); return element;
   };
   const message = value => { if (status) status.textContent = value; };
+  function showAccessScreen() {
+    if (document.getElementById('desktopAccessScreen')) return;
+    if (panel?.open) panel.close();
+    const screen = document.createElement('dialog'); screen.id = 'desktopAccessScreen'; screen.className = 'desktop-access-screen';
+    screen.setAttribute('aria-labelledby', 'desktopAccessTitle'); screen.setAttribute('aria-describedby', 'desktopAccessDescription');
+    // Synthetic product illustrations only. Never read a locked project's content.
+    const scene = document.createElement('div'); scene.className = 'desktop-access-scene'; scene.setAttribute('aria-hidden', 'true');
+    scene.innerHTML = `<div class="access-orbit access-orbit-one"></div><div class="access-orbit access-orbit-two"></div>
+      <section class="access-art access-art-diagram"><span>DIAGRAMS</span><svg viewBox="0 0 300 180" fill="none"><path d="M65 60H150V120H235M150 60V25H235"/><rect x="15" y="40" width="100" height="40" rx="12"/><rect x="185" y="5" width="100" height="40" rx="12"/><rect x="185" y="100" width="100" height="40" rx="12"/><text x="65" y="65">Context</text><text x="235" y="30">Explore</text><text x="235" y="125">Create</text></svg><small>From ideas to connections</small></section>
+      <section class="access-art access-art-code"><span>⌘ CODE</span><pre><b>def</b> explore(context):\n    <i>"""Make the idea clear."""</i>\n    steps = document(context)\n    <b>return</b> connect(steps)</pre><div class="access-code-lines"><i></i><i></i><i></i></div></section>
+      <section class="access-art access-art-docs"><span>DOCS · AGENTS</span><h3>A shared understanding.</h3><div class="access-doc-lines"><i></i><i></i><i></i></div><div class="access-doc-tags">Context <span>→</span> Decisions <span>→</span> Evidence</div></section>
+      <section class="access-art access-art-slides"><span>PRESENTATIONS</span><div class="access-slide"><small>01 / THE BIG PICTURE</small><h3>Ideas.<br>Made visible.</h3><div class="access-slide-chart"><i></i><i></i><i></i><i></i></div></div></section>`;
+    screen.append(scene);
+    const centre = document.createElement('div'); centre.className = 'desktop-access-centre'; screen.append(centre);
+    const brand = document.createElement('div'); brand.className = 'desktop-access-brand'; brand.textContent = 'SIREN'; centre.append(brand);
+    const title = document.createElement('h1'); title.id = 'desktopAccessTitle'; title.textContent = 'Your ideas, connected.'; centre.append(title);
+    const description = document.createElement('p'); description.id = 'desktopAccessDescription'; description.textContent = 'Diagrams. Code. Documentation. Presentations.'; centre.append(description);
+    const form = document.createElement('form'); form.className = 'desktop-access-form'; centre.append(form);
+    const field = (id, caption, type) => {
+      const label = document.createElement('label'); label.htmlFor = id;
+      const text = document.createElement('span'); text.textContent = caption; label.append(text);
+      const input = document.createElement('input'); input.id = id; input.type = type; input.required = true; label.append(input); form.append(label); return input;
+    };
+    const user = field('desktopAccessUser', 'Username', 'text'); user.value = 'tsinc'; user.autocomplete = 'username'; user.maxLength = 128; user.spellcheck = false;
+    const pin = field('desktopAccessPin', 'PIN', 'password'); pin.inputMode = 'numeric'; pin.autocomplete = 'off'; pin.pattern = '[0-9]{4,12}'; pin.maxLength = 12; pin.minLength = 4; pin.placeholder = 'Enter your PIN';
+    const submit = document.createElement('button'); submit.id = 'desktopAccessUnlock'; submit.type = 'submit'; submit.className = 'desktop-access-primary'; submit.textContent = 'Unlock workspace'; form.append(submit);
+    const state = document.createElement('p'); state.id = 'desktopAccessStatus'; state.setAttribute('role', 'status'); state.setAttribute('aria-live', 'polite'); state.textContent = 'Design preview · PIN unlock is not configured yet.'; form.append(state);
+    screen.addEventListener('keydown', event => {
+      // Account fields must not invoke the workspace's keyboard commands.
+      event.stopPropagation();
+      if (event.key === 'Enter' && (event.target === pin || event.target === user)) { event.preventDefault(); form.requestSubmit(); }
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault(); pin.value = '';
+      state.textContent = 'PIN unlock is not configured yet. This preview does not activate your account.'; pin.focus();
+    });
+    const actions = document.createElement('div'); actions.className = 'desktop-access-actions'; centre.append(actions);
+    button(actions, 'desktopAccessOnline', 'Activate online', async () => {
+      pin.value = ''; const control = document.getElementById('desktopAccessOnline'); control.disabled = true;
+      state.textContent = 'Opening secure account activation…';
+      try { const result = await bridge.beginLogin(); if (result.ok === false) state.textContent = result.message; else location.reload(); }
+      catch { state.textContent = 'Activation did not complete. Your local projects are retained.'; }
+      finally { if (control.isConnected) control.disabled = false; }
+    });
+    button(actions, 'desktopAccessBack', 'Back to workspace', () => screen.close());
+    const note = document.createElement('p'); note.className = 'desktop-access-note'; note.textContent = 'Development preview · Local projects stay on this computer.'; centre.append(note);
+    screen.addEventListener('close', () => { pin.value = ''; screen.remove(); document.getElementById('desktopOptions')?.focus(); }, { once: true });
+    document.body.append(screen); screen.showModal(); pin.focus();
+  }
   function updateView(state) {
     if (!state || typeof state.phase !== 'string') return;
     updateState = state;
@@ -26,7 +75,7 @@
     button(controls, 'desktopExportProject', 'Export saved backup…', async () => { if (boot?.snapshot) { const result = await bridge.exportProject(boot.snapshot.project.id); message(result.ok ? 'The saved backup was exported.' : result.message); } else message('Choose a project first, or export a verified recovery point.'); });
     button(controls, 'desktopRecovery', 'Disaster Recovery…', async () => { panel.close(); await showRecovery(); });
     button(controls, 'desktopLogin', 'Account status', async () => { const state = await bridge.getAccess(); message(`Account: ${state.state}\nOffline activation until: ${state.offlineUntil ? new Date(state.offlineUntil).toLocaleString() : 'not activated'}\nThe production account service is not configured yet.`); });
-    button(controls, 'desktopAccountSignIn', 'Sign in…', async () => { const result = await bridge.beginLogin(); if (result.ok === false) message(result.message); else location.reload(); });
+    button(controls, 'desktopAccountSignIn', 'Sign in / access preview…', showAccessScreen);
     button(controls, 'desktopLogout', 'Sign out', async () => { const result = await bridge.logout(); if (result.ok === false) message(result.message); else location.reload(); });
     button(controls, 'desktopCheckUpdates', 'Check for Updates', async () => updateView(await bridge.checkForUpdates()));
     button(controls, 'desktopDownloadUpdate', 'Download update', async () => updateView(await bridge.downloadUpdate()));

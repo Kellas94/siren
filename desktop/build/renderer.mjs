@@ -104,7 +104,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           clearTimeout(saveTimer); clearTimeout(draftTimer);
           if (window.sirenDesktopBootstrap?.snapshot && window.sirenDesktopBootstrap?.mode === 'normal') {
             const result = await saveState();
-            if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged');
+            if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged: ' + (result?.status || 'unknown'));
           }
           const flushed = await window.sirenDesktopFlush();
           if (flushed?.ok === false) throw new Error('Recovery not acknowledged');

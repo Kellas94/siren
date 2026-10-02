@@ -67,7 +67,11 @@ test('successful login preserves edits queued during the browser round trip befo
   window.sirenDesktopBeginAccountTransition = async () => { const result = await window.sirenDesktopFlush(); if (result?.ok === false) throw new Error('Save failed'); };
   window.sirenDesktopEndAccountTransition = () => {};
   const ui = await readFile(new URL('../src/ui/desktop.js', import.meta.url), 'utf8');
-  const callback = ui.match(/'desktopAccountSignIn', 'Sign in…', (async \(\) => \{[^\n]+\})\);/)[1];
+  const callbackMatch = ui.match(/'desktopAccessOnline', 'Activate online', (async \(\) => \{[\s\S]*?\n    \})\);/);
+  assert.ok(callbackMatch, 'Exercise the access screen actual native activation handler');
+  const callback = callbackMatch[1];
+  context.pin = { value: '' }; context.state = { textContent: '' };
+  context.document = { getElementById: () => ({ disabled: false, isConnected: true }) };
   const first = store.set('workspace', 'older'); await entered;
   const signingIn = vm.runInContext('(' + callback + ')()', context);
   const newer = store.set('workspace', 'newer during browser login'); finishLogin();

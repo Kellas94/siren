@@ -64,6 +64,8 @@ try {
   if (driver) {
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
     result.failureState = await driver.evaluate(`({body:document.body.className,source:document.getElementById('source')?.value,readonlyBanner:document.getElementById('readOnlyBanner')?.textContent,editor:[...document.querySelectorAll('#codeEditor,#structureEditor')].map(e=>({id:e.id,hidden:e.hidden,display:getComputedStyle(e).display,rect:e.getBoundingClientRect().toJSON()}))})`).catch(() => null);
+    result.saveState = await driver.evaluate(`({state:document.getElementById('saveStateChip')?.dataset.state,text:document.getElementById('saveStateText')?.textContent,confirmationOpen:document.getElementById('confirmDialog')?.open,confirmationText:document.getElementById('confirmDialog')?.textContent})`).catch(() => null);
+    result.nativeSnapshot = await new ProjectStore(root).readProject(result.bootstrap?.project?.id).catch(error => ({ error: error.message }));
   }
-  await save(); throw error;
+  await save(); console.error(JSON.stringify({ evidence, error: result.error, saveState: result.saveState })); throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }

@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { launchDesktop } from './drive.mjs';
+
+const evidence = resolve('evidence', `access-screen-${new Date().toISOString().replaceAll(':', '-')}`);
+await mkdir(evidence, { recursive: true });
+const root = await mkdtemp(join(evidence, 'data-'));
+const result = { completed: false, scope: 'Fullscreen access design preview, actual pointer/keyboard, theme and reduced motion. No PIN authentication or account activation is claimed.', build: JSON.parse(await readFile('generated/build.json', 'utf8')) };
+let driver;
+try {
+  driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+  await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
+  await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
+  if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
+  if (await driver.evaluate('!!document.querySelector(".tour-card")')) {
+    await driver.waitFor('Number(getComputedStyle(document.querySelector(".tour-card")).opacity)>.99');
+    await driver.click('.tour-card .tour-actions .ghost');
+  }
+  const before = await driver.evaluate('window.sirenDesktop.getAccess()');
+  // This owned preview scenario checks animation with motion allowed, independent
+  // of the host's accessibility setting. Explicit reduced motion is checked below.
+  await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+  assert.equal(await driver.evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches'), false);
+  for (const theme of ['dark', 'light']) {
+    await driver.click('#themeMenuButton');
+    await driver.waitFor(`(()=>{const e=document.querySelector('[data-theme-value="${theme}"]'),r=e?.getBoundingClientRect();return !!r&&r.width>0&&e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})()`);
+    await driver.click(`[data-theme-value="${theme}"]`);
+    await driver.waitFor(`document.body.dataset.theme==='${theme}'`);
+    await driver.click('#desktopOptions'); await driver.click('#desktopAccountSignIn');
+    await driver.waitFor('document.getElementById("desktopAccessScreen")?.open');
+    await driver.waitFor('Number(getComputedStyle(document.querySelector(".desktop-access-centre")).opacity)>.99');
+    // Reproduce the existing workspace toast entering the browser top layer
+    // above a modal. Synthetic notification only; no project content is read.
+    await driver.evaluate(`(()=>{const t=document.getElementById('toast');t.textContent='Synthetic workspace notification';t.classList.add('is-visible');t.showPopover();})()`);
+    await driver.waitFor('Number(getComputedStyle(document.getElementById("toast")).opacity)>.99');
+    assert.equal(await driver.evaluate('document.getElementById("toast").checkVisibility({checkOpacity:true,checkVisibilityCSS:true})'), false, 'Workspace notifications must not cover the access preview');
+    await driver.evaluate('document.getElementById("toast").hidePopover()');
+    const state = await driver.evaluate(`(()=>{const e=document.getElementById('desktopAccessScreen'),r=e.getBoundingClientRect();return {rect:r.toJSON(),w:innerWidth,h:innerHeight,fields:[...e.querySelectorAll('input')].map(i=>({id:i.id,type:i.type})),decorative:e.querySelector('.desktop-access-scene')?.getAttribute('aria-hidden'),focused:document.activeElement?.id,background:getComputedStyle(e).backgroundColor,animated:e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length};})()`);
+    assert.equal(state.rect.x, 0); assert.equal(state.rect.y, 0);
+    assert.equal(state.rect.width, state.w); assert.equal(state.rect.height, state.h);
+    assert.deepEqual(state.fields, [{ id: 'desktopAccessUser', type: 'text' }, { id: 'desktopAccessPin', type: 'password' }]);
+    assert.equal(state.decorative, 'true'); assert.equal(state.focused, 'desktopAccessPin');
+    assert.ok(state.animated > 0); result[theme] = state;
+    await driver.click('#desktopAccessPin'); await driver.send('Input.insertText', { text: '0000' });
+    await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    await driver.waitFor('document.getElementById("desktopAccessStatus").textContent.includes("does not activate") && document.getElementById("desktopAccessPin").value===""');
+    assert.equal(await driver.evaluate('document.getElementById("desktopAccessPin").value'), '');
+    assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
+    await driver.screenshot(join(evidence, `access-${theme}.png`));
+    await driver.click('#desktopAccessOnline');
+    await driver.waitFor('document.getElementById("desktopAccessStatus").textContent.includes("production account service")');
+    await driver.click('#desktopAccessBack');
+    await driver.waitFor('!document.getElementById("desktopAccessScreen")');
+    assert.equal(await driver.evaluate('!!document.getElementById("desktopAccessScreen")'), false);
+    await driver.click('#desktopOptions'); await driver.click('#desktopCloseControls');
+  }
+  await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await driver.click('#desktopOptions'); await driver.click('#desktopAccountSignIn');
+  assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").getAnimations({subtree:true}).filter(a=>a.playState==="running").length'), 0);
+  await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await driver.waitFor('!document.getElementById("desktopAccessScreen")');
+  assert.equal(await driver.evaluate('document.activeElement?.id'), 'desktopOptions');
+  assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
+  result.reducedMotion = true; result.completed = true;
+  console.log(JSON.stringify({ completed: true, evidence }));
+} catch (error) {
+  result.error = String(error.stack || error); if (driver) await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
+  throw error;
+} finally {
+  await writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
+  if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); }
+}

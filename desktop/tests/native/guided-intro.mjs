@@ -74,26 +74,55 @@ try {
   }
   await driver.waitFor('document.getElementById("introOverviewDialog").open');
   result.replay.overview = true;
+  // Exercise the accessibility branch explicitly on every host. The media
+  // override belongs to this owned probe page; no Windows preference is changed.
+  await driver.click('#closeIntroOverview');
+  await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  assert.equal(await driver.evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches'), true);
+  await driver.click('#headerMoreButton'); await driver.click('.struct-menu-item:nth-child(2)');
+  await driver.waitFor('document.getElementById("guideDialog").open');
+  await driver.click('#replayIntroButton');
+  await driver.waitFor('document.getElementById("introOverviewDialog").open');
+  assert.equal(await driver.evaluate('document.getElementById("sirenIntroOverlay").hidden && !document.getElementById("sirenIntroOverlay").classList.contains("is-running")'), true, 'Reduced motion replay must skip animation and retain overview');
+  result.reducedMotionReplay = { skippedAnimation: true, overview: true };
+  await driver.send('Emulation.setEmulatedMedia', { features: [] });
   await writeFile(join(evidence, 'guided-electron.log'), driver.logs()); await driver.close(); driver = null;
 
   // Add a passive frame observer before document scripts, using an owned test entry.
   // The unchanged real main creates and loads the actual SIREN BrowserWindow.
   const fixture = join(evidence, 'observer-entry'); await mkdir(fixture);
-  const observer = `window.__sirenPaintEvidence={frames:[],mutations:[],started:performance.now()};const sample=()=>{const b=window.__sirenPaintEvidence;const app=document.getElementById('codeModeButton');const intro=document.getElementById('sirenIntroOverlay');const rect=app?.getBoundingClientRect();b.frames.push({at:performance.now(),appVisible:!!rect&&rect.width>0&&rect.height>0&&app.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}),introVisible:!!intro&&!intro.hidden&&intro.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}),introHidden:intro?.hidden,introClass:intro?.className});if(b.frames.length<180)requestAnimationFrame(sample);};requestAnimationFrame(sample);new MutationObserver(()=>{const b=window.__sirenPaintEvidence;const i=document.getElementById('sirenIntroOverlay');if(i&&b.mutations.length<200)b.mutations.push({at:performance.now(),hidden:i.hidden,className:i.className});}).observe(document,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class']});`;
+  // Frame count is not startup readiness. Slow hosted parsing must not exhaust
+  // observation before SIREN initialises; retain a bounded window until the real
+  // startup animation has completed, without changing app visibility or timing.
+  const observer = `window.__sirenPaintEvidence={frames:[],mutations:[],started:performance.now(),finished:false};const sample=()=>{const b=window.__sirenPaintEvidence;const app=document.getElementById('codeModeButton');const intro=document.getElementById('sirenIntroOverlay');const rect=app?.getBoundingClientRect();b.frames.push({at:performance.now(),appVisible:!!rect&&rect.width>0&&rect.height>0&&app.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}),introVisible:!!intro&&!intro.hidden&&intro.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}),introHidden:intro?.hidden,introClass:intro?.className});if(!b.finished&&b.frames.length<4096&&performance.now()-b.started<30000)requestAnimationFrame(sample);else b.observationEnded=true;};requestAnimationFrame(sample);new MutationObserver(()=>{const b=window.__sirenPaintEvidence;const i=document.getElementById('sirenIntroOverlay');if(i&&b.mutations.length<500)b.mutations.push({at:performance.now(),hidden:i.hidden,className:i.className});}).observe(document,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class']});`;
   await writeFile(join(fixture, 'package.json'), JSON.stringify({ type: 'module', main: 'entry.mjs' }));
   // Initialise an owned blank document so CDP can register before the actual
   // SIREN navigation. Timings below are SIREN-document-relative; the extra blank
   // navigation is driver setup, not a claim about process-launch latency.
-  await writeFile(join(fixture, 'entry.mjs'), `import {BrowserWindow} from 'electron';const load=BrowserWindow.prototype.loadURL;BrowserWindow.prototype.loadURL=async function(...args){await load.call(this,'about:blank');const w=this.webContents;w.debugger.attach('1.3');await w.debugger.sendCommand('Page.enable');await w.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument',{source:${JSON.stringify(observer)}});console.log('OWNED_FIRST_PAINT_OBSERVER_READY');return load.apply(this,args);};await import(${JSON.stringify(pathToFileURL(resolve('src/main.mjs')).href)});`);
+  // This case verifies the animation contract with motion allowed, regardless
+  // of hosted Windows accessibility defaults. Reduced motion is checked above.
+  // https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setEmulatedMedia
+  await writeFile(join(fixture, 'entry.mjs'), `import {BrowserWindow} from 'electron';const load=BrowserWindow.prototype.loadURL;BrowserWindow.prototype.loadURL=async function(...args){await load.call(this,'about:blank');const w=this.webContents;w.debugger.attach('1.3');await w.debugger.sendCommand('Page.enable');await w.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});await w.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument',{source:${JSON.stringify(observer)}});console.log('OWNED_FIRST_PAINT_OBSERVER_READY');return load.apply(this,args);};await import(${JSON.stringify(pathToFileURL(resolve('src/main.mjs')).href)});`);
   const freshRoot = await mkdtemp(join(evidence, 'fresh-data-'));
   const fresh = await new ProjectStore(freshRoot).createProject({ label: 'Fresh intro frame observation', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) });
   driver = await launchDesktop({ root: fixture, executable: resolve('node_modules/electron/dist/electron.exe'), extraArgs: [`--siren-test-root=${freshRoot}`, `--siren-test-project=${fresh.project.id}`] });
-  await driver.waitFor('window.__sirenPaintEvidence?.frames.length >= 170');
+  await driver.waitFor('window.__sirenPaintEvidence && (document.getElementById("brandVersion")?.textContent === "v1.131.0" || (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== "normal"))');
+  await driver.waitFor('document.getElementById("sirenIntroOverlay")?.hidden && document.getElementById("sirenIntroOverlay").getAnimations().length===0');
+  await driver.evaluate('window.__sirenPaintEvidence.finished=true');
+  await driver.waitFor('window.__sirenPaintEvidence.observationEnded');
   result.firstPaint = await driver.evaluate('window.__sirenPaintEvidence');
+  result.firstPaint.bootstrap = await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,projectId:window.sirenDesktopBootstrap?.snapshot?.project?.id})');
+  result.firstPaint.reducedMotion = await driver.evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches');
   assert.ok(driver.logs().includes('OWNED_FIRST_PAINT_OBSERVER_READY'));
   const frames = result.firstPaint.frames;
   const firstIntro = frames.findIndex(f => f.introVisible);
-  assert.ok(firstIntro >= 0, 'Fresh storage must show intro unless reduced motion is enabled');
+  console.log('SIREN_FIRST_PAINT_DIAGNOSTIC ' + JSON.stringify({ frameCount: frames.length, firstFrame: frames[0], lastFrame: frames.at(-1), firstIntro, mutationCount: result.firstPaint.mutations.length, bootstrap: result.firstPaint.bootstrap, reducedMotion: result.firstPaint.reducedMotion }));
+  assert.equal(result.firstPaint.bootstrap.mode, 'normal', 'Fresh intro fixture must actually enter the normal renderer');
+  assert.equal(result.firstPaint.bootstrap.readonly, false, 'Fresh owned intro project must be editable development mode');
+  assert.equal(result.firstPaint.bootstrap.projectId, fresh.project.id, 'Observe the exact owned fresh project');
+  assert.equal(result.firstPaint.reducedMotion, false, 'This owned startup fixture explicitly allows animation');
+  result.firstPaint.testMotionPreference = 'no-preference';
+  assert.ok(firstIntro >= 0, 'Fresh storage with motion allowed must show intro');
   result.firstPaint.firstIntroAt = frames[firstIntro].at;
   result.firstPaint.appBeforeIntro = frames.slice(0, firstIntro).filter(f => f.appVisible);
   result.firstPaint.flashConfirmed = result.firstPaint.appBeforeIntro.length > 0;

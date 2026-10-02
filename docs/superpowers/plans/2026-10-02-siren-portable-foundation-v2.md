@@ -39,6 +39,14 @@
 - [ ] The user explicitly allows the complete access screen to follow the current
   defect batch. Fix the reported pre-intro workspace flash now; record the
   access screen as pending rather than pretending it is already implemented.
+  A separately labelled fullscreen design preview is now available from
+  **Desktop → Sign in / access preview**: two central username/PIN fields,
+  theme-aware synthetic diagram/Code/Docs/presentation cards, restrained motion,
+  reduced-motion support and keyboard dismissal. PIN submission clears the field
+  and explains that unlock is not configured; it never grants activation. Online
+  activation uses the existing native account bridge. Startup gating, PIN
+  verification/storage/rate limits/reset and production service integration remain
+  pending. Do not equate this visual preview with completed authentication.
 - [ ] Reproduce the missing **Mermaid Guided chip editor** in desktop using real
   pointer input, including its editable and read-only states. Check import and
   restart, preserving project source bytes and explicit editing permissions.

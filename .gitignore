@@ -194,6 +194,17 @@
 !/desktop/tests/native/dev-first-run.mjs
 !/desktop/tests/native/guided-intro.mjs
 !/desktop/tests/process-identity.test.mjs
+!/desktop/reviews/2026-10-02-access-screen-preview-recheck.md
+!/desktop/reviews/2026-10-02-access-screen-preview-review.md
+!/desktop/reviews/2026-10-02-access-screen-toast-recheck.md
+!/desktop/reviews/2026-10-02-ci17-close-recovery-diagnosis.md
+!/desktop/reviews/2026-10-02-ci17-normal-exit-addendum.md
+!/desktop/reviews/2026-10-02-first-run-guided-intro-review.md
+!/desktop/reviews/2026-10-02-native-driver-ci17-followup.md
+!/desktop/reviews/native-access-layout.mjs
+!/desktop/reviews/native-access-toast.mjs
+!/desktop/reviews/native-intro-variants.mjs
+!/desktop/tests/native/access-screen.mjs
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

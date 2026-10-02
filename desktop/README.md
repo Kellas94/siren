@@ -17,6 +17,9 @@ npm start
 After this setup, double-click `../SIREN-Development.cmd` to open the editable
 local development build. It uses the installed runtime and the generated renderer
 in this checkout; it is not the portable distribution or production activation.
+The animated fullscreen access design can be previewed through **Desktop… →
+Sign in / access preview…**. The username/PIN screen is a labelled prototype:
+PIN verification and the production account service are not configured yet.
 
 Development data is isolated in `.dev-data/`. Import a complete `.siren` project
 explicitly; no installed/browser profile is imported automatically. The unchanged

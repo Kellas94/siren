@@ -155,6 +155,61 @@ actual visible hit readiness and emits failure geometry. Its CI rerun is pending
 `../SIREN-Development.cmd` opens the editable development build; packaged previews
 retain the activation write guard while the account service is unconfigured.
 
+Current follow-up (2 October 2026): fresh unpackaged development now creates an
+owned editable scratch project when none is selected. Actual native Guided label
+editing and durable save passed; the first opaque intro plate prevents the
+observed app-before-intro flash. Original independent returning/recovery/reduced
+motion observations are in `reviews/2026-10-02-first-run-guided-intro-review.md`.
+The frozen baseline remains unchanged.
+
+The c225aec package passed actual unactivated read-only enforcement, recovery into
+a new copy, clean Quit and Unicode folder-copy/restart at
+`evidence/packaged-2026-10-02T15-15-09.490Z`; both screenshots were inspected.
+Its archive SHA-256 is
+`442fe1267bd55bb35b5ae8121c710bed1c403ef5db3fd487e602787b6f9ed7f1`.
+The mapped CI6 native root launcher passed actual packaged Electron launch,
+exact Unicode child/session identity and clean close at
+`evidence/launcher-native-228e6ab8-2c4e-48b3-80db-d7b282dde37a`. This development
+result does not qualify the signed updater/helper or admit a release.
+
+Private desktop CI17 passed all 84 foundation tests and native shell, protected
+storage, account transition, Code windows and diagram/Code interaction. It failed
+four other native probes and remains a failed job. Its authenticated evidence ZIP
+SHA-256 is `1dad292cfaa0f771339023bb66435b340220c650ee2f5cd67fe04241f86c1761`.
+The Guided failure was the hosted reduced-motion preference; its probe now tests
+both preferences explicitly. Desktop UI now waits for actual menu readiness and
+retains its negative occlusion oracle. The original scoped diagnosis is
+`reviews/2026-10-02-native-driver-ci17-followup.md`. Code restart/close causes and
+the new hosted result remain under investigation. Launcher CI8 passed its scoped
+development checks. None of these are whole-release approvals.
+
+The new fullscreen animated access **design preview** is available through
+**Desktop → Sign in / access preview**. Synthetic diagram, Python, Docs and
+presentation cards surround two compact username/PIN fields. Actual native tests
+passed both themes, masked PIN clearing on Enter, unchanged activation, precise
+unconfigured online activation, Escape/focus restoration and reduced motion.
+The settled screenshots were inspected; after moving the footer into normal flow,
+the native probe passed again at `evidence/access-screen-2026-10-02T15-36-48.327Z`.
+Fourteen shell, storage and native-transition checks passed after adapting the
+real activation-handler test. PIN verification and startup access gating remain
+pending. The preview never grants activation; no PIN credential is embedded in
+source or package.
+
+Original preview findings and separately authored repair rechecks are preserved
+in `reviews/2026-10-02-access-screen-preview-review.md`,
+`reviews/2026-10-02-access-screen-preview-recheck.md` and
+`reviews/2026-10-02-access-screen-toast-recheck.md`. The footer no longer overlaps
+controls at the observed 320×240 CSS viewport; the existing workspace toast is
+conditionally hidden during access preview and restored afterward. The reviewer
+independently executed the real native preview and toast cases against stable
+renderer SHA-256 `6390ee4ddbda6278dfea1d94f59cebf855cf864563f457c0da5fa54a0471bcef`.
+The real fresh development and Code draft/normal-exit/restart tests also passed
+locally against that renderer. The Code restart probe now awaits actual native
+process exit before its cleanup/restart. CI17 close/recovery cause remains
+unproven; `reviews/2026-10-02-ci17-close-recovery-diagnosis.md` preserves the
+independent observations and the exact status/confirmation diagnostics added for
+the next hosted failure. No save retry or recovery-dialog dismissal was added.
+
 Still open:
 
 - Native launcher/helper, archive apply/rollback and signed-key rotation.
@@ -171,8 +226,9 @@ Still open:
   Actual released-launcher integration exposed lossy ASCII process identities
   in Unicode folders. A real Windows Unicode Node process test failed against
   the old inspector and passed after explicitly emitting UTF-8. Recovery tests
-  passed too. The rebuilt package and final CI are pending; earlier failed
-  integration and UI CI evidence is preserved.
+  passed too. Actual rebuilt package/root integration passed as described above;
+  full desktop CI remains pending. Earlier failed integration and UI CI evidence
+  is preserved.
 - Production account backend, renewal/revocation integration, signing keys and
   public update feed. The user confirmed no account service exists yet.
 - Complete license/security qualification. The inventory includes four production

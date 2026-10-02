@@ -35,6 +35,9 @@ try {
   while (Date.now() < closeUntil) { const events = JSON.parse(await readFile(join(root, 'Recovery', 'sessions.json'))).events; clean = events.some(e => e.event === 'clean-close'); if (clean) break; await delay(100); }
   if (!clean) await writeFile(join(evidence, 'close-diagnosis.json'), JSON.stringify(await driver.evaluate('window.sirenDesktopRequestClose().then(()=>({ok:true})).catch(e=>({error:e.message}))')));
   assert.equal(clean, true, 'Native Quit must await save/recovery and record a clean close');
+  // The journal event precedes window destruction. Do not force-kill the owned
+  // process while its normal unload/exit is still pending before a restart.
+  await driver.waitForExit();
   await driver.close(); driver = await launchDesktop({ extraArgs });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   const snapshot = await projects.readProject(first.project.id);
@@ -45,4 +48,13 @@ try {
   assert.ok((await driver.evaluate('document.getElementById("codeLibrarySection").textContent')).includes('Untitled 1.py'));
   await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Actual Python keyboard draft -> native checkpoint, no implicit Docs save, native Quit confirmation, restart and private draft library', projectId: first.project.id, pointId: point.id }, null, 2));
   console.log(JSON.stringify({ completed: true, evidence }));
+} catch (error) {
+  const failure = { completed: false, error: String(error.stack || error), snapshot: await projects.readProject(first.project.id).catch(error => ({ error: error.message })) };
+  if (driver) {
+    failure.ui = await driver.evaluate(`({confirmationOpen:document.getElementById('confirmDialog')?.open,confirmationText:document.getElementById('confirmDialog')?.textContent,saveState:document.getElementById('saveStateChip')?.dataset.state,saveText:document.getElementById('saveStateText')?.textContent,bootstrap:window.sirenDesktopBootstrap})`).catch(error => ({ error: error.message }));
+    await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
+  }
+  await writeFile(join(evidence, 'failure.json'), JSON.stringify(failure, null, 2));
+  console.error(JSON.stringify({ evidence, error: failure.error, ui: failure.ui }));
+  throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }
