@@ -1,0 +1,39 @@
+name: Native launcher development verification
+on:
+  pull_request:
+    paths: ['desktop/launcher/**', '.github/workflows/launcher-verify.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  launcher:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Official isolated Rust toolchain on hosted runner
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          rustc +1.99.0 --version
+          cargo +1.99.0 --version
+      - name: Behavior tests (development selection only)
+        run: |
+          New-Item -ItemType Directory -Force desktop/launcher/evidence | Out-Null
+          cargo +1.99.0 test --manifest-path desktop/launcher/Cargo.toml --features development-preview 2>&1 | Tee-Object -FilePath desktop/launcher/evidence/rust-tests.log
+          exit $LASTEXITCODE
+      - name: Keep private source qualification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: launcher-development-evidence
+          path: |
+            desktop/launcher/evidence/*
+            desktop/launcher/Cargo.lock
+          if-no-files-found: warn
+          retention-days: 14

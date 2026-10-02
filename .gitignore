@@ -153,6 +153,13 @@
 !/desktop/tests/native-transitions.test.mjs
 !/desktop/tests/native/account-transition.mjs
 
+!/desktop/launcher/Cargo.toml
+!/desktop/launcher/src/lib.rs
+!/desktop/launcher/src/main.rs
+!/desktop/launcher/src/selection.rs
+!/desktop/launcher/tests/selection.rs
+!/.github/workflows/launcher-verify.yml
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.
