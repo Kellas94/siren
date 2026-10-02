@@ -13,8 +13,14 @@ verification, anonymous GitHub discovery, bounded staging, cancellation and dail
 checks; Desktop controls, Find commands, native menus, Guide and Quick Tour.
 
 Evidence is local and scoped. Selected Node integration run 9 completed 71 tests
-with no failures. The full actual 180-second OIDC timeout was tested in earlier
-runs; it was intentionally filtered out of run 9. Actual Electron probes exercised
+with no failures. The later full CI-reproduction run completed all 72 tests,
+including the real 180-second OIDC callback timeout, in 180.8 seconds with no
+failures, cancellations or skips. The private draft implementation is PR #2.
+Remote CI exposed test fixtures using Windows's short TEMP alias (`RUNNER~1`)
+as an owned project path; product guards correctly rejected it. Test-created
+roots now use their real filesystem paths, keeping junction/alias rejection
+unchanged. The subsequent CI qualification is pending.
+Actual Electron probes exercised
 keyboard edits, redraw, disk readback/restart, corruption recovery, real private
 Python drafts, full .siren export, Dark/Warm Light controls and current-user DPAPI.
 Failed probes are retained; earlier renderer hashes do not qualify later builds.

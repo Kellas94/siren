@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPair, exportJWK, SignJWT } from 'jose';
-import { mkdtemp, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
+import { mkdtemp } from './fixtures/temporary.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 

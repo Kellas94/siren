@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp } from './fixtures/temporary.mjs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 

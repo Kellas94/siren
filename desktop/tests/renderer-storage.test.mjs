@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
+import { mkdtemp } from './fixtures/temporary.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildRenderer } from '../build/renderer.mjs';

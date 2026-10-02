@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, readdir } from 'node:fs/promises';
+import { readFile, writeFile, readdir } from 'node:fs/promises';
+import { mkdtemp } from './fixtures/temporary.mjs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';

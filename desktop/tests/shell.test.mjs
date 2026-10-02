@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, readFile, access, mkdir, symlink } from 'node:fs/promises';
+import { writeFile, readFile, access, mkdir, symlink } from 'node:fs/promises';
+import { mkdtemp } from './fixtures/temporary.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -79,5 +80,9 @@ test('an unusable portable data root requires explicit choice; cancel never redi
   assert.equal(choices, 1);
   assert.equal(await readFile(unusable, 'utf8'), 'ORIGINAL');
   const selected = join(dir, 'selected');
-  assert.equal(await chooseDataRoot({ preferred: unusable, choose: async () => selected }), selected);
+  let selections = 0;
+  assert.equal(await chooseDataRoot({ preferred: unusable, choose: async () => {
+    assert.equal(++selections, 1, 'The canonical chosen fixture must be accepted once');
+    return selected;
+  } }), selected);
 });
