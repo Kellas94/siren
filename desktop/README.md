@@ -31,3 +31,11 @@ An ASAR is a runtime container, not encryption or protection from reverse engine
 
 There is no admitted update installer or public feed yet. Existing Code size
 limits remain unchanged; large-source scalability is a separate planned phase.
+
+The first native development launcher is documented in
+[launcher/README.md](launcher/README.md). An attached preview starts through
+`SIREN.exe` at the portable folder root; keep its whole folder together. Private
+Windows CI verifies the typed selection, held-file checks, actual native fixture
+launch and production publisher refusal. It does not admit signed updates.
+Use `../SIREN-Development.cmd` for editing while the production account service
+remains unconfigured.

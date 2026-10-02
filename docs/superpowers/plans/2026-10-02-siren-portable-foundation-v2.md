@@ -14,6 +14,35 @@
 
 ## Global Constraints
 
+### User follow-up: opening sequence and PIN access (2 October 2026)
+
+- [ ] Enforce the startup order **opening animation → access screen → workspace**.
+  No workspace frame may appear before the opening animation or before access
+  has been granted. Verify real frame order, replay, reduced-motion behavior and
+  startup/recovery failures; do not hide a readiness failure behind an animation.
+- [ ] Add an access screen using **username and PIN**, rather than a password
+  field. The requested initial username is `tsinc`. The user supplied the initial
+  PIN privately in the conversation; it must be configured separately, not
+  copied into this plan, source, build receipt, logs or distributed package.
+- [ ] Make the access view cover the entire application window. Keep one calm
+  central form with two compact, clearly labelled fields (username and PIN).
+  Use restrained, high-quality motion and theme-aware backgrounds illustrating
+  diagrams, code, documentation and presentations. These are synthetic product
+  illustrations, never the user's locked project content. Maintain readable
+  contrast, keyboard/focus behavior, reduced motion and a clear error/working
+  state. Avoid additional OS windows or a crowded command surface.
+- [ ] Define the PIN/access integration with the approved online activation and
+  30-day offline permit. A local convenience unlock must not manufacture an
+  activation permit. Keep entry limits, safe credential storage, explicit reset,
+  accessibility and recovery/export on expired activation in the implementation
+  scope. The production account service remains unconfigured.
+- [ ] The user explicitly allows the complete access screen to follow the current
+  defect batch. Fix the reported pre-intro workspace flash now; record the
+  access screen as pending rather than pretending it is already implemented.
+- [ ] Reproduce the missing **Mermaid Guided chip editor** in desktop using real
+  pointer input, including its editable and read-only states. Check import and
+  restart, preserving project source bytes and explicit editing permissions.
+
 - “Windows x64 întâi”; initial qualification is Windows 11 25H2 x64, build 26200.9457 on the present machine, with clean-machine verification on another supported Windows 11 installation before a general portable claim. The registry's legacy ProductName string is not proof of Windows 10 support.
 - “Electron și folder/ZIP portabil, cu Chromium inclus”; SIREN distributes runtime patches. Recheck support/security advisories before installing the pinned candidate; a required version change is recorded explicitly before qualification.
 - “cont online, cu lucru offline după activare”; “30 de zile offline”. Save already-started work and allow recovery/read/export when activation expires.

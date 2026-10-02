@@ -158,8 +158,21 @@ retain the activation write guard while the account service is unconfigured.
 Still open:
 
 - Native launcher/helper, archive apply/rollback and signed-key rotation.
-  Local Rust installer execution was blocked by Windows Application Control;
-  no compiler test or policy bypass is claimed.
+  The first development-only launcher compiled with Rust 1.99.0 in private
+  Windows CI, run 37020405429: 10 selection tests, 2 actual native launch tests,
+  1 production publisher-refusal test and 7 attachment tests passed. The release
+  binary is 465,920 bytes, SHA-256
+  `6dde7374e965dcef44d730f1bc4a08042fab77b5873cc14fa96292edc2b5bfc2`.
+  Authenticated source/receipt mapping is independently recorded in
+  `reviews/2026-10-02-native-launcher-ci6-observation.md`. The two attachment
+  findings were independently rechecked; hostile directory-member insertion and
+  production helper/apply qualification remain open. Local Rust installer
+  execution was blocked by Windows Application Control; no policy was changed.
+  Actual released-launcher integration exposed lossy ASCII process identities
+  in Unicode folders. A real Windows Unicode Node process test failed against
+  the old inspector and passed after explicitly emitting UTF-8. Recovery tests
+  passed too. The rebuilt package and final CI are pending; earlier failed
+  integration and UI CI evidence is preserved.
 - Production account backend, renewal/revocation integration, signing keys and
   public update feed. The user confirmed no account service exists yet.
 - Complete license/security qualification. The inventory includes four production

@@ -15,6 +15,13 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   }
   let html = bytes.toString('utf8');
   if (expectedSha256.toLowerCase() === BASELINE_SHA256) {
+    // Paint the opening plate before document initialisation can expose controls.
+    // Returning users and native recovery explicitly retire this initial plate.
+    const openingPlate = '<div class="siren-intro-overlay" id="sirenIntroOverlay" hidden aria-hidden="true">';
+    const openingChoice = 'const introPlaying = sirenFirstRun ? playSirenIntro() : false;';
+    if (html.split(openingPlate).length !== 2 || html.split(openingChoice).length !== 2) throw new Error('Desktop opening plate marker mismatch');
+    html = html.replace(openingPlate, openingPlate.replace(' hidden', ''));
+    html = html.replace(openingChoice, 'const introPlaying = sirenFirstRun ? playSirenIntro() : (stopSirenIntro(), false);');
     // A floating editor must release the library's exclusive navigation state.
     // Keep the frozen web baseline intact; apply the qualified desktop change here.
     const codeRestore = 'onRestore:()=>{paintCodeWorkspace();queueCodeAnalysis();}';

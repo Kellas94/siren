@@ -17,3 +17,5 @@ body:has(.cw-restore:not([hidden])) .toast {bottom:114px !important;}
 body:has(.tour-card[data-desktop-step=true]) .toast {bottom:auto !important;top:140px;}
 body.desktop-account-transition {cursor:wait;}
 body.desktop-account-transition #desktopBar::after {content:'Saving before account change…';color:var(--text,#e8eef8);}
+.siren-intro-overlay {opacity:1;}
+@keyframes siren-intro-fade {0%,78% {opacity:1;} 100% {opacity:0;}}

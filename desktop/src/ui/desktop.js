@@ -93,7 +93,7 @@
     document.addEventListener('keydown', event => {
       if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'q') { event.preventDefault(); event.stopImmediatePropagation(); void bridge.requestClose(); }
     }, true);
-    if (boot?.mode && boot.mode !== 'normal') { document.body.classList.add('desktop-recovery-mode'); void showRecovery().then(() => window.sirenDesktopReady?.()); }
+    if (boot?.mode && boot.mode !== 'normal') { const opening = document.getElementById('sirenIntroOverlay'); if (opening) opening.hidden = true; document.body.classList.add('desktop-recovery-mode'); void showRecovery().then(() => window.sirenDesktopReady?.()); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true }); else mount();
 })();

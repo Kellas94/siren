@@ -42,12 +42,12 @@ try {
   const normal = await rect('#codeWorkspace');
   controlGeometry.normal = normal;
   await driver.click('#codeWorkspace [data-action="maximise"]');
-  await driver.waitFor('document.getElementById("codeWorkspace").dataset.windowMode === "maximised"');
+  await driver.waitFor(`(()=>{const e=document.getElementById('codeWorkspace'),r=e.getBoundingClientRect();return e.dataset.windowMode==='maximised'&&r.width>${normal.width}&&r.height>${normal.height}})()`);
   const full = await rect('#codeWorkspace');
   controlGeometry.maximised = full;
   assert.ok(full.width > normal.width && full.height > normal.height, 'Maximise must visibly change both dimensions');
   await driver.click('#codeWorkspace [data-action="maximise"]');
-  await driver.waitFor('document.getElementById("codeWorkspace").dataset.windowMode === "normal"');
+  await driver.waitFor(`(()=>{const e=document.getElementById('codeWorkspace'),r=e.getBoundingClientRect();return e.dataset.windowMode==='normal'&&r.x===${normal.x}&&r.y===${normal.y}&&r.width===${normal.width}&&r.height===${normal.height}})()`);
   assert.deepEqual(await rect('#codeWorkspace'), normal, 'Restore must retain original geometry');
   await drag('#codeWorkspace .cw-head', 45, 25, true);
   await driver.waitFor(`(()=>{const r=document.getElementById('codeWorkspace').getBoundingClientRect();return r.x===${normal.x+45}&&r.y===${normal.y+25}})()`);

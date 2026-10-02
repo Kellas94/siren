@@ -43,20 +43,13 @@ jobs:
         run: node build/renderer.mjs baseline/R78.html generated
       - name: Actual development renderer and protected storage
         run: |
-          node tests/native/shell.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/protected-storage.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/account-transition.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/code-windows.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/desktop-ui.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/code-recovery.mjs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/code-diagram-interaction.mjs
-          exit $LASTEXITCODE
+          $nativeFailures = @()
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'code-diagram-interaction', 'guided-intro', 'dev-first-run')) {
+            Write-Output "Native behavior: $nativeScript"
+            node "tests/native/$nativeScript.mjs"
+            if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
+          }
+          if ($nativeFailures.Count -gt 0) { throw "Native checks failed: $($nativeFailures -join ', ')" }
       - name: Development package identity (not publication or release admission)
         run: |
           $sourceCommit = git rev-parse HEAD

@@ -181,6 +181,19 @@
 
 !/desktop/reviews/2026-10-02-native-launcher-membership-recheck.md
 !/desktop/reviews/2026-10-02-native-launcher-ci6-observation.md
+!/desktop/
+!/desktop/launcher/
+!/desktop/launcher/probe-packaged.mjs
+!/desktop/launcher/probe-packaged.ps1
+!/desktop/reviews/
+!/desktop/reviews/2026-10-02-code-window-ci15-diagnosis.md
+!/desktop/reviews/2026-10-02-code-window-ci16-css-review.md
+!/desktop/reviews/2026-10-02-process-identity-utf8-review.md
+!/desktop/tests/
+!/desktop/tests/native/
+!/desktop/tests/native/dev-first-run.mjs
+!/desktop/tests/native/guided-intro.mjs
+!/desktop/tests/process-identity.test.mjs
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

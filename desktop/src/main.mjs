@@ -83,6 +83,11 @@ const exportBytes = async (bytes, suggested) => {
   await atomicWrite(result.filePath, bytes);
   return { ok: true };
 };
+// A fresh editable development checkout starts with its own empty workspace.
+// Never replace a selection or conceal recovery, and retain packaged activation.
+if (!app.isPackaged && !selectedId && mode === 'normal') {
+  await selected(await projects.createProject({ label: 'Untitled desktop project', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) }));
+}
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 protocol.handle('siren', async request => {
