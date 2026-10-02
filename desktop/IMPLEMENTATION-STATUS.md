@@ -1,5 +1,28 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Private CI20 process-identity follow-up
+
+Desktop CI20 (run 37041533572) retained 110 passing tests and one failing
+strict Windows process-identity test. It stopped before renderer/native/package
+steps. Its `first?.pid` observation does not establish whether PowerShell timed
+out, parsing failed or the owned process exited. The original cause remains
+unclassified; no CI20 approval is claimed.
+
+An independent actual PowerShell experiment reproduced a five-second deadline
+rejecting the exact live Unicode child after six seconds of controlled startup
+latency. The bounded deadline is now ten seconds. The new regression passes
+that live case and still cancels twelve-second queries, keeping unknown startup
+readonly. Existing exact PID/path/creation-time and dead-process checks remain.
+An optional failure diagnostic records only name/code/killed/signal; default
+startup does not log paths or query output. Six focused tests passed locally,
+including the four integration tests. The full 112-test suite and a fresh
+package/CI run are tracked separately. The package evidence below predates
+this inspector change and remains bound to its original source and archive.
+
+The current raw Electron PIN probe `local-pin-2026-10-02T17-50-38.429Z`
+completed setup/change/lock, real restart, persisted cooldown and exact
+source/private-draft recovery. Renderer remains `240a2b60f014d2be861c608b265e024b91373c12dfdda6fd580b4ff2abc2aca6`.
+
 ## Local PIN first — current refinement
 
 The user deferred online accounts and approved a local changeable application

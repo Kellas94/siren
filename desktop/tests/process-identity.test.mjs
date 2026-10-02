@@ -19,7 +19,7 @@ test('real Windows process identity preserves Unicode executable paths and stabl
   try {
     const [bytes] = await once(child.stdout, 'data');
     const expected = JSON.parse(bytes.toString('utf8').trim());
-    const first = await inspectWindowsProcess(child.pid);
+    const first = await inspectWindowsProcess(child.pid, { onFailure: failure => console.error('OWNED_PROCESS_IDENTITY_FAILURE ' + JSON.stringify({ pid: child.pid, ...failure })) });
     assert.equal(first?.pid, child.pid);
     assert.equal(first.path, expected.path, 'An altered path cannot identify the actual owned process');
     assert.match(first.startedAt, /^\d{4}-\d{2}-\d{2}T/);
