@@ -25,7 +25,11 @@ jobs:
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
       - name: Unit and protocol behavior (includes real 180-second timeout)
-        run: npm run verify
+        timeout-minutes: 6
+        run: |
+          New-Item -ItemType Directory -Force evidence | Out-Null
+          npm run verify 2>&1 | Tee-Object -FilePath evidence/ci-units.log
+          exit $LASTEXITCODE
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
       - name: Actual development renderer and protected storage
@@ -48,9 +52,11 @@ jobs:
         with:
           name: desktop-development-evidence
           path: |
+            desktop/evidence/ci-units.log
             desktop/evidence/*/result.json
             desktop/evidence/*/*.png
             desktop/evidence/*/*.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14
+
