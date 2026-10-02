@@ -8,6 +8,7 @@ From this directory with Node 24.16.0:
 
 ```powershell
 npm ci
+npm run runtime:install
 npm run verify
 node build/renderer.mjs baseline/R78.html generated
 npm start

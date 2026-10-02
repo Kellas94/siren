@@ -1,5 +1,11 @@
 # Development dependency decisions — 2 October 2026
 
+Electron 44.5.1's installed npm manifest exposes `install-electron` and has no
+automatic install lifecycle script. Fresh setups run `npm run runtime:install`
+explicitly after `npm ci`; this invokes the pinned package's own downloader with
+its bundled checksums. No global npm script policy is changed. Source:
+[Electron v44.5.1 npm manifest](https://github.com/electron/electron/blob/v44.5.1/npm/package.json).
+
 Exact npm registry/manifests and installed LICENSE texts were read before retention:
 
 | Package | Version | License | Role |

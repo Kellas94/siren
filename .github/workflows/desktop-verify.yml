@@ -24,6 +24,9 @@ jobs:
           cache-dependency-path: desktop/package-lock.json
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
+      - name: Install pinned Electron runtime explicitly
+        timeout-minutes: 5
+        run: npm run runtime:install
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |

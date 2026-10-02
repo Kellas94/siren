@@ -19,7 +19,11 @@ failures, cancellations or skips. The private draft implementation is PR #2.
 Remote CI exposed test fixtures using Windows's short TEMP alias (`RUNNER~1`)
 as an owned project path; product guards correctly rejected it. Test-created
 roots now use their real filesystem paths, keeping junction/alias rejection
-unchanged. The subsequent CI qualification is pending.
+unchanged. The subsequent full CI run passed all 72 tests and generated the
+same renderer hash. Its native stage failed because a fresh npm installation
+did not contain Electron's executable; explicit pinned runtime installation
+has now been added to CI and the development setup instructions. The complete
+CI/native qualification remains pending.
 Actual Electron probes exercised
 keyboard edits, redraw, disk readback/restart, corruption recovery, real private
 Python drafts, full .siren export, Dark/Warm Light controls and current-user DPAPI.
