@@ -59,6 +59,14 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 });
     };
     return { pid: child.pid, send, evaluate, waitFor, screenshot, click, events, logs: () => logs,
+      waitForExit: async () => {
+        if (exited) return;
+        await new Promise((resolve, reject) => {
+          const done = () => { clearTimeout(timer); resolve(); };
+          const timer = setTimeout(() => { child.removeListener('exit', done); reject(new Error('Owned SIREN did not exit after Quit')); }, 15000);
+          child.once('exit', done);
+        });
+      },
       close: async () => { ws.close(); if (!exited) { child.kill(); await Promise.race([new Promise(r => child.once('exit', r)), delay(5000)]); } } };
   } catch (error) { if (!exited) child.kill(); throw error; }
 }

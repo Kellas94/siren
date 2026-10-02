@@ -94,6 +94,14 @@ are retained: Windows reported the owned window hidden and suspended animation
 frames until screenshot capture. The native driver now uses Chromium's documented
 test-only occlusion switch; the packaged application is unchanged. DOM hit tests
 remain strict. That run does not qualify native Windows occlusion behavior.
+Follow-up CI [37010798911](https://github.com/Kellas94/siren/actions/runs/37010798911)
+passed all 83 tests and development probes but failed the package folder copy:
+the old driver killed only the browser parent and Chromium still held a network
+temporary file (`EBUSY`). This is retained as failure. The package probe now
+requests native Quit, waits for process exit and requires the final session event
+to be `clean-close` before copying. The new close assertion failed against the
+old driver (`ready` was last), then the unchanged local package passed complete
+restore/clean-exit/folder-copy/restart with the repaired probe. Final CI is pending.
 
 Packaged run 6 used source commit `224fb324d0ddd7f281660fb41bb5e64c8a7f812e`,
 renderer SHA-256 `b2d5ae84c8032cff8c3e623cbede9a29d11930c4336e9d1e00b30f19d08d151f`,

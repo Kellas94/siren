@@ -47,7 +47,11 @@ try {
   assert.equal(await driver.evaluate('document.getElementById("source").value'), source);
   assert.equal((await projects.readProject(project.project.id)).sha256, project.sha256);
   const recoveredId = await driver.evaluate('window.sirenDesktopBootstrap.snapshot.project.id');
+  await driver.evaluate('window.sirenDesktop.requestClose()');
+  await driver.waitForExit();
   await driver.close(); driver = null;
+  const closeEvents = JSON.parse(await readFile(join(dataRoot, 'Recovery', 'sessions.json'), 'utf8')).events;
+  assert.equal(closeEvents.at(-1)?.event, 'clean-close', 'Moving the full package requires an acknowledged normal application exit, not killing only its parent process');
   const secondRoot = join(evidence, 'Mutat-Știință-2'); await cp(firstRoot, secondRoot, { recursive: true, errorOnExist: true, force: false });
   driver = await launch(secondRoot); await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   assert.equal(await driver.evaluate('document.getElementById("source").value'), source);
