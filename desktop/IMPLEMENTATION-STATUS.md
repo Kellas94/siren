@@ -1,5 +1,63 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Locked first-paint / CI21 and CI22 follow-up
+
+Both hosted runs passed all 112 unit tests but failed the native Guided/intro
+visibility assertion, so their packaged step did not run. CI21 also observed
+an unavailable PIN bridge in dev-first-run; CI22 passed that fixture unchanged.
+Original logs and the authenticated CI21 artifact are retained. The recorded
+app-visible frames also had intro-visible true: CSS geometry alone does not
+prove a visible user-facing flash through the opaque plate.
+
+The strict visibility case reproduced locally on renderer240a at
+`guided-intro-2026-10-02T18-08-14.299Z`. The builder now emits a locked attribute
+on the document opening token, before body controls can be parsed. The PIN
+adapter releases this hold after the actual native bootstrap identifies an
+unlocked/recovery session. Builder marker validation is anchored to the first
+DOCTYPE/html opening so documentation examples do not match it. The initial
+failed marker build and old-renderer observation remain retained.
+
+Current renderer is `808e28032e63a54e6e7376118d9e275e404ffa940c9669038ffc4b12382d9ad8`.
+The root ran all 112 unit tests again: no failures/skips/cancellations,
+180920.3 ms, `evidence/pin-firstpaint-final-units.log`. Actual native Guided
+passed at18-08-56.431Z, themes/access at18-10-26.943Z and floating Code at
+18-10-36.344Z. The independent helper author qualified actual dev-first-run
+at18-11-38.660Z with locked/null snapshot before fixture authentication.
+The helper now waits for an exact app URL, native bridge and typed bootstrap
+receipt; undefined reload mode cannot pass. A missing receipt still fails at
+a bounded deadline with metadata. The original CI21 bridge cause remains
+unreproduced and unclassified; this hardening is not claimed as its proven fix.
+
+Independent current native review also passed Guided at18-10-44.220Z and the
+complete PIN lifecycle at18-11-28.669Z. Its separate evidence-only returning
+and damaged-recovery scenarios released the display gate after native unlock,
+retained exact source and left the damaged original unchanged. The report is
+`reviews/2026-10-02-firstpaint-pin-gate-review.md`; it distinguishes the DOM
+geometry predicate from compositor/video proof.
+
+The root built current package source `b6249016cc9a001c646cc183f3c38884da678b1d`,
+directory `dist/development-6d8d2781-d5dc-494b-b2ce-f19eb62b7e43`, ASAR SHA256
+`53da590bd172987fb0102b183dde6e5c921b4af6a2ec8f34f1c8251d63a1e9f5`.
+The actual unchanged CI6 root launcher completed Unicode startup, PIN-screen
+readiness and owned graceful close against it:
+`launcher-native-dbbf3d64-44b3-4505-99c4-7f62f68eb9d7`.
+Separate new packaged qualification and subsequent hosted verification are
+recorded in their own receipts/PR status. The independent packaged addendum
+retains three unchanged-test CDP Runtime.evaluate timeouts and two diagnostic
+passes. Neither diagnosed the timeout or established original test stability.
+Root subsequently ran the exact unchanged `tests/native/packaged.mjs` using
+explicit Node24.16.0 on ordinary approved Windows execution: exit0,
+`packaged-2026-10-02T18-28-50.568Z`, completedtrue. Actual new-package native
+gate, edit/save/readback, new-copy recovery, Unicode-copy relock/unlock and
+readonly refusal passed its existing oracles. This is one successful original
+execution; it does not prove the preceding timeouts fixed. All adverse receipts
+and independently authored mixed-result/runtime-provenance reports remain.
+The hosted run will report its own aggregate result separately.
+
+The reports below retain previous
+renderer/package bindings; their passes do not qualify this new renderer or
+establish a successful hosted aggregate run.
+
 ## Private CI20 process-identity follow-up
 
 Desktop CI20 (run 37041533572) retained 110 passing tests and one failing

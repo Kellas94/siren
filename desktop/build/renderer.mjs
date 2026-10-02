@@ -15,6 +15,11 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   }
   let html = bytes.toString('utf8');
   if (expectedSha256.toLowerCase() === BASELINE_SHA256) {
+    // Hold workspace visibility from the opening HTML token. The late adapter
+    // cannot protect controls already parsed during slow document startup.
+    const documentOpening = /^<!DOCTYPE html>\r?\n<html lang="en">/;
+    if (!documentOpening.test(html)) throw new Error('Desktop initial lock marker mismatch');
+    html = html.replace(documentOpening, '<!DOCTYPE html>\n<html lang="en" data-desktop-locked="true">');
     // Paint the opening plate before document initialisation can expose controls.
     // Returning users and native recovery explicitly retire this initial plate.
     const openingPlate = '<div class="siren-intro-overlay" id="sirenIntroOverlay" hidden aria-hidden="true">';

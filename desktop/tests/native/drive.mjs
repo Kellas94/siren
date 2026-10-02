@@ -5,10 +5,24 @@ import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import assert from 'node:assert/strict';
 
+// Target discovery identifies the page, not completion of its native preload.
+// Keep authentication separate from this bounded, read-only startup qualification.
+export async function waitForDesktopStartup(driver) {
+  const receipt = `(()=>{const b=window.sirenDesktopBootstrap;return {url:location.href,readyState:document.readyState,bridge:typeof window.sirenDesktop?.getPinState,bootstrap:b?{mode:b.mode,readonly:b.readonly,snapshotPresent:b.snapshot!=null,pin:b.pin}:null};})()`;
+  try {
+    await driver.waitFor(`(()=>{const r=${receipt};return r.url==='siren://app/app.html'&&r.bridge==='function'&&['locked','normal','readonly','recovery'].includes(r.bootstrap?.mode)&&typeof r.bootstrap?.readonly==='boolean'&&typeof r.bootstrap?.pin?.configured==='boolean'&&typeof r.bootstrap?.pin?.unlocked==='boolean';})()`);
+  } catch (error) {
+    const observed = await driver.evaluate(receipt).catch(error => ({ observationError: error.message }));
+    throw new Error('Native PIN startup receipt unavailable: ' + JSON.stringify(observed), { cause: error });
+  }
+  return driver.evaluate(receipt);
+}
+
 // Explicit fixture authorization: raw launchDesktop always exposes the real lock.
 // This uses the production native PIN receipts; it never edits bootstrap/storage.
 export async function unlockDesktop(driver, { pin, autoSetup = false } = {}) {
   assert.match(pin || '', /^(?:[0-9]{4}|[0-9]{6})$/, 'Owned fixture PIN must contain four or six digits');
+  await waitForDesktopStartup(driver);
   const state = await driver.evaluate(`(()=>{if(typeof window.sirenDesktop?.getPinState!=='function')throw new Error('Native PIN bridge unavailable');return window.sirenDesktop.getPinState();})()`);
   assert.equal(typeof state?.configured, 'boolean', 'Native PIN state must report configuration');
   assert.equal(typeof state?.unlocked, 'boolean', 'Native PIN state must report lock authority');
@@ -30,7 +44,7 @@ export async function unlockDesktop(driver, { pin, autoSetup = false } = {}) {
   // Use the same renderer reload as the real PIN UI. The CDP Page.reload command
   // can stall on this Electron custom-protocol target even after native success.
   if (await driver.evaluate('window.sirenDesktopBootstrap?.mode === "locked"')) await driver.evaluate('setTimeout(() => location.reload(), 0); true');
-  await driver.waitFor('window.sirenDesktopBootstrap?.mode !== "locked"');
+  await driver.waitFor(`location.href==='siren://app/app.html'&&typeof window.sirenDesktop?.getPinState==='function'&&['normal','readonly','recovery'].includes(window.sirenDesktopBootstrap?.mode)&&window.sirenDesktopBootstrap?.pin?.unlocked===true`);
   return unlocked;
 }
 

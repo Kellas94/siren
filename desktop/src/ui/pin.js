@@ -1,7 +1,10 @@
 (() => {
   const bridge = window.sirenDesktop, boot = window.sirenDesktopBootstrap;
-  if (!bridge || !boot?.localAccess) return;
-  if (boot.mode === 'locked') document.documentElement.dataset.desktopLocked = 'true';
+  if (!bridge || !boot) return;
+  // The generated HTML starts held before controls are parsed. Release only
+  // after the real native bootstrap identifies an unlocked/recovery session.
+  if (boot.mode !== 'locked') delete document.documentElement.dataset.desktopLocked;
+  if (!boot.localAccess) return;
   const make = (tag, parent, text, className) => {
     const e = document.createElement(tag); if (text) e.textContent = text;
     if (className) e.className = className; parent?.append(e); return e;

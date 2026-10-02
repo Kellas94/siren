@@ -1,19 +1,27 @@
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { ProjectStore } from '../../src/projects/store.mjs';
-import { launchDesktop, unlockDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop, waitForDesktopStartup } from './drive.mjs';
 
 // Fresh owned Data, deliberately no --siren-test-project or precreated project.
 const evidence = resolve('evidence', `dev-first-run-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-'));
 const build = JSON.parse(await readFile('generated/build.json', 'utf8'));
-const result = { completed: false, build, scope: 'Actual first development launch creates an owned editable scratch project; Guided keyboard save and floating Code minimise. Packaged account activation is not changed or bypassed.' };
+const sources = Object.fromEntries(await Promise.all(['src/main.mjs', 'src/preload.cjs', 'tests/native/drive.mjs', 'tests/native/dev-first-run.mjs'].map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])));
+const result = { completed: false, build, sources, scope: 'Actual first development launch creates an owned editable scratch project; Guided keyboard save and floating Code minimise. Packaged account activation is not changed or bypassed.' };
 let driver;
 const save = () => writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+  result.initialContext = await driver.evaluate(`({url:location.href,readyState:document.readyState,bridge:typeof window.sirenDesktop?.getPinState,bootstrapMode:window.sirenDesktopBootstrap?.mode})`).catch(error => ({ observationError: error.message }));
+  result.firstAppEntry = await waitForDesktopStartup(driver);
+  assert.equal(result.firstAppEntry.url, 'siren://app/app.html', 'First fixture authentication must use the actual app entry, never about:blank');
+  assert.equal(result.firstAppEntry.bootstrap.mode, 'locked');
+  assert.equal(result.firstAppEntry.bootstrap.snapshotPresent, false, 'First real app entry must still withhold the native snapshot');
+  assert.equal(result.firstAppEntry.bootstrap.pin.configured, false, 'Fresh owned Data must start without a configured PIN');
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   result.bootstrap = await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,project:window.sirenDesktopBootstrap?.snapshot?.project})');
@@ -64,9 +72,9 @@ try {
   result.error = String(error.stack || error);
   if (driver) {
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
-    result.failureState = await driver.evaluate(`({body:document.body.className,source:document.getElementById('source')?.value,readonlyBanner:document.getElementById('readOnlyBanner')?.textContent,editor:[...document.querySelectorAll('#codeEditor,#structureEditor')].map(e=>({id:e.id,hidden:e.hidden,display:getComputedStyle(e).display,rect:e.getBoundingClientRect().toJSON()}))})`).catch(() => null);
+    result.failureState = await driver.evaluate(`({url:location.href,readyState:document.readyState,bridge:typeof window.sirenDesktop?.getPinState,bootstrap:window.sirenDesktopBootstrap?{mode:window.sirenDesktopBootstrap.mode,readonly:window.sirenDesktopBootstrap.readonly,pin:window.sirenDesktopBootstrap.pin}:null,body:document.body?.className,source:document.getElementById('source')?.value,readonlyBanner:document.getElementById('readOnlyBanner')?.textContent,editor:[...document.querySelectorAll('#codeEditor,#structureEditor')].map(e=>({id:e.id,hidden:e.hidden,display:getComputedStyle(e).display,rect:e.getBoundingClientRect().toJSON()}))})`).catch(() => null);
     result.saveState = await driver.evaluate(`({state:document.getElementById('saveStateChip')?.dataset.state,text:document.getElementById('saveStateText')?.textContent,confirmationOpen:document.getElementById('confirmDialog')?.open,confirmationText:document.getElementById('confirmDialog')?.textContent})`).catch(() => null);
     result.nativeSnapshot = await new ProjectStore(root).readProject(result.bootstrap?.project?.id).catch(error => ({ error: error.message }));
   }
-  await save(); console.error(JSON.stringify({ evidence, error: result.error, saveState: result.saveState })); throw error;
+  await save(); console.error(JSON.stringify({ evidence, error: result.error, initialContext: result.initialContext, failureState: result.failureState, saveState: result.saveState })); throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }
