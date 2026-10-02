@@ -12,6 +12,7 @@ const root = await mkdtemp(join(evidence, 'data-'));
 const first = await new ProjectStore(root).createProject({ label: 'Code window controls', json: '{"source":"flowchart TD\\n A[Window controls]-->B[Local draft]"}' });
 const python = 'def review_agent(values):\n    return [value * 2 for value in values if value > 0]\n';
 let driver;
+const controlGeometry = {};
 const rect = selector => driver.evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}})()`);
 async function drag(selector, dx, dy, header = false) {
   const r = await rect(selector), x = header ? r.x + 100 : r.x + r.width / 2, y = r.y + r.height / 2;
@@ -39,15 +40,21 @@ try {
   await driver.waitFor('document.getElementById("codeWorkspace").getAnimations().length === 0');
   assert.equal(await driver.evaluate('document.getElementById("cwEditor").value'), python, 'Restore must retain exact draft bytes');
   const normal = await rect('#codeWorkspace');
+  controlGeometry.normal = normal;
   await driver.click('#codeWorkspace [data-action="maximise"]');
+  await driver.waitFor('document.getElementById("codeWorkspace").dataset.windowMode === "maximised"');
   const full = await rect('#codeWorkspace');
+  controlGeometry.maximised = full;
   assert.ok(full.width > normal.width && full.height > normal.height, 'Maximise must visibly change both dimensions');
   await driver.click('#codeWorkspace [data-action="maximise"]');
+  await driver.waitFor('document.getElementById("codeWorkspace").dataset.windowMode === "normal"');
   assert.deepEqual(await rect('#codeWorkspace'), normal, 'Restore must retain original geometry');
   await drag('#codeWorkspace .cw-head', 45, 25, true);
+  await driver.waitFor(`(()=>{const r=document.getElementById('codeWorkspace').getBoundingClientRect();return r.x===${normal.x+45}&&r.y===${normal.y+25}})()`);
   const moved = await rect('#codeWorkspace');
   assert.equal(moved.x, normal.x + 45); assert.equal(moved.y, normal.y + 25);
   await drag('#codeWorkspace .cw-resize', -100, -60);
+  await driver.waitFor(`(()=>{const r=document.getElementById('codeWorkspace').getBoundingClientRect();return r.width===${normal.width-100}&&r.height===${normal.height-60}})()`);
   const resized = await rect('#codeWorkspace');
   assert.equal(resized.width, normal.width - 100); assert.equal(resized.height, normal.height - 60);
   assert.equal(await driver.evaluate('document.getElementById("cwEditor").value'), python);
@@ -55,6 +62,7 @@ try {
   await driver.click('#codeWorkspace [data-window-transparency]');
   await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Home', code: 'Home', windowsVirtualKeyCode: 36 });
   await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+  await driver.waitFor('document.getElementById("codeWorkspace").dataset.glass === "true" && Number(document.querySelector("#codeWorkspace [data-window-transparency]").value) > 0');
   assert.ok(Number(await driver.evaluate('document.querySelector("#codeWorkspace [data-window-transparency]").value')) > 0);
   assert.equal(await driver.evaluate('document.getElementById("codeWorkspace").dataset.glass'), 'true');
   await driver.click('#codeWorkspace .cw-view summary');
@@ -82,8 +90,8 @@ try {
   if (driver) {
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
     const failureState = await driver.evaluate(`(()=>{const e=document.querySelector('[data-theme-value="light"]'),m=document.getElementById('themeMenu'),r=e?.getBoundingClientRect(),hit=r&&document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {libraryHidden:document.getElementById('codeLibrarySection')?.hidden,codeHidden:document.getElementById('codeWorkspace')?.hidden,headerInert:document.querySelector('.app-header')?.inert,workspaceInert:document.querySelector('.workspace')?.inert,viewport:{width:innerWidth,height:innerHeight},menu:{hidden:m?.hidden,scrollTop:m?.scrollTop,animations:m?.getAnimations().length},option:r&&{x:r.x,y:r.y,width:r.width,height:r.height},hit:hit?.outerHTML?.slice(0,500)}})()`).catch(() => null);
-    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify(failureState));
-    console.error(JSON.stringify({ codeWindowFailure: failureState }));
+    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ ...failureState, controlGeometry }));
+    console.error(JSON.stringify({ codeWindowFailure: failureState, controlGeometry }));
   }
   throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }
