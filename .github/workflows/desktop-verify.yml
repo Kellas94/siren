@@ -68,6 +68,12 @@ jobs:
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
             desktop/evidence/*/failure.json
+            desktop/evidence/*/failure-events.json
+            desktop/evidence/*/save-diagnostic.json
+            desktop/evidence/*/restore-boundary.json
+            desktop/evidence/*/recovered-at-restore.json
+            desktop/evidence/*/recovered-initial-revision.json
+            desktop/evidence/*/folder-copy.json
             desktop/evidence/*/*.png
             desktop/evidence/*/*.log
             desktop/dist/*/BUILD-IDENTITY.json

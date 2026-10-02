@@ -234,6 +234,10 @@
 !/desktop/reviews/2026-10-02-firstpaint-packaged-addendum.md
 !/desktop/reviews/2026-10-02-packaged-runtime-provenance.md
 !/desktop/reviews/2026-10-02-ci23-packaged-editor-save-review.md
+!/desktop/reviews/2026-10-02-ci24-recovered-snapshot-addendum.md
+
+!/desktop/reviews/2026-10-02-packaged-final-boundaries-addendum.md
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

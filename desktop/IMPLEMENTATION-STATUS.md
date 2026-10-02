@@ -1,5 +1,37 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## CI24 and final coherent packaged boundaries
+
+Desktop CI24 (`37051557179`) passed all112 unit/protocol tests (250417.4018ms)
+and all12 actual native groups, then failed packaged line110. The prior line's
+JSON equality passed, but the two assertions called readProject separately and
+combined different verified generations. The exact later fields/trigger are
+not retained in that hosted artifact; no invented payload diagnosis is used.
+Authenticated artifact11246613525 / ZIP SHA256
+`a2449fc65b413aef836c84cfd9c0727a814165840972aa74f80ddf2538501f26` and original
+decoded log remain. Its aggregate is FAILED. Launcher CI15 succeeded.
+
+The final test binds acknowledgment to its matching immutable revision file,
+initial recovery to the full native bootstrap/revision1/verified checkpoint,
+and later normal editing to one drained current snapshot with exact source
+and valid full hash. Directory movement is proved before launch by complete
+source/copy inventories, then while locked and by the immutable unlocked
+bootstrap; subsequent active saves are checked at their own current boundary.
+Inactive-original and native-readonly complete preservation checks remain.
+No expectation is reset after an action and no success assertion is retried.
+
+Exact test `771f17fb4836d4621f3ba6071edbc10cdc718ae7e4bf29814429686566a9d541`
+passed independently at19-25-15.713Z and separately in the coordinator's
+actual run at19-28-24.930Z, on unchanged local package b624/808/archive53da.
+Its predecessor8e7 passed independently at19-19-13.702Z and retains a separate
+frozen report. New independently authored addenda are
+`2026-10-02-ci24-recovered-snapshot-addendum.md` and
+`2026-10-02-packaged-final-boundaries-addendum.md`. Their previous failures and
+unclassified reload timeouts are preserved; no transport/runtime fix is claimed.
+The private workflow now retains exact named save/restore/copy/event diagnostic
+JSON files, excluding user Data. Subsequent hosted qualification belongs in
+the PR and local progress ledger; it is pending at this documentation freeze.
+
 ## Hosted CI23 and packaged save qualification
 
 Desktop CI23 (run `37048076118`) passed all 112 unit/protocol tests and all

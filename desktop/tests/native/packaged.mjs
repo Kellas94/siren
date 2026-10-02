@@ -1,11 +1,27 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile, cp, access } from 'node:fs/promises';
-import { resolve, join, dirname } from 'node:path';
+import { mkdir, readFile, writeFile, cp, access, readdir } from 'node:fs/promises';
+import { resolve, join, dirname, relative } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
 import { hashOwnedFile } from '../../src/updates/download.mjs';
+
+async function closedPackageInventory(root) {
+  const records = [];
+  const visit = async directory => {
+    for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) { records.push({ path: relative(root, path), kind: 'directory' }); await visit(path); }
+      else {
+        assert.equal(entry.isFile(), true, 'Owned closed package inventory must contain ordinary files');
+        const hash = await hashOwnedFile(path, 1024 ** 3);
+        records.push({ path: relative(root, path), kind: 'file', bytes: hash.bytes, sha256: hash.sha256 });
+      }
+    }
+  };
+  await visit(root); return records;
+}
 
 const original = resolve(process.argv[2] || '');
 assert.ok(process.argv[2], 'Supply a development package root, not a development renderer');
@@ -73,10 +89,11 @@ try {
   const savedState = JSON.parse(savedBag.storage['t-industries-siren-v23-state']);
   assert.equal(savedState.source, editedSource);
   assert.equal(savedState.diagrams.find(d => d.id === savedState.activeDiagramId)?.source, editedSource);
-  const selectedPointer = JSON.parse(await readFile(join(dataRoot, 'Projects', project.project.id, 'current.json'), 'utf8'));
-  const selectedBytes = await readFile(join(dataRoot, 'Projects', project.project.id, 'revisions', selectedPointer.file));
-  assert.equal(selectedPointer.revision, acknowledged.revision);
-  assert.equal(createHash('sha256').update(selectedBytes).digest('hex'), selectedPointer.sha256);
+  const acknowledgedRevisions = join(dataRoot, 'Projects', project.project.id, 'revisions');
+  const acknowledgedNames = (await readdir(acknowledgedRevisions)).filter(name => name.startsWith(`${acknowledged.revision}-`) && /^[0-9]+-[a-f0-9-]{36}\.json$/.test(name));
+  assert.equal(acknowledgedNames.length, 1);
+  const selectedBytes = await readFile(join(acknowledgedRevisions, acknowledgedNames[0]));
+  assert.equal(createHash('sha256').update(selectedBytes).digest('hex'), createHash('sha256').update(Buffer.from(JSON.stringify(acknowledged))).digest('hex'));
   assert.deepEqual(JSON.parse(selectedBytes.toString('utf8')), acknowledged, 'Readback must match the complete committed snapshot bytes');
   // This acknowledged saved checkpoint is the exact recovered-copy target.
   const restorePoint = (await new RecoveryStore(dataRoot).scan(project.project.id)).valid.find(p => p.kind === 'saved' && p.snapshot.sha256 === acknowledged.sha256 && p.snapshot.json === acknowledged.json);
@@ -105,9 +122,41 @@ try {
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0" && !!document.querySelector("svg .node")');
   assert.equal(await driver.evaluate('document.getElementById("source").value'), editedSource);
   assert.deepEqual(await projects.readProject(project.project.id), preservedOriginal, 'Recovery must preserve the complete acknowledged pre-restore original exactly');
-  const recoveredId = await driver.evaluate('window.sirenDesktopBootstrap.snapshot.project.id');
-  assert.equal((await projects.readProject(recoveredId)).json, acknowledged.json);
-  assert.equal((await projects.readProject(recoveredId)).sha256, acknowledged.sha256);
+  const recoveredBootstrap = await driver.evaluate('window.sirenDesktopBootstrap.snapshot');
+  const recoveredId = recoveredBootstrap.project.id;
+  assert.notEqual(recoveredId, project.project.id);
+  assert.equal(recoveredBootstrap.revision, 1);
+  assert.equal(recoveredBootstrap.json, acknowledged.json);
+  assert.equal(recoveredBootstrap.sha256, acknowledged.sha256);
+  // Independently inspect the initial recovered revision, which normal editing
+  // cannot rewrite, and its native saved checkpoint rather than a later pointer.
+  const recoveredRevisions = join(dataRoot, 'Projects', recoveredId, 'revisions');
+  const initialNames = (await readdir(recoveredRevisions)).filter(name => /^1-[a-f0-9-]{36}\.json$/.test(name));
+  assert.equal(initialNames.length, 1);
+  const initialRecovered = JSON.parse((await readFile(join(recoveredRevisions, initialNames[0]))).toString('utf8'));
+  assert.equal(initialRecovered.project.id, recoveredId); assert.equal(initialRecovered.revision, 1);
+  assert.equal(initialRecovered.json, acknowledged.json); assert.equal(initialRecovered.sha256, acknowledged.sha256);
+  assert.equal(createHash('sha256').update(Buffer.from(initialRecovered.json)).digest('hex'), initialRecovered.sha256);
+  const initialCheckpoint = (await new RecoveryStore(dataRoot).scan(recoveredId)).valid.find(point => point.kind === 'saved' && point.snapshot.revision === 1);
+  assert.ok(initialCheckpoint, 'Initial recovered revision must have its native saved checkpoint');
+  assert.deepEqual(initialCheckpoint.snapshot, initialRecovered, 'Initial recovered disk bytes and native checkpoint must describe the complete same snapshot');
+  assert.deepEqual(recoveredBootstrap, initialRecovered, 'Native initial bootstrap must match the complete immutable recovered revision');
+  await writeFile(join(evidence, 'recovered-initial-revision.json'), JSON.stringify(initialRecovered, null, 2));
+  // Normal initialization/editing may save a newer canonical envelope. Drain
+  // that production queue and inspect one complete current snapshot; do not
+  // combine JSON and hash from separate mutable-pointer generations.
+  await driver.evaluate('window.sirenDesktopRequestClose()');
+  const recoveredAtRestore = await projects.readProject(recoveredId);
+  await writeFile(join(evidence, 'recovered-at-restore.json'), JSON.stringify({ selectedCheckpoint: acknowledged, recoveredBootstrap, initialRecovered, recoveredAtRestore }, null, 2));
+  assert.equal(recoveredAtRestore.project.id, recoveredId);
+  assert.ok(recoveredAtRestore.revision >= initialRecovered.revision);
+  assert.equal(createHash('sha256').update(Buffer.from(recoveredAtRestore.json)).digest('hex'), recoveredAtRestore.sha256);
+  const recoveredBag = JSON.parse(recoveredAtRestore.json);
+  assert.equal(recoveredBag.kind, 'siren-desktop'); assert.equal(recoveredBag.schema, 1);
+  const recoveredState = JSON.parse(recoveredBag.storage['t-industries-siren-v23-state']);
+  assert.equal(recoveredState.source, editedSource);
+  assert.equal(recoveredState.diagrams.find(d => d.id === recoveredState.activeDiagramId)?.source, editedSource);
+  assert.deepEqual(await projects.readProject(project.project.id), preservedOriginal);
   await driver.evaluate('window.sirenDesktop.requestClose()');
   await driver.waitForExit();
   await driver.close(); driver = null;
@@ -118,7 +167,14 @@ try {
   const exitedBag = JSON.parse(recoveredAfterExit.json);
   const exitedSource = exitedBag.source ?? JSON.parse(exitedBag.storage['t-industries-siren-v23-state']).source;
   assert.equal(exitedSource, editedSource, 'Normal editable close must retain recovered source while serializing renderer state');
+  const closedInventory = await closedPackageInventory(firstRoot);
   const secondRoot = join(evidence, 'Mutat-Știință-2'); await cp(firstRoot, secondRoot, { recursive: true, errorOnExist: true, force: false });
+  const copiedInventory = await closedPackageInventory(secondRoot);
+  assert.deepEqual(copiedInventory, closedInventory, 'The complete closed package directory must copy with identical file names and bytes before launch');
+  await writeFile(join(evidence, 'folder-copy.json'), JSON.stringify({ source: closedInventory, copied: copiedInventory }, null, 2));
+  const movedProjects = new ProjectStore(join(secondRoot, 'Data'));
+  assert.deepEqual(await movedProjects.readProject(recoveredId), recoveredAfterExit, 'Copied snapshot must equal the normal-exit snapshot before a renderer can save');
+  assert.deepEqual(await movedProjects.readProject(project.project.id), preservedOriginal);
   driver = await launch(secondRoot);
   await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), null, 'Copied package must relock on fresh process startup');
@@ -126,11 +182,20 @@ try {
   const movedDenied = await driver.evaluate(`window.sirenDesktop.saveProject(${JSON.stringify({ projectId: recoveredId, baseRevision: 1, json: '{}', purpose: 'workspace' })})`);
   assert.equal(movedDenied.ok, false);
   assert.equal(movedDenied.code, 'PIN_REQUIRED');
+  assert.deepEqual(await movedProjects.readProject(recoveredId), recoveredAfterExit, 'Locked startup must preserve the complete copied snapshot');
+  assert.deepEqual(await movedProjects.readProject(project.project.id), preservedOriginal);
   await unlockDesktop(driver, { pin: '4826', autoSetup: false });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0" && !!document.querySelector("svg .node")');
   assert.equal(await driver.evaluate('document.getElementById("source").value'), editedSource);
-  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(recoveredId), recoveredAfterExit, 'Folder copy must retain the actual acknowledged normal-exit recovered snapshot');
-  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(project.project.id), preservedOriginal);
+  assert.deepEqual(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), recoveredAfterExit, 'Native copied-project bootstrap must exactly match the closed copied snapshot');
+  await driver.evaluate('window.sirenDesktopRequestClose()');
+  const movedCurrent = await movedProjects.readProject(recoveredId);
+  assert.equal(movedCurrent.project.id, recoveredId); assert.ok(movedCurrent.revision >= recoveredAfterExit.revision);
+  assert.equal(createHash('sha256').update(Buffer.from(movedCurrent.json)).digest('hex'), movedCurrent.sha256);
+  const movedState = JSON.parse(JSON.parse(movedCurrent.json).storage['t-industries-siren-v23-state']);
+  assert.equal(movedState.source, editedSource);
+  assert.equal(movedState.diagrams.find(d => d.id === movedState.activeDiagramId)?.source, editedSource);
+  assert.deepEqual(await movedProjects.readProject(project.project.id), preservedOriginal);
   assert.equal((await hashOwnedFile(join(secondRoot, receipt.appRelativePath), 1024 ** 3)).sha256, receipt.runtimeBinary.sha256);
   await driver.evaluate('window.sirenDesktop.requestClose()'); await driver.waitForExit(); await driver.close(); driver = null;
   const recoveredBeforeSafety = await new ProjectStore(join(secondRoot, 'Data')).readProject(recoveredId);
