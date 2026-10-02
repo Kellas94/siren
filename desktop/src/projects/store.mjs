@@ -5,8 +5,9 @@ import { ownedDirectory, childDirectory, ownedFile, validId } from './paths.mjs'
 import { atomicWrite, digest, exclusiveWriter } from './atomic.mjs';
 import { failure } from '../ipc.mjs';
 import { readOwnedBytes } from './io.mjs';
+import { MAX_WORKSPACE_BYTES, MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from './budgets.mjs';
 
-export const MAX_WORKSPACE_BYTES = 64 * 1024 * 1024;
+export { MAX_WORKSPACE_BYTES } from './budgets.mjs';
 export function validateWorkspace(json) {
   if (typeof json !== 'string' || Buffer.byteLength(json) > MAX_WORKSPACE_BYTES) throw new Error('Invalid workspace size');
   const parsed = JSON.parse(json);
@@ -50,16 +51,17 @@ export class ProjectStore {
     catch { throw new Error('Corrupt project selection; choose explicit recovery'); }
     if (pointer.schema !== 1 || !/^[0-9]+-[a-f0-9-]{36}\.json$/.test(pointer.file) || !/^[a-f0-9]{64}$/.test(pointer.sha256)) throw new Error('Invalid project selection');
     const revisions = await childDirectory(dir, 'revisions');
-    const bytes = await readOwnedBytes(join(revisions, pointer.file), MAX_WORKSPACE_BYTES * 2 + 65536);
-    if (bytes.length > MAX_WORKSPACE_BYTES * 2 || digest(bytes) !== pointer.sha256) throw new Error('Corrupt selected revision');
+    const bytes = await readOwnedBytes(join(revisions, pointer.file), MAX_SERIALIZED_WORKSPACE_BYTES);
+    if (digest(bytes) !== pointer.sha256) throw new Error('Corrupt selected revision');
     const snapshot = verifySnapshot(JSON.parse(bytes));
     if (snapshot.project.id !== id || snapshot.revision !== pointer.revision) throw new Error('Invalid project identity');
     return snapshot;
   }
   async commit(dir, snapshot) {
+    verifySnapshot(snapshot);
+    const bytes = serializeWorkspaceRecord(snapshot);
     const file = `${snapshot.revision}-${randomUUID()}.json`;
     const revisions = await childDirectory(dir, 'revisions');
-    const bytes = Buffer.from(JSON.stringify(snapshot));
     const sha256 = await atomicWrite(join(revisions, file), bytes, { fault: this.fault });
     await this.fault('revision-verified');
     await atomicWrite(join(dir, 'current.json'), Buffer.from(JSON.stringify({ schema: 1, file, revision: snapshot.revision, sha256 })), { fault: this.fault, selection: true });
@@ -69,7 +71,7 @@ export class ProjectStore {
   async preservePending(dir, record) {
     const pending = await childDirectory(dir, 'pending');
     const id = randomUUID();
-    await atomicWrite(join(pending, `${id}.json`), Buffer.from(JSON.stringify({ ...record, id, sha256: digest(Buffer.from(record.json)), createdAt: new Date().toISOString() })));
+    await atomicWrite(join(pending, `${id}.json`), serializeWorkspaceRecord({ ...record, id, sha256: digest(Buffer.from(record.json)), createdAt: new Date().toISOString() }));
     return id;
   }
   async listPending(id) {
@@ -77,7 +79,7 @@ export class ProjectStore {
     const pending = [];
     for (const name of await readdir(dir)) {
       if (!/^[a-f0-9-]{36}\.json$/.test(name)) continue;
-      try { const r = JSON.parse((await readOwnedBytes(join(dir, name), MAX_WORKSPACE_BYTES * 2 + 65536)).toString('utf8')); validateWorkspace(r.json); if (name === `${r.id}.json` && Number.isSafeInteger(r.baseRevision) && r.baseRevision >= 1 && Number.isFinite(Date.parse(r.createdAt)) && digest(Buffer.from(r.json)) === r.sha256 && r.projectId === id) pending.push(r); } catch { /* corrupted original remains on disk */ }
+      try { const r = JSON.parse((await readOwnedBytes(join(dir, name), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')); validateWorkspace(r.json); if (name === `${r.id}.json` && Number.isSafeInteger(r.baseRevision) && r.baseRevision >= 1 && Number.isFinite(Date.parse(r.createdAt)) && digest(Buffer.from(r.json)) === r.sha256 && r.projectId === id) pending.push(r); } catch { /* corrupted original remains on disk */ }
     }
     return pending;
   }
@@ -85,7 +87,7 @@ export class ProjectStore {
     if (!/^[a-f0-9-]{36}$/.test(pendingId)) throw new Error('Pending copy id refused');
     const directory = await childDirectory(await this.directory(projectId), 'pending');
     const path = await ownedFile(join(directory, `${pendingId}.json`));
-    const record = JSON.parse((await readOwnedBytes(path, MAX_WORKSPACE_BYTES * 2 + 65536)).toString('utf8'));
+    const record = JSON.parse((await readOwnedBytes(path, MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8'));
     if (record.projectId !== projectId || digest(Buffer.from(record.json)) !== record.sha256) throw new Error('Pending copy identity refused');
     await unlink(path);
   }
@@ -119,7 +121,7 @@ export class ProjectStore {
       for (const name of await readdir(revisions)) {
         if (!/^[0-9]+-[a-f0-9-]{36}\.json$/.test(name)) continue;
         try {
-          const record = verifySnapshot(JSON.parse((await readOwnedBytes(join(revisions, name), MAX_WORKSPACE_BYTES * 2 + 65536)).toString('utf8')));
+          const record = verifySnapshot(JSON.parse((await readOwnedBytes(join(revisions, name), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
           if (record.project.id === current.project.id && record.revision < current.revision) older.push({ name, revision: record.revision });
         } catch { /* damaged originals are retained */ }
       }

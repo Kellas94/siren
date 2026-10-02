@@ -1,5 +1,13 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Serialized workspace correction and approved desktop expansion
+
+Product commit `4f934bda0d04358253eab5ffdb7e27bc6d5b4c98` harmonizes raw64MiB/serialized128MiB+64KiB budgets and refuses oversized records before publishing them. Final full suite:115/115, no fail/skip/cancel,180972.4173ms. Independent source review by `/root/launcher_implementation` found no must-fix within that path; it did not execute these tests.
+
+New development ASAR `68048cd382f431b0662e881e3e48489ec0ea880ea8ae8a64880b869382cf0354`, package `development-0100310b-db0a-43e4-ac50-32ecab6c6c63`, passed the unchanged actual packaged probe771f17fb at `desktop/evidence/packaged-2026-10-02T20-28-24.199Z`. Renderer808e280 and Electron binary49b61a remain unchanged. Scoped proof: `desktop/reviews/2026-10-02-serialized-workspace-fix-evidence.md`. No new general scalability, physical multi-monitor, launcher/update-apply or release admission.
+
+User approved source-capacity and native-workspace designs under `docs/superpowers/specs/2026-10-02-siren-{large-sources,native-workspaces}-design.md`. Written plans are prepared for user review; implementation has not started. 100k/300k representative lines and byte/complexity budgets are targets, not current Code capability. Native Docs/Code/Presenter/Audience windows are planned, not existing independent OS windows. AI stays last. Hosted CI25 FAILED/access-screen and packaged SKIPPED remain historical facts; formal Security start produced no scan ID.
+
 ## CI24 and final coherent packaged boundaries
 
 Desktop CI24 (`37051557179`) passed all112 unit/protocol tests (250417.4018ms)

@@ -5,6 +5,7 @@ import { ownedDirectory, ownedFile, childDirectory, validId } from '../projects/
 import { atomicWrite, exclusiveWriter } from '../projects/atomic.mjs';
 import { verifySnapshot } from '../projects/store.mjs';
 import { readOwnedBytes } from '../projects/io.mjs';
+import { MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from '../projects/budgets.mjs';
 
 const uuid = value => typeof value === 'string' && /^[a-f0-9-]{36}$/.test(value);
 function verifyPoint(record) {
@@ -32,7 +33,7 @@ export class RecoveryStore {
       for (const name of await readdir(dir)) {
         if (!/^[a-f0-9-]{36}\.json$/.test(name)) continue;
         try {
-          const record = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, name), 128 * 1024 * 1024 + 65536)).toString('utf8')));
+          const record = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, name), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
           if (record.snapshot.project.id !== id || name !== `${record.id}.json`) throw new Error('Invalid checkpoint identity');
           valid.push(record);
         } catch { damaged = true; invalid.push({ id: name.slice(0, -5), projectId: id }); }
@@ -48,8 +49,8 @@ export class RecoveryStore {
     return exclusiveWriter(root, async () => {
       const dir = await childDirectory(root, snapshot.project.id, { create: true });
       const record = { schema: 1, id: randomUUID(), kind, createdAt: new Date(this.now()).toISOString(), snapshot };
-      await atomicWrite(join(dir, `${record.id}.json`), Buffer.from(JSON.stringify(record)), { fault: this.fault });
-      const verified = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, `${record.id}.json`), 128 * 1024 * 1024 + 65536)).toString('utf8')));
+      await atomicWrite(join(dir, `${record.id}.json`), serializeWorkspaceRecord(record), { fault: this.fault });
+      const verified = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, `${record.id}.json`), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
       if (verified.snapshot.json !== snapshot.json) throw new Error('Checkpoint readback mismatch');
       await this.fault('checkpoint-verified');
       const { valid } = await this.scan(snapshot.project.id);
@@ -92,7 +93,7 @@ export class RecoveryStore {
     const { invalid } = await this.scan(projectId);
     if (!invalid.some(p => p.id === pointId)) throw new Error('Damaged point unavailable');
     const dir = await childDirectory(await this.directory(), projectId);
-    return readOwnedBytes(join(dir, `${pointId}.json`), 128 * 1024 * 1024 + 65536);
+    return readOwnedBytes(join(dir, `${pointId}.json`), MAX_SERIALIZED_WORKSPACE_BYTES);
   }
   async readPoint(pointId) {
     if (!uuid(pointId)) throw new Error('Invalid recovery point');

@@ -1,3 +1,5 @@
+import { MAX_WORKSPACE_BYTES } from './projects/budgets.mjs';
+
 const id = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const empty = value => value === undefined || value === null;
 const pin = value => typeof value === 'string' && /^(?:[0-9]{4}|[0-9]{6})$/.test(value);
@@ -7,7 +9,7 @@ const save = value => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   if (Object.keys(value).sort().join(',') !== 'baseRevision,json,projectId,purpose') return false;
   if (!id(value.projectId) || !Number.isSafeInteger(value.baseRevision) || value.baseRevision < 0 || !['workspace', 'recovery'].includes(value.purpose)) return false;
-  if (typeof value.json !== 'string' || Buffer.byteLength(value.json) > 64 * 1024 * 1024) return false;
+  if (typeof value.json !== 'string' || Buffer.byteLength(value.json) > MAX_WORKSPACE_BYTES) return false;
   try { const parsed = JSON.parse(value.json); return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed); } catch { return false; }
 };
 export const METHODS = Object.freeze({
