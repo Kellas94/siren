@@ -1,3 +1,4 @@
+#![cfg(feature = "development-preview")]
 use std::{fs, path::PathBuf, sync::atomic::{AtomicUsize, Ordering}};
 use sha2::{Digest, Sha256};
 use serde_json::json;
