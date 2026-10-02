@@ -26,6 +26,10 @@ pub struct Selection {
     pub(crate) _guards: Vec<File>,
 }
 
+impl Selection {
+    pub fn recheck(&self) -> Result<(), String> { Ok(()) }
+}
+
 pub fn select(root: &Path) -> Result<Selection, String> {
     if !cfg!(feature = "development-preview") { return Err("PUBLISHER_NOT_CONFIGURED".into()); }
     let text = root.to_str().ok_or("ROOT_ENCODING_REFUSED")?;
@@ -82,7 +86,7 @@ fn normalized(value: &str) -> String {
 }
 
 fn hold(path: &Path, directory: bool) -> Result<File, String> {
-    let before = fs::symlink_metadata(path).map_err(|_| "ASSET_OPEN_FAILED")?;
+    let before = fs::symlink_metadata(path).map_err(|error| format!("ASSET_OPEN_FAILED: {} ({error})", path.display()))?;
     if before.file_type().is_symlink() || (directory && !before.is_dir()) || (!directory && !before.is_file()) { return Err("ASSET_TYPE_REFUSED".into()); }
     let mut options = OpenOptions::new(); options.read(true);
     #[cfg(windows)]

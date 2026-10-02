@@ -25,7 +25,13 @@ jobs:
       - name: Behavior tests (development selection only)
         run: |
           New-Item -ItemType Directory -Force desktop/launcher/evidence | Out-Null
-          cargo +1.99.0 test --locked --manifest-path desktop/launcher/Cargo.toml --features development-preview 2>&1 | Tee-Object -FilePath desktop/launcher/evidence/rust-tests.log
+          cargo +1.99.0 test --locked --manifest-path desktop/launcher/Cargo.toml --features development-preview --test selection 2>&1 | Tee-Object -FilePath desktop/launcher/evidence/rust-tests.log
+          exit $LASTEXITCODE
+      - name: Actual native root launcher (independent development scope)
+        if: always()
+        run: |
+          New-Item -ItemType Directory -Force desktop/launcher/evidence | Out-Null
+          cargo +1.99.0 test --locked --manifest-path desktop/launcher/Cargo.toml --features development-preview --test launch 2>&1 | Tee-Object -FilePath desktop/launcher/evidence/native-launch.log
           exit $LASTEXITCODE
       - name: Production without publisher refuses before selection
         if: always()

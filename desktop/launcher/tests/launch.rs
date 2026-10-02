@@ -31,7 +31,7 @@ impl Drop for Fixture { fn drop(&mut self) { let _ = fs::remove_dir_all(&self.ro
 fn real_launcher_finds_its_root_and_launches_only_the_selected_native_app_without_shell() {
     let fixture = Fixture::new();
     let verified = Command::new(fixture.launcher()).arg("--verify").output().unwrap();
-    assert!(verified.status.success(), "valid native launcher verification refused");
+    assert!(verified.status.success(), "valid native launcher verification refused: stdout={} stderr={}", String::from_utf8_lossy(&verified.stdout), String::from_utf8_lossy(&verified.stderr));
     let status = Command::new(fixture.launcher()).env("ELECTRON_RUN_AS_NODE", "1").env("NODE_OPTIONS", "--bad-option").status().unwrap();
     assert!(status.success(), "actual owned app launch failed");
     let record = fs::read_to_string(fixture.root.join("Data/launcher-probe.txt")).unwrap();

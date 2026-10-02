@@ -1,9 +1,9 @@
-import { constants } from 'node:fs';
-import { copyFile, lstat, readdir, readFile, open } from 'node:fs/promises';
+import { lstat, readdir, open, link, unlink } from 'node:fs/promises';
+import { randomUUID, createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ownedDirectory, ownedFile } from '../src/projects/paths.mjs';
-import { atomicWrite } from '../src/projects/atomic.mjs';
+import { atomicWrite, exclusiveWriter } from '../src/projects/atomic.mjs';
 import { readOwnedBytes } from '../src/projects/io.mjs';
 import { parseStrictJson, validPackagePath, versionParts, MAX_PACKAGE_BYTES } from '../src/updates/manifest.mjs';
 import { hashOwnedFile } from '../src/updates/download.mjs';
@@ -36,7 +36,8 @@ export async function attachDevelopmentLauncher({ previewRoot, artifactPath, art
   previewRoot = await ownedDirectory(resolve(previewRoot));
   if (!committed(expectedLauncherSourceCommit)) throw new Error('Exact committed launcher source required');
   const identityPath = join(previewRoot, 'BUILD-IDENTITY.json');
-  const identity = parseStrictJson(await readOwnedBytes(identityPath, 1048576));
+  const identityBytes = await readOwnedBytes(identityPath, 1048576);
+  const identity = parseStrictJson(identityBytes);
   if (identity.schema !== 1 || identity.kind !== 'development-preview' || identity.releaseAdmitted !== false || !committed(identity.sourceCommit) || identity.launcherQualified !== false) throw new Error('Only an unqualified development preview may be attached');
   const match = typeof identity.appRelativePath === 'string' && identity.appRelativePath.match(/^App\/versions\/([0-9]+\.[0-9]+\.[0-9]+)\/SIREN\.exe$/);
   if (!match) throw new Error('Fixed version executable required');
@@ -45,11 +46,10 @@ export async function attachDevelopmentLauncher({ previewRoot, artifactPath, art
   const launcherPath = join(previewRoot, 'SIREN.exe'); const pointerPath = join(previewRoot, 'App/current.json');
   await absent(launcherPath); await absent(pointerPath);
   const artifact = parseStrictJson(await readOwnedBytes(artifactReceiptPath, 65536));
-  if (!exactFields(artifact, 'schema,kind,releaseAdmitted,launcherSourceCommit,target,rustVersion,features,binary') || artifact.schema !== 1 || artifact.kind !== 'development-preview' || artifact.releaseAdmitted !== false || artifact.launcherSourceCommit !== expectedLauncherSourceCommit || artifact.target !== 'x86_64-pc-windows-msvc' || artifact.rustVersion !== '1.99.0' || JSON.stringify(artifact.features) !== '["development-preview"]' || !validDigest(artifact.binary)) throw new Error('Native development artifact identity refused');
-  const hash = await hashOwnedFile(artifactPath, artifact.binary.bytes);
-  if (hash.bytes !== artifact.binary.bytes || hash.sha256 !== artifact.binary.sha256) throw new Error('Native development artifact hash refused');
-  const binaryFile = await open(await ownedFile(artifactPath), 'r');
-  try { const magic = Buffer.alloc(2); await binaryFile.read(magic, 0, 2, 0); if (magic.toString() !== 'MZ') throw new Error('Windows native launcher required'); } finally { await binaryFile.close(); }
+  if (!exactFields(artifact, 'schema,kind,releaseAdmitted,launcherSourceCommit,target,rustVersion,features,binary') || artifact.schema !== 1 || artifact.kind !== 'development-preview' || artifact.releaseAdmitted !== false || artifact.launcherSourceCommit !== expectedLauncherSourceCommit || artifact.target !== 'x86_64-pc-windows-msvc' || artifact.rustVersion !== '1.99.0' || JSON.stringify(artifact.features) !== '["development-preview"]' || !validDigest(artifact.binary) || artifact.binary.bytes > 2097152) throw new Error('Native development artifact identity refused');
+  const launcherBytes = await readOwnedBytes(artifactPath, 2097152);
+  if (launcherBytes.length !== artifact.binary.bytes || createHash('sha256').update(launcherBytes).digest('hex') !== artifact.binary.sha256) throw new Error('Native development artifact hash refused');
+  if (launcherBytes.subarray(0, 2).toString() !== 'MZ') throw new Error('Windows native launcher required');
   const entries = await filesIn(appRoot); const files = []; const names = new Set(); let total = 0;
   for (const path of entries.sort()) {
     const alias = path.toLowerCase(); if (names.has(alias)) throw new Error('Case-colliding assets refused'); names.add(alias);
@@ -61,12 +61,41 @@ export async function attachDevelopmentLauncher({ previewRoot, artifactPath, art
     const actual = files.find(file => file.path === path);
     if (!validDigest(expected) || !actual || actual.bytes !== expected.bytes || actual.sha256 !== expected.sha256) throw new Error('Development package payload changed');
   }
-  await atomicWrite(pointerPath, Buffer.from(JSON.stringify({ schema: 1, kind: 'development-preview', releaseAdmitted: false, version, sourceCommit: identity.sourceCommit, files })), { selection: true });
-  await copyFile(await ownedFile(artifactPath), launcherPath, constants.COPYFILE_EXCL);
-  const copied = await hashOwnedFile(launcherPath, artifact.binary.bytes);
-  if (copied.bytes !== artifact.binary.bytes || copied.sha256 !== artifact.binary.sha256) throw new Error('Native launcher copy failed readback');
-  const handle = await open(launcherPath, 'r+'); try { await handle.sync(); } finally { await handle.close(); }
-  await atomicWrite(identityPath, Buffer.from(JSON.stringify({ ...identity, launcher: artifact }, null, 2)));
+  const pointerBytes = Buffer.from(JSON.stringify({ schema: 1, kind: 'development-preview', releaseAdmitted: false, version, sourceCommit: identity.sourceCommit, files }));
+  const attachedIdentityBytes = Buffer.from(JSON.stringify({ ...identity, launcher: artifact }, null, 2));
+  if (pointerBytes.length > 1048576 || attachedIdentityBytes.length > 1048576) throw new Error('Selection metadata exceeds consumer size limit');
+  await exclusiveWriter(previewRoot, async () => {
+    await absent(launcherPath); await absent(pointerPath);
+    if (!(await readOwnedBytes(identityPath, 1048576)).equals(identityBytes)) throw new Error('Development package identity changed during attachment');
+    const stagePath = join(previewRoot, `launcher-${randomUUID()}.pending`); let published = false;
+    try {
+      // A new writable file does not inherit the downloaded artifact's READONLY
+      // attribute. Flush/readback before publishing any launchable entry point.
+      const stage = await open(stagePath, 'wx', 0o600);
+      try { await stage.writeFile(launcherBytes); await stage.sync(); } finally { await stage.close(); }
+      const staged = await hashOwnedFile(stagePath, artifact.binary.bytes);
+      if (staged.bytes !== artifact.binary.bytes || staged.sha256 !== artifact.binary.sha256) throw new Error('Native launcher stage failed readback');
+      await atomicWrite(pointerPath, pointerBytes, { selection: true });
+      await atomicWrite(identityPath, attachedIdentityBytes);
+      // link() is an atomic, exclusive publication: it refuses an existing
+      // destination. Remove only this transaction's named staging link below.
+      await link(await ownedFile(stagePath), launcherPath); published = true;
+    } catch (error) {
+      const cleanupErrors = [];
+      if (!published) {
+        try { if ((await readOwnedBytes(pointerPath, 1048576)).equals(pointerBytes)) await unlink(await ownedFile(pointerPath)); } catch (cleanup) { if (cleanup.code !== 'ENOENT') cleanupErrors.push(cleanup); }
+        try {
+          const currentIdentity = await readOwnedBytes(identityPath, 1048576);
+          if (currentIdentity.equals(attachedIdentityBytes)) await atomicWrite(identityPath, identityBytes);
+          else if (!currentIdentity.equals(identityBytes)) cleanupErrors.push(new Error('Changed identity preserved for manual recovery'));
+        } catch (cleanup) { cleanupErrors.push(cleanup); }
+      }
+      if (cleanupErrors.length) throw new AggregateError([error, ...cleanupErrors], 'Development attachment failed; incomplete owned metadata retained for inspection');
+      throw error;
+    } finally {
+      try { await unlink(await ownedFile(stagePath)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+  });
   return { launcherPath, selectionPath: pointerPath, version, launcherQualified: false, releaseAdmitted: false };
 }
 

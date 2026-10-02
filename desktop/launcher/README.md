@@ -17,10 +17,14 @@ rewritten or moved by this launcher.
 Selection refuses unknown or duplicate JSON fields, invalid UTF-8, excessive
 metadata or extracted bytes, escaping paths, Windows reserved names, streams,
 case collisions, junctions, reparse points and hard-linked files. Windows handles
-deny concurrent writes and deletion of the selected files/directories until the
-child exits. Every listed asset is hashed through its held file handle; extra or
-missing files prevent startup. These preview hashes detect accidental damage;
-they do not establish a trusted publisher's identity.
+hold existing files against writes/deletion and directory paths against rename
+or reparse replacement until the child exits. They do not prevent adding a new
+directory member. Every listed asset is hashed through its held file handle;
+extra or missing files at verification prevent startup. A final membership
+recheck is being added for ordinary late changes. It cannot close the hostile
+insertion race between a census and Windows image/DLL loading. These preview
+checks detect accidental damage; they do not establish a trusted publisher's
+identity or qualify hostile concurrent modification for a production release.
 
 ## Build and attach
 
@@ -39,8 +43,12 @@ node desktop/launcher/attach-development.mjs <new-preview-root> <native-launcher
 ```
 
 The attachment validates exact binary/source identity and the original preview
-runtime/ASAR hashes, creates a complete `App/current.json` and copies the launcher
-to the root without replacing a prior launcher/selection. It keeps both
+runtime/ASAR hashes, checks the serialized selection against the launcher's 1 MiB
+limit, and writes a fresh writable staged binary. It publishes the root launcher
+only after selection and receipt readback, without replacing a prior launcher.
+Ordinary failures clean up owned partial selection and restore the original
+identity so a retry can proceed; failed cleanup is reported for inspection.
+This does not qualify power-loss atomicity. It keeps both
 `releaseAdmitted` and `launcherQualified` false. The CI artifact receipt identifies
 the tested source, target, Rust version, feature and binary hash/size. It is a
 development build receipt, not an independent review or production signature.

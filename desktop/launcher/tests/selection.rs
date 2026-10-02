@@ -123,3 +123,12 @@ fn alias_parent_components_refuse_even_when_the_same_file_exists() {
     let fixture = Fixture::new();
     assert!(select(&fixture.root.join("App/..")).is_err());
 }
+
+#[test]
+fn late_unlisted_directory_member_is_refused_by_the_final_launch_recheck() {
+    let fixture = Fixture::new(); let selected = select(&fixture.root).unwrap();
+    // Directory READ sharing guards existing paths; Windows still permits a
+    // new child. The launch recheck must detect this ordinary late mutation.
+    fs::write(fixture.app().join("injected.dll"), b"late unlisted asset").unwrap();
+    assert!(selected.recheck().is_err(), "late unlisted member must refuse startup");
+}

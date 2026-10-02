@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, readFile, writeFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, stat, chmod, open } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
@@ -65,4 +65,39 @@ test('refuses release claims and executable path injection in a development atta
     await writeFile(path, JSON.stringify(identity)); await assert.rejects(attachDevelopmentLauncher(input));
     await assert.rejects(stat(join(input.previewRoot, 'SIREN.exe')), { code: 'ENOENT' });
   }
+});
+
+test('readonly compiled artifact attaches as a fresh writable copy and leaves artifact bytes unchanged', async () => {
+  const input = await fixture(); const before = await readFile(input.artifactPath);
+  await chmod(input.artifactPath, 0o444);
+  try {
+    const result = await attachDevelopmentLauncher(input);
+    const handle = await open(result.launcherPath, 'r+'); await handle.close();
+    assert.deepEqual(await readFile(input.artifactPath), before);
+    assert.equal(await readFile(join(input.previewRoot, 'Data/private.txt'), 'utf8'), 'private project');
+  } finally { await chmod(input.artifactPath, 0o666); }
+});
+
+test('oversized complete selection refuses before publishing launcher or pointer and retains original identity', async () => {
+  const input = await fixture(); const identityPath = join(input.previewRoot, 'BUILD-IDENTITY.json'); const before = await readFile(identityPath);
+  for (let start = 0; start < 4200; start += 100) {
+    await Promise.all(Array.from({ length: 100 }, (_, offset) => writeFile(join(input.app, `asset-${String(start + offset).padStart(4, '0')}-${'a'.repeat(160)}.dat`), '')));
+  }
+  await assert.rejects(attachDevelopmentLauncher(input), /metadata.*limit/i);
+  await assert.rejects(stat(join(input.previewRoot, 'App/current.json')), { code: 'ENOENT' });
+  await assert.rejects(stat(join(input.previewRoot, 'SIREN.exe')), { code: 'ENOENT' });
+  assert.deepEqual(await readFile(identityPath), before);
+});
+
+test('identity write refusal leaves no published launcher or selection and a writable retry succeeds', async () => {
+  const input = await fixture(); const identityPath = join(input.previewRoot, 'BUILD-IDENTITY.json'); const before = await readFile(identityPath);
+  await chmod(identityPath, 0o444);
+  try {
+    await assert.rejects(attachDevelopmentLauncher(input));
+    await assert.rejects(stat(join(input.previewRoot, 'SIREN.exe')), { code: 'ENOENT' });
+    await assert.rejects(stat(join(input.previewRoot, 'App/current.json')), { code: 'ENOENT' });
+    assert.deepEqual(await readFile(identityPath), before);
+  } finally { await chmod(identityPath, 0o666); }
+  const result = await attachDevelopmentLauncher(input);
+  assert.deepEqual(await readFile(result.launcherPath), await readFile(input.artifactPath));
 });
