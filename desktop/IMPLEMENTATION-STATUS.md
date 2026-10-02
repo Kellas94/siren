@@ -33,7 +33,12 @@ The supplemental-license CI run
 passed all steps, including 73 full tests. The current transition-repair batch
 has 83 full tests; the local 81-test full run passed before the final timer/cache
 deltas, and 82 selected tests passed after those deltas (the real 180-second case
-was excluded by name). Final remote CI for this batch remains pending.
+was excluded by name). Private CI
+[37009751476](https://github.com/Kellas94/siren/actions/runs/37009751476)
+passed all 83 tests and the renderer, actual sandbox, protected-storage,
+account-guard and packaged recovery/folder-copy probes. It used Windows Server
+2025, not a second clean Windows 11 PC; its screenshots are retained but were
+not inspected here.
 Actual Electron probes exercised
 keyboard edits, redraw, disk readback/restart, corruption recovery, real private
 Python drafts, full .siren export, Dark/Warm Light controls and current-user DPAPI.
@@ -78,6 +83,17 @@ tests do not certify production account deployment or real DPAPI failures.
 The reviewer authored `reviews/2026-10-02-account-cache-recheck.md` separately;
 its real-file probes verified the repair, queue recovery after errors and a
 native save that rechecks access without deadlock. No report admits a release.
+
+The final local preview was built from `88d92eaac151772a4e8c056b1cc9c5f662aceb18`;
+its archive SHA-256 is
+`45e581575850d113d7e9297f5e4601efb46f93a6597f0ef7f53ec34de5c9dd46`.
+Actual package launch verified sandbox/inactive-account write refusal, explicit
+new-copy recovery preserving original bytes, and restart after a Unicode folder
+copy. Both local screenshots were inspected. Two earlier local probe failures
+are retained: Windows reported the owned window hidden and suspended animation
+frames until screenshot capture. The native driver now uses Chromium's documented
+test-only occlusion switch; the packaged application is unchanged. DOM hit tests
+remain strict. That run does not qualify native Windows occlusion behavior.
 
 Packaged run 6 used source commit `224fb324d0ddd7f281660fb41bb5e64c8a7f812e`,
 renderer SHA-256 `b2d5ae84c8032cff8c3e623cbede9a29d11930c4336e9d1e00b30f19d08d151f`,

@@ -55,4 +55,11 @@ try {
   assert.equal((await hashOwnedFile(join(secondRoot, receipt.appRelativePath), 1024 ** 3)).sha256, receipt.runtimeBinary.sha256);
   await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Actual packaged app.asar/SIREN.exe, sandbox, Unicode folder/copy, owned fixture/visible read-only activation, rejected dev CLI, pointer recovery into a new project preserving the original and unconfigured update check. No launcher/apply/clean-PC/production account qualification.', sourceCommit: receipt.sourceCommit, rendererSha256: receipt.renderer.rendererSha256, archive: receipt.appArchive, runtime: receipt.runtimeBinary, projectSha256: project.sha256 }, null, 2));
   console.log(JSON.stringify({ completed: true, evidence }));
+} catch (error) {
+  if (driver) {
+    await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
+    const state = await driver.evaluate(`(()=>{const panel=document.getElementById('desktopControlsPanel');return {visibility:document.visibilityState,focused:document.hasFocus(),inert:document.body.inert,locked:window.sirenDesktopStorageLocked,bodyClasses:document.body.className,panel:panel?{open:panel.open,opacity:getComputedStyle(panel).opacity,display:getComputedStyle(panel).display,visibility:getComputedStyle(panel).visibility,animation:getComputedStyle(panel).animation,rect:panel.getBoundingClientRect().toJSON()}:null,animations:document.getAnimations().map(a=>({playState:a.playState,currentTime:a.currentTime,finish:a.effect?.getComputedTiming()?.endTime})),bootstrap: {mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly}};})()`).catch(() => null);
+    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ error: error.message, state }, null, 2));
+  }
+  throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }

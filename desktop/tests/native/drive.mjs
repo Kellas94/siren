@@ -9,7 +9,11 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
   await new Promise(resolve => socket.listen(0, '127.0.0.1', resolve));
   const port = socket.address().port;
   await new Promise(resolve => socket.close(resolve));
-  const child = spawn(executable, [...(packaged ? [] : [root]), `--remote-debugging-port=${port}`, ...extraArgs], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  // Chromium's own test switch keeps CSS frames progressing when Windows fully
+  // occludes the owned probe window. It changes only test launches, not SIREN.
+  // DOM hit testing still refuses controls covered by another application element.
+  // https://github.com/chromium/chromium/blob/152.0.7977.130/content/public/common/content_switches.cc
+  const child = spawn(executable, [...(packaged ? [] : [root]), '--disable-backgrounding-occluded-windows', `--remote-debugging-port=${port}`, ...extraArgs], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   let logs = ''; let exited = false;
   child.on('error', error => { exited = true; logs += `\nOwned Electron launch failed: ${error.code}`; });
   child.stdout.on('data', b => { logs += b; }); child.stderr.on('data', b => { logs += b; }); child.on('exit', () => { exited = true; });
