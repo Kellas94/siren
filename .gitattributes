@@ -20,3 +20,6 @@
 # produce. What it changed is recorded by the patch script that changed it.
 releases/*.html -diff
 tools/mermaid.min.js -diff
+
+# Frozen desktop build input is byte exact and not a useful text diff.
+desktop/baseline/R78.html -text -diff

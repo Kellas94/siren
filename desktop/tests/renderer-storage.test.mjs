@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import { mkdtemp, readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { buildRenderer } from '../build/renderer.mjs';
+
+test('private Code recovery waits for a native receipt and never labels rejected writes stored', async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), 'siren-renderer-receipt-'));
+  await buildRenderer({ baselinePath: new URL('../baseline/R78.html', import.meta.url), outputDir });
+  const html = await readFile(join(outputDir, 'app.html'), 'utf8');
+  const snippet = html.slice(html.indexOf('function createCodeDrafts(storage={}){'), html.indexOf('\nfunction codeLines(text)'));
+  const storageSource = await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8');
+  const receipts = []; let updates = 0;
+  const window = { sirenDesktopBootstrap: { snapshot: { project: { id: 'owned-project' }, revision: 1, json: '{}' } }, sirenDesktop: { saveProject: () => new Promise(resolve => receipts.push(resolve)) } };
+  const context = vm.createContext({ window, TextEncoder, structuredClone, codeSourceKey: () => '' });
+  vm.runInContext(storageSource + '\n' + snippet, context);
+  const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
+  const drafts = context.createCodeDrafts({ read: () => store.get('siren-code-drafts-v1'), write: value => store.set('siren-code-drafts-v1', value), onStatus: () => { updates++; } });
+  const draft = drafts.create(null, 'print("pending")', 'Receipt.py'); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'pending', 'An unacknowledged asynchronous write is not stored');
+  receipts.shift()({ ok: false, message: 'Disk failed' }); await window.sirenDesktopFlush(); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'failed'); assert.ok(updates > 0);
+  drafts.edit(draft.id, 'print("acknowledged")'); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'pending');
+  receipts.shift()({ ok: true, revision: 1, sha256: 'a'.repeat(64) }); await window.sirenDesktopFlush(); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'stored');
+  drafts.edit(draft.id, 'print("older pending")'); await new Promise(r => setImmediate(r));
+  drafts.edit(draft.id, 'print("newer pending")');
+  receipts.shift()({ ok: true, revision: 1, sha256: 'b'.repeat(64) }); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'pending', 'Older acknowledgement must not label newer text stored');
+  receipts.shift()({ ok: false, message: 'Newer write failed' }); await window.sirenDesktopFlush(); await new Promise(r => setImmediate(r));
+  assert.equal(draft.recovery, 'failed');
+});

@@ -1,0 +1,17 @@
+#desktopBar {position:fixed;left:16px;right:16px;bottom:8px;z-index:2000;display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--border,#334155);border-radius:10px;background:rgb(from var(--panel-bg,#121e2c) r g b / 1);color:var(--text,#e8eef8);font:12px system-ui;}
+#desktopProjectLabel {flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.desktop-recovery-panel {width:min(780px,85vw);max-height:78vh;overflow:auto;padding:24px;border:1px solid var(--border,#334155);border-radius:20px;background:rgb(from var(--panel-bg,#121e2c) r g b / 1);color:var(--text,#e8eef8);font:14px system-ui;}
+.desktop-recovery-panel::backdrop {background:#0008;backdrop-filter:blur(4px);}
+.desktop-recovery-row {display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border,#334155);}
+.desktop-recovery-row span {flex:1;}
+.desktop-recovery-mode #desktopBar {z-index:2147483640;}
+#app {height:calc(100dvh - 50px);}
+.toast {bottom:64px !important;}
+.desktop-controls {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0;}
+.desktop-controls button {text-align:left;}
+.desktop-state {line-height:1.6;white-space:pre-line;}
+.cw-window[data-glass=false] {background:rgb(from var(--panel-bg,#101722) r g b / 1);}
+.cw-restore-tray {bottom:60px;}
+body:has(.cw-restore:not([hidden])) .toast {bottom:114px !important;}
+.tour-card[data-desktop-step=true] {top:auto !important;bottom:70px;max-height:calc(100dvh - 90px);overflow:auto;}
+body:has(.tour-card[data-desktop-step=true]) .toast {bottom:auto !important;top:140px;}

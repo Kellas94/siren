@@ -1,0 +1,28 @@
+{
+  "name": "siren-desktop",
+  "version": "0.1.0-dev.1",
+  "private": true,
+  "type": "module",
+  "main": "src/main.mjs",
+  "engines": {
+    "node": ">=24.16.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "verify": "node --test tests/*.test.mjs",
+    "build:renderer": "node build/renderer.mjs",
+    "start": "electron .",
+    "native:shell": "node tests/native/shell.mjs"
+  },
+  "devDependencies": {
+    "@electron/asar": "4.3.1",
+    "@electron/packager": "20.3.0",
+    "electron": "44.5.1",
+    "parse5": "8.0.1"
+  },
+  "dependencies": {
+    "jose": "6.2.12",
+    "jsonc-parser": "3.3.1",
+    "openid-client": "6.8.8"
+  }
+}

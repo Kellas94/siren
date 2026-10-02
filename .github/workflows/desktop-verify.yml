@@ -1,0 +1,56 @@
+name: Desktop prototype verification
+on:
+  pull_request:
+    paths: ['desktop/**', '.github/workflows/desktop-verify.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Locked dependencies
+        run: npm ci --no-fund --no-update-notifier
+      - name: Unit and protocol behavior (includes real 180-second timeout)
+        run: npm run verify
+      - name: Guarded renderer
+        run: node build/renderer.mjs baseline/R78.html generated
+      - name: Actual development renderer and protected storage
+        run: |
+          node tests/native/shell.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/protected-storage.mjs
+          exit $LASTEXITCODE
+      - name: Development package identity (not publication or release admission)
+        run: |
+          $sourceCommit = git rev-parse HEAD
+          $packageJson = node scripts/package.mjs $sourceCommit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $preview = $packageJson | ConvertFrom-Json
+          node tests/native/packaged.mjs $preview.previewRoot
+          exit $LASTEXITCODE
+      - name: Retain scoped test evidence in private CI
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-development-evidence
+          path: |
+            desktop/evidence/*/result.json
+            desktop/evidence/*/*.png
+            desktop/evidence/*/*.log
+            desktop/dist/*/BUILD-IDENTITY.json
+          if-no-files-found: warn
+          retention-days: 14

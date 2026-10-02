@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { ProjectStore } from '../../src/projects/store.mjs';
+import { launchDesktop } from './drive.mjs';
+const evidence = resolve('evidence', `desktop-guide-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
+const root = await mkdtemp(join(evidence, 'data-'));
+const first = await new ProjectStore(root).createProject({ label: 'Desktop guide proof', json: '{"source":"flowchart TD\\n A[Guide]-->B[Local project]"}' });
+let driver;
+try {
+  driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`] });
+  await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
+  await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
+  if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
+  assert.equal(await driver.evaluate('!!document.getElementById("guideDesktopSection")'), true, 'Desktop guidance must be in the regular Guide');
+  const openGuide = async () => { await driver.click('#headerMoreButton'); const selector = '.struct-menu-item:nth-child(2)'; assert.ok((await driver.evaluate(`document.querySelector('${selector}')?.textContent`)).includes('Guide and Mermaid legend')); await driver.click(selector); await driver.waitFor('document.getElementById("guideDialog").open'); };
+  await openGuide();
+  await driver.evaluate('document.getElementById("guideDesktopSection").scrollIntoView({block:"center"})');
+  await driver.screenshot(join(evidence, 'guide-desktop.png')); await driver.click('#guideOpenDesktop');
+  await driver.waitFor('!document.getElementById("guideDialog").open && document.getElementById("desktopControlsPanel").open');
+  await driver.click('#desktopCloseControls'); await openGuide(); await driver.click('#startTourButton');
+  await driver.waitFor('document.querySelector(".tour-card strong")?.textContent.includes("Local desktop workspace")');
+  await driver.waitFor('Number(getComputedStyle(document.querySelector(".tour-card")).opacity) >= 0.99');
+  await driver.waitFor('[...document.querySelector(".tour-card").children].every(e=>Number(getComputedStyle(e).opacity)>=0.99)');
+  const bounds = await driver.evaluate('(()=>{const r=document.querySelector(".tour-card").getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:innerHeight}})()');
+  assert.ok(bounds.top >= 0 && bounds.bottom <= bounds.height - 50, 'Tour text and actions must remain above the desktop footer');
+  await driver.screenshot(join(evidence, 'tour-desktop.png'));
+  await driver.click('.tour-card .tour-actions .btn:not(.ghost)');
+  await driver.waitFor('document.querySelector(".tour-card strong")?.textContent.includes("Two ways in")');
+  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Actual development renderer Guide route and first Quick Tour desktop step' }, null, 2));
+  console.log(JSON.stringify({ completed: true, evidence }));
+} finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }
