@@ -142,6 +142,11 @@
 
 !/desktop/tests/fixtures/temporary.mjs
 
+!/desktop/licenses/README.md
+!/desktop/licenses/better_any-0.2.1-LICENCE-Apache.txt
+!/desktop/licenses/better_any-0.2.1-README.chromium
+!/desktop/licenses/provenance.json
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

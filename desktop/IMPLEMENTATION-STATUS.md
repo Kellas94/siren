@@ -22,8 +22,14 @@ roots now use their real filesystem paths, keeping junction/alias rejection
 unchanged. The subsequent full CI run passed all 72 tests and generated the
 same renderer hash. Its native stage failed because a fresh npm installation
 did not contain Electron's executable; explicit pinned runtime installation
-has now been added to CI and the development setup instructions. The complete
-CI/native qualification remains pending.
+has now been added to CI and the development setup instructions. Run
+[37003615939](https://github.com/Kellas94/siren/actions/runs/37003615939) then
+passed all steps on Windows Server 2025: 72 tests, guarded renderer, actual
+Electron isolation, current-user protected storage and packaged recovery/folder
+copy. This is CI development evidence, not qualification on a second supported
+Windows 11 PC. Remote screenshots were retained, not independently inspected here.
+The later supplemental-license change adds one test (73 full, 72 without the
+180-second case); its final CI run remains pending.
 Actual Electron probes exercised
 keyboard edits, redraw, disk readback/restart, corruption recovery, real private
 Python drafts, full .siren export, Dark/Warm Light controls and current-user DPAPI.
@@ -53,8 +59,9 @@ Still open:
 - Production account backend, renewal/revocation integration, signing keys and
   public update feed. The user confirmed no account service exists yet.
 - Complete license/security qualification. The inventory includes four production
-  npm dependencies (MIT) and 780 Chromium notice entries. `better_any` has only an
-  unresolved upstream license reference; embedded renderer notices need review.
+  npm dependencies (MIT) and 780 Chromium notice entries. `better_any`'s reference
+  now has an exact-revision supplement bound to the unchanged runtime notice;
+  embedded renderer and distribution obligations still need review.
 - Actual OS chooser cancellation, Windows reparse/handle races, removable-drive
   power loss, detailed startup/checkpoint crash phases, second clean PC and
   cross-user credential portability.

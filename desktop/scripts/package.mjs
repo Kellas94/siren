@@ -56,6 +56,13 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   for (const path of sourceFiles) if (!archiveEntries.includes(path)) throw new Error('Required runtime module missing from archive');
   if (archiveEntries.some(path => !sourceFiles.has(path) && /(?:test-oidc|(?:^|\/)tests\/|(?:^|\/)baseline\/|\.map$|credentials|\.env)/i.test(path))) throw new Error('Development input leaked into application archive');
   await writeFile(join(app, 'SIREN-RUNTIME-INVENTORY.json'), JSON.stringify(inventory, null, 2));
+  for (const notice of inventory.chromium.supplementalNotices) {
+    await mkdir(join(app, 'notices'), { recursive: true });
+    const destination = join(app, 'notices', notice.file);
+    await copyFile(join(desktopRoot, 'licenses', notice.file), destination);
+    const copied = await hashOwnedFile(destination, 131072);
+    if (copied.sha256 !== notice.sha256) throw new Error('Copied supplemental notice changed');
+  }
   const binary = await hashOwnedFile(join(app, 'SIREN.exe'), 1024 ** 3); const originalBinary = await hashOwnedFile(join(electronRoot, 'electron.exe'), 1024 ** 3);
   if (binary.sha256 !== originalBinary.sha256) throw new Error('Runtime binary changed during copying');
   const receipt = { schema: 1, kind: 'development-preview', releaseAdmitted: false, sourceCommit, desktopVersion: identity.version, rendererVersion: '1.131.0', renderer, electron: inventory.electron.version, dataSchema: 1, appRelativePath: `App/versions/${version}/SIREN.exe`, appArchive: await hashOwnedFile(archivePath, 1024 ** 3), runtimeBinary: binary, inventoryQualified: false, launcherQualified: false, accountConfigured: false, updatesConfigured: false };
