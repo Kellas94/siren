@@ -205,6 +205,12 @@
 !/desktop/reviews/native-access-toast.mjs
 !/desktop/reviews/native-intro-variants.mjs
 !/desktop/tests/native/access-screen.mjs
+!/desktop/reviews/2026-10-02-ci18-native-driver-followup.md
+!/desktop/reviews/2026-10-02-ci18-recovery-close-recheck.md
+!/desktop/reviews/2026-10-02-ci18-recovery-zoom-diagnosis.md
+!/desktop/tests/close-drain.test.mjs
+!/desktop/tests/fixtures/recovery-zoom-state.json
+!/desktop/tests/native/recovery-zoom.mjs
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

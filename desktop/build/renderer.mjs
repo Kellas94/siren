@@ -27,6 +27,24 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const codeRestore = 'onRestore:()=>{paintCodeWorkspace();queueCodeAnalysis();}';
     if (html.split(codeRestore).length !== 2) throw new Error('Desktop Code window navigation marker mismatch');
     html = html.replace(codeRestore, 'onRestore:()=>{setCodeSectionOpen(false,false);paintCodeWorkspace();queueCodeAnalysis();}');
+    // Restore the runtime zoom before builders can synchronize saved aliases.
+    // Otherwise default 100 overwrites the loaded zoom and mimics a crash draft.
+    const loadedControls = '      function applyStateToControls() {\n        ensureWorkspaceState();\n        loadActiveDiagramIntoAliases();';
+    if (html.split(loadedControls).length !== 2) throw new Error('Desktop restored zoom marker mismatch');
+    html = html.replace(loadedControls, loadedControls + '\n        currentZoom = state.zoom || 100;');
+    // Structural preview auto-fit changes zoom during initialization. Compare
+    // recovery against the loaded workspace, before that display-only change.
+    const loadedRecovery = '        loadPersistedState();\n        applyStateToControls();';
+    const recoveryCall = 'if (!offerUnreadableStorageRecovery()) offerCrashRecovery();';
+    const recoveryFunction = '      function offerCrashRecovery() {';
+    const recoveryCurrent = '        const current = recoverySignature(state);';
+    for (const token of [loadedRecovery, recoveryCall, recoveryFunction, recoveryCurrent]) {
+      if (html.split(token).length !== 2) throw new Error('Desktop loaded recovery comparison marker mismatch');
+    }
+    html = html.replace(loadedRecovery, loadedRecovery + '\n        const desktopLoadedRecoveryState = structuredCloneSafe(state);');
+    html = html.replace(recoveryCall, 'if (!offerUnreadableStorageRecovery()) offerCrashRecovery(desktopLoadedRecoveryState);');
+    html = html.replace(recoveryFunction, '      function offerCrashRecovery(recoveryState = state) {');
+    html = html.replace(recoveryCurrent, '        const current = recoverySignature(recoveryState);');
     const marker = 'const sirenStore = (() => {';
     if (html.split(marker).length !== 2) throw new Error('Desktop storage patch marker mismatch');
     html = html.replace(marker, marker + '\n        if (window.sirenDesktop) return window.createSirenDesktopStore({ workspaceKey: STORAGE_KEY });');
@@ -100,13 +118,34 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           if (el.readOnlyBanner) el.readOnlyBanner.textContent = event.reason || 'Read-only desktop project · Recovery and export remain available';
           setSaveState('saved');
         };
+        // Serialize complete save operations, including their acknowledgement.
+        // The web save serial otherwise supersedes a pending native receipt.
+        let desktopSaveQueue = Promise.resolve({status:'read-only'});
+        const desktopSaveOperation = saveState;
+        saveState = () => {
+          const receipt = desktopSaveQueue.then(desktopSaveOperation, desktopSaveOperation);
+          desktopSaveQueue = receipt;
+          return receipt;
+        };
+        const drainDesktopSaves = async () => {
+          let pending, receipt;
+          do { pending = desktopSaveQueue; receipt = await pending; }
+          while (pending !== desktopSaveQueue);
+          return receipt;
+        };
         window.sirenDesktopRequestClose = async () => {
           clearTimeout(saveTimer); clearTimeout(draftTimer);
           if (window.sirenDesktopBootstrap?.snapshot && window.sirenDesktopBootstrap?.mode === 'normal') {
-            const result = await saveState();
-            if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged: ' + (result?.status || 'unknown'));
+            await saveState();
           }
-          const flushed = await window.sirenDesktopFlush();
+          let result, flushed, pendingSave, pendingFlush;
+          do {
+            result = await drainDesktopSaves();
+            pendingSave = desktopSaveQueue;
+            pendingFlush = window.sirenDesktopFlush();
+            flushed = await pendingFlush;
+          } while (pendingSave !== desktopSaveQueue || pendingFlush !== window.sirenDesktopFlush());
+          if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged: ' + (result?.status || 'unknown'));
           if (flushed?.ok === false) throw new Error('Recovery not acknowledged');
         };
         let accountTransitionBodyState = null;

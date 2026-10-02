@@ -210,6 +210,38 @@ unproven; `reviews/2026-10-02-ci17-close-recovery-diagnosis.md` preserves the
 independent observations and the exact status/confirmation diagnostics added for
 the next hosted failure. No save retry or recovery-dialog dismissal was added.
 
+CI18 follow-up (2026-10-02): hosted run `37030045610` failed while its access
+preview and 84 unit checks passed. Its actual close error was `Save not
+acknowledged: superseded`. Desktop saves now serialize complete operations and
+close drains both workspace operations and native private writes until both
+queues remain stable. Four controlled tests use the real generated save logic
+and native storage adapter, including late failures; failed receipts still refuse
+close. The full local suite passed 86 checks before the additional two late-flush
+cases; the current focused tests pass. A new full hosted run is required.
+
+The exact CI18 snapshot also reproduced a false recovery prompt. Runtime zoom
+first defaulted to 100; restoring it early alone did not fix the issue, because
+structural preview auto-fit then changed 31 to 100. Recovery now compares the
+loaded normalized workspace before startup preview changes, retaining the full
+signature. Independently authored evidence and the unsuccessful first repair
+are preserved in `reviews/2026-10-02-ci18-recovery-zoom-diagnosis.md` and
+`reviews/2026-10-02-ci18-recovery-close-recheck.md`. The self-contained actual
+native regression covers matching state and genuine source, zoom and Docs
+differences; matching state stays quiet and all real differences still prompt.
+The earlier clean-exit marker durability observation remains separate and open.
+
+CI18's account probe followed an obsolete dialog path; it now follows preview,
+unavailable online activation and Back, preserving authority and private drafts.
+The Desktop Done probe now genuinely scrolls a clipped panel before its unchanged
+strict pointer click. Original native failures and scoped driver checks are in
+`reviews/2026-10-02-ci18-native-driver-followup.md`; no forced clicks or recovery
+dismissal were added. Current renderer SHA-256 is
+`e0ab60a0d279ef1d7c135d7fbee1675c6e1af56b760bfd311b86078653a0b1b3`.
+Actual local access preview, account return/edit/save, Guided/intro, Code
+normal-exit/restart, small-viewport Desktop and the four native recovery cases
+passed against it. This is scoped development verification, not release admission
+or production PIN authentication.
+
 Still open:
 
 - Native launcher/helper, archive apply/rollback and signed-key rotation.
