@@ -44,7 +44,8 @@ try {
     assert.ok(theme === 'light' ? codeRgb.slice(0,3).every(v => v > 180) : codeRgb.slice(0,3).every(v => v < 100), 'Code window must follow the actual theme');
     await driver.screenshot(join(evidence, `code-${theme}.png`));
     await driver.click(`${selector} [data-action="minimise"]`);
-    await driver.click('#codeSectionClose');
+    assert.equal(await driver.evaluate('document.getElementById("codeLibrarySection").hidden'), true, 'Floating Code must release the library');
+    assert.equal(await driver.evaluate('document.querySelector(".app-header").inert'), false);
   }
   // Search is the actual curated palette path, including keyboard invocation.
   await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'k', code: 'KeyK', modifiers: 2, windowsVirtualKeyCode: 75 });

@@ -165,6 +165,13 @@
 !/desktop/launcher/tests/fixtures/app-probe.rs
 !/desktop/launcher/Cargo.lock
 
+!/desktop/launcher/README.md
+!/desktop/launcher/attach-development.mjs
+!/desktop/launcher/attach-development.test.mjs
+!/SIREN-Development.cmd
+!/desktop/tests/native/code-windows.mjs
+!/desktop/reviews/2026-10-02-code-window-navigation.md
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

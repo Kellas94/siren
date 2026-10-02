@@ -33,6 +33,52 @@ jobs:
           New-Item -ItemType Directory -Force desktop/launcher/evidence | Out-Null
           cargo +1.99.0 test --locked --manifest-path desktop/launcher/Cargo.toml 2>&1 | Tee-Object -FilePath desktop/launcher/evidence/production-refusal.log
           exit $LASTEXITCODE
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Locked attachment dependencies and behavior
+        run: |
+          npm ci --prefix desktop --no-fund --no-update-notifier
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --test desktop/launcher/attach-development.test.mjs
+          exit $LASTEXITCODE
+      - name: Build native preview (not update-helper admission)
+        env:
+          RUSTFLAGS: '-C target-feature=+crt-static'
+        run: |
+          cargo +1.99.0 build --locked --release --manifest-path desktop/launcher/Cargo.toml --features development-preview --target x86_64-pc-windows-msvc
+          exit $LASTEXITCODE
+      - name: Exact private native artifact receipt and transport
+        run: |
+          $launcherBinaryPath = 'desktop/launcher/target/x86_64-pc-windows-msvc/release/SIREN.exe'
+          $launcherBinary = [IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $launcherBinaryPath))
+          if ($launcherBinary.Length -gt 2097152) { throw 'Native launcher transport limit exceeded' }
+          $launcherReceipt = [ordered]@{
+            schema = 1
+            kind = 'development-preview'
+            releaseAdmitted = $false
+            launcherSourceCommit = (git rev-parse HEAD)
+            target = 'x86_64-pc-windows-msvc'
+            rustVersion = '1.99.0'
+            features = @('development-preview')
+            binary = @{ bytes = $launcherBinary.Length; sha256 = (Get-FileHash -LiteralPath $launcherBinaryPath -Algorithm SHA256).Hash.ToLowerInvariant() }
+          }
+          $launcherReceiptJson = $launcherReceipt | ConvertTo-Json -Depth 5 -Compress
+          Set-Content -LiteralPath desktop/launcher/evidence/launcher-receipt.json -Value $launcherReceiptJson -Encoding utf8NoBOM
+          Write-Output 'SIREN_LAUNCHER_RECEIPT_BEGIN'
+          Write-Output $launcherReceiptJson
+          Write-Output 'SIREN_LAUNCHER_RECEIPT_END'
+          $launcherEncoded = [Convert]::ToBase64String($launcherBinary)
+          Write-Output 'SIREN_LAUNCHER_BINARY_BEGIN'
+          $launcherChunkIndex = 0
+          for ($launcherOffset = 0; $launcherOffset -lt $launcherEncoded.Length; $launcherOffset += 10000) {
+            $launcherChunkLength = [Math]::Min(10000, $launcherEncoded.Length - $launcherOffset)
+            Write-Output ('SIREN_LAUNCHER_CHUNK:{0:D4}:{1}' -f $launcherChunkIndex, $launcherEncoded.Substring($launcherOffset, $launcherChunkLength))
+            $launcherChunkIndex++
+          }
+          Write-Output 'SIREN_LAUNCHER_BINARY_END'
       - name: Exact generated dependency lock (private evidence)
         if: always()
         run: |
@@ -45,5 +91,6 @@ jobs:
           path: |
             desktop/launcher/evidence/*
             desktop/launcher/Cargo.lock
+            desktop/launcher/target/x86_64-pc-windows-msvc/release/SIREN.exe
           if-no-files-found: warn
           retention-days: 14

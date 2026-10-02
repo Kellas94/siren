@@ -15,6 +15,11 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   }
   let html = bytes.toString('utf8');
   if (expectedSha256.toLowerCase() === BASELINE_SHA256) {
+    // A floating editor must release the library's exclusive navigation state.
+    // Keep the frozen web baseline intact; apply the qualified desktop change here.
+    const codeRestore = 'onRestore:()=>{paintCodeWorkspace();queueCodeAnalysis();}';
+    if (html.split(codeRestore).length !== 2) throw new Error('Desktop Code window navigation marker mismatch');
+    html = html.replace(codeRestore, 'onRestore:()=>{setCodeSectionOpen(false,false);paintCodeWorkspace();queueCodeAnalysis();}');
     const marker = 'const sirenStore = (() => {';
     if (html.split(marker).length !== 2) throw new Error('Desktop storage patch marker mismatch');
     html = html.replace(marker, marker + '\n        if (window.sirenDesktop) return window.createSirenDesktopStore({ workspaceKey: STORAGE_KEY });');

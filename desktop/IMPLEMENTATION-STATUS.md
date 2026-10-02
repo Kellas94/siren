@@ -1,5 +1,29 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Code window navigation follow-up
+
+The native Code window already had minimise/maximise, movement, resize,
+transparency, keyboard commands and a restore tray. Opening it from the Code
+library left that full-screen section visible and the diagram workspace inert.
+The original actual-pointer regression failed after minimising. The desktop
+build now closes the library when the floating window opens or restores;
+minimising leaves the application available and keeps the exact Python draft.
+The frozen renderer remains unchanged.
+
+The full 83-test suite passed after this repair. Actual Electron probes verified
+minimise/restore, two windows, maximise geometry, drag, resize, transparency,
+keyboard minimise, right-click commands, Dark/Warm Light and private draft
+recovery after restart. A separate reviewer reproduced the focused probe and
+the renderer SHA-256 `a811dc6e90e8ce7e6a786671fcbdb5795fe914028be2da1d5133261db3c0b97e`;
+their original report is `reviews/2026-10-02-code-window-navigation.md`.
+This is scoped development evidence, not whole-release admission.
+
+`../SIREN-Development.cmd` provides a double-click entry to the local editable
+checkout after the documented setup. It is distinct from the portable native
+launcher and uses `.dev-data/`. The native launcher is being compiled/tested in
+private hosted Windows CI because the local Rust installer was denied by Windows
+Application Control; no local policy was disabled or bypassed.
+
 This branch implements an isolated Electron desktop prototype from unchanged R78
 (v1.131.0; baseline SHA-256 `5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4`).
 It is **not an admitted portable release**. No live HTML, public binary release or

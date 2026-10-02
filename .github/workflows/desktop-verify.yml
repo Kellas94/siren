@@ -48,6 +48,12 @@ jobs:
           node tests/native/protected-storage.mjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/account-transition.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/code-windows.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/desktop-ui.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/code-recovery.mjs
           exit $LASTEXITCODE
       - name: Development package identity (not publication or release admission)
         run: |

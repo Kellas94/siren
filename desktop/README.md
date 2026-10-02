@@ -14,6 +14,10 @@ node build/renderer.mjs baseline/R78.html generated
 npm start
 ```
 
+After this setup, double-click `../SIREN-Development.cmd` to open the editable
+local development build. It uses the installed runtime and the generated renderer
+in this checkout; it is not the portable distribution or production activation.
+
 Development data is isolated in `.dev-data/`. Import a complete `.siren` project
 explicitly; no installed/browser profile is imported automatically. The unchanged
 baseline is build input only and is SHA-256 checked before generation.
