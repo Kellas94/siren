@@ -137,6 +137,24 @@ This was one current Windows machine, with an owned synthetic fixture, not a
 clean-PC or production-login/update qualification. Runtime binary was copied
 unchanged; development ASAR inputs are outside the package root.
 
+Current Code follow-up (2 October 2026): opening an editor from the Code library
+now closes that library's inert overlay. Minimising returns to the usable main
+workspace; restoring retains exact draft bytes. Actual local pointer/keyboard
+probes passed minimise/restore, maximise/restore geometry, move, resize,
+transparency, multiple windows and right-click commands. All 83 foundation tests
+passed against renderer SHA-256
+`a811dc6e90e8ce7e6a786671fcbdb5795fe914028be2da1d5133261db3c0b97e`.
+The original independent scoped report is
+`reviews/2026-10-02-code-window-navigation.md`; it does not admit a whole release.
+A separate real diagram-edit probe verifies native save with Code minimised and
+exact Python restoration, without implicit Docs publication. The current package
+from commit `a92692f523e8664fab24e0862a1b7fcc5c7db006` also passed recovery,
+clean Quit and Unicode folder-copy/restart. CI run 13 failed a theme-option hit
+check after the menu opened. That failure is retained; the probe now waits for
+actual visible hit readiness and emits failure geometry. Its CI rerun is pending.
+`../SIREN-Development.cmd` opens the editable development build; packaged previews
+retain the activation write guard while the account service is unconfigured.
+
 Still open:
 
 - Native launcher/helper, archive apply/rollback and signed-key rotation.

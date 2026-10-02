@@ -172,6 +172,13 @@
 !/desktop/tests/native/code-windows.mjs
 !/desktop/reviews/2026-10-02-code-window-navigation.md
 
+!/desktop/tests/native/code-diagram-interaction.mjs
+!/desktop/reviews/2026-10-02-code-theme-ci13-diagnosis.md
+!/desktop/reviews/2026-10-02-native-launcher-review.md
+!/desktop/reviews/2026-10-02-native-launcher-attachment-recheck.md
+!/desktop/reviews/native-launcher-attachment-adverse.mjs
+!/desktop/reviews/native-launcher-directory-lock-probe.py
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

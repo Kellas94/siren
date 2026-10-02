@@ -10,15 +10,18 @@ fn run() -> Result<i32, String> {
     let root = own_path.parent().ok_or("LAUNCHER_IDENTITY_FAILED")?;
     let selected = select(root)?;
     if verify {
+        selected.recheck()?;
         println!("{}", serde_json::json!({ "schema": 1, "kind": "development-preview", "releaseAdmitted": false, "launcherQualified": false, "version": selected.version, "sourceCommit": selected.source_commit, "executable": selected.executable }));
         return Ok(0);
     }
     // No shell, user-provided executable/root, forwarded switches, or Node
     // environment injection. Retain every selection guard for the child lifetime.
-    let mut child = Command::new(&selected.executable).current_dir(root)
+    let mut command = Command::new(&selected.executable);
+    command.current_dir(root)
         .env_remove("ELECTRON_RUN_AS_NODE").env_remove("NODE_OPTIONS")
-        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null())
-        .spawn().map_err(|_| "APP_START_FAILED")?;
+        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
+    selected.recheck()?;
+    let mut child = command.spawn().map_err(|_| "APP_START_FAILED")?;
     let status = child.wait().map_err(|_| "APP_WAIT_FAILED")?;
     drop(selected);
     Ok(status.code().unwrap_or(1))

@@ -121,7 +121,12 @@ fn junction_escape_and_hard_link_runtime_refuse() {
 #[test]
 fn alias_parent_components_refuse_even_when_the_same_file_exists() {
     let fixture = Fixture::new();
-    assert!(select(&fixture.root.join("App/..")).is_err());
+    // Windows PathBuf::join normalizes .. on a verbatim-prefix canonical root.
+    // Construct the actual raw alias text instead of erasing it in the fixture.
+    let mut raw = fixture.root.as_os_str().to_os_string(); raw.push("/App/..");
+    let alias = PathBuf::from(raw);
+    assert!(alias.to_string_lossy().contains(".."));
+    assert!(select(&alias).is_err());
 }
 
 #[test]

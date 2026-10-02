@@ -24,10 +24,17 @@ pub struct Selection {
     pub version: String,
     pub source_commit: String,
     pub(crate) _guards: Vec<File>,
+    _members: BTreeSet<String>,
 }
 
 impl Selection {
-    pub fn recheck(&self) -> Result<(), String> { Ok(()) }
+    pub fn recheck(&self) -> Result<(), String> {
+        let root = self.executable.parent().ok_or("ASSET_IDENTITY_FAILED")?;
+        let mut members = BTreeSet::new(); let mut visited = 0;
+        current_members(root, "", &mut members, &mut visited)?;
+        if members != self._members { return Err("LATE_ASSET_MEMBERSHIP_REFUSED".into()); }
+        Ok(())
+    }
 }
 
 pub fn select(root: &Path) -> Result<Selection, String> {
@@ -57,7 +64,29 @@ pub fn select(root: &Path) -> Result<Selection, String> {
     let mut actual = BTreeSet::new();
     inspect_assets(&version_root, "", &expected, &mut actual, &mut guards)?;
     if actual.len() != expected.len() { return Err("ASSET_MISSING".into()); }
-    Ok(Selection { executable: version_root.join("SIREN.exe"), version: pointer.version, source_commit: pointer.source_commit, _guards: guards })
+    Ok(Selection { executable: version_root.join("SIREN.exe"), version: pointer.version, source_commit: pointer.source_commit, _guards: guards, _members: actual })
+}
+
+// Existing files remain guarded against writes/deletion. Re-enumerate only
+// membership immediately before launch, without rehashing hundreds of MB. This
+// detects ordinary late changes; it does not make image/DLL loading atomic with
+// directory creation by a hostile same-user process.
+fn current_members(directory: &Path, prefix: &str, members: &mut BTreeSet<String>, visited: &mut usize) -> Result<(), String> {
+    let _directory_guard = hold(directory, true)?;
+    for entry in fs::read_dir(directory).map_err(|_| "ASSET_CENSUS_FAILED")? {
+        *visited += 1; if *visited > 100000 { return Err("ASSET_CENSUS_LIMIT_REFUSED".into()); }
+        let entry = entry.map_err(|_| "ASSET_CENSUS_FAILED")?;
+        let name = entry.file_name().into_string().map_err(|_| "ASSET_PATH_REFUSED")?;
+        let relative = if prefix.is_empty() { name } else { format!("{prefix}/{name}") };
+        if !safe_asset_path(&relative) { return Err("ASSET_PATH_REFUSED".into()); }
+        let metadata = fs::symlink_metadata(entry.path()).map_err(|_| "ASSET_IDENTITY_FAILED")?;
+        if metadata.is_dir() { current_members(&entry.path(), &relative, members, visited)?; }
+        else {
+            let _file_guard = hold(&entry.path(), false)?;
+            if !members.insert(relative) || members.len() > 50000 { return Err("ASSET_CENSUS_LIMIT_REFUSED".into()); }
+        }
+    }
+    Ok(())
 }
 
 fn stable_version(value: &str) -> bool {

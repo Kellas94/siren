@@ -20,8 +20,9 @@ case collisions, junctions, reparse points and hard-linked files. Windows handle
 hold existing files against writes/deletion and directory paths against rename
 or reparse replacement until the child exits. They do not prevent adding a new
 directory member. Every listed asset is hashed through its held file handle;
-extra or missing files at verification prevent startup. A final membership
-recheck is being added for ordinary late changes. It cannot close the hostile
+extra or missing files at verification prevent startup. A final bounded membership
+recheck detects ordinary late changes immediately before starting the process,
+without rehashing the held payload files. It cannot close the hostile
 insertion race between a census and Windows image/DLL loading. These preview
 checks detect accidental damage; they do not establish a trusted publisher's
 identity or qualify hostile concurrent modification for a production release.

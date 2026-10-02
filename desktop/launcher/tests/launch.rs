@@ -11,8 +11,13 @@ impl Fixture {
         fs::create_dir_all(path.join("App/versions/0.1.0/resources")).unwrap(); fs::create_dir(path.join("Data")).unwrap();
         let root = fs::canonicalize(&path).unwrap();
         let app = root.join("App/versions/0.1.0/SIREN.exe");
-        let compilation = Command::new("rustc").arg("--edition=2024").arg(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/app-probe.rs")).arg("-o").arg(&app).output().unwrap();
+        // MSVC may emit a PDB beside the executable. Compile outside the selected
+        // version and copy only the declared application, keeping census strict.
+        let build = root.join("probe-build"); fs::create_dir(&build).unwrap();
+        let compiled_app = build.join("app-probe.exe");
+        let compilation = Command::new("rustc").arg("--edition=2024").arg(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/app-probe.rs")).arg("-o").arg(&compiled_app).output().unwrap();
         assert!(compilation.status.success(), "owned fixture executable compilation failed: {}", String::from_utf8_lossy(&compilation.stderr));
+        fs::copy(compiled_app, &app).unwrap();
         fs::write(root.join("App/versions/0.1.0/resources/app.asar"), b"fixture renderer").unwrap();
         fs::copy(env!("CARGO_BIN_EXE_SIREN"), root.join("SIREN.exe")).unwrap();
         let hash = |bytes: &[u8]| Sha256::digest(bytes).iter().map(|byte| format!("{byte:02x}")).collect::<String>();

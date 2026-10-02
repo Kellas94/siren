@@ -54,6 +54,8 @@ jobs:
           node tests/native/desktop-ui.mjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/code-recovery.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/code-diagram-interaction.mjs
           exit $LASTEXITCODE
       - name: Development package identity (not publication or release admission)
         run: |
@@ -71,6 +73,7 @@ jobs:
           path: |
             desktop/evidence/ci-units.log
             desktop/evidence/*/result.json
+            desktop/evidence/*/failure-state.json
             desktop/evidence/*/*.png
             desktop/evidence/*/*.log
             desktop/dist/*/BUILD-IDENTITY.json

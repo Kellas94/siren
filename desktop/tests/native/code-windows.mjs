@@ -30,7 +30,11 @@ try {
   assert.equal(await driver.evaluate('document.getElementById("codeWorkspace").hidden'), true);
   assert.equal(await driver.evaluate('document.getElementById("codeLibrarySection").hidden'), true, 'Minimising Code must return to a usable application, not leave the full-screen library blocking it');
   assert.equal(await driver.evaluate('document.querySelector(".app-header").inert || document.querySelector(".workspace").inert'), false);
-  await driver.click('#themeMenuButton'); await driver.click('[data-theme-value="light"]');
+  await driver.click('#themeMenuButton');
+  // The menu schedules frame placement and animates its surface. Wait for an
+  // actually hittable option; the unchanged click oracle still rejects covers.
+  await driver.waitFor(`(()=>{const e=document.querySelector('[data-theme-value="light"]'),m=e?.closest('[role="menu"]')||document.getElementById('themeMenu');if(!e)return false;const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return r.width>0&&r.height>0&&x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&e.contains(document.elementFromPoint(x,y))&&(!m||m.getAnimations().length===0)})()`);
+  await driver.click('[data-theme-value="light"]');
   await driver.click('#codeWorkspaceRestore');
   await driver.waitFor('document.getElementById("codeWorkspace").getAnimations().length === 0');
   assert.equal(await driver.evaluate('document.getElementById("cwEditor").value'), python, 'Restore must retain exact draft bytes');
@@ -77,7 +81,9 @@ try {
 } catch (error) {
   if (driver) {
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
-    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify(await driver.evaluate(`({libraryHidden:document.getElementById('codeLibrarySection')?.hidden,codeHidden:document.getElementById('codeWorkspace')?.hidden,headerInert:document.querySelector('.app-header')?.inert,workspaceInert:document.querySelector('.workspace')?.inert})`).catch(() => null)));
+    const failureState = await driver.evaluate(`(()=>{const e=document.querySelector('[data-theme-value="light"]'),m=document.getElementById('themeMenu'),r=e?.getBoundingClientRect(),hit=r&&document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {libraryHidden:document.getElementById('codeLibrarySection')?.hidden,codeHidden:document.getElementById('codeWorkspace')?.hidden,headerInert:document.querySelector('.app-header')?.inert,workspaceInert:document.querySelector('.workspace')?.inert,viewport:{width:innerWidth,height:innerHeight},menu:{hidden:m?.hidden,scrollTop:m?.scrollTop,animations:m?.getAnimations().length},option:r&&{x:r.x,y:r.y,width:r.width,height:r.height},hit:hit?.outerHTML?.slice(0,500)}})()`).catch(() => null);
+    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify(failureState));
+    console.error(JSON.stringify({ codeWindowFailure: failureState }));
   }
   throw error;
 } finally { if (driver) { await writeFile(join(evidence, 'electron.log'), driver.logs()); await driver.close(); } }
