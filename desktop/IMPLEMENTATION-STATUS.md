@@ -15,9 +15,28 @@ that live case and still cancels twelve-second queries, keeping unknown startup
 readonly. Existing exact PID/path/creation-time and dead-process checks remain.
 An optional failure diagnostic records only name/code/killed/signal; default
 startup does not log paths or query output. Six focused tests passed locally,
-including the four integration tests. The full 112-test suite and a fresh
-package/CI run are tracked separately. The package evidence below predates
-this inspector change and remains bound to its original source and archive.
+including the four integration tests. The full current suite passed 112 tests
+in 180884.7 ms, with no failures, skips or cancellations, in
+`evidence/local-pin-process-final-units.log`.
+
+Fresh package source `6b1e46f8d4d1c7637f9d50bd478aad6822aac3e8`, directory
+`dist/development-88b278e9-a3b1-4676-bd8c-b819bf30f8c9`, archive SHA256
+`50d3fabd91ae871bdeb5e72c23709f209520b57b51d9a85335f7f0128aa8fe6e`
+passed the independently authored actual packaged regression at
+`packaged-2026-10-02T17-54-00.855Z`: locked refusal, native unlock/edit/save,
+exact acknowledged readback, recovery into a new copy, Unicode-folder
+copy/relock/unlock and native readonly despite correct PIN. Extracted helper
+matches the focused delay-test source. The coordinator separately ran the
+actual unchanged CI6 Rust root launcher against this package:
+`launcher-native-9b999a59-e52f-464e-9170-c64df2d3ce1e`, completed Unicode
+startup, PIN-screen readiness, owned graceful close and clean-close journal.
+Both are development evidence; neither admits a public release. Original
+package reports below remain bound to their previous sources/archives.
+
+Private runtime head `7ab25be266486fcb1e233c803c25f1f9bf1e3793` is an exact
+seven-blob sync, retaining 803 unrelated blobs. Desktop CI21 and Launcher CI12
+are pending hosted verification; these local results do not establish CI green.
+The subsequent report-only update does not alter runtime, tests or workflows.
 
 The current raw Electron PIN probe `local-pin-2026-10-02T17-50-38.429Z`
 completed setup/change/lock, real restart, persisted cooldown and exact

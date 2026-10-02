@@ -228,6 +228,7 @@
 !/desktop/tests/process-identity-deadline.test.mjs
 !/desktop/reviews/native-process-identity-diagnostic.mjs
 !/desktop/reviews/2026-10-02-process-identity-ci20-review.md
+!/desktop/reviews/2026-10-02-process-deadline-packaged-addendum.md
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.
