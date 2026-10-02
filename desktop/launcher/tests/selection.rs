@@ -1,4 +1,4 @@
-use std::{fs, path::{Path, PathBuf}, sync::atomic::{AtomicUsize, Ordering}};
+use std::{fs, path::PathBuf, sync::atomic::{AtomicUsize, Ordering}};
 use sha2::{Digest, Sha256};
 use serde_json::json;
 use siren_launcher::selection::select;
@@ -19,7 +19,7 @@ impl Fixture {
     fn app(&self) -> PathBuf { self.root.join("App/versions/0.1.0") }
     fn pointer(&self) -> PathBuf { self.root.join("App/current.json") }
     fn write_current(&self, version: &str) {
-        let hash = |bytes: &[u8]| format!("{:x}", Sha256::digest(bytes));
+        let hash = |bytes: &[u8]| Sha256::digest(bytes).iter().map(|byte| format!("{byte:02x}")).collect::<String>();
         fs::write(self.pointer(), serde_json::to_vec(&json!({
             "schema": 1, "kind": "development-preview", "releaseAdmitted": false,
             "version": version, "sourceCommit": "1111111111111111111111111111111111111111",
@@ -122,4 +122,3 @@ fn alias_parent_components_refuse_even_when_the_same_file_exists() {
     let fixture = Fixture::new();
     assert!(select(&fixture.root.join("App/..")).is_err());
 }
-
