@@ -46,6 +46,8 @@ jobs:
           node tests/native/shell.mjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/protected-storage.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/account-transition.mjs
           exit $LASTEXITCODE
       - name: Development package identity (not publication or release admission)
         run: |

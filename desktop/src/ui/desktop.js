@@ -27,7 +27,7 @@
     button(controls, 'desktopRecovery', 'Disaster Recovery…', async () => { panel.close(); await showRecovery(); });
     button(controls, 'desktopLogin', 'Account status', async () => { const state = await bridge.getAccess(); message(`Account: ${state.state}\nOffline activation until: ${state.offlineUntil ? new Date(state.offlineUntil).toLocaleString() : 'not activated'}\nThe production account service is not configured yet.`); });
     button(controls, 'desktopAccountSignIn', 'Sign in…', async () => { const result = await bridge.beginLogin(); if (result.ok === false) message(result.message); else location.reload(); });
-    button(controls, 'desktopLogout', 'Sign out', async () => { await window.sirenDesktopRequestClose?.(); await bridge.logout(); location.reload(); });
+    button(controls, 'desktopLogout', 'Sign out', async () => { const result = await bridge.logout(); if (result.ok === false) message(result.message); else location.reload(); });
     button(controls, 'desktopCheckUpdates', 'Check for Updates', async () => updateView(await bridge.checkForUpdates()));
     button(controls, 'desktopDownloadUpdate', 'Download update', async () => updateView(await bridge.downloadUpdate()));
     button(controls, 'desktopCancelUpdate', 'Cancel update', () => bridge.cancelUpdate());
@@ -85,7 +85,10 @@
     const bar = document.createElement('aside'); bar.id = 'desktopBar'; bar.setAttribute('aria-label', 'Local desktop project');
     const label = document.createElement('span'); label.id = 'desktopProjectLabel'; label.textContent = `Local · ${boot?.snapshot?.project.label || 'Choose a project'} · Development build`; bar.append(label);
     button(bar, 'desktopOptions', 'Desktop…', showDesktop); document.body.append(bar);
-    bridge.onStatus(event => { if (event?.kind === 'updates') updateView(event.state); });
+    bridge.onStatus(event => {
+      if (event?.kind === 'updates') updateView(event.state);
+      if (event?.kind === 'safety' && event.readonly === true) { window.sirenDesktopApplySafety?.(event); message(event.reason); }
+    });
     bridge.onCommand(id => { void window.sirenDesktopCommand(id); });
     document.addEventListener('keydown', event => {
       if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'q') { event.preventDefault(); event.stopImmediatePropagation(); void bridge.requestClose(); }

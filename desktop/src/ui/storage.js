@@ -3,6 +3,7 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
   const bootstrap = window.sirenDesktopBootstrap;
   let snapshot = bootstrap?.snapshot || null;
   const mirror = new Map(); let writeError = null; let readError = null; let queue = Promise.resolve();
+  const locked = () => ({ ok: false, backend: 'native', error: new Error('Account transition pending; editing is temporarily paused') });
   if (snapshot) {
     try {
       const value = JSON.parse(snapshot.json);
@@ -22,14 +23,14 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
       else { if (writeError) writeError(new Error(result.message), { backend: 'native', code: result.code }); }
       return { ok: result.ok, backend: 'native', error: result.ok ? null : new Error(result.message) };
     };
-    const result = queue.then(operation, operation); queue = result.catch(() => {}); return result;
+    const result = queue.then(operation, operation); queue = result.catch(error => ({ ok: false, backend: 'native', error })); return result;
   };
   window.sirenDesktopFlush = () => queue;
   return {
     ready: Promise.resolve(), start() { return this.ready; }, get(key) { return mirror.get(key) ?? null; }, keys() { return [...mirror.keys()]; },
-    set(key, value) { mirror.set(key, value); return persist(key === workspaceKey ? 'workspace' : 'recovery'); },
-    setWithBackup(key, value, backupKey, backupValue) { mirror.set(key, value); mirror.set(backupKey, backupValue); return persist('workspace'); },
-    remove(key) { mirror.delete(key); void persist('recovery'); },
+    set(key, value) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.set(key, value); return persist(key === workspaceKey ? 'workspace' : 'recovery'); },
+    setWithBackup(key, value, backupKey, backupValue) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.set(key, value); mirror.set(backupKey, backupValue); return persist('workspace'); },
+    remove(key) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.delete(key); return persist('recovery'); },
     onWriteError(handler) { writeError = handler; }, onRemoteChange() {},
     foreignRecord: async () => null, readFailure: () => readError, usingFallback: () => false,
   };

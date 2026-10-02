@@ -15,3 +15,5 @@
 body:has(.cw-restore:not([hidden])) .toast {bottom:114px !important;}
 .tour-card[data-desktop-step=true] {top:auto !important;bottom:70px;max-height:calc(100dvh - 90px);overflow:auto;}
 body:has(.tour-card[data-desktop-step=true]) .toast {bottom:auto !important;top:140px;}
+body.desktop-account-transition {cursor:wait;}
+body.desktop-account-transition #desktopBar::after {content:'Saving before account change…';color:var(--text,#e8eef8);}

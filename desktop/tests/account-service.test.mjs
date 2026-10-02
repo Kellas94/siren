@@ -46,3 +46,56 @@ test('unconfigured production login returns a precise unavailable result and doe
   assert.equal((await service.beginLogin()).code, 'ACCOUNT_NOT_CONFIGURED'); assert.equal(opened, false);
   assert.equal((await service.getAccess()).state, 'unactivated');
 });
+
+test('validated login waits for old-account persistence before replacing credentials and permissions', async () => {
+  const { signedPermit, config } = await fixture('account-B');
+  const root = await mkdtemp(join(tmpdir(), 'siren-account-switch-'));
+  const credentials = new CredentialStore(root, { isEncryptionAvailable: () => false });
+  await credentials.write({ installationId: 'installation-A', accountId: 'account-A', lastSeenTime: now });
+  const service = new AccountService({ config, credentials, now: () => now, openBrowser: async () => {} });
+  service.accountId = 'account-A'; service.policy.update({ state: 'online', recoveryOnly: false }); service.policy.opened('owned-A');
+  service.login.beginLogin = async () => ({ accessToken: 'controlled-test-token', claims: { sub: 'account-B' } });
+  service.entitlement = async () => signedPermit;
+  const failed = await service.beginLogin({ beforeCommit: async () => { throw new Error('Old account disk save failed'); } });
+  assert.equal(failed.ok, false); assert.equal((await credentials.read()).accountId, 'account-A');
+  assert.equal(service.accountId, 'account-A'); assert.equal(service.policy.started.has('owned-A'), true);
+  let release, reached;
+  const entered = new Promise(resolve => { reached = resolve; });
+  const operation = service.beginLogin({ beforeCommit: async () => { reached(); await new Promise(resolve => { release = resolve; }); } });
+  await entered; assert.equal((await credentials.read()).accountId, 'account-A'); assert.equal(service.accountId, 'account-A');
+  release(); assert.equal((await operation).state, 'online'); assert.equal((await credentials.read()).accountId, 'account-B');
+  assert.equal(service.accountId, 'account-B'); assert.equal(service.policy.started.size, 0);
+});
+
+for (const transition of ['login', 'logout']) {
+  test(`a delayed old-account timestamp write cannot undo ${transition}`, async () => {
+    const root = await mkdtemp(join(tmpdir(), 'siren-account-cache-race-'));
+    // A persisted owned test codec exercises real files, not DPAPI qualification.
+    const codec = { isEncryptionAvailable: () => true, encryptString: value => Buffer.from('TEST_CODEC:' + value), decryptString: bytes => bytes.toString('utf8').slice(11) };
+    const credentials = new CredentialStore(root, codec);
+    const pair = await generateKeyPair('EdDSA', { extractable: true });
+    const config = { issuer: 'https://issuer.example', clientId: 'fixture', entitlementEndpoint: 'https://issuer.example/permit', permitIssuer: 'https://issuer.example', permitKeys: { root: await exportJWK(pair.publicKey) } };
+    const permit = account => new SignJWT({ product: 'siren', installationId: 'installation' }).setSubject(account).setIssuer(config.issuer).setAudience('siren-desktop-activation').setProtectedHeader({ alg: 'EdDSA', kid: 'root' }).setIssuedAt(now / 1000).setExpirationTime(now / 1000 + 30 * 86400).sign(pair.privateKey);
+    await credentials.write({ accountId: 'A', installationId: 'installation', signedPermit: await permit('A'), lastSeenTime: now });
+    const service = new AccountService({ config, credentials, now: () => now, openBrowser: async () => {} });
+    await service.getAccess(); service.lastPersist = 0;
+    service.login.beginLogin = async () => ({ accessToken: 'CONTROLLED', claims: { sub: 'B' } });
+    const permitB = await permit('B'); service.entitlement = async () => permitB;
+    let entered, release; const reached = new Promise(resolve => { entered = resolve; });
+    const actualWrite = credentials.write.bind(credentials);
+    credentials.write = async record => { if (record.accountId === 'A') { entered(); await new Promise(resolve => { release = resolve; }); } return actualWrite(record); };
+    const oldAccess = service.getAccess(); await reached;
+    let completed = false;
+    const operation = (transition === 'login' ? service.beginLogin() : service.logout()).then(result => { completed = true; return result; });
+    // Drive enough of the controlled commit path to detect premature completion.
+    await new Promise(resolve => setTimeout(resolve, 30));
+    try { assert.equal(completed, false, 'Account transition waits for an already-started credential write'); }
+    finally { release(); }
+    await oldAccess; const result = await operation;
+    const memory = await credentials.read(); const disk = await new CredentialStore(root, codec).read();
+    assert.equal(memory?.accountId ?? null, transition === 'login' ? 'B' : null);
+    assert.equal(disk?.accountId ?? null, transition === 'login' ? 'B' : null);
+    assert.equal(result.state, transition === 'login' ? 'online' : 'unactivated');
+    await service.getAccess(); assert.equal(service.accountId, transition === 'login' ? 'B' : null);
+  });
+}

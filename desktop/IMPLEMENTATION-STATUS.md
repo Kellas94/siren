@@ -28,8 +28,12 @@ passed all steps on Windows Server 2025: 72 tests, guarded renderer, actual
 Electron isolation, current-user protected storage and packaged recovery/folder
 copy. This is CI development evidence, not qualification on a second supported
 Windows 11 PC. Remote screenshots were retained, not independently inspected here.
-The later supplemental-license change adds one test (73 full, 72 without the
-180-second case); its final CI run remains pending.
+The supplemental-license CI run
+[37004902564](https://github.com/Kellas94/siren/actions/runs/37004902564)
+passed all steps, including 73 full tests. The current transition-repair batch
+has 83 full tests; the local 81-test full run passed before the final timer/cache
+deltas, and 82 selected tests passed after those deltas (the real 180-second case
+was excluded by name). Final remote CI for this batch remains pending.
 Actual Electron probes exercised
 keyboard edits, redraw, disk readback/restart, corruption recovery, real private
 Python drafts, full .siren export, Dark/Warm Light controls and current-user DPAPI.
@@ -40,6 +44,40 @@ batch review on commit `837db24` found four real bugs; the original report remai
 in `reviews/2026-10-02-foundation-batch.md`. Subsequent commits repair the missing
 packaged credential module, premature Code recovery acknowledgement, inaccessible
 recovery for a separately chosen damaged project, and CI root paths.
+
+The next original review, `reviews/2026-10-02-current-batch.md`, found two more
+real problems: successful sign-in could discard queued late edits, and native
+startup/readiness read-only mode could still permit original workspace writes.
+The repairs preserve old-account authority until the final renderer flush is
+acknowledged; credential changes happen afterwards. Editing is temporarily
+inert/locked during final commit. Failed login/logout does not reload. Native
+safety remains authoritative across recovery selection, and readiness failure
+updates the renderer too. `reviews/2026-10-02-current-batch-recheck.md` is the
+reviewer's separate recheck, with service/VM evidence and exact source hashes;
+the coordinator did not replace the original report or author a release PASS.
+
+Actual renderer guard testing found a further false autosave error caused by
+a pending timer after the final flush. The failed toast-observer probe is
+retained. The final guard cancels save/draft timers and paused callbacks return
+without touching live controls. Native guard run 4 then verified Python private
+draft readback/checkpoint, blocked keyboard input, safe resume, an unavailable
+login that leaves editing usable, and runtime read-only UI. Its two screenshots
+were inspected. This directly invokes the final guard, not production login.
+Final Code run 2 separately verified Python structure, private recovery without
+implicit Docs save, native Quit acknowledgement and restart. Both use renderer
+SHA-256 `91e3e20e4c6772c2abda15db0c0bcdb4c5f1af67b8ad5d8fb8290e833fecade9`.
+
+The same reviewer subsequently reproduced an old-account timestamp write
+overwriting successfully switched credentials. This additional finding is
+preserved in the separate recheck report. Credential read/verify/cache writes,
+final activation commits and logout now share a native queue. Browser login and
+the renderer flush stay outside that queue, since saving revalidates access.
+Both delayed-login and delayed-logout regressions failed before the fix and
+passed afterwards using real owned files and a controlled test codec. These
+tests do not certify production account deployment or real DPAPI failures.
+The reviewer authored `reviews/2026-10-02-account-cache-recheck.md` separately;
+its real-file probes verified the repair, queue recovery after errors and a
+native save that rechecks access without deadlock. No report admits a release.
 
 Packaged run 6 used source commit `224fb324d0ddd7f281660fb41bb5e64c8a7f812e`,
 renderer SHA-256 `b2d5ae84c8032cff8c3e623cbede9a29d11930c4336e9d1e00b30f19d08d151f`,

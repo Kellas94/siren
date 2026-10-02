@@ -38,12 +38,20 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const recoveryLabel = "d.recovery==='stored'?'Private recovery stored':d.recovery==='failed'";
     if (html.split(recoveryLabel).length !== 2) throw new Error('Desktop Code recovery status marker mismatch');
     html = html.replace(recoveryLabel, "d.recovery==='stored'?'Private recovery stored':d.recovery==='pending'?'Saving private recovery…':d.recovery==='failed'");
+    // Debounced callbacks must not turn a completed account flush into a false failure.
+    for (const token of ["      function scheduleSave() {", "      function writeDraft() {", "      async function saveState() {"]) {
+      if (html.split(token).length !== 2) throw new Error('Desktop paused autosave marker mismatch');
+      const start = html.indexOf(token); const stop = html.indexOf('\n      }', start);
+      const body = html.slice(start, stop);
+      if (body.split('if (readOnlyMode)').length !== 2) throw new Error('Desktop paused autosave guard mismatch');
+      html = html.slice(0, start) + body.replace('if (readOnlyMode)', 'if (readOnlyMode || window.sirenDesktopStorageLocked)') + html.slice(stop);
+    }
     const readonly = 'let readOnlyMode = false;';
     if (html.split(readonly).length !== 2) throw new Error('Desktop access patch marker mismatch');
-    html = html.replace(readonly, 'let readOnlyMode = !!window.sirenDesktopBootstrap?.readonly;');
+    html = html.replace(readonly, 'let readOnlyMode = !!window.sirenDesktopBootstrap?.readonly || !!window.sirenDesktopSafetyReadonly;');
     for (const token of ['readOnlyMode = Boolean(enabled);', 'readOnlyMode = Boolean(shared.ro);']) {
       if (html.split(token).length !== 2) throw new Error('Desktop read-only authority marker mismatch');
-      html = html.replace(token, token.replace('Boolean(', '!!window.sirenDesktopBootstrap?.readonly || Boolean('));
+      html = html.replace(token, token.replace('Boolean(', '!!window.sirenDesktopBootstrap?.readonly || !!window.sirenDesktopSafetyReadonly || Boolean('));
     }
     const savedStatus = "        } else {\n          el.saveStateChip.dataset.state = 'good';\n          el.saveStateText.textContent = 'Saved locally';";
     if (html.split(savedStatus).length !== 2) throw new Error('Desktop read-only status marker mismatch');
@@ -72,7 +80,42 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     `;
     const startup = "document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
     if (html.split(startup).length !== 2) throw new Error('Desktop startup patch marker mismatch');
-    html = html.replace(startup, () => "document.addEventListener('DOMContentLoaded', () => {" + importHelper + "\n        if (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== 'normal') return;\n        window.sirenDesktopRequestClose = async () => { if (!window.sirenDesktopBootstrap?.snapshot) return; const result = await saveState(); if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged'); const flushed = await window.sirenDesktopFlush(); if (flushed?.ok === false) throw new Error('Recovery not acknowledged'); };\n        sirenStore.start()");
+    html = html.replace(startup, () => "document.addEventListener('DOMContentLoaded', () => {" + importHelper + `
+        window.sirenDesktopApplySafety = event => {
+          if (event?.readonly !== true) return;
+          window.sirenDesktopSafetyReadonly = true;
+          applyReadOnlyMode(true, false);
+          if (el.readOnlyBanner) el.readOnlyBanner.textContent = event.reason || 'Read-only desktop project · Recovery and export remain available';
+          setSaveState('saved');
+        };
+        window.sirenDesktopRequestClose = async () => {
+          clearTimeout(saveTimer); clearTimeout(draftTimer);
+          if (window.sirenDesktopBootstrap?.snapshot && window.sirenDesktopBootstrap?.mode === 'normal') {
+            const result = await saveState();
+            if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged');
+          }
+          const flushed = await window.sirenDesktopFlush();
+          if (flushed?.ok === false) throw new Error('Recovery not acknowledged');
+        };
+        let accountTransitionBodyState = null;
+        window.sirenDesktopBeginAccountTransition = async () => {
+          if (accountTransitionBodyState !== null) throw new Error('Account transition already pending');
+          accountTransitionBodyState = document.body.inert;
+          document.body.inert = true;
+          document.body.classList.add('desktop-account-transition');
+          try {
+            await window.sirenDesktopRequestClose();
+            window.sirenDesktopStorageLocked = true;
+          } catch (error) { window.sirenDesktopEndAccountTransition(); throw error; }
+        };
+        window.sirenDesktopEndAccountTransition = () => {
+          window.sirenDesktopStorageLocked = false;
+          if (accountTransitionBodyState !== null) document.body.inert = accountTransitionBodyState;
+          accountTransitionBodyState = null;
+          document.body.classList.remove('desktop-account-transition');
+        };
+        if (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== 'normal') return;
+        sirenStore.start()`);
     const ready = 'sirenStore.start().catch(() => {}).then(initialize).then(() => {';
     if (html.split(ready).length !== 2) throw new Error('Desktop readiness patch marker mismatch');
     html = html.replace(ready, ready + "\n          if (window.sirenDesktopBootstrap?.readonly) { applyReadOnlyMode(true, false); if (el.readOnlyBanner) el.readOnlyBanner.textContent = 'Read-only desktop project · Recovery and export remain available'; setSaveState('saved'); }\n          window.sirenDesktopReady?.();");

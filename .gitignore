@@ -147,6 +147,12 @@
 !/desktop/licenses/better_any-0.2.1-README.chromium
 !/desktop/licenses/provenance.json
 
+!/desktop/reviews/2026-10-02-account-cache-recheck.md
+!/desktop/reviews/2026-10-02-current-batch-recheck.md
+!/desktop/reviews/2026-10-02-current-batch.md
+!/desktop/tests/native-transitions.test.mjs
+!/desktop/tests/native/account-transition.mjs
+
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

@@ -8,10 +8,17 @@ const unactivated = () => ({ state: 'unactivated', offlineUntil: null, recoveryO
 export class AccountService {
   constructor({ config, credentials, openBrowser, now = () => Date.now() }) {
     this.config = config; this.credentials = credentials; this.now = now; this.policy = new AccessPolicy(); this.accountId = null; this.lastPersist = 0;
+    this.credentialQueue = Promise.resolve();
     this.login = new OidcLogin({ issuer: config.issuer, clientId: config.clientId, openBrowser });
   }
   configured() { return !!(this.config.issuer && this.config.clientId && this.config.entitlementEndpoint && this.config.permitIssuer && Object.keys(this.config.permitKeys).length); }
-  async getAccess() {
+  withCredentials(operation) {
+    const result = this.credentialQueue.then(operation);
+    this.credentialQueue = result.catch(() => {});
+    return result;
+  }
+  getAccess() { return this.withCredentials(() => this.readAccess()); }
+  async readAccess() {
     if (!this.configured()) { this.policy.update(unactivated()); return this.policy.state; }
     const record = await this.credentials.read();
     if (!record?.signedPermit || !record.installationId || !record.accountId) { this.policy.update(unactivated()); return this.policy.state; }
@@ -37,24 +44,33 @@ export class AccountService {
     if (typeof data.signedPermit !== 'string') throw new Error('No signed entitlement');
     return data.signedPermit;
   }
-  async beginLogin() {
+  async beginLogin({ beforeCommit = async () => {} } = {}) {
     if (!this.configured()) return failure('ACCOUNT_NOT_CONFIGURED', 'The production account service is not configured in this prototype');
     try {
       const login = await this.login.beginLogin();
-      const previous = await this.credentials.read(); const installationId = previous?.installationId || randomUUID();
+      const previous = await this.withCredentials(() => this.credentials.read()); const installationId = previous?.installationId || randomUUID();
       const signedPermit = await this.entitlement({ accessToken: login.accessToken, installationId });
       const state = await verifyPermit({ signedPermit, keys: this.config.permitKeys, installationId, expectedAccount: login.claims.sub, issuer: this.config.permitIssuer, now: this.now(), lastSeenTime: this.now() });
       if (state.ok === false || state.recoveryOnly) return failure('ENTITLEMENT_INVALID', 'The server did not return a valid 30-day activation');
       const record = { installationId, accountId: login.claims.sub, signedPermit, refreshToken: login.refreshToken, lastSeenTime: this.now(), lastOnlineAt: this.now() };
-      await this.credentials.write(record);
-      this.accountId = record.accountId; this.policy.accountSwitch(); this.policy.update({ ...state, state: 'online' });
-      return this.policy.state;
+      // Preserve the old account's latest work before changing its authority.
+      // Never hold the credential queue across the browser or renderer flush:
+      // native saving revalidates account access through that same queue.
+      await beforeCommit();
+      return await this.withCredentials(async () => {
+        await this.credentials.write(record);
+        this.accountId = record.accountId; this.policy.accountSwitch(); this.policy.update({ ...state, state: 'online' });
+        this.lastPersist = this.now();
+        return this.policy.state;
+      });
     } catch { return failure('LOGIN_FAILED', 'Login or activation did not complete; local projects remain available for recovery/export'); }
   }
   async canPerform({ action, projectId, owned }) {
     await this.getAccess(); return this.policy.canPerform({ action, projectId, owned });
   }
-  async logout() {
-    await this.credentials.clear(); this.accountId = null; this.policy.accountSwitch(); this.policy.update(unactivated()); return this.policy.state;
+  logout() {
+    return this.withCredentials(async () => {
+      await this.credentials.clear(); this.accountId = null; this.policy.accountSwitch(); this.policy.update(unactivated()); return this.policy.state;
+    });
   }
 }

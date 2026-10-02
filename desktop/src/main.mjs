@@ -49,12 +49,17 @@ if (processIdentity) await journal.recordSession({ event: 'opened', sessionId, v
 const writerOptions = { ownerIdentity: processIdentity, inspectProcess: inspectWindowsProcess };
 const account = new AccountService({ config: publisherConfig.account, credentials: new CredentialStore(dataRoot, safeStorage), openBrowser: url => shell.openExternal(url) });
 await account.getAccess();
-const projects = new ProjectStore(dataRoot, { ...writerOptions, canSave: async ({ action, projectId }) => (!app.isPackaged && mode === 'normal') || account.canPerform({ action, projectId, owned: action === 'restore' || grants.has(projectId) }) });
+let mode = startup.mode; let reason = startup.reason; let nativeReadonly = mode === 'readonly';
+let accountTransition = false; let accountQuiesced = false;
+const projects = new ProjectStore(dataRoot, { ...writerOptions, canSave: async ({ action, projectId }) => {
+  if (accountQuiesced || (['workspace', 'create'].includes(action) && (nativeReadonly || mode !== 'normal'))) return false;
+  return (!app.isPackaged && mode === 'normal' && !nativeReadonly) || account.canPerform({ action, projectId, owned: action === 'restore' || grants.has(projectId) });
+} });
 const recovery = new RecoveryStore(dataRoot, writerOptions);
 const updates = new UpdateService({ root: dataRoot, config: publisherConfig.updates, currentVersion: '1.131.0', onStatus: state => { if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'updates', state }); } });
 let selectedId = devArgument('--siren-test-project=') || null;
 if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId) && (!app.isPackaged || record.accountId === account.accountId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
-let snapshot = null; let mode = startup.mode; let reason = startup.reason;
+let snapshot = null;
 if (selectedId && mode === 'normal') {
   try { snapshot = await projects.readProject(selectedId); }
   catch { mode = 'recovery'; reason = 'Selected project is damaged; open a verified recovered copy'; }
@@ -68,7 +73,8 @@ const selected = async next => {
   selectedId = next.project.id; grants.add(selectedId); snapshot = next;
   await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId: selectedId, accountId: account.accountId })));
   account.policy.opened(selectedId);
-  mode = 'normal'; bootstrap = { mode: 'normal', reason: null, snapshot: next, recoveryProjectId: selectedId, readonly: app.isPackaged && account.policy.state.recoveryOnly };
+  mode = nativeReadonly ? 'readonly' : 'normal'; reason = nativeReadonly ? reason : null;
+  bootstrap = { mode, reason, snapshot: next, recoveryProjectId: selectedId, readonly: nativeReadonly || (app.isPackaged && account.policy.state.recoveryOnly) };
   return next;
 };
 const exportBytes = async (bytes, suggested) => {
@@ -92,11 +98,33 @@ const services = {
   },
   getAccess: () => account.getAccess(),
   beginLogin: async () => {
-    const state = await account.beginLogin();
-    if (state.ok !== false) { grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode: 'normal', reason: null, snapshot: null, recoveryProjectId: null, readonly: true }; }
-    return state;
+    if (accountTransition) return failure('ACCOUNT_BUSY', 'An account transition is already pending');
+    accountTransition = true; let committed = false;
+    try {
+      const state = await account.beginLogin({ beforeCommit: async () => {
+        await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+        accountQuiesced = true;
+        await Promise.all([...writes]);
+      } });
+      if (state.ok !== false) { grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode, reason, snapshot: null, recoveryProjectId: null, readonly: true }; committed = true; }
+      return state;
+    } finally {
+      accountQuiesced = false; accountTransition = false;
+      if (!committed) await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
+    }
   },
-  logout: async () => { const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; return state; },
+  logout: async () => {
+    if (accountTransition) return failure('ACCOUNT_BUSY', 'An account transition is already pending');
+    accountTransition = true; let committed = false;
+    try {
+      await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+      accountQuiesced = true; await Promise.all([...writes]);
+      const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
+    } finally {
+      accountQuiesced = false; accountTransition = false;
+      if (!committed) await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
+    }
+  },
   getUpdate: () => updates.getUpdate(),
   checkForUpdates: () => updates.checkForUpdates(),
   downloadUpdate: () => updates.downloadUpdate(),
@@ -182,10 +210,17 @@ ipcMain.on('siren:ready', async event => {
   try {
     if (processIdentity) await journal.recordSession({ event: 'ready', sessionId, version: app.getVersion(), processIdentity });
     readyRecorded = true;
-  } catch { bootstrap = { ...bootstrap, mode: 'readonly', readonly: true, reason: 'Readiness journal could not be confirmed; preserve/export existing work' }; }
+  } catch {
+    nativeReadonly = true; mode = 'readonly'; reason = 'Readiness journal could not be confirmed; preserve/export existing work';
+    bootstrap = { ...bootstrap, mode, readonly: true, reason };
+    if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'safety', mode, readonly: true, reason });
+  }
 });
-ipcMain.handle('siren:desktop', (event, method, payload) => invokeDesktop({ method, payload,
-  context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services }));
+ipcMain.handle('siren:desktop', (event, method, payload) => {
+  if (accountTransition && ['pickProject', 'restoreRecovery'].includes(method)) return failure('ACCOUNT_BUSY', 'Wait for the account transition before changing projects');
+  return invokeDesktop({ method, payload,
+    context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services });
+});
 window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 window.webContents.on('will-navigate', event => { if (event.url !== 'siren://app/app.html') event.preventDefault(); });
 window.webContents.on('will-attach-webview', event => event.preventDefault());
