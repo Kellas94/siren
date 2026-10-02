@@ -1,5 +1,52 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Hosted CI23 and packaged save qualification
+
+Desktop CI23 (run `37048076118`) passed all 112 unit/protocol tests and all
+12 native Electron groups, including the strict Guided first-paint predicate,
+PIN lifecycle, Code and recovery. Its packaged stage failed the assertion
+requiring a raw native save acknowledgement. The original returned failure
+code was not retained, so the precise CI23 cause remains unclassified. The
+aggregate is FAILED; no local result replaces that hosted verdict. Launcher
+CI14 (`37048076112`) succeeded. Original logs and the authenticated CI23
+artifact remain retained.
+
+The actual hosted checkout `89a9a0965590a7af4fbed540ada7ae67e251bd06` has
+tree `d04a7396fe1872c5f84249e07e1db5b587c0fee0`, exactly the private head
+`297ab255ae54cec1eff1aaec3b3937e597b58e64` tree, with unchanged main
+`688c48528ff7bdab77908faf041806d10acc54dc` as its other parent. Hosted
+renderer `20f0b24e31d22f9f93dfbab1b373c20344f4920fbb792417654cb622a755776a`
+and archive `41e6f342bbbfc3bdcd3f422c263d0c7ef6bb8a5a09ffb45ac7f1b684d2239eb1`
+have their own receipts; they are not assumed byte-identical to the local
+renderer/archive below.
+
+A controlled actual-editor experiment read revision 1, edited through pointer
+and keyboard, and drained the production save boundary to revision 2. A raw
+write using the old revision returned `REVISION_CONFLICT`, preserving the
+complete intervening snapshot. This establishes that a test writer competing
+with the renderer can reproduce the acknowledgement predicate failure while
+native storage correctly refuses stale writes. It does not identify CI23's
+missing response. The packaged qualification is being refined to exercise the
+real editor and acknowledged production flush, with exact revision/hash/full
+snapshot readback, checkpoint-copy and pre-action original preservation checks.
+Subsequent qualification is recorded separately, including any adverse results.
+
+The coordinator's exact final packaged probe
+`421c0b9cbb3eb760ebac31b7ba92efdf8f24d8e932c09bbe47fc4a941fdf80a3`
+completed at `packaged-2026-10-02T18-59-41.947Z` on the unchanged local
+`b6249016cc9a001c646cc183f3c38884da678b1d` package / archive `53da590b…`.
+It exercises pointer/keyboard editing, production save draining, exact full
+snapshot/revision/hash readback, a verified saved checkpoint, recovery into a
+new copy preserving the complete explicitly drained pre-action original,
+Unicode-folder move/relock, and native damaged-journal readonly despite a
+correct PIN. All previous refusal oracles remain. The selected checkpoint and
+original preservation boundary are captured before recovery; neither is reset
+after the action. A normal intervening backup can update the original before
+that boundary. Independent controlled/adverse observations are separately
+authored; this coordinator execution is not an independent reviewer verdict.
+The subsequent hosted run remains pending in the PR at this documentation
+freeze. The prior reload/CDP timeouts remain undiagnosed and retained.
+
 ## Locked first-paint / CI21 and CI22 follow-up
 
 Both hosted runs passed all 112 unit tests but failed the native Guided/intro

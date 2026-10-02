@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile, cp, access } from 'node:fs/promises';
 import { resolve, join, dirname } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
@@ -15,12 +16,24 @@ const firstRoot = join(evidence, 'Pachet-Știință-1'); await cp(original, firs
 assert.equal((await hashOwnedFile(join(dirname(join(firstRoot, receipt.appRelativePath)), 'resources', 'app.asar'), 1024 ** 3)).sha256, receipt.appArchive.sha256, 'Executed package archive must match its development build receipt');
 const dataRoot = join(firstRoot, 'Data'); await mkdir(dataRoot); const projects = new ProjectStore(dataRoot);
 const source = 'flowchart TD\n A[Packaged Unicode] --> B[Owned local recovery]';
+const editedSource = 'flowchart TD\n A[Packaged pointer save] --> B[Owned preserved recovery]';
 const project = await projects.createProject({ label: 'Packaged local-PIN fixture', json: JSON.stringify({ source }) });
 await new RecoveryStore(dataRoot).checkpointProject({ snapshot: project, kind: 'saved' });
 await writeFile(join(dataRoot, 'session-selection.json'), JSON.stringify({ schema: 1, accountId: null, projectId: project.project.id }));
-const forbiddenRoot = join(evidence, 'must-not-be-used'); let driver;
+const forbiddenRoot = join(evidence, 'must-not-be-used'); let driver; let saveDiagnostic = null; let lastOperation = null; let operationSerial = 0;
+const probeSha256 = createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex');
 try {
-  const launch = async root => launchDesktop({ executable: join(root, receipt.appRelativePath), packaged: true, extraArgs: ['--enable-logging=file', `--log-file=${join(evidence, 'runtime.log')}`, `--siren-test-root=${forbiddenRoot}`, '--siren-test-project=ignored-project'] });
+  const launch = async root => {
+    const native = await launchDesktop({ executable: join(root, receipt.appRelativePath), packaged: true, extraArgs: ['--enable-logging=file', `--log-file=${join(evidence, 'runtime.log')}`, `--siren-test-root=${forbiddenRoot}`, '--siren-test-project=ignored-project'] });
+    const observed = { ...native };
+    for (const method of ['evaluate', 'waitFor', 'click', 'send']) observed[method] = async (...args) => {
+      const value = args[0];
+      const detail = typeof value === 'string' && /(?:setupPin|unlockPin)\(/.test(value) ? 'Native PIN operation (fixture secret masked)' : value;
+      lastOperation = { id: ++operationSerial, method, detail };
+      return native[method](...args);
+    };
+    return observed;
+  };
   driver = await launch(firstRoot);
   await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), null, 'Locked package must not disclose its selected snapshot');
@@ -36,14 +49,36 @@ try {
   assert.equal(await driver.evaluate('document.getElementById("source").value'), source);
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.readonly'), false, 'Real local PIN unlock permits packaged editing without an online account');
   await driver.waitFor('!document.body.classList.contains("read-only-mode")');
-  await driver.evaluate('window.sirenDesktopFlush?.()');
-  const live = await projects.readProject(project.project.id);
-  const savedJson = JSON.stringify({ source, ownedPackagedSave: 'acknowledged-native-write' });
-  const saved = await driver.evaluate(`window.sirenDesktop.saveProject(${JSON.stringify({ projectId: project.project.id, baseRevision: live.revision, json: savedJson, purpose: 'workspace' })})`);
-  assert.equal(saved.ok, true, 'Actual packaged native save must acknowledge after PIN unlock');
+  await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
+  if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
+  const beforeEdit = await projects.readProject(project.project.id);
+  saveDiagnostic = { kind: 'production-editor-flush', baselineRevision: beforeEdit.revision, flush: 'not-started' };
+  await driver.click('#codeModeButton'); await driver.click('#textModeButton'); await driver.click('#source');
+  await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', modifiers: 2, windowsVirtualKeyCode: 65 });
+  await driver.send('Input.insertText', { text: editedSource });
+  await driver.waitFor(`document.getElementById('source').value===${JSON.stringify(editedSource)}`);
+  assert.equal(await driver.evaluate('typeof window.sirenDesktopRequestClose'), 'function');
+  saveDiagnostic.flush = 'pending';
+  // This production boundary clears delayed saves, saves the real editor state,
+  // and drains both renderer and native adapter queues until acknowledged.
+  // A raw CAS write alongside that adapter can legitimately lose its revision.
+  await driver.evaluate('window.sirenDesktopRequestClose()');
   const acknowledged = await projects.readProject(project.project.id);
-  assert.equal(acknowledged.json, savedJson); assert.equal(acknowledged.sha256, saved.sha256); assert.equal(acknowledged.revision, saved.revision);
-  // The acknowledged saved original is the preservation boundary for recovery.
+  saveDiagnostic = { ...saveDiagnostic, flush: 'resolved', postReadRevision: acknowledged.revision, postReadSha256: acknowledged.sha256 };
+  await writeFile(join(evidence, 'save-diagnostic.json'), JSON.stringify(saveDiagnostic, null, 2));
+  assert.ok(acknowledged.revision > beforeEdit.revision, 'Actual packaged editor save must advance its native revision');
+  assert.equal(createHash('sha256').update(Buffer.from(acknowledged.json)).digest('hex'), acknowledged.sha256);
+  const savedBag = JSON.parse(acknowledged.json);
+  assert.equal(savedBag.kind, 'siren-desktop'); assert.equal(savedBag.schema, 1);
+  const savedState = JSON.parse(savedBag.storage['t-industries-siren-v23-state']);
+  assert.equal(savedState.source, editedSource);
+  assert.equal(savedState.diagrams.find(d => d.id === savedState.activeDiagramId)?.source, editedSource);
+  const selectedPointer = JSON.parse(await readFile(join(dataRoot, 'Projects', project.project.id, 'current.json'), 'utf8'));
+  const selectedBytes = await readFile(join(dataRoot, 'Projects', project.project.id, 'revisions', selectedPointer.file));
+  assert.equal(selectedPointer.revision, acknowledged.revision);
+  assert.equal(createHash('sha256').update(selectedBytes).digest('hex'), selectedPointer.sha256);
+  assert.deepEqual(JSON.parse(selectedBytes.toString('utf8')), acknowledged, 'Readback must match the complete committed snapshot bytes');
+  // This acknowledged saved checkpoint is the exact recovered-copy target.
   const restorePoint = (await new RecoveryStore(dataRoot).scan(project.project.id)).valid.find(p => p.kind === 'saved' && p.snapshot.sha256 === acknowledged.sha256 && p.snapshot.json === acknowledged.json);
   assert.ok(restorePoint, 'Acknowledged native write must have a verified recovery checkpoint');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
@@ -56,12 +91,20 @@ try {
   await driver.waitFor('Number(getComputedStyle(document.getElementById("desktopRecoveryPanel")).opacity) >= 0.99');
   assert.ok(await driver.evaluate('document.querySelectorAll(".desktop-recovery-row").length') > 0);
   await driver.screenshot(join(evidence, 'packaged-recovery.png'));
+  // A normal backup may update after the first edit acknowledgement. Preserve
+  // the complete original at the explicitly drained pre-restore boundary;
+  // the recovered copy still must match the selected verified checkpoint.
+  await driver.evaluate('window.sirenDesktopRequestClose()');
+  const preservedOriginal = await projects.readProject(project.project.id);
+  assert.equal(JSON.parse(JSON.parse(preservedOriginal.json).storage['t-industries-siren-v23-state']).source, editedSource);
+  assert.equal(createHash('sha256').update(Buffer.from(preservedOriginal.json)).digest('hex'), preservedOriginal.sha256);
+  await writeFile(join(evidence, 'restore-boundary.json'), JSON.stringify({ selectedCheckpoint: acknowledged, preservedOriginal }, null, 2));
   const pointId = restorePoint.id;
   await driver.click(`#recover-${pointId}`);
   await driver.waitFor(`!!window.sirenDesktopBootstrap?.snapshot && window.sirenDesktopBootstrap.snapshot.project.id !== ${JSON.stringify(project.project.id)} && !document.body?.classList.contains('read-only-mode')`);
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0" && !!document.querySelector("svg .node")');
-  assert.equal(await driver.evaluate('document.getElementById("source").value'), source);
-  assert.deepEqual(await projects.readProject(project.project.id), acknowledged, 'Recovery must preserve the acknowledged saved original exactly');
+  assert.equal(await driver.evaluate('document.getElementById("source").value'), editedSource);
+  assert.deepEqual(await projects.readProject(project.project.id), preservedOriginal, 'Recovery must preserve the complete acknowledged pre-restore original exactly');
   const recoveredId = await driver.evaluate('window.sirenDesktopBootstrap.snapshot.project.id');
   assert.equal((await projects.readProject(recoveredId)).json, acknowledged.json);
   assert.equal((await projects.readProject(recoveredId)).sha256, acknowledged.sha256);
@@ -70,11 +113,11 @@ try {
   await driver.close(); driver = null;
   const closeEvents = JSON.parse(await readFile(join(dataRoot, 'Recovery', 'sessions.json'), 'utf8')).events;
   assert.equal(closeEvents.at(-1)?.event, 'clean-close', 'Moving the full package requires an acknowledged normal application exit, not killing only its parent process');
-  assert.deepEqual(await projects.readProject(project.project.id), acknowledged);
+  assert.deepEqual(await projects.readProject(project.project.id), preservedOriginal);
   const recoveredAfterExit = await projects.readProject(recoveredId);
   const exitedBag = JSON.parse(recoveredAfterExit.json);
   const exitedSource = exitedBag.source ?? JSON.parse(exitedBag.storage['t-industries-siren-v23-state']).source;
-  assert.equal(exitedSource, source, 'Normal editable close must retain recovered source while serializing renderer state');
+  assert.equal(exitedSource, editedSource, 'Normal editable close must retain recovered source while serializing renderer state');
   const secondRoot = join(evidence, 'Mutat-Știință-2'); await cp(firstRoot, secondRoot, { recursive: true, errorOnExist: true, force: false });
   driver = await launch(secondRoot);
   await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
@@ -85,13 +128,13 @@ try {
   assert.equal(movedDenied.code, 'PIN_REQUIRED');
   await unlockDesktop(driver, { pin: '4826', autoSetup: false });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0" && !!document.querySelector("svg .node")');
-  assert.equal(await driver.evaluate('document.getElementById("source").value'), source);
+  assert.equal(await driver.evaluate('document.getElementById("source").value'), editedSource);
   assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(recoveredId), recoveredAfterExit, 'Folder copy must retain the actual acknowledged normal-exit recovered snapshot');
-  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(project.project.id), acknowledged);
+  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(project.project.id), preservedOriginal);
   assert.equal((await hashOwnedFile(join(secondRoot, receipt.appRelativePath), 1024 ** 3)).sha256, receipt.runtimeBinary.sha256);
   await driver.evaluate('window.sirenDesktop.requestClose()'); await driver.waitForExit(); await driver.close(); driver = null;
   const recoveredBeforeSafety = await new ProjectStore(join(secondRoot, 'Data')).readProject(recoveredId);
-  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(project.project.id), acknowledged);
+  assert.deepEqual(await new ProjectStore(join(secondRoot, 'Data')).readProject(project.project.id), preservedOriginal);
   // An owned damaged-journal variant verifies PIN cannot override native safety.
   const safetyRoot = join(evidence, 'Siguranță-readonly-3');
   await cp(secondRoot, safetyRoot, { recursive: true, errorOnExist: true, force: false });
@@ -104,13 +147,15 @@ try {
   const safetyDenied = await driver.evaluate(`window.sirenDesktop.saveProject(${JSON.stringify({ projectId: recoveredId, baseRevision: 1, json: '{}', purpose: 'workspace' })})`);
   assert.equal(safetyDenied.ok, false, 'Correct PIN cannot bypass native safety read-only');
   assert.equal(safetyDenied.code, 'ACCESS_REFUSED');
-  assert.deepEqual(await new ProjectStore(join(safetyRoot, 'Data')).readProject(project.project.id), acknowledged);
+  assert.deepEqual(await new ProjectStore(join(safetyRoot, 'Data')).readProject(project.project.id), preservedOriginal);
   assert.deepEqual(await new ProjectStore(join(safetyRoot, 'Data')).readProject(recoveredId), recoveredBeforeSafety);
-  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Actual packaged app.asar/SIREN.exe, locked null snapshot/refused saves, production native fixture PIN unlock, real local save/readback, rejected dev CLI, Unicode folder copy relock/unlock, pointer recovery into a new project preserving the acknowledged saved original, native damaged-journal read-only authority despite correct PIN, and unconfigured updates. No launcher/apply/clean-PC/online account qualification.', sourceCommit: receipt.sourceCommit, rendererSha256: receipt.renderer.rendererSha256, archive: receipt.appArchive, runtime: receipt.runtimeBinary, initialProjectSha256: project.sha256, acknowledgedProjectSha256: acknowledged.sha256 }, null, 2));
+  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, scope: 'Actual packaged app.asar/SIREN.exe, locked null snapshot/refused saves, production native fixture PIN unlock, pointer/keyboard editor save through production acknowledged flush with exact native bytes/revision/hash/full-bag readback, rejected dev CLI, Unicode folder copy relock/unlock, pointer recovery into a new project preserving the acknowledged saved original, native damaged-journal read-only authority despite correct PIN, and unconfigured updates. No launcher/apply/clean-PC/online account qualification.', probeSha256, saveDiagnostic, sourceCommit: receipt.sourceCommit, rendererSha256: receipt.renderer.rendererSha256, archive: receipt.appArchive, runtime: receipt.runtimeBinary, initialProjectSha256: project.sha256, acknowledgedProjectSha256: acknowledged.sha256 }, null, 2));
   console.log(JSON.stringify({ completed: true, evidence }));
 } catch (error) {
-  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: false, error: String(error.stack || error), sourceCommit: receipt.sourceCommit, rendererSha256: receipt.renderer.rendererSha256, archive: receipt.appArchive, runtime: receipt.runtimeBinary }, null, 2));
+  const failedOperation = lastOperation;
+  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: false, error: String(error.stack || error), probeSha256, failedOperation, saveDiagnostic, sourceCommit: receipt.sourceCommit, rendererSha256: receipt.renderer.rendererSha256, archive: receipt.appArchive, runtime: receipt.runtimeBinary }, null, 2));
   if (driver) {
+    await writeFile(join(evidence, 'failure-events.json'), JSON.stringify(driver.events.filter(event => /^(?:Runtime\.executionContext(?:Created|Destroyed|sCleared)|Page\.(?:frameNavigated|frameStartedLoading|frameStoppedLoading|javascriptDialogOpening|javascriptDialogClosed))$/.test(event.method)).slice(-256), null, 2));
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
     const state = await driver.evaluate(`(()=>{const panel=document.getElementById('desktopControlsPanel');return {visibility:document.visibilityState,focused:document.hasFocus(),inert:document.body.inert,locked:window.sirenDesktopStorageLocked,bodyClasses:document.body.className,panel:panel?{open:panel.open,opacity:getComputedStyle(panel).opacity,display:getComputedStyle(panel).display,visibility:getComputedStyle(panel).visibility,animation:getComputedStyle(panel).animation,rect:panel.getBoundingClientRect().toJSON()}:null,animations:document.getAnimations().map(a=>({playState:a.playState,currentTime:a.currentTime,finish:a.effect?.getComputedTiming()?.endTime})),bootstrap: {mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly}};})()`).catch(() => null);
     await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ error: error.message, state }, null, 2));
