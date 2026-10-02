@@ -21,7 +21,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const openingChoice = 'const introPlaying = sirenFirstRun ? playSirenIntro() : false;';
     if (html.split(openingPlate).length !== 2 || html.split(openingChoice).length !== 2) throw new Error('Desktop opening plate marker mismatch');
     html = html.replace(openingPlate, openingPlate.replace(' hidden', ''));
-    html = html.replace(openingChoice, 'const introPlaying = sirenFirstRun ? playSirenIntro() : (stopSirenIntro(), false);');
+    html = html.replace(openingChoice, 'const introPlaying = window.sirenDesktopBootstrap?.localAccess ? (stopSirenIntro(), false) : sirenFirstRun ? playSirenIntro() : (stopSirenIntro(), false);');
     // A floating editor must release the library's exclusive navigation state.
     // Keep the frozen web baseline intact; apply the qualified desktop change here.
     const codeRestore = 'onRestore:()=>{paintCodeWorkspace();queueCodeAnalysis();}';
@@ -165,6 +165,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           accountTransitionBodyState = null;
           document.body.classList.remove('desktop-account-transition');
         };
+        window.sirenDesktopStartOpening = () => { cacheElements(); return playSirenIntro(); };
         if (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== 'normal') return;
         sirenStore.start()`);
     const ready = 'sirenStore.start().catch(() => {}).then(initialize).then(() => {';
@@ -173,7 +174,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const palette = 'const known = new Set(commands.map(c => c.title.toLowerCase()));';
     if (html.split(palette).length !== 2) throw new Error('Desktop command registry marker mismatch');
     html = html.replace(palette, () => `if (window.sirenDesktop) {
-          [['desktopOpenProject','Open / import local project…'],['desktopExportProject','Export saved backup…'],['desktopLogin','Account…'],['desktopCheckUpdates','Check for Updates'],['desktopRecovery','Disaster Recovery…'],['desktopGuide','Desktop guide…']].forEach(([id,title]) => {
+          [['desktopOpenProject','Open / import local project…'],['desktopExportProject','Export saved backup…'],['desktopPinSettings','Settings · Change PIN…'],['desktopLockPin','Lock SIREN'],['desktopCheckUpdates','Check for Updates'],['desktopRecovery','Disaster Recovery…'],['desktopGuide','Desktop guide…']].forEach(([id,title]) => {
             const row = add(title, 'Desktop', () => window.sirenDesktopCommand?.(id)); row.id = 'desktop:' + id; row.readOnlySafe = true;
           });
         }
@@ -188,11 +189,12 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const uiRoot = fileURLToPath(new URL('../src/ui/', import.meta.url));
     const storage = await readFile(join(uiRoot, 'storage.js'), 'utf8');
     const ui = await readFile(join(uiRoot, 'desktop.js'), 'utf8');
+    const pinUi = await readFile(join(uiRoot, 'pin.js'), 'utf8');
     const css = await readFile(join(uiRoot, 'desktop.css'), 'utf8');
-    if ([storage, ui].some(s => /<\/script/i.test(s)) || /<\/style/i.test(css)) throw new Error('Unexpected adapter closing tag');
+    if ([storage, ui, pinUi].some(s => /<\/script/i.test(s)) || /<\/style/i.test(css)) throw new Error('Unexpected adapter closing tag');
     const appScript = "  <script>\n    (() => {\n      'use strict';\n\n      const APP_VERSION";
     if (html.split(appScript).length !== 2) throw new Error('Desktop script patch marker mismatch');
-    html = html.replace(appScript, () => `<script>${storage}\n${ui}</script>\n` + appScript);
+    html = html.replace(appScript, () => `<script>${storage}\n${pinUi}\n${ui}</script>\n` + appScript);
     const document = parse(html, { sourceCodeLocationInfo: true });
     const head = document.childNodes.find(n => n.tagName === 'html')?.childNodes.find(n => n.tagName === 'head');
     const end = head?.sourceCodeLocation?.endTag?.startOffset;

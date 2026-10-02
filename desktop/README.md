@@ -17,9 +17,11 @@ npm start
 After this setup, double-click `../SIREN-Development.cmd` to open the editable
 local development build. It uses the installed runtime and the generated renderer
 in this checkout; it is not the portable distribution or production activation.
-The animated fullscreen access design can be previewed through **Desktop… →
-Sign in / access preview…**. The username/PIN screen is a labelled prototype:
-PIN verification and the production account service are not configured yet.
+Startup now runs **intro → local PIN → workspace**. First launch asks you to
+create and confirm a 4- or 6-digit PIN. The iPhone-style dots/keypad also accept
+keyboard input. **Desktop… → Settings… → Change PIN…** requires the current
+PIN. **Lock SIREN** (Ctrl+Alt+L) confirms local saves before locking; Ctrl+,
+opens Settings. Restart always locks again. No online account is required.
 
 Development data is isolated in `.dev-data/`. Import a complete `.siren` project
 explicitly; no installed/browser profile is imported automatically. The unchanged
@@ -27,8 +29,12 @@ baseline is build input only and is SHA-256 checked before generation.
 
 The development packager is `scripts/package.mjs <source-commit>`. Its output is
 not a production portable release. The executable is under `App/versions/0.1.0/`;
-its own local `Data/` stays outside that app version. Without a configured account
-service, packaged projects are read-only, with recovery and export available.
+its own local `Data/` stays outside that app version. The local PIN permits
+editing after unlock; startup/readiness safety can still require read-only mode.
+PIN verification uses a random salted scrypt verifier in current-Windows-user
+protected storage. It does not encrypt project contents or provide an online
+license. Keep project backups: no implicit PIN reset is implemented, and moving
+the folder to a different Windows account requires a separate recovery design.
 No publisher private keys, credentials or source-access tokens are included.
 An ASAR is a runtime container, not encryption or protection from reverse engineering.
 
@@ -40,5 +46,5 @@ The first native development launcher is documented in
 `SIREN.exe` at the portable folder root; keep its whole folder together. Private
 Windows CI verifies the typed selection, held-file checks, actual native fixture
 launch and production publisher refusal. It does not admit signed updates.
-Use `../SIREN-Development.cmd` for editing while the production account service
-remains unconfigured.
+Use `../SIREN-Development.cmd` to run the current editable checkout. Online
+accounts, 30-day activation and their legal/data-handling review are deferred.

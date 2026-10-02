@@ -1,5 +1,58 @@
 # Desktop foundation — development evidence, 2 October 2026
 
+## Local PIN first — current refinement
+
+The user deferred online accounts and approved a local changeable application
+PIN with an iPhone-style keypad. Startup is intro → PIN → workspace. First
+installation configures/confirms four or six digits; Settings requires the
+current PIN to change it, and Lock SIREN acknowledges local/private saves first.
+The native gate refuses project/recovery calls and excludes project contents
+from the locked bootstrap. Restart relocks. Native read-only safety remains
+authoritative even after a valid PIN. Protected verifier storage is tied to the
+current Windows user; project files are not encrypted by this application lock.
+
+The final local full run passed 111 tests in 180.9 seconds with no failures,
+skips or cancellations, including the real 180-second OIDC deadline. Four
+independent integration tests cover durable selection failure and lock-flush
+success/failure; all 12 selected native-safety/PIN integration tests also pass. Actual Electron probes verified PIN setup/change,
+wrong-current refusal, pointer/keyboard entry, manual lock, real process restart,
+exact source/private draft readback, Guided editing, Code windows, private Code
+recovery, Light/Dark controls and full first-paint sequencing. The four recovery
+comparison cases still distinguish an identical saved state from true source,
+zoom and Docs drafts. The old account-only Desktop assertion was updated for
+local Settings/Lock; its original failure was retained.
+
+Original REDs are retained for Escape dismissal, incorrect current-PIN session
+loss, premature selection publication and driver reload/busy/focus errors.
+The module delivery report is implementation evidence, not independent approval.
+Separate native and integration reviewers author their own limited reports.
+The expanded actual native test also passes five wrong UI attempts, true process
+restart during cooldown, disabled-input Escape protection, timed re-enablement
+and keyboard unlock with exact source/private draft readback. Its first genuine
+Escape failure remains retained. Final renderer is
+`240a2b60f014d2be861c608b265e024b91373c12dfdda6fd580b4ff2abc2aca6`.
+Final development package source `02bca40488bcf55153d033254062bb8662716834`
+was independently exercised in actual Electron: locked refusals, real PIN
+setup/unlock, editable save/readback, verified new-copy recovery, acknowledged
+normal exit, Unicode folder copy/relock, and native damaged-journal readonly
+refusal even after correct PIN. Its ASAR SHA256 is
+`d9ee614f054d4a7f9ad49abad28192b06b126b263cdd4ca4c2239290e46ed249`.
+The package tests retain their initial premature readiness observation and
+incorrect post-close serialization-boundary assertions, then verify exact saved
+bytes at the proper acknowledged boundaries. The original project remains exact.
+The final packaged reviewer states separately that selecting a different damaged
+project in the OS picker was source-reviewed, not executed by that probe.
+Root's final native PIN run also passes on that main source, retaining exact
+source/private bytes after real cooldown restart. The unchanged CI6 Rust binary
+starts the final owned package and acknowledges native ready/clean close; with
+the new startup flow, ready here means the PIN screen, not an unlocked workspace.
+Private CI is recorded separately; no release/update admission is claimed.
+
+The earlier account/preview evidence below describes historical builds. Current
+local access replaces account-required editing in this development phase;
+online accounts, 30-day activation, their legal/data-handling review and signed
+update installation remain later work. No public release is admitted here.
+
 ## Code window navigation follow-up
 
 The native Code window already had minimise/maximise, movement, resize,

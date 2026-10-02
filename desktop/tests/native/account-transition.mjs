@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `account-transition-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
@@ -13,6 +13,7 @@ const recovery = new RecoveryStore(root); await recovery.checkpointProject({ sna
 let driver;
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`] });
+  await unlockDesktop(driver,{pin:'4826',autoSetup:true});
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -38,18 +39,15 @@ try {
   await driver.evaluate('window.sirenDesktopEndAccountTransition()');
   assert.equal(await driver.evaluate('document.body.inert || window.sirenDesktopStorageLocked'), false);
   const accessBefore = await driver.evaluate('window.sirenDesktop.getAccess()');
-  await driver.click('#desktopOptions'); await driver.click('#desktopAccountSignIn');
-  await driver.waitFor('document.getElementById("desktopAccessScreen")?.open');
-  await driver.waitFor('Number(getComputedStyle(document.querySelector(".desktop-access-centre")).opacity)>.99');
-  assert.equal(await driver.evaluate('!!document.getElementById("desktopControlsPanel")'), false, 'Access preview replaces the Desktop panel');
-  await driver.click('#desktopAccessOnline');
-  await driver.waitFor('document.getElementById("desktopAccessStatus")?.textContent.includes("production account service") && !document.getElementById("desktopAccessOnline").disabled');
-  assert.equal(await driver.evaluate('document.body.inert'), false, 'Unavailable login cannot lock editing');
-  assert.equal(await driver.evaluate('!!window.sirenDesktopStorageLocked'), false, 'Unavailable login cannot leave storage locked');
-  assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), accessBefore, 'Unconfigured activation cannot grant or change account authority');
-  await driver.screenshot(join(evidence, 'unconfigured-online-activation.png'));
-  await driver.click('#desktopAccessBack');
-  await driver.waitFor('!document.getElementById("desktopAccessScreen")');
+  // Online accounts are deferred in local-PIN mode. Qualify the retained native
+  // refusal directly; this is not a login-screen or account activation claim.
+  const refusedLogin = await driver.evaluate('window.sirenDesktop.beginLogin()');
+  assert.equal(refusedLogin.ok, false);
+  assert.equal(await driver.evaluate('document.body.inert'), false);
+  assert.equal(await driver.evaluate('!!window.sirenDesktopStorageLocked'), false);
+  assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), accessBefore);
+  assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
+  await driver.screenshot(join(evidence, 'unconfigured-online-native-refusal.png'));
   assert.equal(await driver.evaluate('document.getElementById("cwEditor").value'), python, 'Attempted activation must preserve the exact private draft');
   await driver.click('#cwEditor');
   const resumed = '\n# Editing resumed after unavailable online activation\n';
@@ -62,7 +60,7 @@ try {
   await driver.evaluate('window.sirenDesktopApplySafety({readonly:true,reason:"Controlled readiness failure UI proof"})');
   await driver.waitFor('document.body.classList.contains("read-only-mode") && document.getElementById("saveStateText").textContent.includes("Read-only")');
   await driver.screenshot(join(evidence, 'runtime-safety-ui.png'));
-  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, renderer: JSON.parse(await readFile('generated/build.json', 'utf8')), scope: 'Actual unprivileged renderer final-account guard with keyboard input blocked, exact native workspace/private-draft checkpoint readback and explicit resume. Actual unconfigured login stays usable; runtime safety UI was invoked directly. Not production login, not native journal-failure injection; native permission is separately tested in source service integrations.' }, null, 2));
+  await writeFile(join(evidence, 'result.json'), JSON.stringify({ completed: true, renderer: JSON.parse(await readFile('generated/build.json', 'utf8')), scope: 'Actual unprivileged renderer final-account guard with keyboard input blocked, exact native workspace/private-draft checkpoint readback and explicit resume. Deferred unconfigured native online login refuses without changing local PIN authority; runtime safety UI was invoked directly. Not production login, not native journal-failure injection; native permission is separately tested in source service integrations.' }, null, 2));
   console.log(JSON.stringify({ completed: true, evidence }));
 } catch (error) {
   if (driver) {

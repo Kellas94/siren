@@ -235,3 +235,36 @@ Execution recommendation: implement here (Native) in substantial batches **1–3
 The next action is the user's review of this saved plan, then execution via the selected required skill. No product scaffolding/dependency installation is performed before that review. Source/documentation synchronization is separately authorized by the explicit request to update GitHub; a documentation PR is reviewable work, not a desktop release.
 
 Primary references: [Electron 44.5.1](https://github.com/electron/electron/releases/tag/v44.5.1), [Packager 20.3.0](https://github.com/electron/packager/releases/tag/v20.3.0), [Electron release support](https://www.electronjs.org/docs/latest/tutorial/electron-timelines), [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases), [release assets API](https://docs.github.com/en/rest/releases/assets). These describe dependencies/hosting, not successful SIREN qualification.
+
+
+## Approved refinement: local PIN first, 2 October 2026
+
+The user replaced the immediate account rollout with a local application PIN
+that can be changed in Settings, then asked for an iPhone-like unlock screen.
+This overrides account-required packaged editing for the current development
+phase. The later online-account/30-day policy remains a separate future task.
+
+- Startup: animated intro, then a fullscreen PIN screen, then the workspace.
+  No project label/source/private draft is included in a locked bootstrap.
+- First installation: enter and confirm a 4- or 6-digit PIN. Round numeric keys,
+  masked dots, delete and ordinary keyboard input; no baked-in personal PIN.
+- Settings: authenticate the current PIN, choose and confirm the replacement.
+  Ordinary incorrect current-PIN entry keeps the existing session; five wrong
+  attempts lock access for 30 seconds, including across restart.
+- Lock command: stop editing and confirm workspace/private draft persistence
+  before locking. Failed acknowledgement retains the open workspace.
+- Native access authority validates every project/recovery invocation while
+  locked. Unlocked local access never overrides native startup/readiness safety.
+- Persist only an OS-protected salted scrypt verifier and bounded attempt
+  metadata. Corruption/protection failure retains files and refuses reset.
+  Project files remain ordinary local files; the PIN is an application lock.
+- Qualification: real IO failures, real Electron PIN/pointer/keyboard, restart,
+  current-PIN error/cancel, light/dark/reduced motion, first-paint sequencing,
+  packaged editing/recovery and copied-folder locking. Keep failed evidence and
+  reviewer authorship; successful units alone do not qualify the complete UI.
+
+Before any later online-account rollout, specify the account data collected,
+storage region, retention/deletion procedures, privacy information, EULA/license
+terms and appropriate legal review. No account service, data collection or legal
+compliance is claimed by the local-PIN implementation. Cross-Windows-account
+PIN recovery/reset needs a separately approved data-preserving design.

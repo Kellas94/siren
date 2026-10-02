@@ -211,6 +211,20 @@
 !/desktop/tests/close-drain.test.mjs
 !/desktop/tests/fixtures/recovery-zoom-state.json
 !/desktop/tests/native/recovery-zoom.mjs
+# ---- local PIN: exact private source/test/report inputs ---------------------------------------
+!/desktop/reviews/2026-10-02-local-pin-access-escape-addendum.md
+!/desktop/reviews/2026-10-02-local-pin-access-native-review.md
+!/desktop/reviews/2026-10-02-local-pin-integration-review.md
+!/desktop/reviews/2026-10-02-local-pin-module-delivery.md
+!/desktop/reviews/2026-10-02-local-pin-native-review.md
+!/desktop/src/account/local-pin.mjs
+!/desktop/src/ui/pin.js
+!/desktop/tests/local-pin-integration-review.test.mjs
+!/desktop/tests/local-pin.test.mjs
+!/desktop/tests/native/local-pin.mjs
+!/desktop/tests/pin-ipc.test.mjs
+!/desktop/reviews/2026-10-02-local-pin-packaged-native-review.md
+!/desktop/reviews/2026-10-02-local-pin-packaged-final-addendum.md
 # ---- never, regardless of anything above ------------------------------------------------------
 # The owner's real audit work, not a fixture. A private repository is private; it is not a decision
 # to store a live engagement in one. This sits last so no rule above can re-admit it.

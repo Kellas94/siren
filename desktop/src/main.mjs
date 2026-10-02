@@ -19,6 +19,7 @@ import { inspectWindowsProcess } from './recovery/processes.mjs';
 import { publisherConfig } from './publisher-config.mjs';
 import { CredentialStore } from './account/credentials.mjs';
 import { AccountService } from './account/service.mjs';
+import { LocalPinAccess } from './account/local-pin.mjs';
 import { readOwnedBytes } from './projects/io.mjs';
 import { UpdateService } from './updates/service.mjs';
 import { buildDiagnostics } from './recovery/diagnostics.mjs';
@@ -49,32 +50,34 @@ if (processIdentity) await journal.recordSession({ event: 'opened', sessionId, v
 const writerOptions = { ownerIdentity: processIdentity, inspectProcess: inspectWindowsProcess };
 const account = new AccountService({ config: publisherConfig.account, credentials: new CredentialStore(dataRoot, safeStorage), openBrowser: url => shell.openExternal(url) });
 await account.getAccess();
+const localPin = new LocalPinAccess(dataRoot, safeStorage);
+await localPin.initialize();
 let mode = startup.mode; let reason = startup.reason; let nativeReadonly = mode === 'readonly';
-let accountTransition = false; let accountQuiesced = false;
+let accountTransition = false; let accountQuiesced = false; let pinTransition = false;
 const projects = new ProjectStore(dataRoot, { ...writerOptions, canSave: async ({ action, projectId }) => {
   if (accountQuiesced || (['workspace', 'create'].includes(action) && (nativeReadonly || mode !== 'normal'))) return false;
-  return (!app.isPackaged && mode === 'normal' && !nativeReadonly) || account.canPerform({ action, projectId, owned: action === 'restore' || grants.has(projectId) });
+  return localPin.state().unlocked;
 } });
 const recovery = new RecoveryStore(dataRoot, writerOptions);
 const updates = new UpdateService({ root: dataRoot, config: publisherConfig.updates, currentVersion: '1.131.0', onStatus: state => { if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'updates', state }); } });
 let selectedId = devArgument('--siren-test-project=') || null;
-if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId) && (!app.isPackaged || record.accountId === account.accountId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
+if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
 let snapshot = null;
 if (selectedId && mode === 'normal') {
   try { snapshot = await projects.readProject(selectedId); }
   catch { mode = 'recovery'; reason = 'Selected project is damaged; open a verified recovered copy'; }
 }
 if (selectedId) account.policy.opened(selectedId);
-let bootstrap = { mode, reason, snapshot, recoveryProjectId: selectedId, readonly: !snapshot || (app.isPackaged && account.policy.state.recoveryOnly) || mode !== 'normal' };
+let bootstrap = { mode, reason, snapshot, recoveryProjectId: selectedId, readonly: !snapshot || mode !== 'normal', localAccess: true };
 const grants = new Set(selectedId ? [selectedId] : []);
 const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
 const writes = new Set();
 const selected = async next => {
+  await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId: next.project.id, accountId: account.accountId })));
   selectedId = next.project.id; grants.add(selectedId); snapshot = next;
-  await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId: selectedId, accountId: account.accountId })));
   account.policy.opened(selectedId);
   mode = nativeReadonly ? 'readonly' : 'normal'; reason = nativeReadonly ? reason : null;
-  bootstrap = { mode, reason, snapshot: next, recoveryProjectId: selectedId, readonly: nativeReadonly || (app.isPackaged && account.policy.state.recoveryOnly) };
+  bootstrap = { mode, reason, snapshot: next, recoveryProjectId: selectedId, readonly: nativeReadonly, localAccess: true };
   return next;
 };
 const exportBytes = async (bytes, suggested) => {
@@ -83,11 +86,19 @@ const exportBytes = async (bytes, suggested) => {
   await atomicWrite(result.filePath, bytes);
   return { ok: true };
 };
-// A fresh editable development checkout starts with its own empty workspace.
-// Never replace a selection or conceal recovery, and retain packaged activation.
-if (!app.isPackaged && !selectedId && mode === 'normal') {
-  await selected(await projects.createProject({ label: 'Untitled desktop project', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) }));
-}
+// First local unlock creates an owned empty workspace only when no selection exists.
+// Never replace a selection or conceal startup recovery.
+const prepareLocalWorkspace = async result => {
+  if (result.ok && !selectedId && mode === 'normal') {
+    try {
+      await selected(await projects.createProject({ label: 'Untitled desktop project', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) }));
+    } catch {
+      localPin.lock();
+      return failure('WORKSPACE_UNAVAILABLE', 'Your PIN was retained, but the local workspace could not be prepared. Unlock to retry.');
+    }
+  }
+  return result;
+};
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 protocol.handle('siren', async request => {
@@ -95,6 +106,24 @@ protocol.handle('siren', async request => {
   catch { return new Response('Resource refused', { status: 403 }); }
 });
 const services = {
+  getPinState: () => localPin.state(),
+  setupPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.setup(payload)),
+  unlockPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.unlock(payload)),
+  verifyCurrentPin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.verifyCurrent(payload),
+  changePin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.change(payload),
+  lockPin: async () => {
+    if (pinTransition || accountTransition) return failure('PIN_BUSY', 'Local access is changing.');
+    pinTransition = true;
+    try {
+      await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+      accountQuiesced = true;
+      await Promise.all([...writes]);
+      localPin.lock(); return { ok: true };
+    } catch {
+      await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
+      return failure('SAVE_FAILED', 'SIREN could not confirm your local changes. The workspace remains open.');
+    } finally { accountQuiesced = false; pinTransition = false; }
+  },
   requestClose: async () => { window.close(); return { ok: true }; },
   exportDiagnostics: async () => {
     const points = await recovery.scan();
@@ -151,7 +180,7 @@ const services = {
       return openOwnedSelection({ projectId: id, projects, grants, selected, recoverySelected: async projectId => {
         await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId, accountId: account.accountId })));
         selectedId = projectId; snapshot = null; mode = 'recovery'; reason = 'The selected project is damaged; open a verified recovered copy';
-        bootstrap = { mode, reason, snapshot: null, recoveryProjectId: projectId, readonly: true };
+        bootstrap = { mode, reason, snapshot: null, recoveryProjectId: projectId, readonly: true, localAccess: true };
       } });
     }
     const input = await readOwnedBytes(await realpath(answer.filePaths[0]), 64 * 1024 * 1024);
@@ -192,6 +221,8 @@ const window = new BrowserWindow({ width: 1440, height: 960, minWidth: 960, minH
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
 Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'File', submenu: [
+    { label: 'Settings…', accelerator: 'Ctrl+,', click: () => desktopCommand('desktopPinSettings') },
+    { label: 'Lock SIREN', accelerator: 'Ctrl+Alt+L', click: () => desktopCommand('desktopLockPin') },
     { label: 'Open / import local project…', accelerator: 'Ctrl+Alt+O', click: () => desktopCommand('desktopOpenProject') },
     { label: 'Export saved backup…', accelerator: 'Ctrl+Alt+E', click: () => desktopCommand('desktopExportProject') },
     { type: 'separator' }, { label: 'Quit SIREN', accelerator: 'Ctrl+Q', click: () => window.close() },
@@ -199,7 +230,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
   { label: 'View', submenu: [{ role: 'togglefullscreen' }] },
   { label: 'Help', submenu: [
-    { label: 'Account…', click: () => desktopCommand('desktopLogin') },
+    { label: 'Settings…', click: () => desktopCommand('desktopPinSettings') },
     { label: 'Check for Updates…', accelerator: 'Ctrl+Alt+U', click: () => desktopCommand('desktopCheckUpdates') },
     { label: 'Disaster Recovery…', accelerator: 'Ctrl+Alt+R', click: () => desktopCommand('desktopRecovery') },
     { type: 'separator' }, { label: 'Desktop guide…', click: () => desktopCommand('desktopGuide') },
@@ -207,7 +238,9 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
 ]));
 if (!app.isPackaged) window.webContents.on('console-message', event => { if (event.level === 'error' || event.level >= 2) console.error('Renderer:', event.message?.slice(0, 800)); });
 ipcMain.on('siren:bootstrap', event => {
-  event.returnValue = event.sender === window.webContents && event.senderFrame === event.sender.mainFrame && event.senderFrame.url === 'siren://app/app.html' ? bootstrap : { mode: 'readonly', reason: 'Bootstrap request refused', snapshot: null };
+  event.returnValue = event.sender === window.webContents && event.senderFrame === event.sender.mainFrame && event.senderFrame.url === 'siren://app/app.html'
+    ? (localPin.state().unlocked ? { ...bootstrap, pin: localPin.state() } : { mode: 'locked', readonly: true, snapshot: null, recoveryProjectId: null, localAccess: true, pin: localPin.state() })
+    : { mode: 'readonly', reason: 'Bootstrap request refused', snapshot: null };
 });
 let readyRecorded = false;
 ipcMain.on('siren:ready', async event => {
@@ -224,7 +257,7 @@ ipcMain.on('siren:ready', async event => {
 ipcMain.handle('siren:desktop', (event, method, payload) => {
   if (accountTransition && ['pickProject', 'restoreRecovery'].includes(method)) return failure('ACCOUNT_BUSY', 'Wait for the account transition before changing projects');
   return invokeDesktop({ method, payload,
-    context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services });
+    context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services, localAccess: localPin });
 });
 window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 window.webContents.on('will-navigate', event => { if (event.url !== 'siren://app/app.html') event.preventDefault(); });

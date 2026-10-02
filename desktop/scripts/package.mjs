@@ -9,7 +9,7 @@ import { hashOwnedFile } from '../src/updates/download.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
-  ...['access','credentials','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
+  ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);

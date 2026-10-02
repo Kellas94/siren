@@ -5,7 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
 import { parseLegacyImport } from '../../src/projects/migration.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `import-export-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
 const downloads = join(evidence, 'downloads'); await mkdir(downloads);
@@ -16,6 +16,7 @@ await new RecoveryStore(root).checkpointProject({ snapshot: first, kind: 'saved'
 let driver;
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`] });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');

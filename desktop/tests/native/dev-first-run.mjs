@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 // Fresh owned Data, deliberately no --siren-test-project or precreated project.
 const evidence = resolve('evidence', `dev-first-run-${new Date().toISOString().replaceAll(':', '-')}`);
@@ -14,6 +14,7 @@ let driver;
 const save = () => writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   result.bootstrap = await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,project:window.sirenDesktopBootstrap?.snapshot?.project})');
   await driver.screenshot(join(evidence, 'first-development-launch.png'));

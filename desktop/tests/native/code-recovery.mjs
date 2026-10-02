@@ -4,7 +4,7 @@ import { resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `code-recovery-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-')); const projects = new ProjectStore(root); const recovery = new RecoveryStore(root);
@@ -14,6 +14,7 @@ const python = 'from dataclasses import dataclass\n\n@dataclass\nclass Agent:\n 
 const extraArgs = [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`]; let driver;
 try {
   driver = await launchDesktop({ extraArgs });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -39,6 +40,7 @@ try {
   // process while its normal unload/exit is still pending before a restart.
   await driver.waitForExit();
   await driver.close(); driver = await launchDesktop({ extraArgs });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   const snapshot = await projects.readProject(first.project.id);
   assert.ok(JSON.parse(snapshot.json).storage['siren-code-drafts-v1'].includes('exact-uncommitted-α'));

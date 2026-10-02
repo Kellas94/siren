@@ -45,3 +45,28 @@ body:has(#desktopAccessScreen[open]) #toast {visibility:hidden !important;}
 @media(max-height:600px) {.desktop-access-centre {padding:30px 0 50px;}.desktop-access-brand {margin-bottom:16px;}.desktop-access-centre>p {margin-bottom:20px;}}
 .desktop-access-centre>.desktop-access-note {position:static;width:100%;margin:24px 0 0;font-size:10px;text-align:center;opacity:.45;}
 @media(prefers-reduced-motion:reduce) {.desktop-access-screen * {animation:none !important;transition:none !important;}}
+html[data-desktop-locked=true] #app {visibility:hidden;}
+.desktop-pin-centre {width:min(340px,calc(100% - 40px));padding:32px 0;}
+.desktop-pin-centre .desktop-access-brand {margin-bottom:14px;font-size:20px;}
+.desktop-pin-centre h1 {font-size:25px;}
+.desktop-pin-centre>p {margin-bottom:18px;}
+.desktop-pin-form {position:relative;width:100%;display:flex;flex-direction:column;align-items:center;}
+.desktop-pin-digits {display:flex;justify-content:center;gap:17px;height:30px;align-items:center;}
+.desktop-pin-digits span {width:12px;height:12px;border:1.5px solid currentColor;border-radius:50%;transition:background .12s;}
+.desktop-pin-digits span.is-filled {background:currentColor;}
+.desktop-pin-input {position:absolute;top:0;left:0;width:100%;height:30px;opacity:0;cursor:text;}
+.desktop-pin-status {min-height:36px;margin:6px 0 0;font-size:12px;line-height:1.5;text-align:center;opacity:.7;}
+#desktopPinLength {width:auto;margin:0 0 8px;font:12px system-ui;}
+.desktop-pin-keypad {display:grid;grid-template-columns:repeat(3,72px);gap:12px 22px;}
+.desktop-pin-key,.desktop-pin-delete {border:0;border-radius:50%;width:72px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:inherit;background:rgb(from var(--text,#e8eef8) r g b / .09);font:300 28px system-ui;cursor:pointer;transition:background .12s,scale .12s;}
+.desktop-pin-key small {font:9px system-ui;letter-spacing:.18em;line-height:14px;}
+.desktop-pin-key:hover {background:rgb(from var(--text,#e8eef8) r g b / .17);}
+.desktop-pin-key:active {scale:.94;background:rgb(from var(--text,#e8eef8) r g b / .24);}
+.desktop-pin-key:focus-visible,.desktop-pin-delete:focus-visible {outline:2px solid #6e9eee;outline-offset:4px;}
+.desktop-pin-key:disabled,.desktop-pin-delete:disabled {opacity:.35;cursor:default;}
+.desktop-pin-delete {background:transparent;font-size:24px;}
+.desktop-pin-submit {position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+.desktop-pin-digits.is-wrong {animation:pin-wrong .3s ease-in-out;}
+.desktop-pin-centre>.desktop-access-note {margin-top:14px;}
+@keyframes pin-wrong {0%,100%{translate:0}25%,75%{translate:-6px}50%{translate:6px}}
+@media(max-height:680px) {.desktop-pin-keypad {grid-template-columns:repeat(3,60px);gap:8px 22px;}.desktop-pin-key,.desktop-pin-delete {width:60px;height:60px;}.desktop-pin-centre {padding:22px 0;}}

@@ -4,7 +4,7 @@ import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
-import {launchDesktop} from './drive.mjs';
+import {launchDesktop,unlockDesktop} from './drive.mjs';
 
 // Complete normalized state from an owned native fixture, with synthetic source
 // and view settings. No CI logs, user projects, or ignored evidence are required.
@@ -30,6 +30,7 @@ for(const kind of ['matching','source','zoom','docs']){
   await driver.send('Debugger.enable');
   // Read the real lexical comparison, leaving its behavior and confirmation intact.
   await driver.send('Debugger.setBreakpointByUrl',{url:'siren://app/app.html',lineNumber:comparisonLine,condition:'window.__recoveryZoomProof={current:JSON.parse(current),drafted:JSON.parse(drafted),equal:current===drafted}; false'});
+  await unlockDesktop(driver,{pin:'4826',autoSetup:true});
   await driver.waitFor('!!window.__recoveryZoomProof');
   observed.comparison=await driver.evaluate('window.__recoveryZoomProof');
   observed.ui=await driver.evaluate('({open:document.getElementById("confirmDialog")?.open,text:document.getElementById("confirmDialog")?.textContent,source:document.getElementById("source")?.value})');

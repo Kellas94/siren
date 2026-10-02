@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `desktop-ui-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-')); const projects = new ProjectStore(root);
@@ -25,6 +25,7 @@ async function scrollToDesktopDone() {
 }
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`] });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -45,7 +46,8 @@ try {
     await driver.waitFor('document.querySelector(".desktop-state").textContent.includes("not configured")');
     assert.equal(await driver.evaluate('document.getElementById("desktopDownloadUpdate").disabled'), true);
     assert.equal(await driver.evaluate('document.getElementById("desktopCancelUpdate").disabled'), true);
-    await driver.click('#desktopLogin'); await driver.waitFor('document.querySelector(".desktop-state").textContent.includes("not activated")');
+    assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
+    assert.equal(await driver.evaluate('!!document.getElementById("desktopPinSettings") && !!document.getElementById("desktopLockPin")'), true, 'Local mode exposes Settings and Lock');
     const panelBackground = await driver.evaluate('getComputedStyle(document.getElementById("desktopControlsPanel")).backgroundColor');
     assert.ok(!panelBackground.startsWith('rgba(') || panelBackground.endsWith(', 1)'), 'Desktop dialog must use an opaque theme background');
     const panelRgb = await driver.evaluate(`(()=>{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d');x.fillStyle=getComputedStyle(document.getElementById('desktopControlsPanel')).backgroundColor;x.fillRect(0,0,1,1);return [...x.getImageData(0,0,1,1).data]})()`);

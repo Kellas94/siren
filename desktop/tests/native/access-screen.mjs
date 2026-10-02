@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `access-screen-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-'));
-const result = { completed: false, scope: 'Fullscreen access design preview, actual pointer/keyboard, theme and reduced motion. No PIN authentication or account activation is claimed.', build: JSON.parse(await readFile('generated/build.json', 'utf8')) };
+const result = { completed: false, scope: 'Actual local PIN Settings/change flow, native wrong-current refusal, session authority, themes, toast isolation and reduced motion. No online activation or encrypted-project claim.', build: JSON.parse(await readFile('generated/build.json', 'utf8')) };
 let driver;
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+  await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
+  assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), null);
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -18,6 +21,16 @@ try {
     await driver.click('.tour-card .tour-actions .ghost');
   }
   const before = await driver.evaluate('window.sirenDesktop.getAccess()');
+  const snapshot = await driver.evaluate('window.sirenDesktopBootstrap.snapshot');
+  assert.ok(snapshot?.project?.id);
+  const openChange = async () => {
+    await driver.click('#desktopOptions'); await driver.click('#desktopPinSettings');
+    await driver.waitFor('document.getElementById("desktopPinSettingsPanel")?.open');
+    await driver.waitFor('Number(getComputedStyle(document.getElementById("desktopPinSettingsPanel")).opacity)>.99');
+    await driver.click('#desktopPinChange');
+    await driver.waitFor('document.getElementById("desktopAccessScreen")?.open && document.getElementById("desktopAccessScreen").dataset.mode==="change"');
+    await driver.waitFor('Number(getComputedStyle(document.querySelector(".desktop-access-centre")).opacity)>.99');
+  };
   // This owned preview scenario checks animation with motion allowed, independent
   // of the host's accessibility setting. Explicit reduced motion is checked below.
   await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
@@ -27,9 +40,7 @@ try {
     await driver.waitFor(`(()=>{const e=document.querySelector('[data-theme-value="${theme}"]'),r=e?.getBoundingClientRect();return !!r&&r.width>0&&e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})()`);
     await driver.click(`[data-theme-value="${theme}"]`);
     await driver.waitFor(`document.body.dataset.theme==='${theme}'`);
-    await driver.click('#desktopOptions'); await driver.click('#desktopAccountSignIn');
-    await driver.waitFor('document.getElementById("desktopAccessScreen")?.open');
-    await driver.waitFor('Number(getComputedStyle(document.querySelector(".desktop-access-centre")).opacity)>.99');
+    await openChange();
     // Reproduce the existing workspace toast entering the browser top layer
     // above a modal. Synthetic notification only; no project content is read.
     await driver.evaluate(`(()=>{const t=document.getElementById('toast');t.textContent='Synthetic workspace notification';t.classList.add('is-visible');t.showPopover();})()`);
@@ -39,29 +50,39 @@ try {
     const state = await driver.evaluate(`(()=>{const e=document.getElementById('desktopAccessScreen'),r=e.getBoundingClientRect();return {rect:r.toJSON(),w:innerWidth,h:innerHeight,fields:[...e.querySelectorAll('input')].map(i=>({id:i.id,type:i.type})),decorative:e.querySelector('.desktop-access-scene')?.getAttribute('aria-hidden'),focused:document.activeElement?.id,background:getComputedStyle(e).backgroundColor,animated:e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length};})()`);
     assert.equal(state.rect.x, 0); assert.equal(state.rect.y, 0);
     assert.equal(state.rect.width, state.w); assert.equal(state.rect.height, state.h);
-    assert.deepEqual(state.fields, [{ id: 'desktopAccessUser', type: 'text' }, { id: 'desktopAccessPin', type: 'password' }]);
+    assert.deepEqual(state.fields, [{ id: 'desktopAccessPin', type: 'password' }]);
     assert.equal(state.decorative, 'true'); assert.equal(state.focused, 'desktopAccessPin');
+    assert.equal(await driver.evaluate('document.querySelectorAll("#desktopPinDigits span").length'), 4);
+    assert.equal(await driver.evaluate('document.querySelectorAll(".desktop-pin-key[data-digit]").length'), 10);
+    assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").dataset.stage'), 'current');
     assert.ok(state.animated > 0); result[theme] = state;
     await driver.click('#desktopAccessPin'); await driver.send('Input.insertText', { text: '0000' });
-    await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await driver.waitFor('document.getElementById("desktopAccessStatus").textContent.includes("does not activate") && document.getElementById("desktopAccessPin").value===""');
+    // Full-length entry auto-submits through the real native verifier.
+    await driver.waitFor('/incorrect/i.test(document.getElementById("desktopAccessStatus").textContent) && document.getElementById("desktopAccessPin").value===""');
     assert.equal(await driver.evaluate('document.getElementById("desktopAccessPin").value'), '');
+    assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true, 'Wrong current PIN must not revoke the existing editing session');
+    assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").dataset.stage'), 'current');
+    assert.deepEqual(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), snapshot);
     assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
     await driver.screenshot(join(evidence, `access-${theme}.png`));
-    await driver.click('#desktopAccessOnline');
-    await driver.waitFor('document.getElementById("desktopAccessStatus").textContent.includes("production account service")');
+    for (const digit of '4826') await driver.click(`.desktop-pin-key[data-digit="${digit}"]`);
+    await driver.waitFor('document.getElementById("desktopAccessScreen").dataset.stage==="new"');
+    assert.equal(await driver.evaluate('document.getElementById("desktopAccessPin").value'), '');
+    assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
+    // Cancel before selecting a replacement PIN; this fixture retains 4826.
     await driver.click('#desktopAccessBack');
     await driver.waitFor('!document.getElementById("desktopAccessScreen")');
     assert.equal(await driver.evaluate('!!document.getElementById("desktopAccessScreen")'), false);
-    await driver.click('#desktopOptions'); await driver.click('#desktopCloseControls');
+    assert.equal(await driver.evaluate('document.activeElement?.id'), 'desktopOptions');
   }
   await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-  await driver.click('#desktopOptions'); await driver.click('#desktopAccountSignIn');
+  await openChange();
   assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").getAnimations({subtree:true}).filter(a=>a.playState==="running").length'), 0);
   await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
   await driver.waitFor('!document.getElementById("desktopAccessScreen")');
   assert.equal(await driver.evaluate('document.activeElement?.id'), 'desktopOptions');
   assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
+  assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
   result.reducedMotion = true; result.completed = true;
   console.log(JSON.stringify({ completed: true, evidence }));
 } catch (error) {

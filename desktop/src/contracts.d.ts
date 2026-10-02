@@ -1,7 +1,11 @@
 export type Failure = { ok: false; code: string; message: string };
 export type ProjectRef = { id: string; label: string; external: boolean };
 export type Snapshot = { project: ProjectRef; revision: number; schema: 1; json: string; sha256: string };
-export type BootstrapState = { mode: 'normal' | 'recovery' | 'readonly'; reason: string | null; snapshot: Snapshot | null; recoveryProjectId: string | null; readonly: boolean };
+export type PinState = { configured: boolean; pinLength: 4 | 6 | null; unlocked: boolean; available: boolean; blocked: boolean; retryAfterMs: number };
+export type PinResult = { ok: true } | (Failure & { retryAfterMs?: number });
+export type PinSetup = { pin: string; confirmation: string };
+export type PinChange = { currentPin: string; newPin: string; confirmation: string };
+export type BootstrapState = { mode: 'locked' | 'normal' | 'recovery' | 'readonly'; reason?: string | null; snapshot: Snapshot | null; recoveryProjectId: string | null; readonly: boolean; localAccess?: boolean; pin?: PinState };
 export type SaveRequest = { projectId: string; baseRevision: number; json: string; purpose: 'workspace' | 'recovery' };
 export type SaveResult = { ok: true; revision: number; sha256: string } | Failure;
 export type RecoveryPoint = { id: string; projectId: string; createdAt: string; revision: number; schema: 1; sha256: string; kind: 'saved' | 'draft' | 'emergency'; verified: boolean };

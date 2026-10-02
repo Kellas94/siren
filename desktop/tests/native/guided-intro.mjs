@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ProjectStore } from '../../src/projects/store.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 // Own synthetic projects only. Observation does not change the renderer or intro.
 const evidence = resolve('evidence', `guided-intro-${new Date().toISOString().replaceAll(':', '-')}`);
@@ -35,6 +35,7 @@ try {
   const source = 'flowchart TD\n A[Start]-->B[Next step]';
   const project = await projects.createProject({ label: 'Guided exact screenshot source', json: JSON.stringify({ source, tourDone: true }) });
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${project.project.id}`] });
+  await unlockDesktop(driver,{pin:'4826',autoSetup:true});
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await stopTour();
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.readonly'), false);
@@ -107,7 +108,7 @@ try {
   const fresh = await new ProjectStore(freshRoot).createProject({ label: 'Fresh intro frame observation', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) });
   driver = await launchDesktop({ root: fixture, executable: resolve('node_modules/electron/dist/electron.exe'), extraArgs: [`--siren-test-root=${freshRoot}`, `--siren-test-project=${fresh.project.id}`] });
   await driver.waitFor('window.__sirenPaintEvidence && (document.getElementById("brandVersion")?.textContent === "v1.131.0" || (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== "normal"))');
-  await driver.waitFor('document.getElementById("sirenIntroOverlay")?.hidden && document.getElementById("sirenIntroOverlay").getAnimations().length===0');
+  await driver.waitFor('document.getElementById("desktopAccessScreen")?.open && document.getElementById("sirenIntroOverlay")?.hidden && document.getElementById("sirenIntroOverlay").getAnimations().length===0');
   await driver.evaluate('window.__sirenPaintEvidence.finished=true');
   await driver.waitFor('window.__sirenPaintEvidence.observationEnded');
   result.firstPaint = await driver.evaluate('window.__sirenPaintEvidence');
@@ -117,18 +118,22 @@ try {
   const frames = result.firstPaint.frames;
   const firstIntro = frames.findIndex(f => f.introVisible);
   console.log('SIREN_FIRST_PAINT_DIAGNOSTIC ' + JSON.stringify({ frameCount: frames.length, firstFrame: frames[0], lastFrame: frames.at(-1), firstIntro, mutationCount: result.firstPaint.mutations.length, bootstrap: result.firstPaint.bootstrap, reducedMotion: result.firstPaint.reducedMotion }));
-  assert.equal(result.firstPaint.bootstrap.mode, 'normal', 'Fresh intro fixture must actually enter the normal renderer');
-  assert.equal(result.firstPaint.bootstrap.readonly, false, 'Fresh owned intro project must be editable development mode');
-  assert.equal(result.firstPaint.bootstrap.projectId, fresh.project.id, 'Observe the exact owned fresh project');
+  assert.equal(result.firstPaint.bootstrap.mode, 'locked', 'Fresh startup must remain locked after intro');
+  assert.equal(result.firstPaint.bootstrap.readonly, true, 'PIN gate must retain read-only bootstrap');
+  assert.equal(result.firstPaint.bootstrap.projectId, undefined, 'Locked bootstrap cannot expose the owned project');
   assert.equal(result.firstPaint.reducedMotion, false, 'This owned startup fixture explicitly allows animation');
   result.firstPaint.testMotionPreference = 'no-preference';
   assert.ok(firstIntro >= 0, 'Fresh storage with motion allowed must show intro');
   result.firstPaint.firstIntroAt = frames[firstIntro].at;
-  result.firstPaint.appBeforeIntro = frames.slice(0, firstIntro).filter(f => f.appVisible);
+  result.firstPaint.appBeforeIntro = frames.filter(f => f.appVisible);
   result.firstPaint.flashConfirmed = result.firstPaint.appBeforeIntro.length > 0;
   await driver.screenshot(join(evidence, 'fresh-after-intro.png'));
   await save();
   assert.equal(result.firstPaint.flashConfirmed, false, 'Workspace must not paint before intro');
+  await unlockDesktop(driver,{pin:'4826',autoSetup:true});
+  assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot.project.id'),fresh.project.id);
+  await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
+  assert.equal(await driver.evaluate('document.getElementById("sirenIntroOverlay").hidden'),true,'Unlock must not replay the opening animation');
   result.completed = true; await save();
   console.log(JSON.stringify({ completed: true, evidence, guided: result.guided.editSaved, replay: result.replay, flashConfirmed: result.firstPaint.flashConfirmed }));
 } catch (error) { await recordFailure(error); throw error; }

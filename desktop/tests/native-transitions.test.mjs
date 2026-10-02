@@ -27,6 +27,7 @@ for (const scenario of [{ packaged: true, mode: 'readonly' }, { packaged: false,
     const context = vm.createContext({ ProjectStore, dataRoot: root, writerOptions: {}, app: { isPackaged: scenario.packaged, getVersion: () => 'fixture' },
       mode: scenario.mode, nativeReadonly: scenario.mode === 'readonly', reason: null, accountQuiesced: false,
       account: { policy, canPerform: request => policy.canPerform(request) }, grants: new Set([original.project.id]),
+      localPin: { state: () => ({ unlocked: true }) },
       recovery: new RecoveryStore(root), writes: new Set(), snapshot: original, bootstrap: { mode: scenario.mode, snapshot: original, readonly: scenario.mode !== 'normal' }, failure,
       ipcMain: { on: (_name, callback) => { listener = callback; } }, window: { webContents, isDestroyed: () => false },
       processIdentity: { pid: process.pid }, sessionId: 'fixture', journal: { recordSession: async () => { throw new Error('Readiness journal unavailable'); } },
@@ -34,7 +35,7 @@ for (const scenario of [{ packaged: true, mode: 'readonly' }, { packaged: false,
     vm.runInContext(factory + '\nconst services = {\n' + save + '\n};\n' + readiness, context);
     if (scenario.failReady) await listener({ sender: webContents, senderFrame: webContents.mainFrame });
     const result = await vm.runInContext('services', context).saveProject({ projectId: original.project.id, baseRevision: 1, purpose: 'workspace', json: '{"source":"forbidden"}' });
-    assert.equal(result.ok, false, 'An active account cannot override native safety');
+    assert.equal(result.ok, false, 'An unlocked PIN cannot override native safety');
     assert.equal((await seed.readProject(original.project.id)).json, original.json);
     assert.equal((await seed.readProject(original.project.id)).revision, 1);
     if (scenario.failReady) { assert.equal(vm.runInContext('mode', context), 'readonly'); assert.equal(notices[0]?.[1]?.kind, 'safety'); }

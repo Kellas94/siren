@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const evidence = resolve('evidence', `portable-${new Date().toISOString().replaceAll(':', '-')}`);
@@ -18,6 +18,7 @@ const extraArgs = [`--siren-test-root=${root}`, `--siren-test-project=${initial.
 let driver;
 try {
   driver = await launchDesktop({ extraArgs });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor(`document.getElementById('brandVersion')?.textContent === 'v1.131.0' && !!document.querySelector('svg .node')`);
   assert.equal(await driver.evaluate('document.getElementById("source").value'), originalSource);
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
@@ -38,6 +39,7 @@ try {
   await writeFile(join(evidence, 'before-kill.json'), JSON.stringify(saved));
   // Own-process force close, then a fresh actual Electron renderer must load disk bytes.
   await driver.close(); driver = await launchDesktop({ extraArgs });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor(`document.getElementById('brandVersion')?.textContent === 'v1.131.0'`);
   assert.equal(await driver.evaluate('document.getElementById("source").value'), changedSource);
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);

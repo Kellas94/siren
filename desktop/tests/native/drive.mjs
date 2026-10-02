@@ -3,6 +3,36 @@ import { createServer } from 'node:net';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import assert from 'node:assert/strict';
+
+// Explicit fixture authorization: raw launchDesktop always exposes the real lock.
+// This uses the production native PIN receipts; it never edits bootstrap/storage.
+export async function unlockDesktop(driver, { pin, autoSetup = false } = {}) {
+  assert.match(pin || '', /^(?:[0-9]{4}|[0-9]{6})$/, 'Owned fixture PIN must contain four or six digits');
+  const state = await driver.evaluate(`(()=>{if(typeof window.sirenDesktop?.getPinState!=='function')throw new Error('Native PIN bridge unavailable');return window.sirenDesktop.getPinState();})()`);
+  assert.equal(typeof state?.configured, 'boolean', 'Native PIN state must report configuration');
+  assert.equal(typeof state?.unlocked, 'boolean', 'Native PIN state must report lock authority');
+  if (!state.configured) {
+    assert.equal(autoSetup, true, 'Unconfigured PIN requires explicit autoSetup for this owned fixture');
+    const setup = await driver.evaluate(`window.sirenDesktop.setupPin(${JSON.stringify({ pin, confirmation: pin })})`);
+    assert.equal(setup?.ok, true, 'Owned fixture PIN setup must acknowledge');
+  }
+  const current = await driver.evaluate('window.sirenDesktop.getPinState()');
+  assert.equal(typeof current?.unlocked, 'boolean', 'Native PIN state readback must report lock authority');
+  if (!current.unlocked) {
+    const unlocked = await driver.evaluate(`window.sirenDesktop.unlockPin(${JSON.stringify({ pin })})`);
+    assert.equal(unlocked?.ok, true, 'Owned fixture PIN unlock must acknowledge');
+  }
+  const unlocked = await driver.evaluate('window.sirenDesktop.getPinState()');
+  assert.equal(unlocked.configured, true, 'Native PIN configuration must be retained');
+  assert.equal(unlocked.pinLength, pin.length, 'Native PIN length must match this owned fixture');
+  assert.equal(unlocked.unlocked, true, 'Native unlock must actually release the gate');
+  // Use the same renderer reload as the real PIN UI. The CDP Page.reload command
+  // can stall on this Electron custom-protocol target even after native success.
+  if (await driver.evaluate('window.sirenDesktopBootstrap?.mode === "locked"')) await driver.evaluate('setTimeout(() => location.reload(), 0); true');
+  await driver.waitFor('window.sirenDesktopBootstrap?.mode !== "locked"');
+  return unlocked;
+}
 
 export async function launchDesktop({ root = resolve('.'), executable = resolve(root, 'node_modules/electron/dist/electron.exe'), packaged = false, extraArgs = [] } = {}) {
   const socket = createServer();

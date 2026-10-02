@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
-import { launchDesktop } from './drive.mjs';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `recovery-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
@@ -19,6 +19,7 @@ await writeFile(damaged, '{ORIGINAL DAMAGED BY TEST');
 let driver;
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${original.project.id}`] });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
   await driver.waitFor('document.getElementById("desktopRecoveryPanel")?.open === true');
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.mode'), 'recovery');
   assert.equal(await driver.evaluate('document.getElementById("brandVersion").textContent'), '', 'Recovery mode must not initialize the normal workspace');

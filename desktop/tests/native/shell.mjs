@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
-import { launchDesktop } from './drive.mjs';
+import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
+import { launchDesktop, unlockDesktop } from './drive.mjs';
 
 const evidence = resolve('evidence', `shell-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
-const driver = await launchDesktop();
+const root = await mkdtemp(resolve(evidence, 'owned-data-'));
+const driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+await unlockDesktop(driver, { pin: '4826', autoSetup: true });
 const checks = [];
 try {
   await driver.waitFor('document.readyState === "complete" && document.getElementById("brandVersion")?.textContent === "v1.131.0"');
