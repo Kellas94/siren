@@ -1,11 +1,72 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import { webcrypto, createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildRenderer } from '../build/renderer.mjs';
+
+test('native adapter retains typed refusal and bounded commit receipt fields without reporting success', async () => {
+  const native = { ok: false, code: 'RECOVERY_DEGRADED', message: 'Checkpoint was not acknowledged',
+    revision: 2, sha256: 'a'.repeat(64), committedRevision: 2, committedSha256: 'a'.repeat(64), workspaceCommitted: true,
+    json: 'private synthetic workspace', pin: 'synthetic private field' };
+  const window = { sirenDesktopBootstrap: { snapshot: { project: { id: 'owned-project' }, revision: 1, json: '{}' } },
+    sirenDesktop: { saveProject: async () => native } };
+  vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), vm.createContext({ window }));
+  const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
+  const receipt = await store.set('workspace', 'owned pending text');
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.code, native.code);
+  assert.equal(receipt.error.code, native.code);
+  assert.equal(receipt.revision, native.revision);
+  assert.equal(receipt.sha256, native.sha256);
+  assert.equal(receipt.committedRevision, native.committedRevision);
+  assert.equal(receipt.committedSha256, native.committedSha256);
+  assert.equal(receipt.workspaceCommitted, true);
+  assert.equal(receipt.json, undefined);
+  assert.equal(receipt.pin, undefined);
+  assert.equal(await window.sirenDesktopFlush(), receipt);
+});
+
+test('native refusal diagnostics keep CAS and reject malformed receipt metadata', async () => {
+  const requests = [];
+  const window = { sirenDesktopBootstrap: { snapshot: { project: { id: 'owned-project' }, revision: 1, json: '{}' } },
+    sirenDesktop: { saveProject: async request => {
+      requests.push(request);
+      return { ok: false, code: requests.length === 1 ? 'ACCESS_REFUSED' : 'REVISION_CONFLICT', message: 'Owned refusal',
+        revision: -1, committedRevision: '2', sha256: 'workspace text', committedSha256: 'b'.repeat(63), workspaceCommitted: 'true' };
+    } } };
+  vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), vm.createContext({ window }));
+  const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
+  for (const code of ['ACCESS_REFUSED', 'REVISION_CONFLICT']) {
+    const receipt = await store.set('workspace', 'retained synthetic attempt');
+    assert.equal(receipt.ok, false); assert.equal(receipt.code, code);
+    for (const key of ['revision', 'sha256', 'committedRevision', 'committedSha256', 'workspaceCommitted']) assert.equal(receipt[key], undefined);
+  }
+  assert.deepEqual(requests.map(request => request.baseRevision), [1, 1], 'Receipt diagnostics do not advance failed writes');
+});
+
+test('adapter reconciles only a degraded exact workspace bag with the immediate next committed revision', async () => {
+  for (const variant of ['exact', 'wrong-hash', 'wrong-revision', 'generic-refusal', 'draft', 'unavailable-hash']) {
+    const requests = [];
+    const window = { sirenDesktopBootstrap: { snapshot: { project: { id: 'owned-project' }, revision: 1, json: '{}' } },
+      sirenDesktop: { saveProject: async request => {
+        requests.push(request);
+        return { ok: false, code: variant === 'generic-refusal' ? 'SAVE_FAILED' : 'RECOVERY_DEGRADED', message: 'Owned degraded receipt',
+          workspaceCommitted: true, committedRevision: variant === 'wrong-revision' ? 7 : 2,
+          committedSha256: variant === 'wrong-hash' ? 'a'.repeat(64) : createHash('sha256').update(Buffer.from(request.json)).digest('hex'), checkpointAcknowledged: false };
+      } } };
+    vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), vm.createContext({ window, TextEncoder, crypto: variant === 'unavailable-hash' ? {} : webcrypto }));
+    const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
+    const first = await store.set(variant === 'draft' ? 'private-draft' : 'workspace', 'Ω😀 exact bytes');
+    assert.equal(first.ok, false, variant);
+    assert.equal(first.checkpointAcknowledged, false, variant);
+    await store.set('workspace', 'next attempt');
+    assert.equal(requests[1].baseRevision, variant === 'exact' ? 2 : 1, variant);
+  }
+});
 
 test('private Code recovery waits for a native receipt and never labels rejected writes stored', async () => {
   const outputDir = await mkdtemp(join(tmpdir(), 'siren-renderer-receipt-'));

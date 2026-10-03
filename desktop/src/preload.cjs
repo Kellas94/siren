@@ -18,3 +18,5 @@ contextBridge.exposeInMainWorld('sirenDesktop', Object.freeze(bridge));
 const bootstrap = ipcRenderer.sendSync('siren:bootstrap');
 contextBridge.exposeInMainWorld('sirenDesktopBootstrap', bootstrap);
 contextBridge.exposeInMainWorld('sirenDesktopReady', () => ipcRenderer.send('siren:ready'));
+const windowMethods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
+contextBridge.exposeInMainWorld('sirenWindow', Object.freeze(Object.fromEntries(windowMethods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]))));

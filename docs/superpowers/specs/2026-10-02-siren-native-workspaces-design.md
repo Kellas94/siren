@@ -1,6 +1,6 @@
 # SIREN desktop: Docs, Code și Present pe mai multe monitoare
 
-Data: 2 octombrie 2026. Autor: /root. **Design aprobat de utilizator în această sesiune; planul scris urmează review separat, iar ferestrele native multiple nu sunt implementate.** Utilizatorul cere Docs și Present detașabile ca Code, ferestre multiple simultane, minimizare/restaurare de oriunde, resize/move/maximize și lucru pe monitoare diferite. Intenția este comparația și documentarea agenților fără o interfață centrală încărcată. AI rămâne ultimul.
+Data: 2 octombrie 2026. Autor: /root. **Designul și planul scris au fost aprobate de utilizator; ferestrele native multiple nu sunt încă implementate.** Utilizatorul cere Docs și Present detașabile ca Code, ferestre multiple simultane, minimizare/restaurare de oriunde, resize/move/maximize și lucru pe monitoare diferite. Intenția este comparația și documentarea agenților fără o interfață centrală încărcată. AI rămâne ultimul.
 
 ## Situația actuală
 

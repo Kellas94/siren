@@ -1,6 +1,6 @@
 # SIREN desktop: surse mari și scripturi complexe
 
-Data: 2 octombrie 2026. Autor: /root. **Design aprobat de utilizator în această sesiune; planul scris urmează review separat, iar implementarea subsistemului nu a început.** Cerința este: sute de mii de linii, măsurare prin bytes/caractere și complexitate, capacitate desktop crescută. AI rămâne ultimul și separat.
+Data: 2 octombrie 2026. Autor: /root. **Design aprobat de utilizator în această sesiune; planul scris a fost de asemenea aprobat, iar implementarea începe cu evaluarea editorului și contractele de surse.** Cerința este: sute de mii de linii, măsurare prin bytes/caractere și complexitate, capacitate desktop crescută. AI rămâne ultimul și separat.
 
 ## Scop și dovada de succes
 

@@ -6,6 +6,7 @@ import { atomicWrite, exclusiveWriter } from '../projects/atomic.mjs';
 import { verifySnapshot } from '../projects/store.mjs';
 import { readOwnedBytes } from '../projects/io.mjs';
 import { MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from '../projects/budgets.mjs';
+import { verifySourceSnapshot, exportSourceSnapshot, restoreSourceSnapshot } from '../sources/recovery.mjs';
 
 const uuid = value => typeof value === 'string' && /^[a-f0-9-]{36}$/.test(value);
 function verifyPoint(record) {
@@ -13,10 +14,10 @@ function verifyPoint(record) {
   verifySnapshot(record.snapshot);
   return record;
 }
-const publicPoint = record => ({ id: record.id, projectId: record.snapshot.project.id, createdAt: record.createdAt, revision: record.snapshot.revision, schema: 1, sha256: record.snapshot.sha256, kind: record.kind, verified: true });
+const publicPoint = record => ({ id: record.id, projectId: record.snapshot.project.id, createdAt: record.createdAt, revision: record.snapshot.revision, schema: record.snapshot.schema, sha256: record.snapshot.sha256, kind: record.kind, verified: true });
 
 export class RecoveryStore {
-  constructor(root, { now = () => Date.now(), fault = async () => {}, ownerIdentity, inspectProcess } = {}) { this.root = resolve(root); this.now = now; this.fault = fault; this.writerOptions = { ownerIdentity, inspectProcess }; }
+  constructor(root, { now = () => Date.now(), fault = async () => {}, ownerIdentity, inspectProcess, sources } = {}) { this.root = resolve(root); this.now = now; this.fault = fault; this.sources = sources; this.writerOptions = { ownerIdentity, inspectProcess }; }
   async directory() {
     await ownedDirectory(this.root);
     const path = join(this.root, 'Recovery');
@@ -34,6 +35,7 @@ export class RecoveryStore {
         if (!/^[a-f0-9-]{36}\.json$/.test(name)) continue;
         try {
           const record = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, name), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
+          if (record.snapshot.schema === 2) await verifySourceSnapshot({ snapshot: record.snapshot, repository: this.sources });
           if (record.snapshot.project.id !== id || name !== `${record.id}.json`) throw new Error('Invalid checkpoint identity');
           valid.push(record);
         } catch { damaged = true; invalid.push({ id: name.slice(0, -5), projectId: id }); }
@@ -44,6 +46,7 @@ export class RecoveryStore {
   }
   async checkpointProject({ snapshot, kind }) {
     verifySnapshot(snapshot);
+    if (snapshot.schema === 2) await verifySourceSnapshot({ snapshot, repository: this.sources });
     if (!['saved', 'draft', 'emergency'].includes(kind)) throw new Error('Invalid checkpoint kind');
     const root = await this.directory();
     return exclusiveWriter(root, async () => {
@@ -52,6 +55,7 @@ export class RecoveryStore {
       await atomicWrite(join(dir, `${record.id}.json`), serializeWorkspaceRecord(record), { fault: this.fault });
       const verified = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, `${record.id}.json`), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
       if (verified.snapshot.json !== snapshot.json) throw new Error('Checkpoint readback mismatch');
+      if (snapshot.schema === 2) await verifySourceSnapshot({ snapshot: verified.snapshot, repository: this.sources });
       await this.fault('checkpoint-verified');
       const { valid } = await this.scan(snapshot.project.id);
       // New point is verified before pruning. Corrupt and emergency originals are untouched.
@@ -104,9 +108,12 @@ export class RecoveryStore {
   async restoreRecovery({ pointId, destination, projects }) {
     if (destination !== 'new-project') throw new Error('Recovery must create a new project');
     const record = await this.readPoint(pointId);
+    if (record.snapshot.schema === 2) return this.restoreSourceSnapshot(record.snapshot, projects);
     const restored = await projects.createProject({ label: `${record.snapshot.project.label.slice(0, 175)} — recovered`, json: record.snapshot.json, purpose: 'recovery' });
     const readback = await projects.readProject(restored.project.id);
     if (readback.sha256 !== record.snapshot.sha256 || readback.json !== record.snapshot.json) throw new Error('Recovered copy verification failed');
     return readback;
   }
+  async exportSourceSnapshot(snapshot) { return exportSourceSnapshot({ snapshot, repository: this.sources }); }
+  async restoreSourceSnapshot(snapshot, projects) { return restoreSourceSnapshot({ snapshot, repository: this.sources, projects, recovery: this }); }
 }

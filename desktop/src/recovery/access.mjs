@@ -21,7 +21,7 @@ export class RecoveryAccess {
       let path = join(directory, 'current.json');
       try {
         const pointer = JSON.parse((await readOwnedBytes(path, 65536)).toString('utf8'));
-        if (pointer.schema === 1 && /^[0-9]+-[a-f0-9-]{36}\.json$/.test(pointer.file)) path = join(await childDirectory(directory, 'revisions'), pointer.file);
+        if ([1, 2].includes(pointer.schema) && /^[0-9]+-[a-f0-9-]{36}\.json$/.test(pointer.file)) path = join(await childDirectory(directory, 'revisions'), pointer.file);
       } catch { /* retain the owned damaged selection, never follow an unvalidated file name */ }
       try {
         const bytes = await readOwnedBytes(path, 128 * 1024 * 1024 + 65536);
@@ -48,6 +48,7 @@ export class RecoveryAccess {
   }
   async restore(id) {
     const { snapshot } = await this.point(id);
+    if (snapshot.schema === 2) return this.recovery.restoreSourceSnapshot(snapshot, this.projects);
     const restored = await this.projects.createProject({ label: `${snapshot.project.label.slice(0, 175)} — recovered`, json: snapshot.json, purpose: 'recovery' });
     const readback = await this.projects.readProject(restored.project.id);
     if (readback.json !== snapshot.json || readback.sha256 !== snapshot.sha256) throw new Error('Recovered copy verification failed');
@@ -63,10 +64,20 @@ export class RecoveryAccess {
       if (digest(bytes) !== damaged.sha256) throw new Error('Damaged original changed; inspect recovery again');
       return bytes;
     }
-    try { return Buffer.from((await this.point(id)).snapshot.json); }
+    try {
+      const snapshot = (await this.point(id)).snapshot;
+      return snapshot.schema === 2 ? this.recovery.exportSourceSnapshot(snapshot) : Buffer.from(snapshot.json);
+    }
     catch {
       for (const projectId of this.grants) {
-        try { return await this.recovery.readDamagedPoint(id, projectId); } catch { /* only native-owned granted projects */ }
+        try {
+          const bytes = await this.recovery.readDamagedPoint(id, projectId);
+          let record; try { record = JSON.parse(bytes); } catch { /* keep the existing exact malformed artifact export */ }
+          // Missing source bytes cannot be presented as a complete schema-2
+          // backup merely by exporting its otherwise valid checkpoint metadata.
+          if (record?.snapshot?.schema === 2) continue;
+          return bytes;
+        } catch { /* only native-owned granted projects */ }
       }
       throw new Error('Owned recovery point unavailable');
     }

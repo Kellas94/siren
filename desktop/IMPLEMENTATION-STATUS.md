@@ -1,4 +1,18 @@
-# Desktop foundation — development evidence, 2 October 2026
+# Desktop foundation — development evidence
+
+## Verified foundation update, 3 October 2026
+
+Native Code/Docs role shells now use a pinned workspace owner, exact native caller grants, strict URLs, isolated preloads and CSP, bounded close confirmation and epoch revocation. The actual two-Code/two-Docs probe passed opening, privacy, workspace close, Lock and original/migrated disk invariance. These remain data-free shells; shared editors and full multi-monitor behavior are subsequent tasks.
+
+Identical legacy saves now preserve the selected revision only after current permission and exact CAS/readback checks. Fresh core commit40ce7938feeca39873d971bfbe50a57d9b62a253 / ASARd797b6da2af5c4606102d2c1ed39f909d19d0605b5d37f2fda4aa734ad33db44 passed the unchanged native packaged save/recovery/Unicode-copy/PIN/readonly probe. Earlier failures and independent review ownership are preserved in desktop/reviews/2026-10-03-native-windows-root-evidence.md and separately authored reports.
+
+Full frozen desktop suite:347/347 passed,0failed/skipped/cancelled,181123.9769ms, all inputs unchanged. Source metrics, owned versioned storage, schema2 migration/recovery and isolated SourceIPC/client contracts are implemented; the latter are not yet exposed by the application. Native source-aware editing, linked Docs, worker analysis, dirty-window coordination, presentation detach, Terminal process-family ownership and release qualification remain open. No main merge or public binary release occurred.
+
+## 3 October: editor/library evaluation and retained CI26 failure
+
+Source/native plans are explicitly approved. Root's isolated CodeMirror candidate passed six100k/300k editing/undo/find/Unicode cases; final bundle32a9a729, candidate source1da44fab, result8d3a599f. Native string/comment theme test RED→GREEN is retained. Selection is documented in `reviews/large-source-editor-evaluation.md`; this is not300k SIREN persistence or native-window admission. Product manifest/lock/renderer remain unchanged by this evaluation. TanStack Virtual and MiniSearch are recommended for separate measured evaluations in authored `reviews/2026-10-02-library-capability-review.md`.
+
+Actual unchanged-product80k/200Docs input still timed out20002.50ms; trace/memory retained, total process snapshot2235.84MiB. No underlying widget/parser cause is claimed. Hosted DesktopCI26run37062377426 FAILED:115units and12nativegroups passed, packaged post-recovered-project flush rejected `Save not acknowledged: failed`; later package operations were not reached. Independent original artifact/report are retained in `reviews/2026-10-02-ci26-packaged-failure-review.md`; actual native cause remains unknown. LauncherCI17 passed. These adverse results are not overwritten by the separate candidate experiment or prior local package success.
 
 ## Serialized workspace correction and approved desktop expansion
 
@@ -6,7 +20,7 @@ Product commit `4f934bda0d04358253eab5ffdb7e27bc6d5b4c98` harmonizes raw64MiB/se
 
 New development ASAR `68048cd382f431b0662e881e3e48489ec0ea880ea8ae8a64880b869382cf0354`, package `development-0100310b-db0a-43e4-ac50-32ecab6c6c63`, passed the unchanged actual packaged probe771f17fb at `desktop/evidence/packaged-2026-10-02T20-28-24.199Z`. Renderer808e280 and Electron binary49b61a remain unchanged. Scoped proof: `desktop/reviews/2026-10-02-serialized-workspace-fix-evidence.md`. No new general scalability, physical multi-monitor, launcher/update-apply or release admission.
 
-User approved source-capacity and native-workspace designs under `docs/superpowers/specs/2026-10-02-siren-{large-sources,native-workspaces}-design.md`. Written plans are prepared for user review; implementation has not started. 100k/300k representative lines and byte/complexity budgets are targets, not current Code capability. Native Docs/Code/Presenter/Audience windows are planned, not existing independent OS windows. AI stays last. Hosted CI25 FAILED/access-screen and packaged SKIPPED remain historical facts; formal Security start produced no scan ID.
+User approved source-capacity and native-workspace designs under `docs/superpowers/specs/2026-10-02-siren-{large-sources,native-workspaces}-design.md`. Both written plans are now explicitly approved. Task1 editor/library evaluation is complete; source persistence and native window implementation are still pending. 100k/300k representative lines and byte/complexity budgets are targets, not current Code capability. Native Docs/Code/Presenter/Audience windows are planned, not existing independent OS windows. AI stays last. Hosted CI25 FAILED/access-screen and packaged SKIPPED remain historical facts; formal Security start produced no scan ID.
 
 ## CI24 and final coherent packaged boundaries
 

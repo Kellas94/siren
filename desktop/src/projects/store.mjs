@@ -6,6 +6,7 @@ import { atomicWrite, digest, exclusiveWriter } from './atomic.mjs';
 import { failure } from '../ipc.mjs';
 import { readOwnedBytes } from './io.mjs';
 import { MAX_WORKSPACE_BYTES, MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from './budgets.mjs';
+import { verifySourceManifest } from '../sources/manifest.mjs';
 
 export { MAX_WORKSPACE_BYTES } from './budgets.mjs';
 export function validateWorkspace(json) {
@@ -15,6 +16,7 @@ export function validateWorkspace(json) {
   return json;
 }
 export function verifySnapshot(record) {
+  if (record?.schema === 2) return verifySourceManifest(record);
   if (record?.schema !== 1 || !validId(record.project?.id) || typeof record.project.label !== 'string' || record.project.label.length > 200 || typeof record.project.external !== 'boolean' || !Number.isSafeInteger(record.revision) || record.revision < 1 || !/^[a-f0-9]{64}$/.test(record.sha256)) throw new Error('Invalid or corrupt snapshot');
   validateWorkspace(record.json);
   if (digest(Buffer.from(record.json)) !== record.sha256) throw new Error('Corrupt workspace hash');
@@ -49,22 +51,25 @@ export class ProjectStore {
     let pointer;
     try { pointer = JSON.parse((await readOwnedBytes(join(dir, 'current.json'), 65536)).toString('utf8')); }
     catch { throw new Error('Corrupt project selection; choose explicit recovery'); }
-    if (pointer.schema !== 1 || !/^[0-9]+-[a-f0-9-]{36}\.json$/.test(pointer.file) || !/^[a-f0-9]{64}$/.test(pointer.sha256)) throw new Error('Invalid project selection');
+    if (![1, 2].includes(pointer.schema) || !/^[0-9]+-[a-f0-9-]{36}\.json$/.test(pointer.file) || !/^[a-f0-9]{64}$/.test(pointer.sha256)) throw new Error('Invalid project selection');
     const revisions = await childDirectory(dir, 'revisions');
     const bytes = await readOwnedBytes(join(revisions, pointer.file), MAX_SERIALIZED_WORKSPACE_BYTES);
     if (digest(bytes) !== pointer.sha256) throw new Error('Corrupt selected revision');
     const snapshot = verifySnapshot(JSON.parse(bytes));
-    if (snapshot.project.id !== id || snapshot.revision !== pointer.revision) throw new Error('Invalid project identity');
+    if (snapshot.project.id !== id || snapshot.revision !== pointer.revision || snapshot.schema !== pointer.schema) throw new Error('Invalid project identity');
     return snapshot;
   }
-  async commit(dir, snapshot) {
+  async commit(dir, snapshot, { canSelect } = {}) {
     verifySnapshot(snapshot);
     const bytes = serializeWorkspaceRecord(snapshot);
     const file = `${snapshot.revision}-${randomUUID()}.json`;
     const revisions = await childDirectory(dir, 'revisions');
     const sha256 = await atomicWrite(join(revisions, file), bytes, { fault: this.fault });
     await this.fault('revision-verified');
-    await atomicWrite(join(dir, 'current.json'), Buffer.from(JSON.stringify({ schema: 1, file, revision: snapshot.revision, sha256 })), { fault: this.fault, selection: true });
+    await atomicWrite(join(dir, 'current.json'), Buffer.from(JSON.stringify({ schema: snapshot.schema, file, revision: snapshot.revision, sha256 })), { selection: true, fault: async phase => {
+      await this.fault(phase);
+      if (phase === 'before-select' && canSelect && !await canSelect()) throw Object.assign(new Error('Access changed before project selection'), { code: 'ACCESS_REFUSED' });
+    } });
     const readback = await this.readProject(snapshot.project.id);
     if (readback.json !== snapshot.json || readback.sha256 !== snapshot.sha256) throw new Error('Project readback mismatch');
   }
@@ -101,8 +106,13 @@ export class ProjectStore {
       return await exclusiveWriter(dir, async () => {
         if (!await this.canSave({ action: request.purpose, projectId: request.projectId })) return failure('ACCESS_REFUSED', 'Access changed; pending work is retained');
         const current = await this.readProject(request.projectId);
+        if (current.schema !== 1) return failure('SCHEMA_UNSUPPORTED', 'This renderer cannot write the source manifest; use the source-aware workspace');
         if (current.revision !== request.baseRevision) return failure('REVISION_CONFLICT', 'A newer revision exists; your pending copy is retained');
         if (request.purpose === 'recovery') return { ok: true, revision: current.revision, sha256: digest(Buffer.from(request.json)), pendingId };
+        // A flush of already acknowledged bytes is not a new workspace revision.
+        // Access, owned writer and exact CAS checks above still apply; private
+        // recovery bytes do not change the selected workspace used here.
+        if (current.json === request.json) return { ok: true, revision: current.revision, sha256: current.sha256, pendingId, unchanged: true };
         const snapshot = { ...current, revision: current.revision + 1, json: request.json, sha256: digest(Buffer.from(request.json)) };
         await this.commit(dir, snapshot);
         return { ok: true, revision: snapshot.revision, sha256: snapshot.sha256, pendingId };

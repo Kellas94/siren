@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { ProjectStore } from '../src/projects/store.mjs';
+import { SourceRepository } from '../src/sources/repository.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { AccessPolicy } from '../src/account/access.mjs';
 import { failure } from '../src/ipc.mjs';
@@ -24,11 +25,11 @@ for (const scenario of [{ packaged: true, mode: 'readonly' }, { packaged: false,
     const original = await seed.createProject({ label: 'Original', json: '{"source":"unchanged"}' });
     const policy = new AccessPolicy({ state: 'offline', recoveryOnly: false }); policy.opened(original.project.id);
     let listener; const notices = []; const webContents = { mainFrame: { url: 'siren://app/app.html' }, send: (...args) => notices.push(args) };
-    const context = vm.createContext({ ProjectStore, dataRoot: root, writerOptions: {}, app: { isPackaged: scenario.packaged, getVersion: () => 'fixture' },
+    const context = vm.createContext({ ProjectStore, SourceRepository, dataRoot: root, writerOptions: {}, app: { isPackaged: scenario.packaged, getVersion: () => 'fixture' },
       mode: scenario.mode, nativeReadonly: scenario.mode === 'readonly', reason: null, accountQuiesced: false,
       account: { policy, canPerform: request => policy.canPerform(request) }, grants: new Set([original.project.id]),
       localPin: { state: () => ({ unlocked: true }) },
-      recovery: new RecoveryStore(root), writes: new Set(), snapshot: original, bootstrap: { mode: scenario.mode, snapshot: original, readonly: scenario.mode !== 'normal' }, failure,
+      recovery: new RecoveryStore(root), writes: new Set(), selectedId: original.project.id, snapshot: original, bootstrap: { mode: scenario.mode, snapshot: original, readonly: scenario.mode !== 'normal' }, failure,
       ipcMain: { on: (_name, callback) => { listener = callback; } }, window: { webContents, isDestroyed: () => false },
       processIdentity: { pid: process.pid }, sessionId: 'fixture', journal: { recordSession: async () => { throw new Error('Readiness journal unavailable'); } },
     });
@@ -55,7 +56,7 @@ test('successful login preserves edits queued during the browser round trip befo
   let pause = true;
   const context = vm.createContext({ selectedId: original.project.id, snapshot: original, grants: new Set([original.project.id]),
     mode: 'normal', nativeReadonly: false, reason: null, accountTransition: false, accountQuiesced: false,
-    bootstrap: { mode: 'normal', snapshot: original, readonly: false }, failure,
+    bootstrap: { mode: 'normal', snapshot: original, readonly: false }, failure, retireNativeViews: () => {},
     account: { beginLogin: async ({ beforeCommit } = {}) => { await browser; await beforeCommit?.(); switched = true; return { state: 'online', recoveryOnly: false }; } },
     projects: new ProjectStore(root, { fault: async stage => { if (stage === 'revision-verified' && pause) { pause = false; firstEntered(); await new Promise(resolve => { releaseFirst = resolve; }); } } }),
     recovery: new RecoveryStore(root), writes: new Set(), window: { webContents: { executeJavaScript: async code => vm.runInContext(code, context) } },

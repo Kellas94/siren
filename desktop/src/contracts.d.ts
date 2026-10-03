@@ -17,3 +17,10 @@ export type Manifest = { schema: 1; product: 'siren'; channel: 'stable'; version
 export type VerifiedUpdate = { manifest: Manifest; manifestSha256: string; assetUrl: string };
 
 // cancelUpdate() has no renderer-supplied path/config; ready is staged, never installed.
+
+export type NativeViewRole = 'workspace' | 'code' | 'docs' | 'presenter' | 'audience';
+export type NativeViewRequest = { role: 'code' | 'docs'; entityId: string; version?: number };
+export type NativeViewRecord = { windowId: string; role: NativeViewRole; projectId: string; epoch: number; entityId: string | null; state: 'active' | 'minimized' };
+export type NativeViewGrant = { webContentsId: number; mainFrameUrl: string; windowId: string; role: NativeViewRole; projectId: string; epoch: number; entityIds: readonly string[] };
+// Shell records contain no source/Docs bodies. Editor/presentation transport is
+// deliberately separate; presenter/audience open is not admitted by shell IPC.

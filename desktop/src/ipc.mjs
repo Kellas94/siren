@@ -31,5 +31,8 @@ export async function invokeDesktop({ method, payload, context, services, localA
   if (localAccess && !localAccess.state().unlocked && !lockedMethods.has(method)) return failure('PIN_REQUIRED', 'Unlock SIREN with your local PIN first');
   if (!Object.hasOwn(services, method) || typeof services[method] !== 'function') return failure('UNAVAILABLE', 'This service is not configured');
   try { return await services[method](payload); }
-  catch { return failure('OPERATION_FAILED', 'The operation failed; existing data was retained'); }
+  catch (error) {
+    if (error?.code === 'WORKSPACE_NOT_READY') return failure('WORKSPACE_NOT_READY', 'Wait for SIREN to finish opening, then retry.');
+    return failure('OPERATION_FAILED', 'The operation failed; existing data was retained');
+  }
 }

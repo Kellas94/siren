@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 
 test('package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps', async () => {
   const { allowedAppFile } = await import('../scripts/package.mjs');
-  for (const path of ['src/main.mjs', 'src/account/oidc.mjs', 'src/account/credentials.mjs', 'src/projects/budgets.mjs', 'src/recovery/checkpoints.mjs', 'generated/app.html', 'node_modules/jose/dist/webapi/index.js', 'node_modules/jose/LICENSE.md']) assert.equal(allowedAppFile(path, new Set(['jose'])), true, path);
+  for (const path of ['src/main.mjs', 'src/account/oidc.mjs', 'src/account/credentials.mjs', 'src/projects/budgets.mjs', 'src/recovery/checkpoints.mjs', 'src/sources/manifest.mjs', 'src/sources/recovery.mjs', 'src/sources/repository.mjs', 'src/sources/metrics.mjs', 'src/sources/text-model.mjs', 'src/sources/migration.mjs', 'generated/app.html', 'node_modules/jose/dist/webapi/index.js', 'node_modules/jose/LICENSE.md']) assert.equal(allowedAppFile(path, new Set(['jose'])), true, path);
   for (const path of ['src/account/test-oidc.mjs', 'tests/fixtures/issuer.mjs', 'baseline/R78.html', 'Data/credentials.bin', '.env', 'node_modules/jose/dist/index.js.map', 'node_modules/electron/dist/electron.exe', 'source/secret.mjs', 'src/account/secret.mjs', 'src/../account/secret.mjs']) assert.equal(allowedAppFile(path, new Set(['jose'])), false, path);
 });
 

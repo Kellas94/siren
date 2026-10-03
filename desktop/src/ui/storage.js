@@ -17,11 +17,32 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
     const json = JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: Object.fromEntries(mirror) });
     const operation = async () => {
       let result;
+      const baseRevision = snapshot?.revision;
       if (!snapshot) result = { ok: false, code: 'NO_PROJECT', message: 'Choose or import a desktop project before saving' };
       else result = await window.sirenDesktop.saveProject({ projectId: snapshot.project.id, baseRevision: snapshot.revision, json, purpose });
+      // Retain only typed receipt metadata. Never copy workspace text or other
+      // arbitrary native fields into diagnostics, and never infer commitment.
+      const receipt = { ok: result.ok, backend: 'native', error: result.ok ? null : new Error(result.message) };
+      if (typeof result.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(result.code)) {
+        receipt.code = result.code; if (receipt.error) receipt.error.code = result.code;
+      }
+      for (const key of ['revision', 'committedRevision']) if (Number.isSafeInteger(result[key]) && result[key] >= 1) receipt[key] = result[key];
+      for (const key of ['sha256', 'committedSha256']) if (typeof result[key] === 'string' && /^[a-f0-9]{64}$/.test(result[key])) receipt[key] = result[key];
+      if (typeof result.workspaceCommitted === 'boolean') receipt.workspaceCommitted = result.workspaceCommitted;
+      if (result.unchanged === true) receipt.unchanged = true;
+      if (typeof result.checkpointAcknowledged === 'boolean') receipt.checkpointAcknowledged = result.checkpointAcknowledged;
+      if (typeof result.recoveryCode === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(result.recoveryCode)) receipt.recoveryCode = result.recoveryCode;
       if (result.ok) snapshot = { ...snapshot, revision: result.revision, sha256: result.sha256, json };
-      else { if (writeError) writeError(new Error(result.message), { backend: 'native', code: result.code }); }
-      return { ok: result.ok, backend: 'native', error: result.ok ? null : new Error(result.message) };
+      else {
+        if (purpose === 'workspace' && receipt.code === 'RECOVERY_DEGRADED' && receipt.workspaceCommitted === true && receipt.committedRevision === baseRevision + (receipt.unchanged === true ? 0 : 1) && receipt.committedSha256) {
+          try {
+            const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json)))).map(byte => byte.toString(16).padStart(2, '0')).join('');
+            if (hash === receipt.committedSha256) snapshot = { ...snapshot, revision: receipt.committedRevision, sha256: hash, json };
+          } catch { /* No exact independent hash: keep the old CAS revision. */ }
+        }
+        if (writeError) writeError(receipt.error, { backend: 'native', code: receipt.code });
+      }
+      return receipt;
     };
     const result = queue.then(operation, operation); queue = result.catch(error => ({ ok: false, backend: 'native', error })); return result;
   };

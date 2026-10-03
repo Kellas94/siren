@@ -66,6 +66,8 @@ Remedierea trebuie să armonizeze limita workspace cu toate envelope-urile de re
 
 ## Ordinea loturilor
 
+Extensie cerută la3octombrie: **Terminal real legat de proiect**, cu procesele deja pornite continuând laLock și refuzul inputului nou. Cercetarea și propunerea sunt în `2026-10-03-siren-terminal.md`; xterm.js/node-pty sunt candidați, nu dependențe instalate. Necesită design și calificare distincte peste surse/registrul de ferestre, înainte de AI; nu schimbă retroactiv scope-ul planurilor aprobate.
+
 1. **Integritatea datelor:** defectele reproduse de salvare/readback, limite coerente, semnale clare de salvare/refuz, timeouturi păstrate și investigate. Calificare nativă și packaged înainte de alte schimbări de produs.
 2. **Desktop workspace:** navigare persistentă, controale comune și ferestre Code/Docs restaurabile; focus, keyboard, resize/maximize și teme. Păstrăm o singură autoritate pentru draft și salvare.
 3. **Recovery și întreținere:** bugete de spațiu/vârstă pentru copii verificate și rezolvate; review al retenției, mod read-only și export. Ultima copie bună, emergency neclarificat și datele corupte nu se șterg orb.

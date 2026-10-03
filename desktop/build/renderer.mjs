@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parse } from 'parse5';
 import { Script } from 'node:vm';
+import { buildWindowEntrypoints } from './windows.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -220,7 +221,8 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   html = html.slice(0, location.startOffset) + `<meta http-equiv="Content-Security-Policy" content="${csp}" />` + html.slice(location.endOffset);
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, 'app.html'), html, { encoding: 'utf8' });
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1' };
+  const windowEntrypoints = await buildWindowEntrypoints(outputDir);
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }

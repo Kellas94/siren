@@ -9,6 +9,7 @@ import { randomBytes, createCipheriv, createDecipheriv } from 'node:crypto';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { LocalPinAccess } from '../src/account/local-pin.mjs';
 import { ProjectStore } from '../src/projects/store.mjs';
+import { SourceRepository } from '../src/sources/repository.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { atomicWrite } from '../src/projects/atomic.mjs';
 import { invokeDesktop, failure } from '../src/ipc.mjs';
@@ -73,7 +74,7 @@ test('locked IPC refuses all project bytes and mutations, while PIN unlock canno
   }
   assert.equal(touched, false);
   await localPin.setup({ pin: '4826', confirmation: '4826' });
-  const context = vm.createContext({ ProjectStore, dataRoot: root, writerOptions: {}, localPin, accountQuiesced: false, nativeReadonly: true, mode: 'readonly' });
+  const context = vm.createContext({ ProjectStore, SourceRepository, dataRoot: root, writerOptions: {}, localPin, accountQuiesced: false, nativeReadonly: true, mode: 'readonly' });
   vm.runInContext(factory + ';globalThis.projects=projects;', context);
   await assert.rejects(context.projects.createProject({ label: 'Refused', json: '{}' }), /Activation required/);
   assert.equal(localPin.state().unlocked, true, 'PIN grant remains distinct from native startup safety');
@@ -84,11 +85,11 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   const seed = new ProjectStore(root); const original = await seed.createProject({ label: 'Owned lock fixture', json: '{}' });
   let release, entered; const paused = new Promise(r => { entered = r; }); const gate = new Promise(r => { release = r; }); let first = true;
   const body = { inert: false, classList: { add() {}, remove() {} } };
-  const context = vm.createContext({ ProjectStore, localPin, failure, dataRoot: root, writerOptions: {
+  const context = vm.createContext({ ProjectStore, SourceRepository, localPin, failure, dataRoot: root, writerOptions: {
     fault: async stage => { if (stage === 'revision-verified' && first) { first = false; entered(); await gate; if (failWrite) throw new Error('Owned test persistence failure'); } },
   }, mode: 'normal', nativeReadonly: false, accountQuiesced: false, accountTransition: false, pinTransition: false,
-    grants: new Set([original.project.id]), snapshot: original, bootstrap: { mode: 'normal', snapshot: original, readonly: false },
-    writes: new Set(), recovery: new RecoveryStore(root), document: { body }, window: {},
+    grants: new Set([original.project.id]), selectedId: original.project.id, snapshot: original, bootstrap: { mode: 'normal', snapshot: original, readonly: false },
+    writes: new Set(), recovery: new RecoveryStore(root), document: { body }, window: {}, retireNativeViews: () => {},
   });
   const window = context.window;
   window.webContents = { executeJavaScript: async text => vm.runInContext(text, context) };
