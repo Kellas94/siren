@@ -14,7 +14,7 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
   ...['contracts','entries'].map(n=>`src/navigation/${n}.mjs`),
-  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
+  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;

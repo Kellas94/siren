@@ -49,15 +49,42 @@ export class NativeSourceBarrier {
     const ticket=this.#active;
     return Boolean(proof && !this.#disposed && ticket?.prepared && !ticket.cancelled && ticket.proof===proof && this.#registry.isRosterCurrent(ticket.roster) && this.#owner.isQuiescent(ticket.quiescence));
   }
+  // Native-only same-project hand-off. The renderer cannot replace persistence
+  // preparation with a URL/roster, or release the owner during an unfinished
+  // load. Main awaits genuine entry readiness before finishing this hand-off.
+  beginWorkspaceNavigation(proof,options) {
+    const ticket=this.#active;
+    if(!this.isPrepared(proof)||ticket.navigation||typeof this.#registry.beginWorkspaceNavigation!=='function'||
+      typeof this.#registry.finishWorkspaceNavigation!=='function'||typeof this.#registry.cancelWorkspaceNavigation!=='function'||
+      typeof this.#registry.isWorkspaceNavigationCurrent!=='function')return fail('NAVIGATION_REFUSED');
+    try{
+      ticket.navigation=this.#registry.beginWorkspaceNavigation(ticket.roster,options);
+      return Object.freeze({ok:true,navigation:ticket.navigation});
+    }catch{return fail('NAVIGATION_REFUSED');}
+  }
+  finishWorkspaceNavigation(proof,navigation) {
+    const ticket=this.#active;
+    if(this.#disposed||!ticket||ticket.cancelled||!ticket.prepared||ticket.proof!==proof||!navigation||ticket.navigation!==navigation||ticket.navigationRecord||
+      !this.#owner.isQuiescent(ticket.quiescence))return fail('NAVIGATION_REFUSED');
+    try{
+      ticket.navigationRecord=this.#registry.finishWorkspaceNavigation(navigation);
+      if(!this.#registry.isWorkspaceNavigationCurrent(ticket.navigationRecord))return fail('NAVIGATION_REFUSED');
+      return Object.freeze({ok:true,view:ticket.navigationRecord});
+    }catch{return fail('NAVIGATION_REFUSED');}
+  }
   // Main explicitly decides whether to resume view adapters; releasing only
   // lifts native admission. Failed optimistic editors stay fenced themselves.
   release(proof) {
     if(!proof || this.#active?.proof!==proof)return false;
-    const ticket=this.#active;ticket.cancelled=true;this.#registry.releaseRoster(ticket.roster);this.#active=null;this.#owner.resume();return true;
+    const active=this.#active;
+    if(active.navigation&&(!active.navigationRecord||!this.#registry.isWorkspaceNavigationCurrent(active.navigationRecord)||!this.#owner.isQuiescent(active.quiescence)))return false;
+    const ticket=this.#active;if(!this.#registry.releaseRoster(ticket.roster))return false;
+    ticket.cancelled=true;this.#active=null;this.#owner.resume();return true;
   }
   dispose() {
     if(this.#disposed)return;this.#disposed=true;
     const ticket=this.#active;if(!ticket)return;ticket.cancelled=true;
+    if(ticket.navigation)this.#registry.cancelWorkspaceNavigation(ticket.navigation);
     for(const grant of ticket.roster.grants)this.#control.cancelView(grant);
     this.#registry.releaseRoster(ticket.roster);this.#active=null;
     // Disposal never resumes writes or manufactures successful preparation.

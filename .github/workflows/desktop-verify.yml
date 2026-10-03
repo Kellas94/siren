@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'home-entry')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'home-entry')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -103,6 +103,9 @@ jobs:
             desktop/evidence/source-owner/*/native-progress.json
             desktop/evidence/source-owner/*/prepared.json
             desktop/evidence/source-owner/*/electron.log
+            desktop/evidence/source-read/*/result.json
+            desktop/evidence/source-read/*/electron.log
+            desktop/evidence/source-read/*/*.png
             desktop/evidence/large-source-docs/*/result.json
             desktop/evidence/large-source-docs/*/native-result.json
             desktop/evidence/large-source-docs/*/native-progress.json

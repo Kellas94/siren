@@ -81,6 +81,27 @@ app.whenReady().then(async()=>{
   const primaryRef=all.proof.refs.find(ref=>ref.domain==='workspace');assert.equal(primaryRef.purpose,'readonly');assert.equal(primaryRef.sha256,selected.sha256);assert.equal(primaryRef.revision,selected.revision);
   for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.paused'),true);
   assert.equal(barrier.isPrepared(all.proof),true);assert.equal(barrier.release(all.proof),true);for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);barrier.dispose();barrier=null;
+  const satelliteGrants=windows.slice(0,4).map(window=>registry.capture({sender:window.webContents,senderFrame:window.webContents.mainFrame}));
+  const initialMinimized=windows.slice(0,4).map(window=>window.isMinimized());
+  for(const entryUrl of ['siren://app/home.html','siren://app/app.html']){
+    const oldPrimary=registry.capture({sender:primaryWindow.webContents,senderFrame:primaryWindow.webContents.mainFrame});
+    barrier=new NativeAllWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});
+    const preparedRoute=await barrier.prepare('owned-same-project-entry');assert.equal(preparedRoute.ok,true);
+    const navigating=barrier.beginWorkspaceNavigation(preparedRoute.proof,{entryUrl});assert.equal(navigating.ok,true);
+    assert.equal(barrier.release(preparedRoute.proof),false);assert.equal(registry.isCurrent(oldPrimary),false);
+    await primaryWindow.loadURL(entryUrl);await runAfterWorkspaceLoad(primaryWindow.webContents,()=>true,{expectedUrl:entryUrl});
+    const activated=barrier.finishWorkspaceNavigation(preparedRoute.proof,navigating.navigation);assert.equal(activated.ok,true);
+    assert.equal(registry.isWorkspaceNavigationCurrent(activated.view),true);assert.equal(registry.isWorkspaceNavigationCurrent({...activated.view}),false);
+    const current=registry.capture({sender:primaryWindow.webContents,senderFrame:primaryWindow.webContents.mainFrame});
+    assert.notEqual(current.windowId,oldPrimary.windowId);assert.equal(current.epoch,oldPrimary.epoch);
+    if(entryUrl==='siren://app/home.html')assert.deepEqual(current.entityIds,[]);
+    assert.equal(satelliteGrants.every(grant=>registry.isCurrent(grant)),true);assert.deepEqual(windows.slice(0,4).map(window=>window.isMinimized()),initialMinimized);
+    assert.equal(windows.slice(0,5).some(window=>window.isDestroyed()),false);assert.equal(registry.listViews().length,5);
+    assert.equal((await owner.invoke(oldPrimary,{kind:'workspace',method:'sealReadonly',payload:{}})).code,'ACCESS_REFUSED');
+    assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
+    assert.equal(barrier.release(preparedRoute.proof),true);await evaluate(4,'owned.start()');for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);barrier.dispose();barrier=null;
+  }
+  result.cases.push({name:'real prepared App/Home/App primary replacement retains all four minimized domain windows and exact selected data, and refuses every old primary capture',status:'COMPLETE'});await progress();
   recoveryFault=async phase=>{if(phase==='checkpoint-verified')throw Object.assign(Error('Owned primary checkpoint failure'),{code:'ENOSPC'});};
   barrier=new NativeAllWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});
   const refused=await barrier.prepare('owned-primary-recovery-refusal');assert.equal(refused.ok,false);assert.equal(Object.hasOwn(refused,'proof'),false);assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);

@@ -4,6 +4,8 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
   let snapshot = bootstrap?.snapshot || null;
   const mirror = new Map(); let writeError = null; let readError = null; let queue = Promise.resolve();
   const locked = () => ({ ok: false, backend: 'native', error: new Error('Account transition pending; editing is temporarily paused') });
+  const readonly = () => bootstrap?.readonly === true || window.sirenDesktopSafetyReadonly === true;
+  const readonlyReceipt = () => ({ ok: false, backend: 'native', code: 'READ_ONLY', error: Object.assign(new Error('This workspace is read-only'), { code: 'READ_ONLY' }) });
   if (snapshot) {
     try {
       const value = JSON.parse(snapshot.json);
@@ -49,9 +51,9 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
   window.sirenDesktopFlush = () => queue;
   return {
     ready: Promise.resolve(), start() { return this.ready; }, get(key) { return mirror.get(key) ?? null; }, keys() { return [...mirror.keys()]; },
-    set(key, value) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.set(key, value); return persist(key === workspaceKey ? 'workspace' : 'recovery'); },
-    setWithBackup(key, value, backupKey, backupValue) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.set(key, value); mirror.set(backupKey, backupValue); return persist('workspace'); },
-    remove(key) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); mirror.delete(key); return persist('recovery'); },
+    set(key, value) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.set(key, value); return persist(key === workspaceKey ? 'workspace' : 'recovery'); },
+    setWithBackup(key, value, backupKey, backupValue) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.set(key, value); mirror.set(backupKey, backupValue); return persist('workspace'); },
+    remove(key) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.delete(key); return persist('recovery'); },
     onWriteError(handler) { writeError = handler; }, onRemoteChange() {},
     foreignRecord: async () => null, readFailure: () => readError, usingFallback: () => false,
   };

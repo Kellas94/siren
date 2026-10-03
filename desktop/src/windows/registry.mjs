@@ -55,6 +55,9 @@ export class WindowRegistry {
   #roster = null;
   #membershipGeneration = 0;
   #admissionGeneration = 0;
+  #workspaceNavigation = null;
+  #navigationTickets = new WeakMap();
+  #navigationCommits = new WeakMap();
 
   constructor({ createWindow, authorize, closeTimeoutMs = 10000 }) {
     if (typeof createWindow !== 'function' || typeof authorize !== 'function') throw new TypeError('Native factory and authorization required');
@@ -86,7 +89,7 @@ export class WindowRegistry {
   // satellite factories, only the permanently pinned owner can be reactivated.
   activateWorkspace(options={}) {
     let entryUrl;try{const values=navigationFields(options,['entryUrl'],[]);entryUrl=workspaceEntryURL(Object.hasOwn(values,'entryUrl')?values.entryUrl:WORKSPACE_ENTRIES.module);}catch{throw refuse('ACCESS_REFUSED','Workspace entry refused');}
-    if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
+    if(this.#roster||this.#workspaceNavigation)throw refuse('ROSTER_FROZEN','Native view admission paused');
     const bound = this.#workspace; const request = normalizeRequest({ role: 'workspace', entityId: null });
     if (!bound || this.#destructionFailed) throw refuse('ACCESS_REFUSED', 'Workspace activation refused');
     const scope = this.#policy(request); const { window, webContents: wc } = bound;
@@ -106,7 +109,7 @@ export class WindowRegistry {
   }
 
   async openView(value) {
-    if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
+    if(this.#roster||this.#workspaceNavigation)throw refuse('ROSTER_FROZEN','Native view admission paused');
     const admissionGeneration=this.#admissionGeneration;
     const request = normalizeRequest(value);
     if (request.role === 'workspace' && this.#workspace) throw refuse('REQUEST_REFUSED', 'The native workspace owner is already bound');
@@ -235,7 +238,75 @@ export class WindowRegistry {
 
   releaseRoster(proof) {
     if(!proof || this.#roster?.proof!==proof)return false;
+    if(this.#workspaceNavigation?.roster===this.#roster)return false;
     this.#roster=null;return true;
+  }
+
+  // Native identity primitive only. The shared barrier must first prove actual
+  // flush/drain/quiescence; a roster itself is not a persistence approval.
+  // Same-project entry navigation preserves satellites while replacing the
+  // primary record. Changing project/Lock still invalidates the whole epoch.
+  beginWorkspaceNavigation(roster,options) {
+    let entryUrl;try{entryUrl=workspaceEntryURL(navigationFields(options,['entryUrl']).entryUrl);}catch{throw refuse('ACCESS_REFUSED','Workspace navigation entry refused');}
+    if(this.#workspaceNavigation||!this.isRosterCurrent(roster))throw refuse('ACCESS_REFUSED','Current native roster required');
+    const bound=this.#workspace;
+    const primary=bound&&[...this.#views.values()].find(entry=>entry.window===bound.window&&entry.record.role==='workspace');
+    if(!primary||!this.caller({sender:primary.webContents,senderFrame:primary.mainFrame}))throw refuse('ACCESS_REFUSED','Current bound workspace required');
+    const retained=roster.grants.filter(grant=>grant.windowId!==primary.record.windowId);
+    if(retained.length!==roster.grants.length-1)throw refuse('ACCESS_REFUSED','Single primary roster required');
+    const ticket=Object.freeze({entryUrl,epoch:this.#epoch});
+    const state={ticket,bound,scope:primary.scope,request:primary.request,roster:this.#roster,retained,entryUrl,epoch:this.#epoch,invalidated:false,listeners:[]};
+    this.#workspaceNavigation=state;this.#navigationTickets.set(ticket,state);
+    this.#forget(primary);state.membershipGeneration=this.#membershipGeneration;
+    const listen=(target,name,callback)=>{target.on(name,callback);state.listeners.push([target,name,callback]);};
+    const invalidate=()=>{state.invalidated=true;};
+    const navigation=(details,url,_inPlace,isMainFrame)=>{
+      if((details?.isMainFrame??isMainFrame)===false)return;
+      const actual=details?.url??url;
+      if(actual!==entryUrl)invalidate();
+    };
+    listen(bound.window,'closed',invalidate);listen(bound.webContents,'destroyed',invalidate);
+    listen(bound.webContents,'render-process-gone',invalidate);
+    listen(bound.webContents,'will-navigate',navigation);listen(bound.webContents,'did-start-navigation',navigation);
+    listen(bound.webContents,'did-navigate-in-page',navigation);
+    return ticket;
+  }
+
+  #navigationCurrent(state) {
+    try {
+      const {bound}=state,window=bound.window,wc=bound.webContents;
+      if(this.#workspaceNavigation!==state||state.invalidated||this.#workspace!==bound||this.#roster!==state.roster||this.#epoch!==state.epoch||this.#destructionFailed||
+        this.#membershipGeneration!==state.membershipGeneration||this.#views.size!==state.retained.length||!state.retained.every(grant=>this.isCurrent(grant))||
+        window.isDestroyed()||wc.isDestroyed()||window.id!==bound.nativeId||window.webContents!==wc||wc.id!==bound.webContentsId)return false;
+      const policy=this.#policy(state.request);
+      return policy.projectId===state.scope.projectId&&policy.mode===state.scope.mode&&policy.access===state.scope.access&&state.scope.entityIds.every(id=>policy.entityIds.includes(id));
+    }catch{return false;}
+  }
+  #retireNavigation(state) {
+    for(const [target,name,listener] of state.listeners)target.off(name,listener);
+    state.listeners=[];this.#navigationTickets.delete(state.ticket);
+    if(this.#workspaceNavigation===state)this.#workspaceNavigation=null;
+  }
+  finishWorkspaceNavigation(ticket) {
+    const state=ticket&&this.#navigationTickets.get(ticket);
+    if(!state||!this.#navigationCurrent(state)||state.bound.webContents.getURL()!==state.entryUrl||state.bound.webContents.mainFrame?.url!==state.entryUrl||
+      typeof state.bound.webContents.isLoadingMainFrame!=='function'||state.bound.webContents.isLoadingMainFrame()!==false)
+      throw refuse('ACCESS_REFUSED','Workspace navigation no longer current');
+    const record=Object.freeze({windowId:randomUUID(),role:'workspace',projectId:state.scope.projectId,epoch:this.#epoch,entityId:null,state:'active'});
+    this.#retireNavigation(state);
+    this.#register({record,window:state.bound.window,request:state.request,scope:this.#policy(state.request),mainFrameUrl:state.entryUrl});
+    const grant=this.capture({sender:state.bound.webContents,senderFrame:state.bound.webContents.mainFrame});
+    if(!grant)throw refuse('ACCESS_REFUSED','New workspace identity refused');
+    this.#navigationCommits.set(record,{grant,retained:state.retained});
+    return record;
+  }
+  isWorkspaceNavigationCurrent(record) {
+    const commit=record&&this.#navigationCommits.get(record);
+    return Boolean(commit&&!this.#workspaceNavigation&&this.isCurrent(commit.grant)&&commit.retained.every(grant=>this.isCurrent(grant)));
+  }
+  cancelWorkspaceNavigation(ticket) {
+    const state=ticket&&this.#navigationTickets.get(ticket);if(!state)return false;
+    state.invalidated=true;this.#retireNavigation(state);return true;
   }
 
   focusView(windowId) {
@@ -320,6 +391,8 @@ export class WindowRegistry {
   }
 
   invalidateEpoch({ preserveWorkspace = false } = {}) {
+    const navigation=this.#workspaceNavigation;
+    if(navigation){navigation.invalidated=true;this.#retireNavigation(navigation);}
     this.#epoch += 1;
     const entries = [...this.#views.values()];
     for (const entry of entries) {
@@ -328,6 +401,7 @@ export class WindowRegistry {
     }
     let failed = false;
     const windows = new Set([...entries.map(entry => entry.window), ...this.#unclosedWindows]);
+    if(navigation)windows.add(navigation.bound.window);
     for (const window of windows) {
       if (preserveWorkspace && window === this.#workspace?.window && !this.#unclosedWindows.has(window)) continue;
       if (!this.#destroyWindow(window)) failed = true;
@@ -364,6 +438,14 @@ export class WindowRegistry {
 
   // Trusted native adapters only; no preload or IPC exposes captured handles.
   eventFor(grant) {return this.isCurrent(grant)?this.#captures.get(grant):null;}
+
+  // Main-only source scope preserves the version requested when this genuine
+  // native Code window was admitted. Projected IDs cannot recreate it.
+  sourceScope(grant) {
+    if(!this.isCurrent(grant)||grant.role!=='code')return null;
+    const request=this.#views.get(grant.windowId)?.request;
+    return request?Object.freeze({sourceId:request.entityId,...(Object.hasOwn(request,'version')?{version:request.version}:{})}):null;
+  }
 
   caller(event) {
     try {

@@ -60,9 +60,23 @@ app.whenReady().then(async()=>{
       window.webContents.sendInputEvent({type:'mouseDown',button:'left',clickCount:1,...point});window.webContents.sendInputEvent({type:'mouseUp',button:'left',clickCount:1,...point});await delay(50);
     };
     const keys=async text=>{for(const keyCode of text){window.webContents.sendInputEvent({type:'char',keyCode});await delay(30);}};
-    await window.loadURL('siren://app/home.html');window.show();
-    assert.equal(await evaluate('document.getElementById("sirenIntroOverlay").hidden'),false);result.observedPhases.push('intro');
-    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);assert.equal(metadataCalls,0);await screenshot('intro');
+    // Qualify the animated and reduced-motion cases explicitly. The host's
+    // accessibility preference may skip intro; loadURL completion may also
+    // arrive after its timer. Observe actual renderer frames from navigation.
+    await window.loadURL('about:blank');
+    await progress();
+    window.webContents.debugger.attach('1.3');
+    await window.webContents.debugger.sendCommand('Page.enable');
+    await window.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await window.webContents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument',{source:`window.ownedOpeningFrames=[];const observe=()=>{const intro=document.getElementById('sirenIntroOverlay'),pin=document.getElementById('desktopAccessScreen');window.ownedOpeningFrames.push({at:performance.now(),intro:!!intro&&!intro.hidden,pin:!!pin?.open,homeChildren:document.getElementById('homeRoot')?.children.length??0,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches});if(!pin?.open&&window.ownedOpeningFrames.length<600)requestAnimationFrame(observe);};requestAnimationFrame(observe);`});
+    window.show();await window.loadURL('siren://app/home.html');
+    await wait('window.ownedOpeningFrames?.some(frame=>frame.intro)===true');
+    result.openingFrames=await evaluate('window.ownedOpeningFrames');
+    assert.equal(result.openingFrames.some(frame=>frame.reduced),false);
+    assert.equal(result.openingFrames.every(frame=>frame.homeChildren===0),true);
+    result.observedPhases.push('intro');
+    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);assert.equal(metadataCalls,0);
+    if(await evaluate('document.getElementById("sirenIntroOverlay").hidden===false'))await screenshot('intro');else result.introCaptureSkippedAfterCompletion=true;
     await wait('document.getElementById("desktopAccessScreen")?.open===true');result.observedPhases.push('pin');
     await wait('(()=>{const s=document.getElementById("desktopAccessScreen"),c=s.querySelector(".desktop-pin-centre");return Number(getComputedStyle(s).opacity)>.99&&Number(getComputedStyle(c).opacity)>.99&&c.getAnimations().every(a=>a.playState!=="running");})()');
     assert.equal(await evaluate('document.getElementById("sirenIntroOverlay").hidden'),true);
@@ -124,7 +138,6 @@ app.whenReady().then(async()=>{
     assert.deepEqual(await projects.readProject(projectId),before);
     result.cases.push({name:'actual Home authority rejects pending metadata at native Lock; renderer clears old labels and late result cannot republish',status:'COMPLETE'});await progress();
     delayMetadata=false;opening='intro';
-    window.webContents.debugger.attach('1.3');
     await window.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     window.reload();await wait('document.getElementById("desktopAccessScreen")?.open===true');
     assert.equal(await evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches'),true);

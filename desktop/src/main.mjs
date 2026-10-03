@@ -13,6 +13,7 @@ import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
+import {invokeSourceRead} from './windows/source-bridge.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
 import { workspaceEntities } from './windows/entities.mjs';
@@ -71,7 +72,7 @@ const projects = new ProjectStore(dataRoot, { ...writerOptions, canSave: async (
 const sources = new SourceRepository(dataRoot, { ...writerOptions, canWrite: async ({ action }) => {
   if (accountQuiesced || !localPin.state().unlocked) return false;
   if (['read', 'export'].includes(action)) return true;
-  // No source IPC is exposed yet. Trusted recovery copies may write only while
+  // Source IPC exposes reads only. Trusted recovery copies may write only while
   // the existing renderer is quiesced; normal edits retain the native mode gate.
   return (!nativeReadonly && mode === 'normal') || Boolean(writes.selectionQuiesced);
 } });
@@ -298,7 +299,9 @@ const windowRegistry = new WindowRegistry({
 windowRegistry.bindWorkspace(window);
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
-    (scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
+    (scope.action==='read'
+      ? !pinTransition && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
+      : scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   primary:new PrimaryPersistence({
     projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context) && canWrite(context)}),
@@ -361,6 +364,17 @@ ipcMain.handle('siren:desktop', (event, method, payload) => {
   if (accountTransition && ['pickProject', 'restoreRecovery'].includes(method)) return failure('ACCOUNT_BUSY', 'Wait for the account transition before changing projects');
   return invokeDesktop({ method, payload,
     context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services, localAccess: localPin });
+});
+ipcMain.handle('siren:sources', async (event, method, payload) => {
+  const operation=invokeSourceRead({event,method,payload,registry:windowRegistry,owner:workspaceOwner,
+    referenceFor:(grant,request)=>{
+      const scope=windowRegistry.sourceScope(grant);
+      if(grant.role==='code'&&(!scope||scope.sourceId!==request.sourceId||scope.version!==undefined&&scope.version!==request.version))return null;
+      return snapshot?.schema===2?snapshot.sourceRefs?.find(ref=>ref.sourceId===request.sourceId&&ref.version===request.version):null;
+    },
+  });
+  writes.add(operation);
+  try { return await operation; } finally { writes.delete(operation); }
 });
 ipcMain.handle('siren:windows', async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');

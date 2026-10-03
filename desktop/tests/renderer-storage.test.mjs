@@ -8,6 +8,18 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildRenderer } from '../build/renderer.mjs';
 
+test('read-only legacy cache cleanup cannot mutate its mirror, issue schema-1 writes or poison a later Lock drain',async()=>{
+  const calls=[],window={sirenDesktopBootstrap:{readonly:true,snapshot:{schema:2,project:{id:'owned'},revision:2,json:'{"source":"unchanged"}'}},sirenDesktop:{saveProject:async payload=>{calls.push(payload);return {ok:false,code:'SOURCE_WORKSPACE_REQUIRED',message:'Schema 2 cannot use whole-envelope saves'};}}};
+  vm.runInNewContext(await readFile(new URL('../src/ui/storage.js',import.meta.url),'utf8'),{window});
+  const store=window.createSirenDesktopStore({workspaceKey:'workspace'}),original=store.get('workspace'),initialFlush=window.sirenDesktopFlush();
+  for(const operation of [()=>store.set('workspace','wrong'),()=>store.setWithBackup('workspace','wrong','backup','wrong'),()=>store.remove('workspace')]){
+    const receipt=await operation();assert.equal(receipt.ok,false);assert.equal(receipt.code,'READ_ONLY');
+    assert.equal(store.get('workspace'),original);assert.equal(store.get('backup'),null);
+    assert.equal(window.sirenDesktopFlush(),initialFlush);
+  }
+  assert.equal(calls.length,0);assert.notEqual((await window.sirenDesktopFlush())?.ok,false);
+});
+
 test('native adapter retains typed refusal and bounded commit receipt fields without reporting success', async () => {
   const native = { ok: false, code: 'RECOVERY_DEGRADED', message: 'Checkpoint was not acknowledged',
     revision: 2, sha256: 'a'.repeat(64), committedRevision: 2, committedSha256: 'a'.repeat(64), workspaceCommitted: true,
