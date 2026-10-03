@@ -1,15 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 test('package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps', async () => {
   const { allowedAppFile } = await import('../scripts/package.mjs');
   for (const path of ['src/main.mjs', 'src/account/oidc.mjs', 'src/account/credentials.mjs', 'src/projects/budgets.mjs', 'src/recovery/checkpoints.mjs', 'src/sources/manifest.mjs', 'src/sources/recovery.mjs', 'src/sources/repository.mjs', 'src/sources/metrics.mjs', 'src/sources/text-model.mjs', 'src/sources/migration.mjs', 'generated/app.html', 'node_modules/jose/dist/webapi/index.js', 'node_modules/jose/LICENSE.md']) assert.equal(allowedAppFile(path, new Set(['jose'])), true, path);
   for (const path of ['src/account/test-oidc.mjs', 'tests/fixtures/issuer.mjs', 'baseline/R78.html', 'Data/credentials.bin', '.env', 'node_modules/jose/dist/index.js.map', 'node_modules/electron/dist/electron.exe', 'source/secret.mjs', 'src/account/secret.mjs', 'src/../account/secret.mjs']) assert.equal(allowedAppFile(path, new Set(['jose'])), false, path);
+});
+
+test('every relative native module reachable from main is admitted by the package allowlist',async()=>{
+  const {allowedAppFile}=await import('../scripts/package.mjs');
+  const root=new URL('../',import.meta.url),seen=new Set();
+  async function visit(url){
+    const path=fileURLToPath(url).slice(fileURLToPath(root).length).replaceAll('\\','/');
+    if(seen.has(path))return;seen.add(path);
+    assert.equal(allowedAppFile(path,new Set()),true,'Required native dependency omitted: '+path);
+    const text=await readFile(url,'utf8');
+    for(const match of text.matchAll(/\b(?:from\s*|import\s*(?:\(\s*)?)['"](\.[^'"]+)['"]/g))await visit(new URL(match[1],url));
+  }
+  await visit(new URL('../src/main.mjs',import.meta.url));
+  assert.ok(seen.has('src/sources/readers.mjs'));
 });
 
 test('supplemental notices resolve only their exact runtime reference and verified bytes', async () => {

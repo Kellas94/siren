@@ -39,14 +39,28 @@ jobs:
         timeout-minutes: 12
         run: |
           New-Item -ItemType Directory -Force evidence | Out-Null
-          node --test --test-reporter=tap tests/*.test.mjs 2>&1 | Tee-Object -FilePath evidence/ci-units.log
-          exit $LASTEXITCODE
+          # Native process identity must not compete with large editor/storage
+          # worker fixtures. Preserve the product's bounded unknown/refusal path.
+          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs')
+          foreach ($identityFile in $identityFiles) {
+            if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
+          }
+          node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
+          $identityExit = $LASTEXITCODE
+          $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
+            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs') } |
+            Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
+          if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
+          node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
+          $unitsExit = $LASTEXITCODE
+          if ($identityExit -ne 0 -or $unitsExit -ne 0) { exit 1 }
+          exit 0
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -67,6 +81,7 @@ jobs:
           name: desktop-development-evidence
           path: |
             desktop/evidence/ci-units.log
+            desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
             desktop/evidence/*/failure.json
@@ -78,6 +93,10 @@ jobs:
             desktop/evidence/*/folder-copy.json
             desktop/evidence/*/*.png
             desktop/evidence/*/*.log
+            desktop/evidence/headless-import/*/result.json
+            desktop/evidence/headless-import/*/native-result.json
+            desktop/evidence/headless-import/*/prepared.json
+            desktop/evidence/headless-import/*/electron.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14

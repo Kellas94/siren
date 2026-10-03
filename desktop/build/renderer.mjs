@@ -5,6 +5,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parse } from 'parse5';
 import { Script } from 'node:vm';
 import { buildWindowEntrypoints } from './windows.mjs';
+import { importHelper, buildImportValidation } from './import-validation.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -92,28 +93,6 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const savedStatus = "        } else {\n          el.saveStateChip.dataset.state = 'good';\n          el.saveStateText.textContent = 'Saved locally';";
     if (html.split(savedStatus).length !== 2) throw new Error('Desktop read-only status marker mismatch');
     html = html.replace(savedStatus, "        } else if (readOnlyMode && window.sirenDesktop) {\n          el.saveStateChip.dataset.state = 'warn';\n          el.saveStateText.textContent = 'Read-only · local project';\n          el.saveStateChip.title = 'Local data can be read, recovered and exported. Sign in to activate editing.';\n          el.saveStateChip.classList.remove('is-action');\n          el.saveStateChip.removeAttribute('role');\n          el.saveStateChip.removeAttribute('tabindex');\n          el.saveStateChip.removeAttribute('aria-label');\n        } else {\n          el.saveStateChip.dataset.state = 'good';\n          el.saveStateText.textContent = 'Saved locally';");
-    const importHelper = `
-        window.sirenDesktopValidateImport = async (text, fileName) => {
-          const original = parseMainImportJson(text, fileName);
-          let payload = original;
-          let bag = null;
-          if (original?.kind === 'siren-desktop' && original.schema === 1) {
-            bag = original;
-            const raw = bag.storage?.[STORAGE_KEY];
-            if (typeof raw !== 'string') throw new Error('Backup has no workspace');
-            const importedState = parseMainImportJson(raw, fileName);
-            payload = {type:PROJECT_TYPE,version:importedState.version || APP_VERSION,state:importedState};
-          } else if (!original.state && (Array.isArray(original.diagrams) || original.source)) {
-            throw new Error('Import a complete .siren export, rather than an internal workspace cache');
-          }
-          if (payload.type === 'siren-project') payload = {...payload,type:PROJECT_TYPE};
-          const clean = await validatePortableProjectForImport(payload, fileName);
-          const workpapers = prepareProjectWorkpapers(clean.state.workpapers, fileName);
-          workpapers.forEach(doc => stampWorkpaperFileSignoff(doc, workpaperProjectReviewInput.get(doc)));
-          const importedState = {...clean.state,workpapers};
-          return JSON.stringify(bag ? {...bag,storage:{...bag.storage,[STORAGE_KEY]:JSON.stringify(importedState)}} : {...clean,state:importedState});
-        };
-    `;
     const startup = "document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
     if (html.split(startup).length !== 2) throw new Error('Desktop startup patch marker mismatch');
     html = html.replace(startup, () => "document.addEventListener('DOMContentLoaded', () => {" + importHelper + `
@@ -222,7 +201,8 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, 'app.html'), html, { encoding: 'utf8' });
   const windowEntrypoints = await buildWindowEntrypoints(outputDir);
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints };
+  const importValidation=expectedSha256.toLowerCase()===BASELINE_SHA256?await buildImportValidation({baselinePath,outputDir}):null;
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,...(importValidation?{importValidation}:{}) };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }

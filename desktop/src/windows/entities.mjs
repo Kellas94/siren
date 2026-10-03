@@ -38,6 +38,11 @@ function activeWorkspace(bag) {
   return bag;
 }
 
+// Parsing only. Callers must first verify the native snapshot identity/hash.
+export function workspaceMetadata(snapshot) {
+  return activeWorkspace(parse(own(snapshot,'json')));
+}
+
 /** Consumes a native snapshot already verified by ProjectStore. This is an ID
  * roster, not manifest/blob verification or renderer authorization. It never
  * traverses source text, releases, drafts, provenance or other storage keys.
@@ -47,7 +52,7 @@ export function workspaceEntities(snapshot) {
     if (!object(snapshot)) return empty();
     const schema = own(snapshot, 'schema');
     if (schema !== 1 && schema !== 2) return empty();
-    const workspace = activeWorkspace(parse(own(snapshot, 'json')));
+    const workspace = workspaceMetadata(snapshot);
     const code = new Set();
     if (schema === 2) {
       const refs = own(snapshot, 'sourceRefs');

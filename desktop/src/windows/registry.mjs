@@ -49,6 +49,7 @@ export class WindowRegistry {
   #workspace = null;
   #closeTimeoutMs;
   #closedCallers = new WeakMap();
+  #captures = new WeakMap();
 
   constructor({ createWindow, authorize, closeTimeoutMs = 10000 }) {
     if (typeof createWindow !== 'function' || typeof authorize !== 'function') throw new TypeError('Native factory and authorization required');
@@ -296,6 +297,25 @@ export class WindowRegistry {
     if (failed) throw refuse('WINDOW_DESTROY_FAILED', 'Native data window destruction incomplete');
     return this.#epoch;
   }
+
+  // Native-only queued-operation proof. Identifiers projected to renderers are
+  // insufficient: only this registry can associate a grant with real handles.
+  capture(event) {
+    const pinned=Object.freeze({sender:event?.sender,senderFrame:event?.senderFrame});
+    const grant=this.caller(pinned);
+    if(grant)this.#captures.set(grant,pinned);
+    return grant;
+  }
+
+  isCurrent(grant) {
+    const event=grant && this.#captures.get(grant);
+    if(!event)return false;
+    const current=this.caller(event);
+    return Boolean(current && ['windowId','role','projectId','epoch','webContentsId','mainFrameUrl'].every(key=>current[key]===grant[key]) && grant.entityIds.every(id=>current.entityIds.includes(id)));
+  }
+
+  // Trusted native adapters only; no preload or IPC exposes captured handles.
+  eventFor(grant) {return this.isCurrent(grant)?this.#captures.get(grant):null;}
 
   caller(event) {
     try {

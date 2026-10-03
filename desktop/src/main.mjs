@@ -16,6 +16,8 @@ import { nativeViewFactory } from './windows/factory.mjs';
 import { workspaceEntities } from './windows/entities.mjs';
 import { openOwnedSelection } from './projects/selection.mjs';
 import { parseLegacyImport } from './projects/migration.mjs';
+import { validateImportedProject } from './projects/import-validation.mjs';
+import { createImportValidator } from './projects/import-validator-window.mjs';
 import { atomicWrite } from './projects/atomic.mjs';
 import { ownedFile, validId } from './projects/paths.mjs';
 import { RecoveryStore } from './recovery/checkpoints.mjs';
@@ -232,11 +234,18 @@ const services = {
       } });
     }
     const input = await readOwnedBytes(await realpath(answer.filePaths[0]), 64 * 1024 * 1024);
-    // Existing renderer import validation and imported-file sign-off provenance run before disk creation.
+    // Validate through a hidden isolated entry, retaining frozen sign-off rules
+    // without requiring Home to load or execute the workspace application.
     if (input.length > 64 * 1024 * 1024) return failure('IMPORT_TOO_LARGE', 'Desktop import exceeds the 64 MiB foundation limit');
-    const validated = await window.webContents.executeJavaScript(`window.sirenDesktopValidateImport(${JSON.stringify(input.toString('utf8'))},${JSON.stringify(basename(answer.filePaths[0]))})`);
+    const importGeneration=bootstrap.selectionGeneration,importProject=selectedId,importMode=mode,importContents=window.webContents,importFrame=importContents.mainFrame;
+    const importCurrent=()=>!window.isDestroyed() && !importContents.isDestroyed() && window.webContents===importContents && importContents.mainFrame===importFrame && importContents.getURL()==='siren://app/app.html' && importFrame.url==='siren://app/app.html' && localPin.state().unlocked && bootstrap.selectionGeneration===importGeneration && selectedId===importProject && mode===importMode;
+    const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
+    const validated=await validateImportedProject({bytes:input,fileName:basename(answer.filePaths[0])},{isCurrent:importCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
     const next = await projects.createProject({ label: basename(answer.filePaths[0]).slice(0, 180), json: parseLegacyImport(Buffer.from(validated)) });
-    await recovery.checkpointProject({ snapshot: next, kind: 'saved' }); return selected(next);
+    if(!importCurrent())throw Object.assign(new Error('Import access changed'),{code:'ACCESS_REFUSED'});
+    await recovery.checkpointProject({ snapshot: next, kind: 'saved' });
+    if(!importCurrent())throw Object.assign(new Error('Import access changed'),{code:'ACCESS_REFUSED'});
+    return selected(next);
     });
   },
   saveProject: async request => {

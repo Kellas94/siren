@@ -51,6 +51,21 @@ function setup(overrides = {}) {
 const eventFor = window => ({ sender: window.webContents, senderFrame: window.webContents.mainFrame });
 const refused = promise => assert.rejects(promise, error => error.code === 'REQUEST_REFUSED' || error.code === 'ACCESS_REFUSED');
 
+test('native captured callers cannot be cloned and retire on frame epoch or permission changes',async()=>{
+  const {registry,windows,native}=setup();await registry.openView({role:'code',entityId:'code_a'});
+  const event=eventFor(windows[0]);assert.equal(typeof registry.capture,'function');
+  const grant=registry.capture(event);assert.equal(registry.isCurrent(grant),true);assert.equal(registry.isCurrent({...grant}),false);
+  assert.equal(registry.eventFor(grant).sender,event.sender);assert.equal(registry.eventFor({...grant}),null);
+  event.senderFrame={url:event.senderFrame.url};assert.equal(registry.isCurrent(grant),true,'Mutating the source event cannot replace its captured actual frame');
+  native.mode='readonly';native.access='read';assert.equal(registry.isCurrent(grant),false);assert.equal(registry.eventFor(grant),null);
+});
+
+test('captured same-URL frame is retired when native main frame identity changes',async()=>{
+  const {registry,windows}=setup();await registry.openView({role:'code',entityId:'code_a'});
+  const grant=registry.capture(eventFor(windows[0]));windows[0].webContents.mainFrame={url:windows[0].webContents.mainFrame.url};assert.equal(registry.isCurrent(grant),false);
+  registry.invalidateEpoch();assert.equal(registry.eventFor(grant),null);
+});
+
 test('a pinned native workspace stays locked without a data grant and explicitly rebinds a new epoch after reload', async () => {
   const { registry, native } = setup(); const owner = new NativeWindow(99, 'siren://app/app.html');
   assert.equal(typeof registry.bindWorkspace, 'function');

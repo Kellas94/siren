@@ -43,30 +43,33 @@ export class NavigationStore {
   }
   async read() {return (await this.load()).state;}
   async locations() {return (await this.read()).entries.map(entry=>entry.location);}
-  async record(input) {
+  async record(input,{isCurrent=()=>true}={}) {
     let entry;try{entry=normalizeNavigationRequest(input);}catch(cause){return refusal(cause.code ?? 'INVALID_NAVIGATION');}
+    const writable=async()=>{
+      try {return isCurrent()===true && await this.canWrite()===true && isCurrent()===true;}catch{return false;}
+    };
     return serialize(this.root,async()=>{
       try {
-        if(!await this.canWrite())return refusal('ACCESS_REFUSED');
+        if(!await writable())return refusal('ACCESS_REFUSED');
         const loaded=await this.load();if(loaded.refused)return refusal(this.diagnostic.code);
         const entries=[entry,...loaded.state.entries.filter(item=>item.projectId!==entry.projectId)];
         if(entries.length>64)return refusal('NAVIGATION_LIMIT');
         entries.sort((a,b)=>b.visitedAt.localeCompare(a.visitedAt));
         const bytes=Buffer.from(JSON.stringify(normalizeRecord({schema:1,entries})));
         if(bytes.length>NAVIGATION_BYTES)return refusal('NAVIGATION_LIMIT');
-        if(!await this.canWrite())return refusal('ACCESS_REFUSED');
+        if(!await writable())return refusal('ACCESS_REFUSED');
         const directory=await this.directory(true);
         const path=join(directory,'navigation.json');
         await atomicWrite(path,bytes,{fault:async phase=>{
           await this.fault(phase);
           if(phase==='before-rename') {
             await this.directory();
-            if(!await this.canWrite())throw error('ACCESS_REFUSED');
+            if(!await writable())throw error('ACCESS_REFUSED');
           }
         }});
         // Access can change after a durable replacement. Refuse outward success;
         // never invent a rollback or a verified receipt from the failed call.
-        if(!await this.canWrite())return refusal('ACCESS_REFUSED');
+        if(!await writable())return refusal('ACCESS_REFUSED');
         this.diagnostic=null;return {ok:true};
       } catch(cause) {return refusal(cause.code==='ACCESS_REFUSED'?'ACCESS_REFUSED':'NAVIGATION_WRITE_FAILED');}
     });

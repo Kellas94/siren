@@ -81,3 +81,5 @@ export function normalizeRecord(input) {
   });
   return {schema:1,entries};
 }
+
+export { fields as navigationFields, array as navigationArray };

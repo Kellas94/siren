@@ -122,3 +122,7 @@ export async function invokeSource({ event, method, payload: input, registry, re
     return fail(nativeCodes.has(error?.code) ? error.code : 'SOURCE_REQUEST_FAILED');
   }
 }
+
+// Native owner admission shares the same strict request/copy contract. No new
+// preload or IPC channel is installed by exporting this pure validator.
+export { normalize as normalizeSourceRequest };

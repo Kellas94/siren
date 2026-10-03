@@ -10,15 +10,15 @@ import { hashOwnedFile } from '../src/updates/download.mjs';
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
   ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
-  ...['atomic','budgets','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
+  ...['atomic','budgets','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
-  ...['manifest','metrics','migration','recovery','repository','text-model'].map(n=>`src/sources/${n}.mjs`),
+  ...['manifest','metrics','migration','readers','recovery','repository','text-model'].map(n=>`src/sources/${n}.mjs`),
   ...['readiness','registry','geometry','factory','entities','ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
   if (typeof path !== 'string' || path.split('/').some(p => !p || p === '.' || p === '..') || path.includes('\\') || /(?:\.map|\.d\.ts|\.log|\.pem|\.key)$/.test(path) || /(?:^|\/)(?:\.env[^/]*|credentials[^/]*|test-[^/]*|[^/]*\.test\.[^/]*)$/.test(path)) return false;
-  if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/build.json' || ['generated/windows/code.html','generated/windows/docs.html'].includes(path)) return true;
+  if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/build.json' || path === 'generated/import-validation.html' || ['generated/windows/code.html','generated/windows/docs.html'].includes(path)) return true;
   if (path.startsWith('src/')) return false;
   const match = path.match(/^node_modules\/((?:@[^/]+\/)?[^/]+)\/(.+)$/);
   return !!match && production.has(match[1]) && /\.(?:js|mjs|cjs|json)$|(?:^|\/)LICENSE(?:\.md|\.txt)?$/i.test(match[2]);
@@ -41,7 +41,7 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   const production = new Set(inventory.npm.map(p => p.name));
   const previewRoot = join(desktopRoot, 'dist', `development-${randomUUID()}`); const source = join(desktopRoot, 'dist', `.build-input-${randomUUID()}`); const version = '0.1.0';
   const app = join(previewRoot, 'App', 'versions', version); await mkdir(app, { recursive: true }); await mkdir(source);
-  const candidates = ['package.json','generated/app.html','generated/build.json','generated/windows/code.html','generated/windows/docs.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
+  const candidates = ['package.json','generated/app.html','generated/build.json','generated/import-validation.html','generated/windows/code.html','generated/windows/docs.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
   for (const packageName of production) candidates.push(...(await walk(join(desktopRoot, 'node_modules', packageName))).map(p => `node_modules/${packageName}/` + p));
   const included = candidates.filter(path => allowedAppFile(path, production));
   for (const path of included) { await mkdir(dirname(join(source, path)), { recursive: true }); await copyFile(join(desktopRoot, path), join(source, path)); }

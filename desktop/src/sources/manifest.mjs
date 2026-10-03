@@ -140,6 +140,12 @@ async function ancestry(projects, directory, current) {
   return selected;
 }
 
+// Native selected ancestry only; orphan revisions never prove an operation.
+export async function selectedManifestHistory(projects, projectId) {
+  const current = await projects.readProject(projectId);
+  return ancestry(projects, await projects.directory(projectId), current);
+}
+
 async function durability(snapshot, recovery) {
   if (!snapshot.checkpointRequired) return 'committed';
   if (recovery) {

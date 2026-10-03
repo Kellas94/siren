@@ -249,6 +249,34 @@ export class SourceRepository {
     } catch { /* No verified checkpoint token: source committed, recovery still degraded. */ }
     return 'recovery-degraded';
   }
+  /** Native-only proof for explicit Docs linking. A renderer receipt, an
+   * immutable draft or a blob alone never establishes a selected commit. */
+  async getCommitReceipt({ projectId, sourceId, expectedVersion, operationId, sha256 }) {
+    try {
+      id(operationId); version(expectedVersion);
+      if (typeof sha256 !== 'string' || !hashPattern.test(sha256)) throw error('INVALID_HASH');
+      await this.access('read', projectId, sourceId);
+      const loaded = await this.load(projectId, sourceId, expectedVersion);
+      let descriptor = loaded.pointer.commitHead; const seen = new Set();
+      while (descriptor) {
+        if (seen.has(descriptor.operationId)) throw error('CORRUPT_SOURCE');
+        seen.add(descriptor.operationId);
+        const record = await this.commitRecord(loaded.directory, descriptor);
+        if (record.sourceId !== sourceId) throw error('CORRUPT_SOURCE');
+        if (record.operationId === operationId) {
+          if (record.version !== expectedVersion || record.sha256 !== sha256 || loaded.ref.sha256 !== sha256) throw error('COMMIT_RECEIPT_MISMATCH');
+          const bytes = await readOwnedBytes(join(await childDirectory(loaded.directory, 'blobs'), `${sha256}.bin`), this.limits.sourceBytes);
+          if (digest(bytes) !== sha256 || !bytes.equals(loaded.bytes)) throw error('CORRUPT_SOURCE');
+          const durability = await this.commitDurability(loaded.directory, record);
+          await this.access('read', projectId, sourceId);
+          return { ok: true, operationId, sourceId, version: expectedVersion, sha256, durability };
+        }
+        descriptor = record.parent;
+      }
+      await this.access('read', projectId, sourceId);
+      return reject('UNKNOWN_COMMIT');
+    } catch (failure) { return reject(failure.code ?? 'SOURCE_PROOF_FAILED'); }
+  }
   async commitSource({ projectId, sourceId, expectedVersion, operationId }) {
     try {
       await this.access('commit', projectId, sourceId); id(operationId); version(expectedVersion);
