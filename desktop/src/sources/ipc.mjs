@@ -81,8 +81,15 @@ function projectReceipt(method, value, payload) {
  * access is trusted and synchronous. Factory creates a fresh owned repository per
  * invocation and must use canWrite at its native publication boundaries.
  */
-export async function invokeSource({ event, method, payload: input, registry, repositoryFactory, access }) {
-  let grant; let live;
+export async function invokeSource({ event, method, payload: input, registry, repositoryFactory, access, onNativeFailure }) {
+  let grant; let live; let dispatched = false;
+  // Trusted main-only diagnostic: finite method/code, never messages, paths,
+  // source bytes, request IDs, grants or renderer-provided extra properties.
+  const diagnose = value => {
+    if (!dispatched || typeof onNativeFailure !== 'function') return;
+    const code = typeof value?.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(value.code) ? value.code : 'SOURCE_WRITE_FAILED';
+    try { onNativeFailure(Object.freeze({ method, code })); } catch { /* Logging cannot change source persistence. */ }
+  };
   try {
     const payload = normalize(method, input);
     if (!payload) return fail('REQUEST_REFUSED');
@@ -107,10 +114,12 @@ export async function invokeSource({ event, method, payload: input, registry, re
     const repository = repositoryFactory(Object.freeze({ grant, canWrite }));
     if (!repository || typeof repository[method] !== 'function' || !live()) return fail('ACCESS_REFUSED');
     const args = method === 'applyEdit' ? { projectId: grant.projectId, edit: payload } : { projectId: grant.projectId, ...payload };
+    dispatched = true;
     const result = await repository[method](args);
     // A valid read/commit may have completed just before Lock/navigation revoked
     // its sender. Disclose neither bytes nor the successful native receipt then.
     if (!live()) return fail('ACCESS_REFUSED');
+    if (result?.ok === false) diagnose(result);
     if (method === 'getMetrics') return projectMetrics(result, payload);
     if (method === 'readRange') {
       if (typeof result !== 'string' || result.length !== payload.end - payload.start || !result.isWellFormed()) return fail('SOURCE_RESULT_REFUSED');
@@ -119,6 +128,7 @@ export async function invokeSource({ event, method, payload: input, registry, re
     return projectReceipt(method, result, payload);
   } catch (error) {
     if (grant && live && !live()) return fail('ACCESS_REFUSED');
+    diagnose(error);
     return fail(nativeCodes.has(error?.code) ? error.code : 'SOURCE_REQUEST_FAILED');
   }
 }

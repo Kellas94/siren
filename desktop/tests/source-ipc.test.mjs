@@ -233,3 +233,27 @@ test('checkpoint degradation remains explicit blob durability and unsafe reposit
     { repositoryFactory: () => ({ readRange: async () => 'private-excess-text' }) });
   refused(oversized, 'SOURCE_RESULT_REFUSED');
 });
+
+test('main-only diagnostics retain native failure code without exposing private errors or logging rejected renderer authority', async t => {
+  const f = await fixture(t); const selected = join(f.root, 'Projects', f.projectId, 'sources', f.ref.sourceId, 'current.json');
+  const before = await readFile(selected); const diagnostics = [];
+  const onNativeFailure = value => diagnostics.push(value);
+  f.configure({ fault: async stage => { if (stage === 'source-commit-verified') throw Object.assign(Error('private-path private-code private-pin'), { code: 'EIO' }); } });
+  const payload = { sourceId: f.ref.sourceId, expectedVersion: 1, operationId: 'diagnostic-commit' };
+  refused(await f.call('commitSource', payload, { onNativeFailure }), 'SOURCE_REQUEST_FAILED');
+  assert.deepEqual(diagnostics, [{ method: 'commitSource', code: 'EIO' }]);
+  assert.ok(Object.isFrozen(diagnostics[0])); assert.equal(JSON.stringify(diagnostics).includes('private'), false);
+  assert.deepEqual(await readFile(selected), before);
+  assert.equal((await f.seed.getMetrics({ projectId: f.projectId, sourceId: f.ref.sourceId })).version, 1);
+  const getter = Object.defineProperty({}, 'sourceId', { enumerable: true, get() { throw Error('renderer getter evaluated'); } });
+  refused(await f.call('getMetrics', getter, { onNativeFailure }), 'REQUEST_REFUSED');
+  refused(await f.call('commitSource', payload, { onNativeFailure, event: { sender: {}, senderFrame: {} } }));
+  assert.equal(diagnostics.length, 1);
+  // A bad trusted logging adapter cannot alter the public failure or pointer.
+  refused(await f.call('commitSource', payload, { onNativeFailure() { throw Error('logger'); } }), 'SOURCE_REQUEST_FAILED');
+  assert.deepEqual(await readFile(selected), before);
+  const invalidCode = await f.call('getMetrics', { sourceId: f.ref.sourceId }, { onNativeFailure,
+    repositoryFactory: () => ({ getMetrics() { throw Object.assign(Error('private'), { code: 'private-path' }); } }) });
+  refused(invalidCode, 'SOURCE_REQUEST_FAILED');
+  assert.deepEqual(diagnostics.at(-1), { method: 'getMetrics', code: 'SOURCE_WRITE_FAILED' });
+});

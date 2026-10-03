@@ -19,6 +19,18 @@ The real target-dialog screenshot was inspected: theme-compatible modal, source 
 
 Frozen `evidence/code-docs-suite-result.json` completed **692/692** tests (2 native identity + 690 unit/protocol), exit 0, no skips/cancellations/todos, `changedInputs:[]`. Log SHA256 `56ce65e465128e6434b45466d80f20c524b437ce2176fce1342c6c80e04ae29d`. No captured runtime/build/test/package/workflow changes occurred during the run. Committed package and hosted results for this batch remain pending.
 
+## Subsequent committed-package and private sync
+
+Local source `70bd68bd3299edac0b99df7788a031701a3c5d78` built `dist/development-cb6ec9a3-a1de-48b1-b033-cee86b5ba471`. Archive SHA256 `c17f9bf287b912eff421c581d18d8f2423eb12352592ca37c4ff009116b27921`, 31,339,734 bytes; runtime unchanged `49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa`. Existing packaged probe `evidence/packaged-2026-10-03T22-28-16.433Z` completed. Actual packaged 300k-line Code/Docs probe `evidence/source-link/2026-10-03T22-28-29.310Z` completed four groups with inputs unchanged, executing the receipt-matched ASAR from a separate Unicode folder copy. It qualified the real edit/cancellation/chosen-row link/Docs refresh/stale conflict/native Close/reopen/open-dialog Lock flow; no CLI test-root bypass was used for the packaged app.
+
+Private remote `013e45f84e43a634a17d17a54b0d878f16c36d8e`, tree `3183b0672befbb180ed3aecce80eba3f30a23ed7`, has 19 exact changed blobs and 1,101 unrelated blobs preserved (1,120 total). Actual commit parent/tree, nonforced ref, raw PR head and unchanged main were checked. PR2 remains draft/open/unmerged; hosted results for this head remain unobserved here. Later working-view synchronization is separate development.
+
 ## Open scope
+
+### Hosted qualification observed after the preceding package
+
+Desktop CI48 (`37158751195`, head `013e45f84e43a634a17d17a54b0d878f16c36d8e`) **failed** at Development package identity; Launcher39 (`37158751241`, same head) succeeded. The earlier statement that hosted results were unobserved describes the time of the preceding sync, not current qualification.
+
+The original authenticated artifact `11287466200` is retained in `evidence/ci48/artifact.zip`, SHA256 `db9c9d2d5dc413812101f406a4f72b661fc3d06d9955efc119362fb51d9b96fd`. Original packaged source-link `2026-10-03T22-48-31.947Z` completed its three edit/link/conflict groups, then failed closing the working Code view with native `VIEW_FLUSH_FAILED` / renderer `SOURCE_REQUEST_FAILED`. Original packaged recovery `2026-10-03T22-48-01.371Z` completed. The raw underlying source failure was not recorded by that version. Its cause remains unconfirmed; local success does not erase it. The next batch adds bounded main-only method/code diagnostics and preserves visible local text after a refused preparation.
 
 This updates an existing linked Docs row; creating Docs/rows and linking previously unlinked sources remain separate work. General native Docs editing, synchronized Code view UI, A/B analysis/diff workers, native Diagram/Presenter/Terminal and physical multi-monitor/DPI qualification remain open. No installed user application was replaced, main merged or public release published. The one-time Git graph remains frozen.

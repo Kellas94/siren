@@ -10,10 +10,11 @@ const reference=value=>value&&typeof value.sourceId==='string'&&Number.isSafeInt
  * the shared owner. Only that owner's verified subscription advances drafts.
  * No renderer-supplied receipt or projected window ID can create an entry. */
 export class NativeWorkingSources {
- #registry;#owner;#enabled;#snapshot;#views=new Map();#disposed=false;
- constructor({registry,owner,enabled,snapshotFor}){
+ #registry;#owner;#enabled;#snapshot;#notify;#views=new Map();#disposed=false;
+ constructor({registry,owner,enabled,snapshotFor,onReferenceChanged}){
   if(!(registry instanceof WindowRegistry)||!(owner instanceof WorkspaceCoordinator)||typeof enabled!=='function'||typeof snapshotFor!=='function')throw TypeError('NATIVE_WORKING_SOURCE_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#owner=owner;this.#enabled=enabled;this.#snapshot=snapshotFor;
+  if(onReferenceChanged!==undefined&&typeof onReferenceChanged!=='function')throw TypeError('NATIVE_WORKING_SOURCE_NOTIFY_REQUIRED');
+  this.#registry=registry;this.#owner=owner;this.#enabled=enabled;this.#snapshot=snapshotFor;this.#notify=onReferenceChanged;
  }
  #context(grant){
   try{
@@ -41,11 +42,12 @@ export class NativeWorkingSources {
   const previous=this.#views.get(grant.windowId);previous?.unsubscribe();
   const entry={grant,event:context.event,ref,invalid:false,unsubscribe:()=>{}};
   try{
-   entry.unsubscribe=this.#owner.subscribe(grant,ref.sourceId,receipt=>{
+   entry.unsubscribe=this.#owner.subscribe(grant,ref.sourceId,(receipt,originWindowId)=>{
     if(this.#disposed||this.#views.get(grant.windowId)!==entry||!this.#context(grant))return;
     const next=reference(receipt);
     if(!next||next.sourceId!==entry.ref.sourceId||next.version<entry.ref.version||next.version===entry.ref.version&&next.sha256!==entry.ref.sha256){entry.invalid=true;return;}
-    entry.ref=next;
+    const changed=next.version!==entry.ref.version;entry.ref=next;
+    if(changed&&originWindowId!==grant.windowId&&this.#owner.canRead(grant,next.sourceId))try{this.#notify?.(grant,next);}catch{/* Metadata delivery cannot invalidate the actual durable edit. */}
    });
    this.#views.set(grant.windowId,entry);
    return Object.freeze({ok:true,sourceRef:ref});

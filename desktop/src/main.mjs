@@ -351,6 +351,7 @@ const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   readonlyViews,
+  onNativeFailure:info=>console.warn('SIREN_SOURCE_NATIVE_FAILURE',JSON.stringify(info)),
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
     (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
       ? (!pinTransition||workspaceBarrier&&workingSources?.isWorking(grant)) && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
@@ -633,7 +634,9 @@ ipcMain.handle('siren:source-editors',async(event,method,payload)=>{
     const source=windowRegistry.sourceScope(grant);opened=await windowRegistry.openView({role:'code',entityId:source.sourceId});
     if(!canOpenWorking(grant))throw Error('Native source scope retired');
     const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
-    workingSources??=new NativeWorkingSources({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot});
+    workingSources??=new NativeWorkingSources({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,
+      onReferenceChanged:(own,ref)=>{if(workingSources?.isWorking(own)&&workspaceOwner.canRead(own,ref.sourceId))windowRegistry.eventFor(own)?.sender.send('siren:working-source-changed',ref);},
+    });
     const admitted=await workingSources.admit(fresh);
     if(!admitted.ok||!canOpenWorking(grant)||!workingSources.isWorking(fresh))throw Error('Native working source refused');
     view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};

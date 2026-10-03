@@ -14,15 +14,15 @@ export class WorkspaceCoordinator {
   #registry;#sources;#docs;#domains;#primary;#readonly;#workspaceBytes=0;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
  #flushes=new Map();#pauseGeneration=0;#pauseReason=null;
-  #activityGeneration=0;#quiescence=new WeakMap();
-  constructor({sources,docs,domains,primary,readonlyViews,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
+  #activityGeneration=0;#quiescence=new WeakMap();#onNativeFailure;
+  constructor({sources,docs,domains,primary,readonlyViews,registry,access,onNativeFailure,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
     if(docs!==undefined && typeof docs.commitCodeToDocs!=='function')throw TypeError('Native Docs adapter required');
     if(domains!==undefined && !['read','apply','flush'].every(key=>typeof domains?.[key]==='function'))throw TypeError('Native domain adapter required');
     if(primary!==undefined && typeof primary?.save!=='function')throw TypeError('Native primary adapter required');
     if(readonlyViews!==undefined&&!['isReadonly','seal','verify'].every(method=>typeof readonlyViews?.[method]==='function'))throw TypeError('Native readonly proof adapter required');
-    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#readonly=readonlyViews;this.#access=access;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
+    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#readonly=readonlyViews;this.#access=access;this.#onNativeFailure=onNativeFailure;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
   }
   #current(grant,sourceId) {
     try {return this.#registry.isCurrent(grant) && ['workspace','code'].includes(grant.role) && grant.entityIds.includes(sourceId);}
@@ -140,11 +140,11 @@ export class WorkspaceCoordinator {
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
       const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
-        access:(_caller,scope)=>current() && this.#access(grant,scope)===true}):
+        access:(_caller,scope)=>current() && this.#access(grant,scope)===true,onNativeFailure:this.#onNativeFailure}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');
-      if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt);
+      if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt,'source',grant.windowId);
       if(domainOperation && receipt.ok===true && !method.startsWith('read'))this.#publish(grant.projectId,receipt.entityId,receipt,kind);
       if(kind==='docs' && !domainOperation && receipt.ok===true)this.#publish(grant.projectId,payload.documentId,receipt,'docs');
       return current()?receipt:fail('ACCESS_REFUSED');
@@ -279,11 +279,11 @@ export class WorkspaceCoordinator {
     const subscription={grant,entityId,callback,domain};this.#subscriptions.add(subscription);
     return ()=>{this.#subscriptions.delete(subscription);};
   }
-  #publish(projectId,sourceId,receipt,domain='source') {
+  #publish(projectId,sourceId,receipt,domain='source',originWindowId) {
     for(const subscription of this.#subscriptions) {
       if(!this.#subscriptionCurrent(subscription.grant,subscription.entityId,subscription.domain)) {this.#subscriptions.delete(subscription);continue;}
       if(subscription.domain!==domain || subscription.grant.projectId!==projectId || subscription.entityId!==sourceId)continue;
-      try {if(this.#access(subscription.grant,domain==='source'?{action:'read',sourceId}:{action:'read-domain',domain,entityId:sourceId})===true)subscription.callback(receipt);}catch {/* One disposed native transport cannot fail another view's durable edit. */}
+      try {if(this.#access(subscription.grant,domain==='source'?{action:'read',sourceId}:{action:'read-domain',domain,entityId:sourceId})===true)subscription.callback(receipt,originWindowId);}catch {/* One disposed native transport cannot fail another view's durable edit. */}
     }
   }
 }

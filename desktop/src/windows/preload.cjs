@@ -6,7 +6,23 @@ contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(
  ...['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]),
  ...['applyEdit','commitSource'].map(method=>[method,payload=>ipcRenderer.invoke('siren:source-mutations',method,payload,sourceFlushNonce??undefined)])
 ])));
-contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({openWorkingCopy:()=>ipcRenderer.invoke('siren:source-editors','openWorkingCopy',{})}));
+contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({
+ openWorkingCopy:()=>ipcRenderer.invoke('siren:source-editors','openWorkingCopy',{}),
+ onReferenceChanged(callback){
+  if(typeof callback!=='function')throw TypeError('Expected callback');
+  const listener=(_event,input)=>{
+   try{
+    if(!input||![Object.prototype,null].includes(Object.getPrototypeOf(input)))return;
+    const fields=Object.getOwnPropertyDescriptors(input),keys=Reflect.ownKeys(fields);
+    if(keys.length!==3||keys.some(key=>typeof key!=='string'||!['sourceId','version','sha256'].includes(key)||!('value' in fields[key])))return;
+    const sourceId=fields.sourceId.value,version=fields.version.value,sha256=fields.sha256.value;
+    if(typeof sourceId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(sourceId)||!Number.isSafeInteger(version)||version<1||typeof sha256!=='string'||!/^[a-f0-9]{64}$/.test(sha256))return;
+    Promise.resolve(callback(Object.freeze({sourceId,version,sha256}))).catch(()=>{});
+   }catch{/* An invalid native message or failed observer is never a save receipt. */}
+  };
+  ipcRenderer.on('siren:working-source-changed',listener);return()=>ipcRenderer.removeListener('siren:working-source-changed',listener);
+ },
+}));
 contextBridge.exposeInMainWorld('sirenCodeDocs',Object.freeze(Object.fromEntries(['listTargets','commitCodeToDocs'].map(method=>[method,payload=>ipcRenderer.invoke('siren:code-docs',method,payload)]))));
 const methods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
 const bridge = Object.fromEntries(methods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]));

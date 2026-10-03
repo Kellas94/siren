@@ -112,7 +112,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   async function flush() { const receipt = await adapter.flush(); refresh(); return receipt; }
   const lifecycle = createCodeViewLifecycle({editor: adapter, client});
   return Object.freeze({ open, flush, pauseView: adapter.pauseView, flushView: lifecycle.flushView, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
-    getState: adapter.getState,
+    getState: adapter.getState,subscribe:adapter.subscribe,
     focus: () => view?.focus(),
     select(from, to = from) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); view.focus(); } },
     setTheme(next) {
