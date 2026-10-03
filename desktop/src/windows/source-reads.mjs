@@ -21,10 +21,12 @@ export function selectedSourceReference(snapshot,registry,grant,request){
 /** Immutable native read leases only; no editor write admission. All callers
  * retain genuine frame/owner/selected-reference checks during actual I/O. */
 export class NativeSourceReads {
- #registry;#owner;#referenceFor;#service;#disposed=false;
- constructor({registry,owner,referenceFor,repositoryFactory}){
+ #registry;#owner;#referenceFor;#service;#disposed=false;#readonlyFor;#editingState;
+ constructor({registry,owner,referenceFor,repositoryFactory,readonlyFor,editingState}){
   if(!['capture','isCurrent','sourceScope'].every(key=>typeof registry?.[key]==='function')||typeof owner?.canRead!=='function'||typeof referenceFor!=='function'||typeof repositoryFactory!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
   this.#registry=registry;this.#owner=owner;this.#referenceFor=referenceFor;
+  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
+  this.#readonlyFor=readonlyFor;this.#editingState=editingState;
   this.#service=new SourceReadService({registry,repositoryFactory,access:(_grant,scope,event)=>Boolean(this.#context(event,scope))});
  }
  #context(event,request){
@@ -41,7 +43,7 @@ export class NativeSourceReads {
   try{
    if(method==='getReference'){
     if(payload!=null&&(![Object.prototype,null].includes(Object.getPrototypeOf(payload))||Reflect.ownKeys(payload).length))return fail('REQUEST_REFUSED');
-    const context=this.#context(event);return context?Object.freeze({ok:true,readonly:true,sourceRef:context.reference}):fail('ACCESS_REFUSED');
+    const context=this.#context(event);return context?Object.freeze({ok:true,readonly:this.#readonlyFor?this.#readonlyFor(context.grant)!==false:true,sourceRef:context.reference,...(this.#editingState?{canEdit:this.#editingState(context.grant)===true}:{})}):fail('ACCESS_REFUSED');
    }
    const request=normalizeSourceReadRequest(method,payload);if(!request)return fail('REQUEST_REFUSED');
    const context=this.#context(event,request);

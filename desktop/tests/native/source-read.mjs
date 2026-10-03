@@ -114,9 +114,12 @@ try{
  assert.equal(metrics.ok,true);assert.equal(metrics.sha256,a.sha256);
  const range=await pages[0].evaluate(`window.sirenSource.readRange(${JSON.stringify({sourceId:a.sourceId,version:1,start:0,end:prefix.length})})`);assert.equal(range.text,prefix);
  assert.equal(await pages[0].evaluate('typeof window.sirenDesktopBootstrap'), 'undefined');
- assert.equal(await pages[0].evaluate('typeof window.sirenSource.applyEdit'), 'undefined');
- assert.equal(await pages[0].evaluate('typeof window.sirenSource.commitSource'), 'undefined');
- result.cases.push({name:'actual scoped Code reads exact selected CRLF and Unicode version with no project snapshot or writable bridge',ok:true});
+ assert.equal(await pages[0].evaluate('typeof window.sirenSourceRead.applyEdit'), 'undefined');
+ assert.equal(await pages[0].evaluate('typeof window.sirenSourceRead.commitSource'), 'undefined');
+ const refusedEdit={sourceId:a.sourceId,expectedVersion:1,operationId:'readonly-native-edit',start:0,end:0,insertedText:'MUST_NOT_BE_WRITTEN'};
+ assert.equal((await pages[0].evaluate(`window.sirenSource.applyEdit(${JSON.stringify(refusedEdit)})`)).code,'ACCESS_REFUSED');
+ assert.equal((await pages[0].evaluate(`window.sirenSource.commitSource(${JSON.stringify({sourceId:a.sourceId,expectedVersion:1,operationId:'readonly-native-commit'})})`)).code,'ACCESS_REFUSED');
+ result.cases.push({name:'actual scoped Code reads exact selected CRLF and Unicode version without project snapshot and refuses native mutation/commit despite the finite satellite API',ok:true});
  for(const [page,payload,code] of [[pages[0],{sourceId:b.sourceId,version:1},'ACCESS_REFUSED'],[pages[0],{sourceId:a.sourceId,version:2},'ACCESS_REFUSED'],[pages[0],{sourceId:a.sourceId},'REQUEST_REFUSED'],[pages[2],{sourceId:a.sourceId,version:1},'ACCESS_REFUSED']]){
   assert.equal((await page.evaluate(`window.sirenSource.getMetrics(${JSON.stringify(payload)})`)).code,code);
  }

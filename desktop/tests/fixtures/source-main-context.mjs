@@ -7,7 +7,8 @@ import {PrimaryPersistence} from '../../src/windows/primary.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
-import {invokeSourceRead} from '../../src/windows/source-bridge.mjs';
+import {invokeSourceRead,invokeSourceMutation} from '../../src/windows/source-bridge.mjs';
+import {NativeWorkingSources} from '../../src/windows/working-sources.mjs';
 import {NativeSourceReads,selectedSourceReference} from '../../src/windows/source-reads.mjs';
 import {NativeDocsReads} from '../../src/windows/docs-reads.mjs';
 import {NativeWindowCatalog} from '../../src/windows/catalog.mjs';
@@ -23,11 +24,11 @@ export function mainSlice(from,to){const start=main.indexOf(from),stop=main.inde
 export async function nativeSourceContext(){
  const f=await sourceReadFixture(),handlers=new Map();
  class IPCRealmCoordinator extends WorkspaceCoordinator{invoke(grant,intent,...rest){return super.invoke(grant,structuredClone(intent),...rest);}}
- const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,NativeSourceReads,selectedSourceReference,NativeDocsReads,NativeWindowCatalog,DomainRepository,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,workspaceEntities,workspaceMetadata,
+ const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,invokeSourceMutation,NativeWorkingSources,NativeSourceReads,selectedSourceReference,NativeDocsReads,NativeWindowCatalog,DomainRepository,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,workspaceEntities,workspaceMetadata,
   windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
   snapshot:f.selected,selectedId:f.selected.project.id,mode:'readonly',nativeReadonly:true,pinTransition:false,accountQuiesced:false,nativeShellFailure:false,writes:new Set(),bootstrap:{snapshot:f.selected},
   failure,console,ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
  });
- vm.runInContext(mainSlice('const readonlyViews=new NativeReadonlyViewSeals','const retireNativeViews')+';globalThis.owner=workspaceOwner;',context);
+ vm.runInContext(mainSlice('let workingSources=null','const retireNativeViews')+';globalThis.owner=workspaceOwner;',context);
  return {...f,context,handlers};
 }

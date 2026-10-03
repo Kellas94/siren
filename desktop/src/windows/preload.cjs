@@ -1,7 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
-contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]))));
+let sourceFlushNonce=null;
+contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries([
+ ...['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]),
+ ...['applyEdit','commitSource'].map(method=>[method,payload=>ipcRenderer.invoke('siren:source-mutations',method,payload,sourceFlushNonce??undefined)])
+])));
+contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({openWorkingCopy:()=>ipcRenderer.invoke('siren:source-editors','openWorkingCopy',{})}));
 const methods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
 const bridge = Object.fromEntries(methods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]));
 bridge.onReady = callback => {
@@ -26,9 +31,9 @@ contextBridge.exposeInMainWorld('sirenWindow', Object.freeze(bridge));
    subscribed=true;
    const listener=async(_event,ticket)=>{
     if(active||!ticket||Object.keys(ticket).sort().join(',')!=='nonce,requestId'||!uuid(ticket.requestId)||!uuid(ticket.nonce))return;
-    const own=Object.freeze({requestId:ticket.requestId,nonce:ticket.nonce});active=own;
+    const own=Object.freeze({requestId:ticket.requestId,nonce:ticket.nonce});active=own;sourceFlushNonce=own.nonce;
     let ok=false,code;try{const result=await callback();ok=result?.ok===true;if(!ok&&typeof result?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(result.code))code=result.code;}catch{/* A failed renderer never supplies a native seal. */}
-    finally{if(active===own)active=null;}
+    finally{if(active===own){active=null;sourceFlushNonce=null;}}
     return ipcRenderer.invoke('siren:view-ack',{requestId:own.requestId,ok,...(code?{code}:{})});
    };
    ipcRenderer.on('siren:view-prepare',listener);

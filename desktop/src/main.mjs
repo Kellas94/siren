@@ -13,7 +13,8 @@ import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
-import {invokeSourceRead} from './windows/source-bridge.mjs';
+import {invokeSourceRead,invokeSourceMutation} from './windows/source-bridge.mjs';
+import {NativeWorkingSources} from './windows/working-sources.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
@@ -298,6 +299,7 @@ const window = new BrowserWindow({ width: 1440, height: 960, minWidth: 960, minH
   preload: resolve(here, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
 } });
 const nativeShells = new Map(); let nativeShellFailure = false;
+const closingWorkingViews=new WeakSet();
 const windowRegistry = new WindowRegistry({
   authorize: request => {
     if (!localPin.state().unlocked || !selectedId || !snapshot || accountQuiesced || writes.selectionQuiesced || nativeShellFailure) return null;
@@ -314,22 +316,40 @@ const windowRegistry = new WindowRegistry({
   }, preload: resolve(here, 'windows/preload.cjs'), onCreated: (view, record) => {
     nativeShells.set(record.windowId, view);
     view.on('closed', () => nativeShells.delete(record.windowId));
+    view.on('close',event=>{
+      const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});
+      if(closingWorkingViews.has(view)||!workingSources?.isWorking(grant))return;
+      event.preventDefault();
+      if(writes.viewClosing||workspaceBarrier||writes.selectionTransition||pinTransition||accountTransition)return;
+      writes.viewClosing=true;
+      void (async()=>{
+        const prepared=await prepareNativeWorkspace('native-close-view');
+        if(!prepared.barrier.release(prepared.proof))throw Error('Native close release refused');
+        workspaceBarrier=null;closingWorkingViews.add(view);view.close();
+        for(const current of [window,...nativeShells.values()])if(!current.isDestroyed())current.webContents.send('siren:view-resume');
+      })().catch(()=>rollbackNativePreparation()).finally(()=>{writes.viewClosing=false;});
+    });
   } }),
 });
 windowRegistry.bindWorkspace(window);
 const homeAuthority=new HomeAuthority({workspace:window,state:()=>({unlocked:localPin.state().unlocked,projectId:selectedId,mode,generation:bootstrap.selectionGeneration||0})});
 const homeTransitions=new HomeTransitionReceipts({authority:homeAuthority,registry:windowRegistry,projects});
+let workingSources=null;
+const workingEnabled=grant=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure&&snapshot?.schema===2&&grant?.projectId===selectedId;
+const canOpenWorking=grant=>Boolean(workingEnabled(grant)&&grant.role==='code'&&windowRegistry.isCurrent(grant)&&snapshot.sourceRefs.some(ref=>ref.sourceId===windowRegistry.sourceScope(grant)?.sourceId));
+const sourceReferenceFor=(grant,request)=>workingSources?.isWorking(grant)?workingSources.referenceFor(grant,request):selectedSourceReference(snapshot,windowRegistry,grant,request);
 const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
-  isReadonly:grant=>['code','docs'].includes(grant.role)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
+  isReadonly:grant=>['code','docs'].includes(grant.role)&&!workingSources?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   readonlyViews,
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
     (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
-      ? !pinTransition && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
+      ? (!pinTransition||workspaceBarrier&&workingSources?.isWorking(grant)) && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
       : scope.action==='read-domain'
         ? !pinTransition && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
+        : ['edit','commit'].includes(scope.action)?workingSources?.isWorking(grant)===true
         : ['edit-domain','flush-domain','docs-link'].includes(scope.action)?false:scope.action==='readonly'?bootstrap.readonly===true:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}),
@@ -384,6 +404,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
 });
 const retireNativeViews = () => {
   sourceReads?.dispose();sourceReads=null;
+  workingSources?.dispose();workingSources=null;
   let failed = false;
   try { windowRegistry.invalidateEpoch({ preserveWorkspace: true }); } catch { failed = true; }
   // Includes hidden pending factories, which have no registry grant yet.
@@ -560,32 +581,57 @@ ipcMain.on('siren:ready', async event => {
   }
 });
 ipcMain.handle('siren:desktop', (event, method, payload) => {
-  if (writes.selectionTransition && ['pickProject', 'restoreRecovery', 'setupPin', 'unlockPin', 'changePin', 'lockPin', 'beginLogin', 'logout'].includes(method)) return failure('PROJECT_BUSY', 'Wait for the project transition before changing access or selection');
+  if ((writes.selectionTransition||writes.viewClosing) && ['pickProject', 'restoreRecovery', 'setupPin', 'unlockPin', 'changePin', 'lockPin', 'beginLogin', 'logout'].includes(method)) return failure('PROJECT_BUSY', 'Wait for the workspace transition before changing access or selection');
   if (accountTransition && ['pickProject', 'restoreRecovery'].includes(method)) return failure('ACCOUNT_BUSY', 'Wait for the account transition before changing projects');
   return invokeDesktop({ method, payload,
     context: { senderUrl: event.senderFrame?.url, isMainFrame: event.sender === window.webContents && event.senderFrame === event.sender.mainFrame }, services, localAccess: localPin });
 });
 ipcMain.handle('siren:sources', async (event, method, payload) => {
   const operation=invokeSourceRead({event,method,payload,registry:windowRegistry,owner:workspaceOwner,
-    referenceFor:(grant,request)=>selectedSourceReference(snapshot,windowRegistry,grant,request),
+    referenceFor:sourceReferenceFor,
   });
   writes.add(operation);
   try { return await operation; } finally { writes.delete(operation); }
 });
 ipcMain.handle('siren:source-readers', async (event, method, payload) => {
   sourceReads??=new NativeSourceReads({registry:windowRegistry,owner:workspaceOwner,
-    referenceFor:(grant,request)=>selectedSourceReference(snapshot,windowRegistry,grant,request),
+    referenceFor:sourceReferenceFor,readonlyFor:grant=>!workingSources?.isWorking(grant),editingState:canOpenWorking,
     repositoryFactory:({canWrite,readers})=>new SourceRepository(dataRoot,{...writerOptions,canWrite,readers}),
   });
   const operation=sourceReads.invoke({event,method,payload});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:source-mutations',async(event,method,payload,flushNonce)=>{
+  const operation=invokeSourceMutation({event,method,payload,flushNonce,registry:windowRegistry,owner:workspaceOwner,canEdit:grant=>workingSources?.isWorking(grant)===true});
+  writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:source-editors',async(event,method,payload)=>{
+  if(method!=='openWorkingCopy')return {ok:false,code:'REQUEST_REFUSED'};
+  try{navigationFields(payload??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
+  const grant=windowRegistry.capture(event);if(!canOpenWorking(grant)||pinTransition||writes.selectionTransition||writes.viewClosing)return {ok:false,code:'ACCESS_REFUSED'};
+  const operation=(async()=>{
+   let opened;
+   try{
+    const source=windowRegistry.sourceScope(grant);opened=await windowRegistry.openView({role:'code',entityId:source.sourceId});
+    if(!canOpenWorking(grant))throw Error('Native source scope retired');
+    const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
+    workingSources??=new NativeWorkingSources({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot});
+    const admitted=await workingSources.admit(fresh);
+    if(!admitted.ok||!canOpenWorking(grant)||!workingSources.isWorking(fresh))throw Error('Native working source refused');
+    view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
+   }catch{
+    if(opened&&!windowRegistry.discardView(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}
+    return {ok:false,code:'ACCESS_REFUSED'};
+   }
+  })();
+  writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:docs-read', async (event, method, payload) => {
   const operation=docsReads.invoke({event,method,payload});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
 });
 const invokeNativeWindow=async (event, method, payload) => {
-  if (pinTransition || writes.selectionTransition || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
+  if (pinTransition || writes.selectionTransition || writes.viewClosing || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
   if(method==='getCatalog'){
     const operation=windowCatalog.invoke({event,payload});writes.add(operation);
     try{return await operation;}finally{writes.delete(operation);}
@@ -631,7 +677,7 @@ let closing = false; let closeRequested = false;
 window.on('close', event => {
   if (closing) return;
   event.preventDefault();
-  if(writes.selectionTransition||accountTransition||pinTransition){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
+  if(writes.selectionTransition||writes.viewClosing||accountTransition||pinTransition){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
   if (closeRequested) return;
   closeRequested = true;
   (async () => {

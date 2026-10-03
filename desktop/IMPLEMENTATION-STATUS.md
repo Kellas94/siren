@@ -1,3 +1,8 @@
+# 3 October 2026 — native Code working copies qualified locally
+
+Native Code now opens an explicit editable working copy separately from immutable selected versions. Source Save, native Close/reopen and all-view Lock passed actual 100k/300k-line probes with exact source bytes and unchanged Docs/project. Frozen 685/685 tests passed, inputs unchanged; a later native readonly-fixture update was qualified by actual write refusals, source-owner4 and Home11 regressions. Evidence: reviews/2026-10-03-native-code-edit-root-evidence.md, implementer only. Explicit Docs links, working-view synchronization, writable Docs/Diagram/Present and analysis workers remain open; development continues. Hosted CI46 and Launcher37 succeeded on the preceding Home remote head, not this later batch. Static Git snapshot remains frozen.
+
+--- Earlier status retained below ---
 # 3 October 2026 — Home continuation and commands qualified locally
 
 Cross-project Continue now opens exact selected Code/Docs entities after genuine durable selection. Home Settings/Updates/Guide, native finite shortcuts and 64-row filtered libraries are implemented. Frozen 673/673 tests passed with unchanged captured inputs; actual Home11 in the hosted short viewport, library/keyboard4, Guided/intro and PIN reruns completed. The native fixture corrections after the frozen suite are qualified separately. Evidence: reviews/2026-10-03-home-continuation-root-evidence.md, written by the implementer. CI45 remains FAILED and its original artifact is retained; no new hosted/package result is inferred. Cross-project Diagram/cursor/layout restoration, editable native Code/Docs and Diagram/Present/Terminal remain open; implementation continues.

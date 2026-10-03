@@ -140,7 +140,7 @@ export class WorkspaceCoordinator {
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
       const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
-        access:(caller,scope)=>current() && this.#access(caller,scope)===true}):
+        access:(_caller,scope)=>current() && this.#access(grant,scope)===true}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');

@@ -26,14 +26,15 @@ test('actual main mounts the finite read-only source channel and tracks its pend
   assert.equal((await handler(f.event(0),'applyEdit',{})).code,'REQUEST_REFUSED');assert.equal(f.context.writes.size,0);
   assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
 });
-test('both actual preloads expose only two source getters through the finite native channel',async()=>{
+test('primary source API stays readonly; satellite mutations use a distinct finite native channel',async()=>{
   for(const name of ['preload.cjs','windows/preload.cjs']){
     const source=await readFile(new URL('../src/'+name,import.meta.url),'utf8'),exposed={},calls=[];
     const electron={contextBridge:{exposeInMainWorld:(name,value)=>{exposed[name]=value;}},ipcRenderer:{sendSync:()=>({}),send(){},on(){},removeListener(){},invoke:(...args)=>{calls.push(args);return Promise.resolve({ok:false,code:'UNAVAILABLE'});}}};
     vm.runInNewContext(source,{require:()=>electron});
-    assert.deepEqual(Object.keys(exposed.sirenSource||{}).sort(),['getMetrics','readRange']);
+    assert.deepEqual(Object.keys(exposed.sirenSource||{}).sort(),name==='preload.cjs'?['getMetrics','readRange']:['applyEdit','commitSource','getMetrics','readRange']);
     await exposed.sirenSource.getMetrics({sourceId:'owned',version:1});assert.equal(calls.at(-1)[0],'siren:sources');assert.equal(calls.at(-1)[1],'getMetrics');
-    assert.equal(exposed.sirenSource.applyEdit,undefined);assert.equal(exposed.sirenSource.commitSource,undefined);
+    if(name==='preload.cjs'){assert.equal(exposed.sirenSource.applyEdit,undefined);assert.equal(exposed.sirenSource.commitSource,undefined);}
+    else{await exposed.sirenSource.applyEdit({sourceId:'owned'});assert.deepEqual(calls.at(-1),['siren:source-mutations','applyEdit',{sourceId:'owned'},undefined]);}
   }
 });
 

@@ -7,6 +7,7 @@ import {WindowRegistry} from '../../src/windows/registry.mjs';
 import {nativeViewFactory} from '../../src/windows/factory.mjs';
 import {invokeWindow} from '../../src/windows/ipc.mjs';
 import {WorkspaceCoordinator} from '../../src/windows/coordinator.mjs';
+import {invokeSourceMutation} from '../../src/windows/source-bridge.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {resolveLocalResource} from '../../src/protocol.mjs';
@@ -28,7 +29,7 @@ app.whenReady().then(async()=>{
     coordinator=new WorkspaceCoordinator({registry,access:()=>true,sources:({canWrite})=>new SourceRepository(data,{canWrite,fault:phase=>fault(phase)})});
     ipcMain.handle('siren:windows',(event,method,payload)=>invokeWindow({event,method,payload,registry}));
     ipcMain.handle('siren:owned-source-intent',async(event,intent)=>{
-      const receipt=await coordinator.invoke(registry.capture(event),intent);
+      const receipt=await invokeSourceMutation({event,method:intent?.method,payload:intent?.payload,registry,owner:coordinator,canEdit:()=>true});
       result.nativeReceipts.push({operationId:intent?.payload?.operationId,receipt});return receipt;
     });
     await registry.openView({role:'code',entityId:prepared.a.sourceId});await registry.openView({role:'code',entityId:prepared.b.sourceId});await registry.openView({role:'code',entityId:prepared.a.sourceId});

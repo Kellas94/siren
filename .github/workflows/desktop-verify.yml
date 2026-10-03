@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-edit', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -134,6 +134,8 @@ jobs:
             desktop/evidence/home-library/*/result.json
             desktop/evidence/home-library/*/electron.log
             desktop/evidence/home-library/*/*.png
+            desktop/evidence/source-edit/*/result.json
+            desktop/evidence/source-edit/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
             desktop/dist/*/BUILD-IDENTITY.json
