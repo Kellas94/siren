@@ -30,6 +30,7 @@ export class HomeService {
     const record=await this.navigation.read();this.guard(scope);
     const projects=await this.catalog.list(record);this.guard(scope);
     const state=this.selection.state();
+    if(typeof state.label==='string'&&state.label.length<=200){const selected=projects.find(project=>project.projectId===state.projectId);if(selected)selected.label=state.label;}
     const entry=[...record.entries].sort((a,b)=>b.visitedAt.localeCompare(a.visitedAt)).find(entry=>projects.some(project=>project.projectId===entry.projectId));
     const project=entry && projects.find(project=>project.projectId===entry.projectId);
     return {

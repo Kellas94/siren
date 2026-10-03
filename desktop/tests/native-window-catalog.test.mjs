@@ -27,12 +27,20 @@ test('catalog is bounded and paginated while preserving exact metadata and Unico
  assert.equal(first.items.length,64);assert.equal(second.items.length,64);assert.equal(last.items.length,4);assert.equal(last.hasMore,false);
  assert.equal(new Set([...first.items,...second.items,...last.items].map(item=>item.role+':'+item.entityId)).size,132);assert.equal(JSON.stringify(first).includes('PRIVATE_'),false);
 });
-test('copied native sender, Home, lock, project mismatch, identity payload and getters cannot obtain catalog metadata',async()=>{
+test('copied native sender, URL-only Home change, lock, project mismatch, identity payload and getters cannot obtain catalog metadata',async()=>{
  const f=await fixture();assert.equal((await f.call(undefined,{sender:{...f.event.sender},senderFrame:f.event.senderFrame})).code,'ACCESS_REFUSED');
  for(const payload of [{projectId:f.selected.project.id},{cursor:-1},{cursor:4097}])assert.equal((await f.call(payload)).code,'REQUEST_REFUSED');
  let ran=false;const getter=Object.defineProperty({},'cursor',{enumerable:true,get(){ran=true;return 0;}});assert.equal((await f.call(getter)).code,'REQUEST_REFUSED');assert.equal(ran,false);
  f.event.senderFrame.url='siren://app/home.html';assert.equal((await f.call()).code,'ACCESS_REFUSED');f.event.senderFrame.url='siren://app/app.html';
  f.select({...f.selected,project:{...f.selected.project,id:'another-project'}});assert.equal((await f.call()).code,'ACCESS_REFUSED');f.lock();assert.equal((await f.call()).code,'ACCESS_REFUSED');
+});
+test('a genuinely admitted Home primary receives bounded metadata without source or document content',async()=>{
+ const f=await fixture();f.registry.invalidateEpoch({preserveWorkspace:true});f.event.sender.mainFrame={url:'siren://app/home.html'};
+ f.event.sender.getURL=()=>f.event.sender.mainFrame.url;f.event.senderFrame=f.event.sender.mainFrame;
+ f.registry.activateWorkspace({entryUrl:'siren://app/home.html'});
+ const result=await f.call();assert.equal(result.ok,true);assert.equal(result.items.length,3);
+ assert.equal(JSON.stringify(result).includes('PLANTED_DOCS_PRIVATE_CONTENT'),false);assert.equal(JSON.stringify(result).includes('foreign secret'),false);
+ f.lock();assert.equal((await f.call()).code,'ACCESS_REFUSED');
 });
 test('Lock during actual native snapshot selection suppresses the pending catalog instead of publishing labels',async()=>{
  const f=await fixture();let entered,release;const ready=new Promise(r=>{entered=r;}),gate=new Promise(r=>{release=r;});

@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 export async function waitForDesktopStartup(driver) {
   const receipt = `(()=>{const b=window.sirenDesktopBootstrap;return {url:location.href,readyState:document.readyState,bridge:typeof window.sirenDesktop?.getPinState,bootstrap:b?{mode:b.mode,readonly:b.readonly,snapshotPresent:b.snapshot!=null,pin:b.pin}:null};})()`;
   try {
-    await driver.waitFor(`(()=>{const r=${receipt};return r.url==='siren://app/app.html'&&r.bridge==='function'&&['locked','normal','readonly','recovery'].includes(r.bootstrap?.mode)&&typeof r.bootstrap?.readonly==='boolean'&&typeof r.bootstrap?.pin?.configured==='boolean'&&typeof r.bootstrap?.pin?.unlocked==='boolean';})()`);
+    await driver.waitFor(`(()=>{const r=${receipt};return ['siren://app/home.html','siren://app/app.html'].includes(r.url)&&r.bridge==='function'&&['locked','normal','readonly','recovery'].includes(r.bootstrap?.mode)&&typeof r.bootstrap?.readonly==='boolean'&&typeof r.bootstrap?.pin?.configured==='boolean'&&typeof r.bootstrap?.pin?.unlocked==='boolean';})()`);
   } catch (error) {
     const observed = await driver.evaluate(receipt).catch(error => ({ observationError: error.message }));
     throw new Error('Native PIN startup receipt unavailable: ' + JSON.stringify(observed), { cause: error });
@@ -20,7 +20,7 @@ export async function waitForDesktopStartup(driver) {
 
 // Explicit fixture authorization: raw launchDesktop always exposes the real lock.
 // This uses the production native PIN receipts; it never edits bootstrap/storage.
-export async function unlockDesktop(driver, { pin, autoSetup = false } = {}) {
+export async function unlockDesktop(driver, { pin, autoSetup = false, surface='diagrams' } = {}) {
   assert.match(pin || '', /^(?:[0-9]{4}|[0-9]{6})$/, 'Owned fixture PIN must contain four or six digits');
   await waitForDesktopStartup(driver);
   const state = await driver.evaluate(`(()=>{if(typeof window.sirenDesktop?.getPinState!=='function')throw new Error('Native PIN bridge unavailable');return window.sirenDesktop.getPinState();})()`);
@@ -44,7 +44,23 @@ export async function unlockDesktop(driver, { pin, autoSetup = false } = {}) {
   // Use the same renderer reload as the real PIN UI. The CDP Page.reload command
   // can stall on this Electron custom-protocol target even after native success.
   if (await driver.evaluate('window.sirenDesktopBootstrap?.mode === "locked"')) await driver.evaluate('setTimeout(() => location.reload(), 0); true');
-  await driver.waitFor(`location.href==='siren://app/app.html'&&typeof window.sirenDesktop?.getPinState==='function'&&['normal','readonly','recovery'].includes(window.sirenDesktopBootstrap?.mode)&&window.sirenDesktopBootstrap?.pin?.unlocked===true`);
+  await driver.waitFor(`['siren://app/home.html','siren://app/app.html'].includes(location.href)&&typeof window.sirenDesktop?.getPinState==='function'&&['normal','readonly','recovery'].includes(window.sirenDesktopBootstrap?.mode)&&window.sirenDesktopBootstrap?.pin?.unlocked===true`);
+  // Diagram/legacy probes explicitly enter their real destination. First-use
+  // probes can retain Home and assert that unlock creates no implicit project.
+  if(surface==='diagrams'&&await driver.evaluate('location.href==="siren://app/home.html"')){
+    await driver.waitFor('typeof window.sirenHome?.getHomeState==="function" && window.sirenHomeView!=null');
+    const home=await driver.evaluate('window.sirenHome.getHomeState()');assert.equal(home.ok,true);
+    if(home.state.mode!=='normal'&&!home.state.capabilities.diagrams){
+      await driver.evaluate('window.sirenHome.showRecovery()').catch(()=>{});
+      await driver.waitFor('location.href==="siren://app/app.html" && document.getElementById("desktopRecoveryPanel")?.open===true');return unlocked;
+    }
+    if(home.state.selectedProjectId===null){
+      assert.equal((await driver.evaluate('window.sirenHome.createProject({label:"Owned native probe project"})')).ok,true,'Fixture explicitly creates a project through production Home');
+      await driver.waitFor('document.body.inert===false && !document.getElementById("homeRoot").hidden');
+    }
+    await driver.evaluate('window.sirenHome.openModule({surface:"diagrams"})').catch(()=>{/* The originating frame is intentionally retired; assert destination below. */});
+    await driver.waitFor('location.href==="siren://app/app.html" && window.sirenDesktopBootstrap?.pin?.unlocked===true && document.getElementById("desktopHome")!=null');
+  }
   return unlocked;
 }
 
@@ -66,7 +82,7 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
     const deadline = Date.now() + 30000;
     while (Date.now() < deadline) {
       if (exited) throw new Error('Electron exited before driver attachment: ' + logs.slice(-4000));
-      try { lastDiscovery = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(1000) })).json(); target = lastDiscovery.find(t => t.type === 'page' && t.url === 'siren://app/app.html'); } catch (error) { lastDiscovery = { error: error.message }; }
+      try { lastDiscovery = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(1000) })).json(); target = lastDiscovery.find(t => t.type === 'page' && ['siren://app/home.html','siren://app/app.html'].includes(t.url)); } catch (error) { lastDiscovery = { error: error.message }; }
       if (target) break;
       await delay(200);
     }

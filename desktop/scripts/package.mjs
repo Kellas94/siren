@@ -13,8 +13,8 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['atomic','budgets','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
-  ...['contracts','entries'].map(n=>`src/navigation/${n}.mjs`),
-  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','docs-reads','catalog','readonly-seals','control','source-barrier'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
+  ...['contracts','entries','authority','service','transition-receipts','store','catalog','resolver','ipc'].map(n=>`src/navigation/${n}.mjs`),
+  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','docs-reads','catalog','home-admission','readonly-seals','control','source-barrier'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
@@ -33,6 +33,11 @@ async function walk(directory, prefix = '') {
   }
   return files;
 }
+export async function collectApplicationInputs(desktopRoot, production) {
+  const candidates = ['package.json','generated/app.html','generated/home.html','generated/build.json','generated/import-validation.html','generated/windows/code.html','generated/windows/docs.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
+  for (const packageName of production) candidates.push(...(await walk(join(desktopRoot, 'node_modules', packageName))).map(p => `node_modules/${packageName}/` + p));
+  return candidates.filter(path => allowedAppFile(path, production));
+}
 export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..'), sourceCommit }) {
   if (!/^[a-f0-9]{40}$/.test(sourceCommit)) throw new Error('Committed source identity required');
   const identity = JSON.parse(await readFile(join(desktopRoot, 'package.json'), 'utf8'));
@@ -42,9 +47,7 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   const production = new Set(inventory.npm.map(p => p.name));
   const previewRoot = join(desktopRoot, 'dist', `development-${randomUUID()}`); const source = join(desktopRoot, 'dist', `.build-input-${randomUUID()}`); const version = '0.1.0';
   const app = join(previewRoot, 'App', 'versions', version); await mkdir(app, { recursive: true }); await mkdir(source);
-  const candidates = ['package.json','generated/app.html','generated/build.json','generated/import-validation.html','generated/windows/code.html','generated/windows/docs.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
-  for (const packageName of production) candidates.push(...(await walk(join(desktopRoot, 'node_modules', packageName))).map(p => `node_modules/${packageName}/` + p));
-  const included = candidates.filter(path => allowedAppFile(path, production));
+  const included = await collectApplicationInputs(desktopRoot, production);
   for (const path of included) { await mkdir(dirname(join(source, path)), { recursive: true }); await copyFile(join(desktopRoot, path), join(source, path)); }
   // Runtime binaries are copied unchanged, never patched/re-signed or represented as a qualified launcher.
   for (const entry of await readdir(electronRoot, { withFileTypes: true })) {
@@ -57,6 +60,7 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   const archivePath = join(app, 'resources', 'app.asar'); await createPackage(source, archivePath);
   const archiveEntries = listPackage(archivePath, { isPack: false }).map(path => path.replaceAll('\\', '/').replace(/^\//, ''));
   for (const path of sourceFiles) if (!archiveEntries.includes(path)) throw new Error('Required runtime module missing from archive');
+  for (const path of included.filter(path => path.startsWith('generated/'))) if (!archiveEntries.includes(path)) throw new Error('Required generated entry missing from archive');
   if (archiveEntries.some(path => !sourceFiles.has(path) && /(?:test-oidc|(?:^|\/)tests\/|(?:^|\/)baseline\/|\.map$|credentials|\.env)/i.test(path))) throw new Error('Development input leaked into application archive');
   await writeFile(join(app, 'SIREN-RUNTIME-INVENTORY.json'), JSON.stringify(inventory, null, 2));
   for (const notice of inventory.chromium.supplementalNotices) {

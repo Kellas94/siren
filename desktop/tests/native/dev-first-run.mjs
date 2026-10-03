@@ -5,24 +5,30 @@ import { createHash } from 'node:crypto';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { launchDesktop, unlockDesktop, waitForDesktopStartup } from './drive.mjs';
 
-// Fresh owned Data, deliberately no --siren-test-project or precreated project.
+// Fresh owned Data. Unlock must create no implicit project; the fixture then
+// explicitly creates its editable project through the actual Home service.
 const evidence = resolve('evidence', `dev-first-run-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-'));
 const build = JSON.parse(await readFile('generated/build.json', 'utf8'));
 const sources = Object.fromEntries(await Promise.all(['src/main.mjs', 'src/preload.cjs', 'tests/native/drive.mjs', 'tests/native/dev-first-run.mjs'].map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])));
-const result = { completed: false, build, sources, scope: 'Actual first development launch creates an owned editable scratch project; Guided keyboard save and floating Code minimise. Packaged account activation is not changed or bypassed.' };
+const result = { completed: false, build, sources, scope: 'Actual first development launch starts in metadata-only Home with no implicit project; explicit creation/Diagrams route, Guided save and floating Code minimise.' };
 let driver;
 const save = () => writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
   result.initialContext = await driver.evaluate(`({url:location.href,readyState:document.readyState,bridge:typeof window.sirenDesktop?.getPinState,bootstrapMode:window.sirenDesktopBootstrap?.mode})`).catch(error => ({ observationError: error.message }));
   result.firstAppEntry = await waitForDesktopStartup(driver);
-  assert.equal(result.firstAppEntry.url, 'siren://app/app.html', 'First fixture authentication must use the actual app entry, never about:blank');
+  assert.equal(result.firstAppEntry.url, 'siren://app/home.html', 'First fixture authentication must use the actual Home entry');
   assert.equal(result.firstAppEntry.bootstrap.mode, 'locked');
   assert.equal(result.firstAppEntry.bootstrap.snapshotPresent, false, 'First real app entry must still withhold the native snapshot');
   assert.equal(result.firstAppEntry.bootstrap.pin.configured, false, 'Fresh owned Data must start without a configured PIN');
-  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true,surface:'home' });
+  assert.equal((await driver.evaluate('window.sirenHome.getHomeState()')).state.selectedProjectId,null);
+  assert.equal((await new ProjectStore(root).listProjects()).length,0,'Unlock must not create a scratch project');
+  assert.equal((await driver.evaluate('window.sirenHome.createProject({label:"Explicit first-use project"})')).ok,true);
+  await driver.waitFor('document.body.inert===false && !document.getElementById("homeRoot").hidden');
+  await driver.evaluate('window.sirenHome.openModule({surface:"diagrams"})').catch(()=>{});
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   result.bootstrap = await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,project:window.sirenDesktopBootstrap?.snapshot?.project})');
   await driver.screenshot(join(evidence, 'first-development-launch.png'));

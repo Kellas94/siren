@@ -15,6 +15,9 @@ import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
 import {runAfterWorkspaceLoad} from '../../src/windows/readiness.mjs';
+import {HomeAuthority} from '../../src/navigation/authority.mjs';
+import {HomeTransitionReceipts} from '../../src/navigation/transition-receipts.mjs';
+import {invokeHome} from '../../src/navigation/ipc.mjs';
 const root=resolve(process.argv.find(v=>v.startsWith('--siren-readonly-roster='))?.slice('--siren-readonly-roster='.length)||'');
 const rel=relative(resolve('evidence/readonly-roster'),root);if(!rel||rel.startsWith('..')||isAbsolute(rel))throw Error('OWNED_READONLY_ROSTER_REQUIRED');
 app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()=>{});
@@ -48,12 +51,23 @@ app.whenReady().then(async()=>{
   assert.deepEqual(await projects.readProject(projectId),prepared.snapshot);assert.equal((await sources.getMetrics({projectId,sourceId:prepared.source.sourceId})).version,2);
   assert.deepEqual(await sources.exportSource({projectId,sourceId:prepared.source.sourceId,version:1}),Buffer.from(prepared.text));
   result.cases.push({name:'real minimized Code, readonly Docs and genuine primary recovery seal prepare without committing a private future draft',ok:true,refs:preparedRoster.proof.refs});
-  const oldPrimary=registry.capture({sender:main.webContents,senderFrame:main.webContents.mainFrame}),started=barrier.beginWorkspaceNavigation(preparedRoster.proof,{entryUrl:'siren://app/home.html'});assert.equal(started.ok,true);
+  const originalEvent={sender:main.webContents,senderFrame:main.webContents.mainFrame};
+  const homeAuthority=new HomeAuthority({workspace:main,state:()=>({unlocked:true,projectId,mode:'readonly',generation:1})});
+  const transitions=new HomeTransitionReceipts({registry,authority:homeAuthority}),oldHome=homeAuthority.capture(originalEvent);
+  let originalReceipt,originalTicket;
+  const acknowledgement=await invokeHome({event:originalEvent,method:'continueWork',payload:{},authority:homeAuthority,transitions,services:{continueWork:async(_input,scope)=>{
+  originalTicket=scope.transition;homeAuthority.invalidate();
+  const oldPrimary=registry.capture(originalEvent),started=barrier.beginWorkspaceNavigation(preparedRoster.proof,{entryUrl:'siren://app/home.html'});assert.equal(started.ok,true);
   assert.equal(barrier.release(preparedRoster.proof),false);await main.loadURL('siren://app/home.html');
   await runAfterWorkspaceLoad(main.webContents,()=>true,{expectedUrl:'siren://app/home.html'});
   const completed=barrier.finishWorkspaceNavigation(preparedRoster.proof,started.navigation);assert.equal(completed.ok,true);assert.equal(registry.isCurrent(oldPrimary),false);assert.equal(grants.every(g=>registry.isCurrent(g)),true);assert.equal(windows[0].isMinimized(),true);
+  originalReceipt=transitions.complete(scope.transition,{barrier,proof:preparedRoster.proof,view:completed.view});assert.equal(originalReceipt.ok,true);
   assert.equal(barrier.release(preparedRoster.proof),true);assert.deepEqual(await projects.readProject(projectId),prepared.snapshot);assert.equal((await sources.getMetrics({projectId,sourceId:prepared.source.sourceId})).version,2);
-  result.cases.push({name:'actual prepared App-to-Home rotation preserves readonly satellite versions and minimized state while retiring old primary authority',ok:true});result.status='COMPLETE';
+  result.cases.push({name:'actual prepared App-to-Home rotation preserves readonly satellite versions and minimized state while retiring old primary authority',ok:true});return originalReceipt;
+  }}});
+  assert.equal(acknowledgement.ok,true);assert.deepEqual(Object.keys(acknowledgement).sort(),['epoch','ok']);assert.equal(homeAuthority.isCurrent(oldHome),false);
+  assert.equal(transitions.consume(originalReceipt,{ticket:originalTicket,grant:oldHome,method:'continueWork'}),false);
+  result.cases.push({name:'actual loaded Home receives only native prepared completion metadata; old metadata authority and replay remain refused',ok:true});result.status='COMPLETE';
  }catch(error){result.error={message:error.message,stack:error.stack};}
  finally{try{barrier?.dispose();control?.dispose();registry?.invalidateEpoch();}catch(error){result.cleanupError=error.message;result.status='ADVERSE';}for(const w of BrowserWindow.getAllWindows())w.destroy();result.remainingWindows=BrowserWindow.getAllWindows().length;await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
 });

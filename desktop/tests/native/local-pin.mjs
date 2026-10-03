@@ -32,10 +32,13 @@ const lockedProof=async label=>{
  const save=await driver.evaluate(`window.sirenDesktop.saveProject(${JSON.stringify({projectId:first.project.id,baseRevision:first.revision,json:first.json,purpose:'workspace'})})`);
  const exported=await driver.evaluate(`window.sirenDesktop.exportProject(${JSON.stringify(first.project.id)})`);
  assert.equal(save.ok,false,'Locked native write must refuse');assert.equal(exported.ok,false,'Locked native export must refuse');
- assert.match(save.code||save.message||'',/pin|lock/i);assert.match(exported.code||exported.message||'',/pin|lock/i);
+ if(await driver.evaluate('location.href==="siren://app/home.html"')){assert.equal(save.code,'SENDER_REFUSED');assert.equal(exported.code,'SENDER_REFUSED');}
+ else{assert.match(save.code||save.message||'',/pin|lock/i);assert.match(exported.code||exported.message||'',/pin|lock/i);}
  result[label]={boot,save,exported,pin:await pinState()};await driver.screenshot(join(evidence,`${label}.png`));
 };
 const workspaceReady=async()=>{
+ await driver.waitFor('window.sirenDesktopBootstrap?.mode === "normal" && window.sirenDesktopBootstrap?.pin?.unlocked===true');
+ if(await driver.evaluate('location.href==="siren://app/home.html"')){await driver.waitFor('document.getElementById("homeModule-diagrams")?.disabled===false');await driver.click('#homeModule-diagrams');}
  await driver.waitFor('window.sirenDesktopBootstrap?.mode === "normal" && !!window.sirenDesktopBootstrap.snapshot');
  await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
  await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);

@@ -16,7 +16,7 @@ class Contents extends EventEmitter {
 }
 function fixture() {
   const contents = new Contents(); const mutations = [];
-  const context = vm.createContext({ window: { webContents: contents }, runAfterWorkspaceLoad, failure,
+  const context = vm.createContext({ window: { webContents: contents }, runAfterWorkspaceLoad:(contents,operation,options)=>runAfterWorkspaceLoad(contents,operation,structuredClone(options)), failure,
     prepareLocalWorkspace: async result => result,
     localPin: { state: () => ({ unlocked: false }), setup: async payload => { mutations.push(['setup', payload]); return { ok: true }; },
       unlock: async payload => { mutations.push(['unlock', payload]); return { ok: true }; } },

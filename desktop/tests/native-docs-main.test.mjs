@@ -6,7 +6,7 @@ import {nativeSourceContext,mainSlice} from './fixtures/source-main-context.mjs'
 
 test('production native Docs is mounted through the shared owner and receives only its selected document',async()=>{
  const f=await nativeSourceContext();
- vm.runInContext(mainSlice("ipcMain.handle('siren:docs-read'","ipcMain.handle('siren:windows'"),f.context);
+ vm.runInContext(mainSlice("ipcMain.handle('siren:docs-read'","const invokeNativeWindow="),f.context);
  const handler=f.handlers.get('siren:docs-read');assert.equal(typeof handler,'function');
  const pending=handler(f.event(1),'getDocument');assert.equal(f.context.writes.size,1);const result=await pending;
  assert.equal(result.ok,true);assert.equal(result.readonly,true);assert.equal(result.document.id,'doc-a');assert.equal(f.context.writes.size,0);

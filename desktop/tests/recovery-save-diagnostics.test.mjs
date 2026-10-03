@@ -116,7 +116,16 @@ test('verified partial workspace commit stays failed but next production save us
   assert.equal(r.requests[1].baseRevision, 2, 'Only exact verified workspace commitment advances CAS');
   assert.equal(r.nativeReceipts[1].ok, true);
   const retried = await f.projects.readProject(committed.project.id);
-  assert.equal(retried.revision, 3); assert.equal(retried.json, r.requests[1].json);
+  assert.deepEqual(retried, committed, 'Acknowledging an unchanged retry repairs recovery without rotating the last-good backup or advancing content CAS');
+  assert.equal(retried.json, r.requests[1].json);
+  assert.ok((await f.recovery.scan(retried.project.id)).valid.some(point => point.kind === 'saved' && point.snapshot.revision === 2 && point.snapshot.json === retried.json && point.snapshot.sha256 === retried.sha256));
+  r.context.state.source = 'edited after recovery acknowledgement';
+  await r.window.sirenDesktopRequestClose();
+  assert.equal(r.requests[2].baseRevision, 2, 'A subsequent real edit uses the exact repaired workspace CAS');
+  assert.equal(r.nativeReceipts[2].ok, true);
+  const edited = await f.projects.readProject(committed.project.id);
+  assert.equal(edited.revision, 3); assert.equal(edited.json, r.requests[2].json);
+  assert.equal(JSON.parse(JSON.parse(edited.json).storage[workspaceKey]).source, 'edited after recovery acknowledgement');
   assert.equal((await f.projects.listPending(committed.project.id)).length, 1, 'Original degraded pending attempt remains recoverable');
   assert.deepEqual(await f.projects.readProject(f.original.project.id), f.original);
 });

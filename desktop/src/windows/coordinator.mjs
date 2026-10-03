@@ -13,7 +13,7 @@ const error=code=>Object.assign(new Error(code),{code});
 export class WorkspaceCoordinator {
   #registry;#sources;#docs;#domains;#primary;#readonly;#workspaceBytes=0;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
-  #flushes=new Map();#pauseGeneration=0;
+ #flushes=new Map();#pauseGeneration=0;#pauseReason=null;
   #activityGeneration=0;#quiescence=new WeakMap();
   constructor({sources,docs,domains,primary,readonlyViews,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
@@ -139,7 +139,7 @@ export class WorkspaceCoordinator {
       if(!current())return fail('ACCESS_REFUSED');
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
-      const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
+      const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
         access:(caller,scope)=>current() && this.#access(caller,scope)===true}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
@@ -166,9 +166,9 @@ export class WorkspaceCoordinator {
   }
   pause(reason) {
     if(typeof reason!=='string' || reason.length<1 || reason.length>128)throw error('REQUEST_REFUSED');
-    this.#paused=true;this.#pauseGeneration++;this.#flushes.clear();
+    this.#paused=true;this.#pauseReason=reason;this.#pauseGeneration++;this.#flushes.clear();
   }
-  resume() {this.#paused=false;this.#pauseGeneration++;this.#flushes.clear();}
+  resume() {this.#paused=false;this.#pauseReason=null;this.#pauseGeneration++;this.#flushes.clear();}
   async drain() {
     const receipts=[];
     while(this.#pending.size) {

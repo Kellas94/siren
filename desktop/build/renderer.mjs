@@ -168,7 +168,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
         sirenStore.start()`);
     const ready = 'sirenStore.start().catch(() => {}).then(initialize).then(() => {';
     if (html.split(ready).length !== 2) throw new Error('Desktop readiness patch marker mismatch');
-    html = html.replace(ready, ready + "\n          if (window.sirenDesktopBootstrap?.readonly) { applyReadOnlyMode(true, false); if (el.readOnlyBanner) el.readOnlyBanner.textContent = 'Read-only desktop project · Recovery and export remain available'; setSaveState('saved'); }\n          window.sirenDesktopReady?.();");
+    html = html.replace(ready, ready.replace('.then(initialize)', '.then(() => window.sirenDesktopAdmitted?.()).then(initialize)') + "\n          if (window.sirenDesktopBootstrap?.readonly) { applyReadOnlyMode(true, false); if (el.readOnlyBanner) el.readOnlyBanner.textContent = 'Read-only desktop project · Recovery and export remain available'; setSaveState('saved'); }\n          window.sirenDesktopReady?.();");
     const palette = 'const known = new Set(commands.map(c => c.title.toLowerCase()));';
     if (html.split(palette).length !== 2) throw new Error('Desktop command registry marker mismatch');
     html = html.replace(palette, () => `if (window.sirenDesktop) {

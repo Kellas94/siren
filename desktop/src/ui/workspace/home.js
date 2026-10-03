@@ -24,7 +24,7 @@
       try{
         const result=await bridge?.[method]?.(payload);
         if(disposed||blocked||turn!==serial)return;
-        if(result?.ok===true){say('Opening your workspace…');return;}
+        if(result?.ok===true){if(location.href==='siren://app/home.html')await refresh();else say('Opening your workspace…');return;}
         say(message(result));
       }catch{if(!disposed&&!blocked&&turn===serial)say('The action could not complete. Your work was retained.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
@@ -47,7 +47,7 @@
         try{
           const result=await bridge.createProject({label:input.value.trim()});
           if(disposed||blocked||turn!==serial)return;
-          if(result?.ok===true){note.textContent='Opening your project…';return;}
+          if(result?.ok===true){dialog.close();await refresh();return;}
           note.textContent=message(result);
         }catch{if(!disposed&&!blocked&&turn===serial)note.textContent='Creation failed. Your existing projects were retained.';}
         finally{if(!disposed&&!blocked&&turn===serial){creating=false;busy=false;controls();submit.disabled=cancel.disabled=false;input.disabled=false;input.focus();}}
@@ -57,6 +57,7 @@
       clear();state=value;container.hidden=false;container.className='home-root';
       const top=make('header',container,undefined,'home-topbar');make('span',top,'SIREN','home-brand');make('span',top,'Home','home-current');
       const tools=make('div',top,undefined,'home-topbar-tools');
+      if(value.mode!=='normal'&&typeof bridge?.showRecovery==='function')button(tools,'Recovery',()=>perform('showRecovery',{}),{id:'homeRecovery'});
       const settings=button(tools,'PIN settings',()=>window.sirenDesktopShowPin?.('change'),{id:'homePinSettings'});unavailable(settings,typeof window.sirenDesktopShowPin!=='function'||typeof desktop?.changePin!=='function');
       const lock=button(tools,'Lock',async()=>{
         if(busy||blocked||disposed)return;cover();
@@ -80,11 +81,13 @@
       const moduleHeading=make('div',content,undefined,'home-section-heading');make('h2',moduleHeading,'Explore your project');make('span',moduleHeading,'One context. Four perspectives.');
       const grid=make('div',content,undefined,'home-module-grid');
       for(const [surface,title,description,icon] of modules){const enabled=value.selectedProjectId!==null&&value.capabilities[surface]===true&&typeof bridge?.openModule==='function';
-        const card=button(grid,'',()=>perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
+        const card=button(grid,'',()=>['code','docs'].includes(surface)?library(surface):perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
         make('span',card,icon,'home-module-icon');make('strong',card,title);make('span',card,description,'home-module-description');
         // A visible limitation does not advertise an unconnected editor.
         const available=enabled===true;unavailable(card,!available);if(!available)make('small',card,value.selectedProjectId===null?'Open a project first':'Not available in this build');
       }
+      if(value.views.length){const views=make('section',content,undefined,'home-projects');const heading=make('div',views,undefined,'home-section-heading');make('h2',heading,'Open windows');make('span',heading,'Across your displays');
+        for(const view of value.views){const row=button(views,`${view.label} · ${view.state==='minimized'?'Minimized':'Open'} ↗`,()=>perform('focusView',{windowId:view.windowId}),{className:'home-project-row'});row.dataset.windowId=view.windowId;unavailable(row,typeof bridge?.focusView!=='function');}}
       const projects=make('section',content,undefined,'home-projects');const heading=make('div',projects,undefined,'home-section-heading');make('h2',heading,'Recent projects');make('span',heading,'On this computer');
       if(!value.projects.length)make('p',projects,'Your projects will appear here after you open them.','home-empty');
       for(const project of value.projects){const row=button(projects,'',()=>perform('openProject',{projectId:project.projectId}),{className:'home-project-row'});row.dataset.projectId=project.projectId;const details=make('span',row,undefined,'home-project-details');make('strong',details,project.label||'Local project');make('small',details,project.availability==='missing'?'Unavailable':project.availability==='recovery'?'Needs recovery':project.availability==='cached'?'Recorded locally · checked when opened':'Local project');make('span',row,'↗','home-project-arrow');unavailable(row,project.availability==='missing'||typeof bridge?.openProject!=='function');}
@@ -99,8 +102,29 @@
         paint(result.state);return true;
       }catch{if(!disposed&&!blocked&&turn===serial){clear();container.hidden=false;make('p',container,'Home could not load. Existing work was retained.').setAttribute('role','status');}return false;}
     };
+    const library=async surface=>{
+      if(disposed||blocked||busy)return;const turn=serial;busy=true;controls();
+      const dialog=make('dialog',container,undefined,'home-create home-library');dialog.setAttribute('aria-labelledby','homeLibraryTitle');
+      make('h2',dialog,surface==='code'?'⌘ Code':'Docs').id='homeLibraryTitle';make('p',dialog,'Open a saved item in its own window. This build provides read-only inspection.');
+      const rows=make('div',dialog,undefined,'home-library-items'),note=make('p',dialog,'Loading…');note.setAttribute('role','status');
+      const finish=()=>{if(turn===serial){busy=false;controls();}dialog.remove();};button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});listen(dialog,'close',finish);dialog.showModal();
+      try{let cursor=0,found=0;do{
+        const result=await bridge.getCatalog({cursor});if(disposed||blocked||turn!==serial||!dialog.open)return;
+        if(!result?.ok){note.textContent=message(result);return;}
+        for(const item of result.items.filter(item=>item.role===surface)){found++;const row=button(rows,item.label,async()=>{
+          if(blocked||disposed||turn!==serial)return;row.disabled=true;note.textContent='Opening…';
+          try{const opened=await bridge.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});
+            if(blocked||disposed||turn!==serial)return;
+            if(opened?.ok){dialog.close();await bridge.recordLocation({surface,entityId:item.entityId,...(item.sourceRef?{sourceRef:item.sourceRef}:{})});await refresh();}
+            else{note.textContent=message(opened);row.disabled=false;}
+          }catch{if(!blocked&&turn===serial){note.textContent='The window could not open. Your work was retained.';row.disabled=false;}}
+        },{className:'home-project-row'});row.dataset.entityId=item.entityId;}
+        cursor=result.nextCursor;if(!result.hasMore)break;
+      }while(cursor<=4096);note.textContent=found?'Select an item.':'No saved items in this project yet.';
+      }catch{if(!blocked&&turn===serial)note.textContent='The library could not load. Your work was retained.';}
+    };
     if(typeof bridge?.onInvalidated==='function')off=bridge.onInvalidated(cover);
-    return Object.freeze({refresh,cover,dispose:()=>{if(disposed)return;disposed=true;cover();off?.();}});
+    return Object.freeze({refresh,cover,resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();}});
   };
   const start=()=>{
     const boot=window.sirenDesktopBootstrap;
@@ -108,6 +132,8 @@
     delete document.documentElement.dataset.desktopLocked;
     const home=window.renderSirenHome({container:document.getElementById('homeRoot'),bridge:window.sirenHome,desktop:window.sirenDesktop,bootstrap:boot});
     window.sirenHomeView=home;
+    window.sirenViewControl?.onPrepare(async()=>{home.cover();document.body.inert=true;return window.sirenViewControl.sealReadonly();});
+    window.sirenViewControl?.onResume(()=>{document.body.inert=false;void home.resume();});
     void home.refresh().finally(()=>window.sirenDesktopReady?.());
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();

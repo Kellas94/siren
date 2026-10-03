@@ -17,7 +17,7 @@ export const METHODS = Object.freeze({
   getAccess: empty, beginLogin: empty, logout: empty,
   getUpdate: empty, checkForUpdates: empty, downloadUpdate: empty, cancelUpdate: empty, restartAndUpdate: empty,
   getRecovery: id, restoreRecovery: id, exportRecovery: id,
-  requestClose: empty,
+  requestClose: empty,goHome:empty,
   exportDiagnostics: empty,
   getPinState: empty, setupPin: pinFields(['pin','confirmation']), unlockPin: pinFields(['pin']), verifyCurrentPin: pinFields(['pin']),
   changePin: pinFields(['currentPin','newPin','confirmation']), lockPin: empty,
@@ -25,8 +25,9 @@ export const METHODS = Object.freeze({
 export const failure = (code, message) => ({ ok: false, code, message });
 
 const lockedMethods = new Set(['getPinState', 'setupPin', 'unlockPin', 'requestClose', 'getUpdate', 'checkForUpdates', 'cancelUpdate']);
+const homeMethods=new Set(['getPinState','setupPin','unlockPin','verifyCurrentPin','changePin','lockPin','requestClose','getUpdate','checkForUpdates','cancelUpdate']);
 export async function invokeDesktop({ method, payload, context, services, localAccess }) {
-  if (!context?.isMainFrame || context.senderUrl !== 'siren://app/app.html') return failure('SENDER_REFUSED', 'Untrusted native request');
+  if (!context?.isMainFrame || !(context.senderUrl==='siren://app/app.html'||context.senderUrl==='siren://app/home.html'&&homeMethods.has(method))) return failure('SENDER_REFUSED', 'Untrusted native request');
   if (!Object.hasOwn(METHODS, method) || !METHODS[method](payload)) return failure('REQUEST_REFUSED', 'Invalid native request');
   if (localAccess && !localAccess.state().unlocked && !lockedMethods.has(method)) return failure('PIN_REQUIRED', 'Unlock SIREN with your local PIN first');
   if (!Object.hasOwn(services, method) || typeof services[method] !== 'function') return failure('UNAVAILABLE', 'This service is not configured');

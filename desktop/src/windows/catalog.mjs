@@ -4,7 +4,7 @@ import {validId} from '../projects/paths.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 const label=value=>{const short=value.toWellFormed().slice(0,160);return /[\uD800-\uDBFF]$/.test(short)?short.slice(0,-1):short;};
 
-/** Metadata discovery for the permanently bound App owner only. Catalog rows
+/** Metadata discovery for the permanently bound workspace owner. Catalog rows
  * confer no read or window grant; native open/read still validate current scope. */
 export class NativeWindowCatalog {
  #registry;#snapshotFor;
@@ -14,7 +14,7 @@ export class NativeWindowCatalog {
  }
  #capture(event){
   const grant=this.#registry.capturePrimary({sender:event?.sender,senderFrame:event?.senderFrame});
-  return grant?.role==='workspace'&&grant.mainFrameUrl==='siren://app/app.html'&&this.#registry.isCurrent(grant)?grant:null;
+  return grant?.role==='workspace'&&['siren://app/app.html','siren://app/home.html'].includes(grant.mainFrameUrl)&&this.#registry.isCurrent(grant)?grant:null;
  }
  async invoke({event,payload}){
   try{

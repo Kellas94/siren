@@ -45,23 +45,22 @@ async function fixture() {
 }
 const owner = { isMainFrame: true, senderUrl: 'siren://app/app.html' };
 
-test('failed durable selection cannot publish selected state or turn a later retry into false success', async () => {
+test('PIN unlock creates no implicit project, and failed explicit durable selection cannot publish selected state', async () => {
   const { root, localPin } = await fixture();
   const context = vm.createContext({ join, Buffer, atomicWrite, failure, dataRoot: root, localPin,
     projects: new ProjectStore(root, { canSave: () => localPin.state().unlocked }),
     account: { accountId: null, policy: { opened() {} } },
   });
-  vm.runInContext(`let selectedId=null,snapshot=null,mode='normal',reason=null,nativeReadonly=false;const grants=new Set();let bootstrap={snapshot:null,readonly:true};` + selection + prepare + ';globalThis.prepare=prepareLocalWorkspace;globalThis.view=()=>({selectedId,bootstrap,grants:[...grants]});', context);
+  vm.runInContext(`let selectedId=null,snapshot=null,mode='normal',reason=null,nativeReadonly=false;const grants=new Set();let bootstrap={snapshot:null,readonly:true};` + selection + prepare + ';globalThis.prepare=prepareLocalWorkspace;globalThis.select=selected;globalThis.view=()=>({selectedId,bootstrap,grants:[...grants]});', context);
   await mkdir(join(root, 'session-selection.json'));
   const setup = await context.prepare(await localPin.setup({ pin: '4826', confirmation: '4826' }));
-  assert.equal(setup.code, 'WORKSPACE_UNAVAILABLE'); assert.equal(localPin.state().configured, true); assert.equal(localPin.state().unlocked, false);
+  assert.equal(setup.ok, true); assert.equal(localPin.state().configured, true); assert.equal(localPin.state().unlocked, true);
   assert.equal(context.view().selectedId, null); assert.equal(context.view().bootstrap.snapshot, null); assert.equal(context.view().grants.length, 0);
-  const retry = await context.prepare(await localPin.unlock({ pin: '4826' }));
-  assert.equal(retry.ok, false, 'Still hostile selector must not be reported as successful unlock');
-  assert.equal(localPin.state().unlocked, false);
+  const next=await context.projects.createProject({label:'Explicit project',json:'{}'});
+  await assert.rejects(context.select(next));assert.equal(context.view().selectedId,null);assert.equal(context.view().bootstrap.snapshot,null);assert.equal(context.view().grants.length,0);
   // Remove only this freshly created empty, test-owned hostile selector directory.
   await rmdir(join(root, 'session-selection.json'));
-  assert.equal((await context.prepare(await localPin.unlock({ pin: '4826' }))).ok, true);
+  await context.select(next);
   const view = context.view(); assert.ok(view.bootstrap.snapshot); assert.equal(view.bootstrap.readonly, false);
   const durable = JSON.parse(await readFile(join(root, 'session-selection.json'), 'utf8'));
   assert.equal(durable.projectId, view.selectedId); assert.equal(view.grants[0], durable.projectId);

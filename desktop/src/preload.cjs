@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]))));
-const methods = ['pickProject', 'saveProject', 'exportProject', 'getAccess', 'beginLogin', 'logout', 'getUpdate', 'checkForUpdates', 'downloadUpdate', 'cancelUpdate', 'restartAndUpdate', 'getRecovery', 'restoreRecovery', 'exportRecovery', 'requestClose', 'exportDiagnostics', 'getPinState', 'setupPin', 'unlockPin', 'verifyCurrentPin', 'changePin', 'lockPin'];
+const methods = ['pickProject', 'saveProject', 'exportProject', 'getAccess', 'beginLogin', 'logout', 'getUpdate', 'checkForUpdates', 'downloadUpdate', 'cancelUpdate', 'restartAndUpdate', 'getRecovery', 'restoreRecovery', 'exportRecovery', 'requestClose', 'exportDiagnostics', 'getPinState', 'setupPin', 'unlockPin', 'verifyCurrentPin', 'changePin', 'lockPin','goHome'];
 const bridge = Object.fromEntries(methods.map(name => [name, payload => ipcRenderer.invoke('siren:desktop', name, payload)]));
 bridge.onStatus = callback => {
   if (typeof callback !== 'function') throw new TypeError('Expected callback');
@@ -21,6 +21,17 @@ contextBridge.exposeInMainWorld('sirenDesktop', Object.freeze(bridge));
 const bootstrap = ipcRenderer.sendSync('siren:bootstrap');
 contextBridge.exposeInMainWorld('sirenDesktopBootstrap', bootstrap);
 contextBridge.exposeInMainWorld('sirenDesktopReady', () => ipcRenderer.send('siren:ready'));
+const homeBridge=Object.fromEntries(['getHomeState','continueWork','openProject','createProject','recordLocation'].map(method=>[method,payload=>ipcRenderer.invoke('siren:home',method,payload??{})]));
+homeBridge.openModule=payload=>ipcRenderer.invoke('siren:home-route',payload);
+homeBridge.importProject=()=>ipcRenderer.invoke('siren:home-import',{});
+homeBridge.showRecovery=()=>ipcRenderer.invoke('siren:home-recovery',{});
+homeBridge.getCatalog=payload=>ipcRenderer.invoke('siren:windows','getCatalog',payload??{});
+homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',payload);
+homeBridge.focusView=payload=>ipcRenderer.invoke('siren:windows','focusView',payload);
+homeBridge.onInvalidated=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=()=>callback();ipcRenderer.on('siren:home-invalidated',listener);return()=>ipcRenderer.removeListener('siren:home-invalidated',listener);};
+contextBridge.exposeInMainWorld('sirenHome',Object.freeze(homeBridge));
+const admitted=bootstrap?.navigationPending===true?new Promise(resolve=>ipcRenderer.once('siren:workspace-admitted',()=>resolve())):Promise.resolve();
+contextBridge.exposeInMainWorld('sirenDesktopAdmitted',()=>admitted);
 const windowMethods = ['getView', 'listViews', 'openView', 'focusView', 'closeView', 'getCatalog'];
 contextBridge.exposeInMainWorld('sirenWindow', Object.freeze(Object.fromEntries(windowMethods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]))));
 

@@ -7,6 +7,14 @@ import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
+test('staged application includes the actual cold Home entry and every finite generated destination', async () => {
+  const {collectApplicationInputs} = await import('../scripts/package.mjs');
+  const root = await mkdtemp(join(tmpdir(), 'siren-package-entry-'));
+  await mkdir(join(root, 'src'));
+  const inputs = await collectApplicationInputs(root, new Set());
+  for (const entry of ['generated/home.html', 'generated/app.html', 'generated/import-validation.html', 'generated/windows/code.html', 'generated/windows/docs.html']) assert.ok(inputs.includes(entry), 'Cannot boot or navigate the packaged application without ' + entry);
+});
+
 test('package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps', async () => {
   const { allowedAppFile } = await import('../scripts/package.mjs');
   for (const path of ['src/main.mjs', 'src/account/oidc.mjs', 'src/account/credentials.mjs', 'src/projects/budgets.mjs', 'src/recovery/checkpoints.mjs', 'src/sources/manifest.mjs', 'src/sources/recovery.mjs', 'src/sources/repository.mjs', 'src/sources/metrics.mjs', 'src/sources/text-model.mjs', 'src/sources/migration.mjs', 'generated/app.html', 'node_modules/jose/dist/webapi/index.js', 'node_modules/jose/LICENSE.md']) assert.equal(allowedAppFile(path, new Set(['jose'])), true, path);

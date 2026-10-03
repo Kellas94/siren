@@ -17,10 +17,18 @@ import {invokeSourceRead} from './windows/source-bridge.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
+import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
 import {NativeAllViewControl} from './windows/control.mjs';
 import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
 import {navigationFields} from './navigation/contracts.mjs';
+import {HomeAuthority} from './navigation/authority.mjs';
+import {HomeService} from './navigation/service.mjs';
+import {HomeTransitionReceipts} from './navigation/transition-receipts.mjs';
+import {NavigationStore} from './navigation/store.mjs';
+import {ProjectCatalog} from './navigation/catalog.mjs';
+import {createLocationResolver} from './navigation/resolver.mjs';
+import {invokeHome} from './navigation/ipc.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
@@ -143,19 +151,9 @@ const exportBytes = async (bytes, suggested) => {
   await atomicWrite(result.filePath, bytes);
   return { ok: true };
 };
-// First local unlock creates an owned empty workspace only when no selection exists.
-// Never replace a selection or conceal startup recovery.
-const prepareLocalWorkspace = async result => {
-  if (result.ok && !selectedId && mode === 'normal') {
-    try {
-      await selected(await projects.createProject({ label: 'Untitled desktop project', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: {} }) }));
-    } catch {
-      localPin.lock();
-      return failure('WORKSPACE_UNAVAILABLE', 'Your PIN was retained, but the local workspace could not be prepared. Unlock to retry.');
-    }
-  }
-  return result;
-};
+// Unlock never creates or selects a project. First-use Home requires an
+// explicit New/Open action; PIN success is independent of project creation.
+const prepareLocalWorkspace = async result => result;
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 protocol.handle('siren', async request => {
@@ -164,8 +162,8 @@ protocol.handle('siren', async request => {
 });
 const services = {
   getPinState: () => localPin.state(),
-  setupPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.setup(payload))),
-  unlockPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.unlock(payload))),
+  setupPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.setup(payload)),{expectedUrl:window.webContents.getURL()}),
+  unlockPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.unlock(payload)),{expectedUrl:window.webContents.getURL()}),
   verifyCurrentPin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.verifyCurrent(payload),
   changePin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.change(payload),
   lockPin: async () => {
@@ -188,6 +186,7 @@ const services = {
     }
   },
   requestClose: async () => { window.close(); return { ok: true }; },
+  goHome:()=>invokeHome({event:{sender:window.webContents,senderFrame:window.webContents.mainFrame},method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateHome(scope)}}),
   exportDiagnostics: async () => {
     const points = await recovery.scan();
     const report = buildDiagnostics({ desktopVersion: app.getVersion(), rendererVersion: '1.131.0', electron: process.versions.electron, chromium: process.versions.chrome, node: process.versions.node, platform: process.platform, arch: process.arch, osRelease: osRelease(), mode, accountState: (await account.getAccess()).state, updatePhase: updates.getUpdate().phase, projectCount: (await projects.listProjects()).length, verifiedPointCount: points.valid.length, damagedPointCount: points.invalid.length });
@@ -317,6 +316,8 @@ const windowRegistry = new WindowRegistry({
   } }),
 });
 windowRegistry.bindWorkspace(window);
+const homeAuthority=new HomeAuthority({workspace:window,state:()=>({unlocked:localPin.state().unlocked,projectId:selectedId,mode,generation:bootstrap.selectionGeneration||0})});
+const homeTransitions=new HomeTransitionReceipts({authority:homeAuthority,registry:windowRegistry,projects});
 const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
   isReadonly:grant=>['code','docs'].includes(grant.role)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
@@ -324,7 +325,7 @@ const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   readonlyViews,
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
-    (scope.action==='read'
+    (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
       ? !pinTransition && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
       : scope.action==='read-domain'
         ? !pinTransition && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
@@ -346,17 +347,25 @@ const rollbackNativePreparation=async()=>{
   workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
-const prepareNativeWorkspace=async()=>{
-  if(!snapshot){await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');return;}
+const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
+  homeAuthority.invalidate();window.webContents.send('siren:home-invalidated');
+  if(!snapshot){
+    if(window.webContents.getURL()==='siren://app/home.html'){
+      if(nativeShells.size||windowRegistry.listViews().length)throw Object.assign(Error('Unprepared native views'),{code:'ROSTER_CHANGED'});
+      await Promise.all([...writes]);return;
+    }
+    await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');return;
+  }
   if(workspaceBarrier)throw Object.assign(Error('Preparation pending'),{code:'PROJECT_BUSY'});
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:workspaceOwner,control:{
     flushView:async grant=>{const receipt=await viewControl.flushView(grant);if(!receipt.ok)console.warn('SIREN_NATIVE_VIEW_FLUSH_FAILURE',JSON.stringify({role:grant.role,code:receipt.code}));return receipt;},
     cancelView:grant=>viewControl.cancelView(grant),
   },cover:()=>{}});
-  const result=await workspaceBarrier.prepare('native-workspace-transition');
+  const result=await workspaceBarrier.prepare(reason);
   if(!result.ok){console.warn('SIREN_WORKSPACE_PREPARE_FAILURE',JSON.stringify({code:result.code}));await rollbackNativePreparation();throw Object.assign(Error('Native preparation refused'),{code:result.code});}
   await Promise.all([...writes]);
   if(!workspaceBarrier.isPrepared(result.proof)){await rollbackNativePreparation();throw Object.assign(Error('Native roster changed'),{code:'ROSTER_CHANGED'});}
+  return {barrier:workspaceBarrier,proof:result.proof};
 };
 ipcMain.handle('siren:view-ack',async(event,input)=>{
   const result=await viewControl.acknowledge(event,input);
@@ -366,6 +375,7 @@ ipcMain.handle('siren:view-ack',async(event,input)=>{
 ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
   const grant=windowRegistry.capturePrimary(event);
   if(!grant||grant.role!=='workspace'||grant.projectId!==selectedId)return failure('ACCESS_REFUSED','Native preparation scope refused');
+  if(grant.mainFrameUrl==='siren://app/home.html'&&method!=='sealReadonly')return failure('ACCESS_REFUSED','Home has no workspace edit authority');
   let payload;try{payload=navigationFields(input,method==='saveProject'?['nonce','request']:['nonce']);}catch{return failure('REQUEST_REFUSED','Invalid preparation request');}
   if(!['saveProject','sealReadonly'].includes(method)||typeof payload.nonce!=='string')return failure('REQUEST_REFUSED','Invalid preparation request');
   const operation=workspaceOwner.invoke(grant,{kind:'workspace',method,payload:method==='saveProject'?payload.request:{}},payload.nonce);
@@ -383,6 +393,129 @@ const retireNativeViews = () => {
   workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
   if (failed) throw Object.assign(new Error('Native window protection incomplete'), { code: 'WINDOW_DESTROY_FAILED' });
 };
+const navigation=new NavigationStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced});
+const homeService=new HomeService({navigation,catalog:new ProjectCatalog(dataRoot),projects,
+  selection:{state:()=>({projectId:selectedId,label:snapshot?.project.label,mode,readonly:nativeReadonly||mode!=='normal',
+    views:windowRegistry.listViews().filter(view=>['code','docs'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:view.role==='code'?'⌘ Code':'Docs',state:view.state==='minimized'?'minimized':'open'})),
+    capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:false}})},
+  resolveEntity:createLocationResolver({sources,displays:()=>screen.getAllDisplays().map(display=>({id:display.id,workArea:display.workArea,primary:display.id===screen.getPrimaryDisplay().id}))}),
+});
+let nativeNavigationTarget=null;
+const navigateEntry=async(scope,entryUrl)=>{
+  if(!snapshot)return navigateEmptyRecovery(scope,entryUrl);
+  if(!scope.transition||!scope.isCurrent()||writes.selectionTransition||pinTransition||accountTransition)return {ok:false,code:'TRANSITION_FAILED'};
+  writes.selectionTransition=true;homeAuthority.invalidate();window.webContents.send('siren:home-invalidated');let handedOff=false;
+  try{
+    const prepared=await prepareNativeWorkspace('native-home-navigation');
+    const started=prepared.barrier.beginWorkspaceNavigation(prepared.proof,{entryUrl});
+    if(!started.ok)throw Error('Native Home navigation refused');
+    nativeNavigationTarget=entryUrl;await window.loadURL(nativeNavigationTarget);
+    await runAfterWorkspaceLoad(window.webContents,()=>true,{expectedUrl:nativeNavigationTarget});
+    const finished=prepared.barrier.finishWorkspaceNavigation(prepared.proof,started.navigation);if(!finished.ok)throw Error('Native Home entry refused');
+    const receipt=homeTransitions.complete(scope.transition,{barrier:prepared.barrier,proof:prepared.proof,view:finished.view});if(!receipt.ok)throw Error('Native Home receipt refused');
+    if(!prepared.barrier.release(prepared.proof))throw Error('Native Home release refused');workspaceBarrier=null;handedOff=true;
+    if(entryUrl==='siren://app/app.html'){
+      const grant=homeAuthority.capture({sender:window.webContents,senderFrame:window.webContents.mainFrame});
+      await homeService.recordLocation({surface:'diagrams'},{projectId:selectedId,mode,isCurrent:()=>homeAuthority.isCurrent(grant)});
+    }
+    window.webContents.send('siren:workspace-admitted');
+    for(const view of nativeShells.values())if(!view.isDestroyed())view.webContents.send('siren:view-resume');
+    // Returning Home preserves the last actual module location. Home itself is
+    // not a NavigationLocation and must never overwrite Continue metadata.
+    return receipt;
+  }catch{return {ok:false,code:'TRANSITION_FAILED'};}
+  finally{nativeNavigationTarget=null;writes.selectionTransition=false;if(!handedOff)await rollbackNativePreparation();}
+};
+const navigateHome=scope=>navigateEntry(scope,'siren://app/home.html');
+const navigateEmptyRecovery=async(scope,entryUrl)=>{
+  if(mode==='normal'||snapshot||!scope.transition||!scope.isCurrent()||writes.selectionTransition||pinTransition||accountTransition)return {ok:false,code:'ACCESS_REFUSED'};
+  writes.selectionTransition=true;let roster;
+  try{
+    await prepareNativeWorkspace('native-home-navigation');roster=windowRegistry.freezeRoster();
+    if(roster.grants.length!==0)return {ok:false,code:'TRANSITION_FAILED'};
+    nativeNavigationTarget=entryUrl;await window.loadURL(entryUrl);
+    await runAfterWorkspaceLoad(window.webContents,()=>true,{expectedUrl:entryUrl});
+    const receipt=homeTransitions.completeEmptyRecovery(scope.transition,roster,entryUrl);
+    if(!receipt.ok||!windowRegistry.releaseRoster(roster))return {ok:false,code:'TRANSITION_FAILED'};roster=null;return receipt;
+  }catch{return {ok:false,code:'TRANSITION_FAILED'};}
+  finally{if(roster)windowRegistry.releaseRoster(roster);nativeNavigationTarget=null;writes.selectionTransition=false;}
+};
+const selectHomeProject=async(input,scope,{create=false,json}={})=>{
+  if(!scope.transition||!scope.isCurrent()||writes.selectionTransition||pinTransition||accountTransition||
+    window.webContents.getURL()!=='siren://app/home.html')return {ok:false,code:'ACCESS_REFUSED'};
+  if(create&&(nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
+  const contents=window.webContents,frame=contents.mainFrame,generation=bootstrap.selectionGeneration||0,previous=selectedId;
+  const live=()=>!window.isDestroyed()&&!contents.isDestroyed()&&contents===window.webContents&&contents.mainFrame===frame&&
+    contents.getURL()==='siren://app/home.html'&&localPin.state().unlocked&&!accountQuiesced&&!pinTransition&&
+    (bootstrap.selectionGeneration||0)===generation&&selectedId===previous;
+  writes.selectionTransition=true;let changed=false;
+  try{
+    let next=create?null:await projects.readProject(input.projectId);
+    if(!live())return {ok:false,code:'ACCESS_REFUSED'};
+    // Do not manufacture a new selection or checkpoint when reopening the
+    // current verified project. The existing renderer remains current.
+    if(next?.project.id===selectedId){const grant=windowRegistry.capturePrimary({sender:contents,senderFrame:frame});return grant?{ok:true,epoch:grant.epoch}:{ok:false,code:'ACCESS_REFUSED'};}
+    if(snapshot)await prepareNativeWorkspace('native-home-navigation');
+    else{homeAuthority.invalidate();contents.send('siren:home-invalidated');}
+    if(!live())return {ok:false,code:'ACCESS_REFUSED'};
+    writes.selectionQuiesced=true;await Promise.all([...writes]);retireNativeViews();
+    if(create){next=await projects.createProject({label:input.label,json:json??JSON.stringify({kind:'siren-desktop',schema:1,storage:{}})});if(json!==undefined)await recovery.checkpointProject({snapshot:next,kind:'saved'});}
+    if(!live())return {ok:false,code:'ACCESS_REFUSED'};
+    await selected(next);changed=true;writes.selectionQuiesced=false;
+    windowRegistry.activateWorkspace({entryUrl:'siren://app/home.html'});
+    return await homeTransitions.completeSelection(scope.transition);
+  }catch{return {ok:false,code:create?'TRANSITION_FAILED':'PROJECT_UNAVAILABLE'};}
+  finally{
+    writes.selectionQuiesced=false;writes.selectionTransition=false;
+    if(!changed){await rollbackNativePreparation();if(snapshot&&!nativeShellFailure)try{windowRegistry.activateWorkspace({entryUrl:'siren://app/home.html'});}catch{/* Refused activation remains fenced. */}}
+    if(!window.isDestroyed())contents.send('siren:view-resume');
+  }
+};
+ipcMain.handle('siren:home',(event,method,payload)=>invokeHome({event,method,payload,authority:homeAuthority,services:{
+  getHomeState:(input,scope)=>homeService.getHomeState(input,scope),recordLocation:(input,scope)=>homeService.recordLocation(input,scope),
+  openProject:(input,scope)=>selectHomeProject(input,scope),createProject:(input,scope)=>selectHomeProject(input,scope,{create:true}),
+  continueWork:async(_input,scope)=>{
+    const state=await homeService.getHomeState({},scope),location=state.continuation?.location;
+    if(!location)return {ok:false,code:'ENTITY_UNAVAILABLE'};
+    if(location.projectId!==selectedId)return selectHomeProject({projectId:location.projectId},scope);
+    if(location.surface==='diagrams')return navigateEntry(scope,'siren://app/app.html');
+    if(!['code','docs'].includes(location.surface))return {ok:false,code:'UNAVAILABLE'};
+    const {schema,projectId,...relative}=location;
+    const resolved=await homeService.resolveEntity({projectId:selectedId,snapshot:await projects.readProject(selectedId),location:relative,isCurrent:scope.isCurrent});
+    if(!resolved.ok)return resolved;
+    if(!resolved.location.entityId)return {ok:false,code:'ENTITY_UNAVAILABLE'};
+    const result=await invokeNativeWindow(event,'openView',{role:location.surface,entityId:location.entityId,...(location.sourceRef?{version:location.sourceRef.version}:{})});
+    return result.ok?{ok:true,epoch:result.view.epoch}:result;
+  },
+},transitions:homeTransitions}));
+ipcMain.handle('siren:home-route',(event,input)=>{
+  if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html')return {ok:false,code:'SENDER_REFUSED'};
+  let request;try{request=navigationFields(input,['surface']);if(request.surface!=='diagrams')throw Error();}catch{return {ok:false,code:'REQUEST_REFUSED'};}
+  return invokeHome({event,method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateEntry(scope,'siren://app/app.html')}});
+});
+ipcMain.handle('siren:home-recovery',(event,input)=>{
+  try{navigationFields(input??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
+  if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html'||mode==='normal')return {ok:false,code:'ACCESS_REFUSED'};
+  return invokeHome({event,method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateEntry(scope,'siren://app/app.html')}});
+});
+ipcMain.handle('siren:home-import',(event,input)=>{
+  try{navigationFields(input??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
+  if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html')return {ok:false,code:'SENDER_REFUSED'};
+  return invokeHome({event,method:'createProject',payload:{label:'Imported project'},authority:homeAuthority,transitions:homeTransitions,services:{createProject:async(_input,scope)=>{
+    if(nativeReadonly||mode!=='normal'||writes.selectionTransition||!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+    const answer=await dialog.showOpenDialog(window,{title:'Open a SIREN project',properties:['openFile'],filters:[{name:'SIREN projects',extensions:['siren','json']}]});
+    if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+    if(answer.canceled)return {ok:false,code:'CANCELLED'};
+    if(answer.filePaths?.length!==1)return {ok:false,code:'PROJECT_UNAVAILABLE'};
+    try{
+      const bytes=await readOwnedBytes(await realpath(answer.filePaths[0]),64*1024*1024);
+      const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
+      const validated=await validateImportedProject({bytes,fileName:basename(answer.filePaths[0])},{isCurrent:scope.isCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
+      if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+      return selectHomeProject({label:basename(answer.filePaths[0]).slice(0,180)},scope,{create:true,json:parseLegacyImport(Buffer.from(validated))});
+    }catch{return {ok:false,code:scope.isCurrent()?'PROJECT_UNAVAILABLE':'ACCESS_REFUSED'};}
+  }}});
+});
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
 Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'File', submenu: [
@@ -402,11 +535,18 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
   ] },
 ]));
 if (!app.isPackaged) window.webContents.on('console-message', event => { if (event.level === 'error' || event.level >= 2) console.error('Renderer:', event.message?.slice(0, 800)); });
+let initialOpening=true;
 ipcMain.on('siren:bootstrap', event => {
-  const trusted = event.sender === window.webContents && event.senderFrame === event.sender.mainFrame && event.senderFrame.url === 'siren://app/app.html';
+  const entry=event.senderFrame?.url;
+  const trusted = event.sender === window.webContents && event.senderFrame === event.sender.mainFrame && ['siren://app/app.html','siren://app/home.html'].includes(entry);
   if (!trusted) { event.returnValue = { mode: 'readonly', reason: 'Bootstrap request refused', snapshot: null }; return; }
-  if (!localPin.state().unlocked) { event.returnValue = { mode: 'locked', readonly: true, snapshot: null, recoveryProjectId: null, localAccess: true, pin: localPin.state() }; return; }
+  if (!localPin.state().unlocked) { event.returnValue = { mode: 'locked', readonly: true, snapshot: null, recoveryProjectId: null, localAccess: true, pin: localPin.state(),opening:entry==='siren://app/home.html'&&initialOpening?'intro':'none' };initialOpening=false;return; }
+  if(entry==='siren://app/home.html'){
+    if(snapshot)try{windowRegistry.activateWorkspace({entryUrl:entry});}catch{/* Prepared native navigation completes after load. */}
+    event.returnValue={mode,readonly:nativeReadonly||mode!=='normal',snapshot:null,localAccess:true,pin:localPin.state(),opening:'none'};return;
+  }
   if (snapshot) {
+    if(nativeNavigationTarget==='siren://app/app.html'&&writes.selectionTransition&&workspaceBarrier){event.returnValue={...bootstrap,pin:localPin.state(),navigationPending:true};return;}
     try { windowRegistry.activateWorkspace(); if (!windowRegistry.caller(event)) throw new Error('Native grant unavailable'); }
     catch { event.returnValue = { mode: 'readonly', reason: 'Native workspace access refused; existing data was retained', snapshot: null, recoveryProjectId: selectedId, readonly: true, localAccess: true, pin: localPin.state() }; return; }
   }
@@ -414,7 +554,7 @@ ipcMain.on('siren:bootstrap', event => {
 });
 let readyRecorded = false;
 ipcMain.on('siren:ready', async event => {
-  if (readyRecorded || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url !== 'siren://app/app.html') return;
+  if (readyRecorded || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame || !['siren://app/app.html','siren://app/home.html'].includes(event.senderFrame.url)) return;
   try {
     if (processIdentity) await journal.recordSession({ event: 'ready', sessionId, version: app.getVersion(), processIdentity });
     readyRecorded = true;
@@ -449,14 +589,16 @@ ipcMain.handle('siren:docs-read', async (event, method, payload) => {
   const operation=docsReads.invoke({event,method,payload});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
 });
-ipcMain.handle('siren:windows', async (event, method, payload) => {
+const invokeNativeWindow=async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
   if(method==='getCatalog'){
     const operation=windowCatalog.invoke({event,payload});writes.add(operation);
     try{return await operation;}finally{writes.delete(operation);}
   }
   const before = windowRegistry.caller(event);
-  const result = await invokeWindow({ event, method, payload, registry: windowRegistry });
+  const result = method==='openView'&&before?.mainFrameUrl==='siren://app/home.html'
+    ? await invokeHomeWindow({event,payload,registry:windowRegistry,snapshot})
+    : await invokeWindow({ event, method, payload, registry: windowRegistry });
   if (result.code === 'WINDOW_DESTROY_FAILED') nativeShellFailure = true;
   if (method === 'openView' && result.ok) {
     const current = windowRegistry.caller(event); const view = nativeShells.get(result.view.windowId);
@@ -474,21 +616,23 @@ ipcMain.handle('siren:windows', async (event, method, payload) => {
     }
   }
   return result;
-});
+};
+ipcMain.handle('siren:windows',invokeNativeWindow);
 window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-window.webContents.on('will-navigate', event => { if (event.url !== 'siren://app/app.html') event.preventDefault(); });
+window.webContents.on('will-navigate', event => { if (event.url !== window.webContents.getURL() && event.url!==nativeNavigationTarget) event.preventDefault(); });
 window.webContents.on('will-attach-webview', event => event.preventDefault());
-window.webContents.on('will-frame-navigate', event => { if (!event.isMainFrame || event.url !== 'siren://app/app.html') event.preventDefault(); });
+window.webContents.on('will-frame-navigate', event => { if (!event.isMainFrame || event.url!==window.webContents.getURL()&&event.url!==nativeNavigationTarget) event.preventDefault(); });
 window.webContents.on('before-input-event', (event, input) => {
   if (input.type === 'keyDown' && input.control && !input.alt && !input.shift && input.key.toLowerCase() === 'q') { event.preventDefault(); window.close(); }
 });
-await window.loadURL('siren://app/app.html');
+await window.loadURL('siren://app/home.html');
 const automaticUpdateTimer = setTimeout(() => { if (!window.isDestroyed()) void updates.automaticCheck({ online: net.isOnline() }); }, 10000);
 automaticUpdateTimer.unref();
 let closing = false; let closeRequested = false;
 window.on('close', event => {
   if (closing) return;
   event.preventDefault();
+  if(writes.selectionTransition||accountTransition||pinTransition){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
   if (closeRequested) return;
   closeRequested = true;
   (async () => {

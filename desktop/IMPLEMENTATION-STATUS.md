@@ -1,3 +1,12 @@
+# 2026-10-03 — production Home batch under qualification
+
+Implemented cold lightweight Intro/PIN/Home; no implicit scratch project, explicit durable New/Open, genuine prepared App/Home handoff, metadata-only readonly Code/Docs libraries and Continue, native window shelf/restore, and explicit readonly Recovery for damaged-journal startup. Existing all-view preparation remains enforced. Private receipts validate actual frame/durable selection rather than trusting success/hash labels. Home never receives a project envelope/source. Present, cross-project exact Continue, writable native editors and native Diagram/Presenter/Terminal remain open.
+
+Actual native Home9, Recovery3, real PIN restart/cooldown, first-use Guided and private Python recovery/Quit/restart completed with the scope recorded in reviews/2026-10-03-home-production-root-evidence.md. No-op renderer backup rotation and missing packaged Home staging were found and corrected. First full frozen suite retained662/663; one old diagnostic expected backup rotation on unchanged retry. It now checks the complete unchanged snapshot and actual repaired checkpoint, then a real edit using exact CAS2→3; focused8 passed. Corrected frozen full suite663/663 passed with no changed captured inputs, log9abae7fe64fc0bc5a6627b89c072e73ffd34021db43834a3cf905d0b30692b34. A subsequent test-only expansion connects actual import/durable selection/recovery; focused8/8 passed. The committed development package remains pending. No independent approval or release assertion.
+
+Remote remains9bd98f2/treee549, PR2draft/open/unmerged, main688c unchanged. CI43 Desktop failed exact packaged pre-restore preservation; original artifact verified and retained. The independent local backup defect is corrected but its correspondence to the truncated hosted mismatch is not conclusively established before the unchanged package oracle passes. Launcher34 succeeded. No installed user application/user data changed; static Git snapshot stays frozen.
+
+--- Earlier status retained below ---
 ## 3 October — production native view preparation
 
 637/637 final frozen tests passed with unchanged inputs. Actual native Code/Docs/primary preparation is now mounted for Lock, selection and Quit. Owned corruption regression verifies refusal, visible ready editors, exact restoration and successful retry. Evidence: reviews/2026-10-03-production-view-control-root-evidence.md. Home routing and writable satellites remain open.

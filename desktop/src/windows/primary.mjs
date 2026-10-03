@@ -2,6 +2,7 @@ import {navigationFields} from '../navigation/contracts.mjs';
 import {validId} from '../projects/paths.mjs';
 import {validateWorkspace,MAX_WORKSPACE_BYTES} from '../projects/store.mjs';
 import {failure} from '../ipc.mjs';
+import {digest} from '../projects/atomic.mjs';
 
 export {MAX_WORKSPACE_BYTES};
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
@@ -40,8 +41,8 @@ export class PrimaryPersistence {
   if(typeof projects!=='function'||!['checkpointProject','readProjectPoint'].every(key=>typeof recovery?.[key]==='function')||typeof onSelected!=='function')throw TypeError('Native primary persistence adapters required');
   this.#projects=projects;this.#recovery=recovery;this.#onSelected=onSelected;
  }
- #remember(projectId,purpose,pointId,receipt) {
-  const key=`${projectId}:${purpose}`;this.#latest.delete(key);this.#latest.set(key,{pointId,receipt});
+ #remember(projectId,purpose,pointId,receipt,selected=null) {
+  const key=`${projectId}:${purpose}`;this.#latest.delete(key);this.#latest.set(key,{pointId,receipt,selected});
   while(this.#latest.size>128)this.#latest.delete(this.#latest.keys().next().value);
  }
  async save(input,scope) {
@@ -58,12 +59,18 @@ export class PrimaryPersistence {
    const checkpoint=committed?selected:{...selected,json:request.json,sha256:result.sha256};
    const kind=committed?'saved':'draft';let checkpointError,pointId;
    try {
+    const prior=this.#latest.get(`${request.projectId}:workspace`);
+    const reused=committed&&result.unchanged===true&&prior?.pointId&&
+      (await this.verify({ok:true,revision:result.revision,sha256:result.sha256},{projectId:request.projectId,purpose:'workspace',isCurrent:current})).ok===true;
+    if(reused)pointId=prior.pointId;
+    else{
     const point=await this.#recovery.checkpointProject({snapshot:checkpoint,kind});
     if(!current())return fail('ACCESS_REFUSED');
     const actual=await this.#recovery.readProjectPoint(request.projectId,point.id);
     if(!current())return fail('ACCESS_REFUSED');
     if(actual.kind!==kind||actual.snapshot.schema!==1||actual.snapshot.project.id!==request.projectId||actual.snapshot.revision!==checkpoint.revision||actual.snapshot.json!==checkpoint.json||actual.snapshot.sha256!==checkpoint.sha256)throw Object.assign(Error('Checkpoint mismatch'),{code:'CHECKPOINT_UNVERIFIED'});
     pointId=point.id;
+    }
    }catch(error){checkpointError=error;}
    if(!current())return fail('ACCESS_REFUSED');
    // Notify only the genuine current selection, including an independently
@@ -85,6 +92,11 @@ export class PrimaryPersistence {
   if(!current())return fail('ACCESS_REFUSED');
   try {
    const selected=await this.#projects({canWrite:()=>false}).readProject(scope.projectId);if(!current())return fail('ACCESS_REFUSED');
+   if(scope.checkpoint===false){
+    const receipt=projectWorkspaceResult({ok:true,revision:selected.revision,sha256:selected.sha256});
+    this.#remember(scope.projectId,'readonly',null,receipt,Object.freeze({schema:selected.schema,sourceRefsSHA:digest(Buffer.from(JSON.stringify(selected.sourceRefs??[])))}));
+    return receipt;
+   }
    const point=await this.#recovery.checkpointProject({snapshot:selected,kind:'saved'});if(!current())return fail('ACCESS_REFUSED');
    const actual=await this.#recovery.readProjectPoint(scope.projectId,point.id);if(!current())return fail('ACCESS_REFUSED');
    if(actual.kind!=='saved'||actual.snapshot.schema!==selected.schema||actual.snapshot.project.id!==scope.projectId||actual.snapshot.revision!==selected.revision||actual.snapshot.sha256!==selected.sha256||actual.snapshot.json!==selected.json||JSON.stringify(actual.snapshot.sourceRefs)!==JSON.stringify(selected.sourceRefs))return fail('WORKSPACE_PROOF_FAILED');
@@ -99,6 +111,12 @@ export class PrimaryPersistence {
   const proof=this.#latest.get(`${scope.projectId}:${purpose}`);
   if(!proof||receipt.ok!==true||receipt.revision!==proof.receipt.revision||receipt.sha256!==proof.receipt.sha256)return fail('WORKSPACE_VERSION_CHANGED');
   try {
+   if(purpose==='readonly'&&proof.pointId===null&&proof.selected){
+    const selected=await this.#projects({canWrite:()=>false}).readProject(scope.projectId);if(!current())return fail('ACCESS_REFUSED');
+    if(selected.schema!==proof.selected.schema||selected.revision!==receipt.revision||selected.sha256!==receipt.sha256||
+      digest(Buffer.from(JSON.stringify(selected.sourceRefs??[])))!==proof.selected.sourceRefsSHA||this.#latest.get(`${scope.projectId}:${purpose}`)!==proof)return fail('WORKSPACE_VERSION_CHANGED');
+    return {ok:true,domain:'workspace',entityId:scope.projectId,purpose,revision:receipt.revision,sha256:receipt.sha256,durability:'readonly'};
+   }
    const point=await this.#recovery.readProjectPoint(scope.projectId,proof.pointId);if(!current())return fail('ACCESS_REFUSED');
    if(point.kind!==(purpose==='recovery'?'draft':'saved')||(purpose!=='readonly'&&point.snapshot.schema!==1)||point.snapshot.project.id!==scope.projectId||point.snapshot.revision!==receipt.revision||point.snapshot.sha256!==receipt.sha256)return fail('WORKSPACE_PROOF_FAILED');
    const projects=this.#projects({canWrite:()=>false}),selected=await projects.readProject(scope.projectId);if(!current())return fail('ACCESS_REFUSED');

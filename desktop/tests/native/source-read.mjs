@@ -14,6 +14,7 @@ const hash=b=>createHash('sha256').update(b).digest('hex');
 const paths=['src/main.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
 paths.push('src/windows/catalog.mjs','src/windows/control.mjs','src/windows/source-barrier.mjs','src/windows/readonly-seals.mjs','src/windows/primary.mjs','src/ui/code/view-lifecycle.js','src/ui/storage.js','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
 if(process.argv.includes('--owned-source-corruption'))paths.push('tests/native/view-control-rollback.mjs');
+if(process.argv.includes('--owned-home-navigation'))paths.push('tests/native/home-navigation.mjs','tests/native/home-navigation-cases.mjs','generated/home.html',...['authority','service','transition-receipts','store','catalog','resolver','ipc'].map(n=>'src/navigation/'+n+'.mjs'),'src/ui/workspace/home.js','src/ui/workspace/intro.js');
 const capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))])));
 const inputs=await capture(),projects=new ProjectStore(data),sources=new SourceRepository(data);
 const first=await projects.createProject({label:'Owned exact native source reads',json:'{}'});
@@ -124,6 +125,7 @@ try{
  assert.deepEqual(await projects.readProject(first.project.id),selected);
  assert.deepEqual(await sources.exportSource({projectId:first.project.id,sourceId:a.sourceId,version:1}),Buffer.from(text));
  result.closePreparation=await driver.evaluate('window.sirenDesktopRequestClose().then(()=>({ok:true})).catch(error=>({ok:false,message:error.message}))');
+ if(process.argv.includes('--owned-home-navigation'))await (await import('./home-navigation-cases.mjs')).runHomeNavigation({driver,attachPage,data,evidence,projects,sources,first,selected,text,a,result});
  if(process.argv.includes('--owned-source-corruption')){
   // Corrupt only this probe's owned blob; restore the independently hashed
   // original in finally. No user data or product authority bypass is involved.

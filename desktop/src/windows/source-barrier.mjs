@@ -72,6 +72,14 @@ export class NativeSourceBarrier {
       return Object.freeze({ok:true,view:ticket.navigationRecord});
     }catch{return fail('NAVIGATION_REFUSED');}
   }
+  // A native receipt issuer may attest this exact completed handoff before
+  // release. Cloned records, unfinished loads and retired owners cannot qualify.
+  isCompletedNavigation(proof,record) {
+    const ticket=this.#active;
+    return Boolean(!this.#disposed&&ticket&&!ticket.cancelled&&ticket.prepared&&ticket.proof===proof&&
+      ticket.navigationRecord===record&&this.#owner.isQuiescent(ticket.quiescence)&&
+      this.#registry.isWorkspaceNavigationCurrent(record));
+  }
   // Main explicitly decides whether to resume view adapters; releasing only
   // lifts native admission. Failed optimistic editors stay fenced themselves.
   release(proof) {

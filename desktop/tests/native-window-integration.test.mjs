@@ -12,10 +12,18 @@ import {SourceRepository} from '../src/sources/repository.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {NativeWindowCatalog} from '../src/windows/catalog.mjs';
+import {invokeHomeWindow} from '../src/windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from '../src/windows/readonly-seals.mjs';
 import {NativeAllViewControl} from '../src/windows/control.mjs';
 import {NativeAllWorkspaceBarrier} from '../src/windows/source-barrier.mjs';
 import {navigationFields} from '../src/navigation/contracts.mjs';
+import {HomeAuthority} from '../src/navigation/authority.mjs';
+import {HomeService} from '../src/navigation/service.mjs';
+import {HomeTransitionReceipts} from '../src/navigation/transition-receipts.mjs';
+import {NavigationStore} from '../src/navigation/store.mjs';
+import {ProjectCatalog} from '../src/navigation/catalog.mjs';
+import {createLocationResolver} from '../src/navigation/resolver.mjs';
+import {invokeHome} from '../src/navigation/ipc.mjs';
 import {DomainRepository} from '../src/windows/domain.mjs';
 import { invokeWindow } from '../src/windows/ipc.mjs';
 import { nativeViewFactory } from '../src/windows/factory.mjs';
@@ -39,13 +47,13 @@ function fixture() {
   const owner = new NativeWindow(); owner.webContents.mainFrame.url='siren://app/app.html'; const handlers=new Map();
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
-  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,NativeWindowCatalog,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     screen:{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]},
-    localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
+    localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,accountTransition:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
     app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;}},
   });
-  vm.runInContext(slice('const nativeShells =','const desktopCommand =') + '\n' + slice("ipcMain.on('siren:bootstrap'",'let readyRecorded') + '\n' + slice("ipcMain.handle('siren:windows'",'window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
+  vm.runInContext(slice('const nativeShells =','const desktopCommand =') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
   const event=()=>({sender:owner.webContents,senderFrame:owner.webContents.mainFrame});
   const bootstrap=()=>{const request=event(); handlers.get('siren:bootstrap')(request); return request.returnValue;};
   const invoke=(method,payload,eventOverride=event())=>handlers.get('siren:windows')(eventOverride,method,payload);
@@ -72,6 +80,11 @@ test('actual main exposes bounded selected Docs/Code metadata to the genuine App
  const opened=await f.invoke('openView',{role:'docs',entityId:'doc_a'});assert.equal(opened.ok,true);const child=f.handles[1];
  assert.equal((await f.invoke('getCatalog',undefined,{sender:child.webContents,senderFrame:child.webContents.mainFrame})).code,'ACCESS_REFUSED');
  f.setLocked(true);assert.equal((await f.invoke('getCatalog')).code,'ACCESS_REFUSED');
+});
+test('actual Quit refuses a competing native selection before touching its preparation or journal',async()=>{
+ const f=fixture();f.bootstrap();f.context.writes.selectionTransition=true;f.owner.close();
+ assert.equal(f.owner.isDestroyed(),false);assert.equal(f.closeErrors(),1);assert.equal(f.context.registry.listViews().length,1);
+ f.context.writes.selectionTransition=false;assert.ok(f.context.registry.capturePrimary(f.event()));
 });
 test('main failed factory destruction fences every later open and data bootstrap until native handles are destroyed',async()=>{
   const f=fixture(); f.bootstrap(); f.setFaults(true,true);

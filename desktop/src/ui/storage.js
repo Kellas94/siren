@@ -55,7 +55,16 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
   return {
     ready: Promise.resolve(), start() { return this.ready; }, get(key) { return mirror.get(key) ?? null; }, keys() { return [...mirror.keys()]; },
     set(key, value) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.set(key, value); return persist(key === workspaceKey ? 'workspace' : 'recovery'); },
-    setWithBackup(key, value, backupKey, backupValue) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.set(key, value); mirror.set(backupKey, backupValue); return persist('workspace'); },
+    setWithBackup(key, value, backupKey, backupValue) {
+      if (window.sirenDesktopStorageLocked) return Promise.resolve(locked());
+      if (readonly()) return Promise.resolve(readonlyReceipt());
+      const changed=mirror.get(key)!==value;
+      mirror.set(key, value);
+      // A repeated flush must preserve the prior good state. Rotating it to
+      // the unchanged current state loses recovery history and advances CAS.
+      if(changed||!mirror.has(backupKey))mirror.set(backupKey, backupValue);
+      return persist('workspace');
+    },
     remove(key) { if (window.sirenDesktopStorageLocked) return Promise.resolve(locked()); if (readonly()) return Promise.resolve(readonlyReceipt()); mirror.delete(key); return persist('recovery'); },
     onWriteError(handler) { writeError = handler; }, onRemoteChange() {},
     foreignRecord: async () => null, readFailure: () => readError, usingFallback: () => false,

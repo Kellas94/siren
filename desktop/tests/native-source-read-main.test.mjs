@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {nativeSourceContext,mainSlice} from './fixtures/source-main-context.mjs';
 test('actual native main mounts bounded readonly source leases, keeps selected versions and tracks outstanding reads',async()=>{
  const f=await nativeSourceContext();
- vm.runInContext(mainSlice("ipcMain.handle('siren:source-readers'","ipcMain.handle('siren:windows'"),f.context);
+ vm.runInContext(mainSlice("ipcMain.handle('siren:source-readers'","const invokeNativeWindow="),f.context);
  const handler=f.handlers.get('siren:source-readers');assert.equal(typeof handler,'function');
  const context=await handler(f.event(0),'getReference');assert.equal(context.ok,true);assert.equal(context.readonly,true);assert.equal(context.sourceRef.sha256,f.refs[0].sha256);
  const opening=handler(f.event(0),'openRead',context.sourceRef);assert.equal(f.context.writes.size,1);
@@ -18,9 +18,9 @@ test('actual native main mounts bounded readonly source leases, keeps selected v
 });
 test('actual native view retirement disposes read sessions before revoking native windows',async()=>{
  const f=await nativeSourceContext();
- vm.runInContext(mainSlice("ipcMain.handle('siren:source-readers'","ipcMain.handle('siren:windows'"),f.context);
+ vm.runInContext(mainSlice("ipcMain.handle('siren:source-readers'","const invokeNativeWindow="),f.context);
  const handler=f.handlers.get('siren:source-readers'),reference=(await handler(f.event(0),'getReference')).sourceRef,opened=await handler(f.event(0),'openRead',reference);assert.equal(opened.ok,true);
- vm.runInContext(mainSlice('const retireNativeViews','const desktopCommand')+';globalThis.retire=retireNativeViews;',f.context);
+ vm.runInContext(mainSlice('const retireNativeViews','const navigation=')+';globalThis.retire=retireNativeViews;',f.context);
  const order=[];vm.runInContext('globalThis.reads=sourceReads',f.context);const dispose=f.context.reads.dispose.bind(f.context.reads),invalidate=f.registry.invalidateEpoch.bind(f.registry);
  f.context.reads.dispose=()=>{order.push('readers');dispose();};f.registry.invalidateEpoch=options=>{order.push('windows');invalidate(options);};f.context.nativeShells=new Map();
  f.context.retire();assert.deepEqual(order,['readers','windows']);

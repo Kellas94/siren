@@ -19,7 +19,7 @@ test('actual main source gate refuses PIN transitions, shell failures, quiescenc
   }
 });
 test('actual main mounts the finite read-only source channel and tracks its pending operation in the shared write/drain set',async()=>{
-  const f=await nativeContext();vm.runInContext(slice("ipcMain.handle('siren:sources'","ipcMain.handle('siren:windows'"),f.context);
+  const f=await nativeContext();vm.runInContext(slice("ipcMain.handle('siren:sources'","const invokeNativeWindow="),f.context);
   const handler=f.handlers.get('siren:sources');assert.equal(typeof handler,'function');
   const pending=handler(f.event(0),'getMetrics',{sourceId:f.refs[0].sourceId,version:1});assert.equal(f.context.writes.size,1);
   assert.equal((await pending).ok,true);assert.equal(f.context.writes.size,0);
@@ -46,7 +46,7 @@ test('actual main confines a Code window to its admitted version even when anoth
   await f.registry.openView({role:'code',entityId:ref.sourceId,version:1});
   const grant=f.registry.capture(f.event(2));assert.deepEqual(f.registry.sourceScope(grant),{sourceId:ref.sourceId,version:1});
   assert.equal(f.registry.sourceScope({...grant}),null);
-  vm.runInContext(slice("ipcMain.handle('siren:sources'","ipcMain.handle('siren:windows'"),f.context);
+  vm.runInContext(slice("ipcMain.handle('siren:sources'","const invokeNativeWindow="),f.context);
   const handler=f.handlers.get('siren:sources');
   assert.equal((await handler(f.event(2),'getMetrics',{sourceId:ref.sourceId,version:1})).sha256,ref.sha256);
   assert.equal((await handler(f.event(2),'getMetrics',{sourceId:ref.sourceId,version:2})).code,'ACCESS_REFUSED');

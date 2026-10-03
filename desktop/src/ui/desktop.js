@@ -198,6 +198,7 @@
     }
     const bar = document.createElement('aside'); bar.id = 'desktopBar'; bar.setAttribute('aria-label', 'Local desktop project');
     const label = document.createElement('span'); label.id = 'desktopProjectLabel'; label.textContent = `Local · ${boot?.snapshot?.project.label || 'Choose a project'} · Development build`; bar.append(label);
+    if(typeof bridge.goHome==='function')button(bar,'desktopHome','Home',async()=>{const result=await bridge.goHome();if(result?.ok!==true&&status)status.textContent='Home could not open. Your live work was retained.';});
     if(typeof window.sirenWindow?.getCatalog==='function')button(bar,'desktopWindows','Windows',showWindows);
     button(bar, 'desktopOptions', 'Desktop…', showDesktop); document.body.append(bar);
     bridge.onStatus(event => {

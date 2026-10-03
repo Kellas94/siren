@@ -49,8 +49,8 @@ function homeState(input,grant) {
 }
 /** No main/preload channel installed. Trusted services must use scope.isCurrent
  * at every native commit boundary; checking the result alone cannot undo writes. */
-export async function invokeHome({event,method,payload,authority,services}) {
-  let grant,isCurrent;
+export async function invokeHome({event,method,payload,authority,services,transitions}) {
+  let grant,isCurrent,ticket;
   try {
     if(typeof method!=='string'||!methods.has(method))return fail('REQUEST_REFUSED');
     grant=authority.capture(Object.freeze({sender:event?.sender,senderFrame:event?.senderFrame}));
@@ -59,9 +59,10 @@ export async function invokeHome({event,method,payload,authority,services}) {
     let input;try{input=request(method,payload,grant.projectId);}catch{return fail('REQUEST_REFUSED');}
     if(!isCurrent() || method==='recordLocation'&&grant.projectId===null)return fail('ACCESS_REFUSED');
     if(!services || !Object.hasOwn(services,method) || typeof services[method]!=='function')return fail('UNAVAILABLE');
-    const scope=Object.freeze({projectId:grant.projectId,mode:grant.mode,isCurrent});
+    if(transitions&&['continueWork','openProject','createProject'].includes(method))ticket=transitions.begin(grant,method);
+    const scope=Object.freeze({projectId:grant.projectId,mode:grant.mode,isCurrent,...(ticket?{transition:ticket}:{})});
     const result=await services[method](input,scope);
-    if(!isCurrent())return fail('ACCESS_REFUSED');
+    if(!isCurrent())return ticket&&transitions.consume(result,{ticket,grant,method})===true?{ok:true,epoch:result.epoch}:fail('ACCESS_REFUSED');
     try {
       if(method==='getHomeState')return {ok:true,state:homeState(result,grant)};
       const receipt=fields(result,['ok','code','epoch'],['ok']);
@@ -71,4 +72,5 @@ export async function invokeHome({event,method,payload,authority,services}) {
       return {ok:true,epoch:receipt.epoch};
     } catch {return fail('HOME_RESULT_REFUSED');}
   } catch {return fail(grant&&isCurrent&&!isCurrent()?'ACCESS_REFUSED':'HOME_OPERATION_FAILED');}
+  finally{if(ticket)try{transitions.cancel(ticket);}catch{/* No receipt can restore a retired grant. */}}
 }

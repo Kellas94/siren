@@ -57,7 +57,7 @@ try {
   assert.equal(await driver.evaluate('typeof window.require'), 'undefined');
   const denied = await driver.evaluate(`window.sirenDesktop.saveProject({projectId:${JSON.stringify(project.project.id)},baseRevision:1,json:'{}',purpose:'workspace'})`);
   assert.equal(denied.ok, false, 'Known project ID cannot bypass the native PIN gate');
-  assert.equal(denied.code, 'PIN_REQUIRED');
+  assert.equal(denied.code,await driver.evaluate('location.href==="siren://app/home.html"')?'SENDER_REFUSED':'PIN_REQUIRED');
   await assert.rejects(access(forbiddenRoot), { code: 'ENOENT' });
   assert.equal((await projects.readProject(project.project.id)).sha256, project.sha256);
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
