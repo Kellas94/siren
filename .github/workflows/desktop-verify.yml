@@ -34,10 +34,12 @@ jobs:
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
       - name: Unit and protocol behavior (includes real 180-second timeout)
-        timeout-minutes: 6
+        # CI27 exhausted six minutes before the expanded suite completed.
+        # Individual behavioral deadlines remain unchanged; keep this bounded.
+        timeout-minutes: 12
         run: |
           New-Item -ItemType Directory -Force evidence | Out-Null
-          npm run verify 2>&1 | Tee-Object -FilePath evidence/ci-units.log
+          node --test --test-reporter=tap tests/*.test.mjs 2>&1 | Tee-Object -FilePath evidence/ci-units.log
           exit $LASTEXITCODE
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated

@@ -1,0 +1,737 @@
+{
+  "schema": 1,
+  "capturedAt": "2026-10-03T00:38:47.237Z",
+  "scope": "Current installed product editor dependency identity/license inventory and trusted local grammar provenance; no new packaged/native editor qualification",
+  "runtimePackageCount": 15,
+  "directRuntimeCount": 9,
+  "transitiveRuntimeCount": 6,
+  "directRuntime": [
+    "@codemirror/commands",
+    "@codemirror/lang-python",
+    "@codemirror/language",
+    "@codemirror/search",
+    "@codemirror/state",
+    "@codemirror/view",
+    "@lezer/common",
+    "@lezer/highlight",
+    "@lezer/lr"
+  ],
+  "matchesRetainedCandidate": true,
+  "mismatches": [],
+  "comparison": {
+    "retainedInventory": "reviews/2026-10-03-editor-dependencies.json",
+    "retainedInventorySha256": "20349596b3f4fd6260ff4e5e17c06e68189d2805660ae798e0935e1a4ed5510f",
+    "fields": [
+      "installed and lock versions",
+      "lock integrity strings",
+      "MIT declarations",
+      "license bytes/SHA256",
+      "main/module entry bytes"
+    ]
+  },
+  "packageSha256": "b88a96a244c88c369ab9934635613896008feeb4ab0165eecb604a51aaba8043",
+  "packageLockSha256": "dc3cdd517b8dd18759260f2f7cc898c74bc57a0b7151f51e5f3c55be368f3cab",
+  "integrityQualification": "Lock integrity values match retained candidate; no tarball redownload or independent SRI archive verification by this worker.",
+  "installProvenance": "Coordinator-reported exact product pins installed with npm --ignore-scripts; this worker did not rerun installation or lifecycle scripts.",
+  "packages": [
+    {
+      "package": "@codemirror/autocomplete",
+      "version": "6.20.3",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-tlosUqb+3BbxCxZdu4tKeRghPFC+QM7q4X5YhKV2eCmPG+1r2F3f4AaSz5sCrFqUtX4Jh20VFTKecl16MgiV9g==",
+      "resolved": "https://registry.npmjs.org/@codemirror/autocomplete/-/autocomplete-6.20.3.tgz",
+      "manifestSha256": "8c5ba7b95edfd5b57f3d78a3755bef495607ad10b83896d398f30551d95e51a3",
+      "dependencies": {
+        "@codemirror/language": "^6.0.0",
+        "@codemirror/state": "^6.0.0",
+        "@codemirror/view": "^6.17.0",
+        "@lezer/common": "^1.0.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/autocomplete/dist/index.cjs",
+          "bytes": 90683,
+          "sha256": "801471370def491e3a0f0f89e8a8c2bd434448448b5715afb35598bd364f82be",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/autocomplete/dist/index.js",
+          "bytes": 90042,
+          "sha256": "2796fb2771a559ee9fbaa65367b96105368dd9ded1bb686df0e005be48801dcd",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/commands",
+      "version": "6.11.1",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-O/4hG3SC1YwcmQ0d2UVNDs+AsaNWd1iHVxbTeEBuqH+6bExAiPK3iS/BvpY6rZGURALv4ZD3sIgcCmRvw3ehBg==",
+      "resolved": "https://registry.npmjs.org/@codemirror/commands/-/commands-6.11.1.tgz",
+      "manifestSha256": "89c6b42b55084ca449b6956ee6409bcae615a70fdce04b990a1e38bbbc3ad883",
+      "dependencies": {
+        "@codemirror/language": "^6.0.0",
+        "@codemirror/state": "^6.7.0",
+        "@codemirror/view": "^6.27.0",
+        "@lezer/common": "^1.1.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/commands/dist/index.cjs",
+          "bytes": 88108,
+          "sha256": "83991d65cb9341e10e29c2da08c08106f2ad6bbc79ab5f9a83558e9a882be23e",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/commands/dist/index.js",
+          "bytes": 84624,
+          "sha256": "395c41fb17d4966162e8d29106e438278123bc3a3fa1b11825debdf1523594a4",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/lang-python",
+      "version": "6.2.1",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-IRjC8RUBhn9mGR9ywecNhB51yePWCGgvHfY1lWN/Mrp3cKuHr0isDKia+9HnvhiWNnMpbGhWrkhuWOc09exRyw==",
+      "resolved": "https://registry.npmjs.org/@codemirror/lang-python/-/lang-python-6.2.1.tgz",
+      "manifestSha256": "b41b6ef98a65a5a85cf91eb269e27cf15987a9f0761437ad9569dcc467b9941c",
+      "dependencies": {
+        "@codemirror/state": "^6.0.0",
+        "@codemirror/autocomplete": "^6.3.2",
+        "@codemirror/language": "^6.8.0",
+        "@lezer/common": "^1.2.1",
+        "@lezer/python": "^1.1.4"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/lang-python/dist/index.cjs",
+          "bytes": 13155,
+          "sha256": "73b2a005b490083b7d3dc9bcfd4da41c8295fae235e13c7ce1822e667966c6bb",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/lang-python/dist/index.js",
+          "bytes": 13319,
+          "sha256": "c60274624c703cb07b471a2de503b319b222b87e140445c09ce57415130b5eca",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/language",
+      "version": "6.12.4",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-1q4PaT+o6PbgpkJt4Q8Fv5XJxTy4FUZ4MWETtyiDw3J0Pyr9E2vqcKL+k9wcvjNTIsauxvE7OfmWj3FRPHQ76A==",
+      "resolved": "https://registry.npmjs.org/@codemirror/language/-/language-6.12.4.tgz",
+      "manifestSha256": "f1c55a3958fd2998dae159b1a8c2240f796c11a5c012ed67a3729018e2138f9d",
+      "dependencies": {
+        "@codemirror/state": "^6.0.0",
+        "@codemirror/view": "^6.23.0",
+        "@lezer/common": "^1.5.0",
+        "@lezer/highlight": "^1.0.0",
+        "@lezer/lr": "^1.0.0",
+        "style-mod": "^4.0.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/language/dist/index.cjs",
+          "bytes": 103600,
+          "sha256": "34db623cd5be393d2c6e42a8136882a8d4fa36438091bb44093426e08ed0b7f0",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/language/dist/index.js",
+          "bytes": 102129,
+          "sha256": "875ce988fbbed53c47cf4b2aad962afe1d6b23c15ecc40466cdc6be5b59d647e",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/search",
+      "version": "6.7.2",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==",
+      "resolved": "https://registry.npmjs.org/@codemirror/search/-/search-6.7.2.tgz",
+      "manifestSha256": "1137bde0555ba4e2cd3331b655632ff574bc22abe59092204a0bcd94e997a942",
+      "dependencies": {
+        "@codemirror/state": "^6.0.0",
+        "@codemirror/view": "^6.37.0",
+        "crelt": "^1.0.5"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/search/dist/index.cjs",
+          "bytes": 49494,
+          "sha256": "5a780b7f84e26b9331104d3469e35c78052a62d6ebbe8693f48f0c35742ee168",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/search/dist/index.js",
+          "bytes": 48927,
+          "sha256": "1155a69fb8d6f56c1d644e3e93222348481d6b2df78d6bebcf3293fe209f3fd7",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/state",
+      "version": "6.7.6",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-kAz+AncRtKuIknedxT1bq4XwXv4UowhbkHU1myPrtVb/jZtImWuV5BXzv5vK6i3kYACsdiZiQKFQQ5Mq7elW8w==",
+      "resolved": "https://registry.npmjs.org/@codemirror/state/-/state-6.7.6.tgz",
+      "manifestSha256": "0d5d4cb502ac5ece9c5c76104fd72b30b4a5b16eeaf7a5d6f0a8abbf295c10c3",
+      "dependencies": {
+        "@marijn/find-cluster-break": "^1.0.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/state/dist/index.cjs",
+          "bytes": 147725,
+          "sha256": "fe86b098b892ec3aa3b1043fb77f7ab1495ea751420a536f906ff2d7603c255f",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/state/dist/index.js",
+          "bytes": 147400,
+          "sha256": "cf4ffe7d177bf2c7c5da66c49be0811cc79a29e12cb658238876bbdcef12939c",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@codemirror/view",
+      "version": "6.43.13",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-sihaFrUzAsYBQsL9J2t69y8nfMQGwcYmggAZsk+kjPbjYZMyuf2hU8tUNTZ+P+isb6XRr8JE22TZlJxBoVdH1A==",
+      "resolved": "https://registry.npmjs.org/@codemirror/view/-/view-6.43.13.tgz",
+      "manifestSha256": "ebb43f5bc37beb61bb9c0ae0705e8c9b6172bc212b47c1981a43c8cfe2d4782e",
+      "dependencies": {
+        "@codemirror/state": "^6.7.0",
+        "crelt": "^1.0.6",
+        "style-mod": "^4.1.0",
+        "w3c-keyname": "^2.2.4"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "copyright": [
+            "Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@codemirror/view/dist/index.cjs",
+          "bytes": 494272,
+          "sha256": "0ea6fbfd8e5b42ee2926058a929185ac1afffc913a4998e485269f203f7ca17c",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@codemirror/view/dist/index.js",
+          "bytes": 493290,
+          "sha256": "5626b4f31cdf55fd6a92be66d28cd40e9446d2caeb10a5b3f3e6c1c02be42950",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@lezer/common",
+      "version": "1.5.3",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-H0iErY4e43LpXbYDyBci5W4v/RwTgGV3YzYOlJPiGZ8RY8w51kVE+xLn1tg3Z6UmSfyETvtsUK3r7YsgDQEI7Q==",
+      "resolved": "https://registry.npmjs.org/@lezer/common/-/common-1.5.3.tgz",
+      "manifestSha256": "bf0794d0ce31fcb9f182dac58209efe3f1e563a7e455576d84d1ad49b2ad2996",
+      "dependencies": {},
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1113,
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "copyright": [
+            "Copyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@lezer/common/dist/index.cjs",
+          "bytes": 83840,
+          "sha256": "925c671ffcafb0b2eb3a8cbaa4854cea08625f7e039ce4fe919391f82b829b29",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@lezer/common/dist/index.js",
+          "bytes": 83369,
+          "sha256": "4f08d3cc772b63930aa424b5f75f41c244f2de98da43cd0d72e157a6cbff2dd5",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@lezer/highlight",
+      "version": "1.2.5",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-O1GMVKgtf5YspFaRzpmqkVgMtIk2HG9uMAbH6wdAIdNh3TVzCsch/+cRi+6l2//UGDKe6NB9BW3cvuR5ezMQ0w==",
+      "resolved": "https://registry.npmjs.org/@lezer/highlight/-/highlight-1.2.5.tgz",
+      "manifestSha256": "e50eb1fc5c2831ab58274ce2ea6cac989a0c80cc84f9fbabcb4100eee4327710",
+      "dependencies": {
+        "@lezer/common": "^1.3.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1113,
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "copyright": [
+            "Copyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@lezer/highlight/dist/index.cjs",
+          "bytes": 30108,
+          "sha256": "85fc7960707870c896961f786778a4ac27098d75f2dd6c4ffd8f6bc25ca0cd2e",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@lezer/highlight/dist/index.js",
+          "bytes": 29921,
+          "sha256": "8984bb2887a6354d3e5ac79bdd7e522948f1cee1dda16aac77d9473f10696d7c",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@lezer/lr",
+      "version": "1.4.10",
+      "direct": true,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A==",
+      "resolved": "https://registry.npmjs.org/@lezer/lr/-/lr-1.4.10.tgz",
+      "manifestSha256": "2825a6410bc0c81635fb91525e2a8bca3a211c82265f5aeeac1dde6b535dc11e",
+      "dependencies": {
+        "@lezer/common": "^1.0.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1113,
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "copyright": [
+            "Copyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@lezer/lr/dist/index.cjs",
+          "bytes": 71835,
+          "sha256": "778d5b51c0817a4c20c9ab483109a192ebdc6df57701e159d8aab7c40a1f16c7",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@lezer/lr/dist/index.js",
+          "bytes": 71678,
+          "sha256": "8d9b94f7c47b5226914e60613ec8bb49c3c3043df4e8d78ee7d19852fe34d582",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@lezer/python",
+      "version": "1.1.19",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-MhQIURHRytsNzP/YXnqpYKW6la6voAH3kyplTOOiCdjyFY6cWWGFVmYVdHIPrElqSDf4iCDktQCockB9FxuhzQ==",
+      "resolved": "https://registry.npmjs.org/@lezer/python/-/python-1.1.19.tgz",
+      "manifestSha256": "8c2cc2fd4873eed5275566f525a1ebe0517bc916d1b814026bd003e423dbe0d4",
+      "dependencies": {
+        "@lezer/common": "^1.2.0",
+        "@lezer/lr": "^1.0.0",
+        "@lezer/highlight": "^1.0.0"
+      },
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1113,
+          "sha256": "54bd812a6d334e0c438b78a43cea74b67e882739fd3450115ddc7c52be5706c1",
+          "copyright": [
+            "Copyright (C) 2020 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2020 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@lezer/python/dist/index.cjs",
+          "bytes": 44415,
+          "sha256": "e5a41a8de4f1b8576623604ba414a78e75af501cc3f5804fee60d1238bef728c",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/@lezer/python/dist/index.js",
+          "bytes": 43981,
+          "sha256": "47135244f8db0253e8cc7c01115f6cb86049a094936209091e6ca32c01258224",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "@marijn/find-cluster-break",
+      "version": "1.0.4",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ==",
+      "resolved": "https://registry.npmjs.org/@marijn/find-cluster-break/-/find-cluster-break-1.0.4.tgz",
+      "manifestSha256": "5ee922ec8f5586c2104e070ad9b60c1c18f32bfc3dad48634f93d3bbbdcd182b",
+      "dependencies": {},
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1102,
+          "sha256": "9360b00fdd091f05c783b568bdd46c679c41b72415599252de98949462ea1acb",
+          "copyright": [
+            "Copyright (C) 2024 by Marijn Haverbeke <marijn@haverbeke.berlin>",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "MIT License\n\nCopyright (C) 2024 by Marijn Haverbeke <marijn@haverbeke.berlin>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/@marijn/find-cluster-break/src/index.js",
+          "bytes": 4270,
+          "sha256": "4e9e441fac9db54e09e4e3b1cb0b0393da207ebe943f2ff9efc577821fc03751",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "crelt",
+      "version": "1.0.7",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA==",
+      "resolved": "https://registry.npmjs.org/crelt/-/crelt-1.0.7.tgz",
+      "manifestSha256": "9e85a4699c12ad932528bc2321986e8f991c1f9b074551a04e3814d72c1cc44a",
+      "dependencies": {},
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1089,
+          "sha256": "23852ebf6aef7fadffc92514b3c5df163a8651f2c3ed0dbb494cb49d93bd5de5",
+          "copyright": [
+            "Copyright (C) 2020 by Marijn Haverbeke <marijn@haverbeke.berlin>",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "Copyright (C) 2020 by Marijn Haverbeke <marijn@haverbeke.berlin>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/crelt/dist/index.cjs",
+          "bytes": 983,
+          "sha256": "6c60358e1691dddfccf861a7a3d9f8a0a0b7abff0a631462535705402401cc50",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/crelt/index.js",
+          "bytes": 951,
+          "sha256": "924800defa2bf95a0bfd16dde589ecebbcd9e36b03635274da84968c77a3721e",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "style-mod",
+      "version": "4.1.4",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-XXWIQt633/EpAFx8aZDOTjBzrCaGmhvEQlQo6MVPfa2OzO2cWo+4hV9h+6UkHYlXGfy+ODXKUdP7Pthmcu5ATw==",
+      "resolved": "https://registry.npmjs.org/style-mod/-/style-mod-4.1.4.tgz",
+      "manifestSha256": "0aa5f5995a953bc3f1d02164a5ec0e58d13bf9f7d362c44bf0526e667439f842",
+      "dependencies": {},
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1100,
+          "sha256": "cb4474e26547397169061d3586c00022cda5330a1b64fa13e872319f3b63aff1",
+          "copyright": [
+            "Copyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "Copyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/style-mod/dist/style-mod.cjs",
+          "bytes": 6930,
+          "sha256": "363b19f10e646f9623874b7c6b7f8049c92caab68ef237dcc425efae105d7426",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/style-mod/src/style-mod.js",
+          "bytes": 7042,
+          "sha256": "4bd6b34edda52f362553d33df7e3a10f31fbdc0c95125aabec89c4de6be80b0a",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    },
+    {
+      "package": "w3c-keyname",
+      "version": "2.2.8",
+      "direct": false,
+      "role": "editor-runtime",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==",
+      "resolved": "https://registry.npmjs.org/w3c-keyname/-/w3c-keyname-2.2.8.tgz",
+      "manifestSha256": "0396c646f74d52c1b0851074ecdb5cabf540af595ceb5e5a5136df2bf3c2f83b",
+      "dependencies": {},
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "bytes": 1100,
+          "sha256": "869c30f368eb08735e779027b9f4bc9fea2f39624351856aebe42741f0bc0884",
+          "copyright": [
+            "Copyright (C) 2016 by Marijn Haverbeke <marijn@haverbeke.berlin> and others",
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+          ],
+          "notice": "Copyright (C) 2016 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/w3c-keyname/index.cjs",
+          "bytes": 2777,
+          "sha256": "4da1f0a238777b0066e5a76b7940b3034107e2834cf2c73d29676530d1b936ae",
+          "matchesCandidateBytes": true
+        },
+        {
+          "file": "node_modules/w3c-keyname/index.js",
+          "bytes": 2630,
+          "sha256": "b649dec4f01c7c5eb05be4641b5b698c6938231ee50b38e17a2f0f822ca3df2e",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesRetainedCandidate": true
+    }
+  ],
+  "buildPackages": [
+    {
+      "package": "esbuild",
+      "version": "0.28.2",
+      "role": "dev-build-only-js-wrapper",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==",
+      "manifestSha256": "9d0bc453f4e791553c4cc2298ba023b409241fd9801e494741666eb0f6051490",
+      "licenses": [
+        {
+          "file": "LICENSE.md",
+          "bytes": 1069,
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+          "copyright": "Copyright (c) 2020 Evan Wallace",
+          "notice": "MIT License\n\nCopyright (c) 2020 Evan Wallace\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+        }
+      ],
+      "entryFiles": [
+        {
+          "file": "node_modules/esbuild/lib/main.js",
+          "bytes": 97463,
+          "sha256": "61ec0ba144ff93f4bf0e96ad6fab6f430ede0aa13e27ace8063ed63ba416b3cd",
+          "matchesCandidateBytes": true
+        }
+      ],
+      "matchesCandidateLicenseBytes": true,
+      "postinstall": "node install.js",
+      "postinstallExecutedByThisWorker": false
+    },
+    {
+      "package": "@esbuild/win32-x64",
+      "version": "0.28.2",
+      "role": "dev-build-only-native-platform-binary",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==",
+      "manifestSha256": "89382df45735edcd917c492a810ab514920fa07d36c653cdc122bdfd8f526964",
+      "os": [
+        "win32"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "packageFiles": [
+        "README.md",
+        "esbuild.exe",
+        "package.json"
+      ],
+      "separateLicenseFilePresent": false,
+      "licenseNoticeSource": "node_modules/esbuild/LICENSE.md",
+      "binary": {
+        "file": "node_modules/@esbuild/win32-x64/esbuild.exe",
+        "bytes": 11694592,
+        "sha256": "c7bee37877d0aa6a046e52783fa0a2cf1a9ce5579d68bb3083bda99d4bff18ef",
+        "matchesCandidateBytes": true,
+        "matchesPublishedManifestBinaryHash": true
+      },
+      "executedByThisWorker": false
+    }
+  ],
+  "platformBinaryQualification": {
+    "installedPlatforms": [
+      "win32-x64"
+    ],
+    "lockedOptionalPlatformEntries": 26,
+    "notProductRuntime": true,
+    "binaryExecutionOrPackagingQualified": false,
+    "note": "Platform package declares MIT but contains no separate LICENSE file; wrapper LICENSE.md notice is retained. Other locked optional platforms were not installed or verified here."
+  },
+  "grammar": {
+    "source": "baseline/R78.html",
+    "baselineBytes": 13626609,
+    "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+    "factorySha256": "c3b436db7d8d79ae712772ec1ffccb60381f9bfcf5f35646d3e838e2b9a0592b",
+    "localModules": [
+      "@lezer/python",
+      "@siren/python/terms",
+      "@siren/python/tokens",
+      "@siren/python/highlight"
+    ],
+    "sharedInstalledModules": [
+      "@lezer/common",
+      "@lezer/lr",
+      "@lezer/highlight"
+    ],
+    "provenance": "Existing frozen R78 local Python grammar patches, CRLF normalized to LF to reproduce admitted candidate factories. Not regenerated from or silently replaced by upstream @lezer/python 1.1.19.",
+    "baselineNotice": {
+      "bytes": 4516,
+      "sha256": "ca6d81c3c7bea22899cd2e03a1be1455c815c7c9a604889dca1c90da351b28b1",
+      "notice": "/* Local Code parser licenses:\ncommon\nMIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n\nhighlight\nMIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n\nlr\nMIT License\n\nCopyright (C) 2018 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n\npython\nMIT License\n\nCopyright (C) 2020 by Marijn Haverbeke <marijn@haverbeke.berlin> and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n\n*/"
+    },
+    "changesByThisWorker": "none; extraction only"
+  },
+  "redistribution": "Retain all MIT notices with eventual bundled/runtime copies, including local baseline parser notices. This inventory does not verify notices inside any new distributable or admit the installed dependencies as packaged qualification."
+}

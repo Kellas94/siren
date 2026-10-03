@@ -1,3 +1,5 @@
+import { loadSource } from './source-loader.js';
+
 const id = value => typeof value === 'string' && /^[a-z0-9][a-z0-9_-]{0,127}$/.test(value);
 const version = value => Number.isSafeInteger(value) && value >= 1;
 const hash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
@@ -63,9 +65,15 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     if (typeof descriptor?.value !== 'function') invalid('INVALID_BRIDGE');
     functions[method] = descriptor.value.bind(bridge);
   }
+  const readBridge = Object.fromEntries(['openRead', 'readChunk', 'closeRead'].map(method => {
+    const descriptor = bridge && Object.getOwnPropertyDescriptor(bridge, method);
+    return [method, typeof descriptor?.value === 'function' ? descriptor.value.bind(bridge) : null];
+  }));
   let disposed = false, fenced = false, durability = null, generation = 0, readGeneration = 0, pending = 0, pendingBytes = 0;
   let tail = Promise.resolve();
   const operations = new Set(), subscribers = new Set();
+  const loads = new Set();
+  const abortLoads = () => { for (const controller of loads) controller.abort(); };
   const getState = () => Object.freeze({ ...current, durability, fenced, disposed });
   const live = token => disposed ? failure('CLIENT_DISPOSED') : token !== generation ? failure('STALE_RESULT') : null;
   function publish(type, code) {
@@ -78,7 +86,23 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     }
   }
   function fence(result) {
-    fenced = true; readGeneration++; publish('refused', result.code); return result;
+    fenced = true; readGeneration++; abortLoads(); publish('refused', result.code); return result;
+  }
+  async function loadDocument({ signal, onProgress } = {}) {
+    if (disposed) return failure('CLIENT_DISPOSED');
+    if (fenced) return failure('CLIENT_FENCED');
+    if (pending || loads.size) return failure('SOURCE_BUSY');
+    if (Object.values(readBridge).some(method => typeof method !== 'function')) return failure('SOURCE_READER_UNAVAILABLE');
+    const controller = new AbortController(), token = generation, revision = readGeneration, bound = current;
+    const cancel = () => controller.abort();
+    if (signal?.aborted) cancel();
+    signal?.addEventListener('abort', cancel, { once: true });
+    loads.add(controller);
+    try {
+      const result = await loadSource({ bridge: readBridge, sourceRef: bound, signal: controller.signal, onProgress });
+      const stale = live(token) || (revision !== readGeneration ? failure('STALE_RESULT') : null);
+      return stale || (controller.signal.aborted ? failure('SOURCE_LOAD_CANCELLED') : result);
+    } finally { loads.delete(controller); signal?.removeEventListener('abort', cancel); }
   }
   async function read(method, input) {
     if (disposed) return failure('CLIENT_DISPOSED');
@@ -133,7 +157,7 @@ export function sourceClient({ bridge, sourceRef } = {}) {
         || typeof data.insertedText !== 'string' || !data.insertedText.isWellFormed()
         || current.version === Number.MAX_SAFE_INTEGER)) return fence(failure('INVALID_EDIT'));
       if (operations.size >= OPERATION_LIMIT) operations.delete(operations.values().next().value);
-      operations.add(data.operationId); readGeneration++;
+      operations.add(data.operationId); readGeneration++; abortLoads();
       const bound = current;
       const request = Object.freeze({ ...data, sourceId: bound.sourceId });
       let receipt;
@@ -155,6 +179,7 @@ export function sourceClient({ bridge, sourceRef } = {}) {
   }
   return Object.freeze({
     getState,
+    loadDocument,
     getMetrics: () => read('getMetrics'),
     readRange: range => read('readRange', range),
     applyEdit: edit => mutate('applyEdit', edit),
@@ -168,9 +193,9 @@ export function sourceClient({ bridge, sourceRef } = {}) {
       if (disposed) return failure('CLIENT_DISPOSED');
       const next = reference(sourceRef);
       if (!next || next.sourceId !== current.sourceId) return failure('INVALID_REFERENCE');
-      generation++; readGeneration++; current = next; fenced = false; durability = null; publish('reset');
+      generation++; readGeneration++; abortLoads(); current = next; fenced = false; durability = null; publish('reset');
       return Object.freeze({ ok: true, ...current });
     },
-    dispose: () => { if (!disposed) { disposed = true; generation++; readGeneration++; subscribers.clear(); } },
+    dispose: () => { if (!disposed) { disposed = true; generation++; readGeneration++; abortLoads(); subscribers.clear(); } },
   });
 }

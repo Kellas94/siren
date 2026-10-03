@@ -7,6 +7,7 @@ import { atomicWrite, digest, exclusiveWriter } from '../projects/atomic.mjs';
 import { readOwnedBytes } from '../projects/io.mjs';
 import { TextModel } from './text-model.mjs';
 import { measureSource } from './metrics.mjs';
+import { SourceReaderPool } from './readers.mjs';
 
 export const MAX_SOURCE_BYTES = 32 * 1024 * 1024;
 export const MAX_PROJECT_SOURCE_BYTES = 256 * 1024 * 1024;
@@ -45,9 +46,10 @@ function sourceRef(sourceId, currentVersion, bytes, provenance) {
 
 /** Node authority only. Root is the owned SIREN Data directory, never a renderer path. */
 export class SourceRepository {
-  constructor(root, { canWrite = () => true, fault = async () => {}, checkpoint, ownerIdentity, inspectProcess, limits = {} } = {}) {
+  constructor(root, { canWrite = () => true, fault = async () => {}, checkpoint, ownerIdentity, inspectProcess, limits = {}, readers = new SourceReaderPool() } = {}) {
     this.root = resolve(root); this.canWrite = canWrite; this.fault = fault; this.checkpoint = checkpoint;
     this.writerOptions = { ownerIdentity, inspectProcess };
+    this.readers = readers;
     this.limits = { sourceBytes: Math.min(limits.sourceBytes ?? MAX_SOURCE_BYTES, MAX_SOURCE_BYTES), projectBytes: Math.min(limits.projectBytes ?? MAX_PROJECT_SOURCE_BYTES, MAX_PROJECT_SOURCE_BYTES) };
     for (const cap of Object.values(this.limits)) if (!Number.isSafeInteger(cap) || cap < 1) throw error('INVALID_BUDGET');
   }
@@ -182,6 +184,13 @@ export class SourceRepository {
     if (!loaded.model) throw error('UNSUPPORTED_ENCODING');
     const text = loaded.model.readRange(loaded.ref.version, start, end);
     await this.access('read', projectId, sourceId); return text;
+  }
+  async openReader({ projectId, sourceId, version: requestedVersion }) {
+    version(requestedVersion); // A snapshot always names an explicit version.
+    return this.readers.open({
+      guard: () => this.access('read', projectId, sourceId),
+      load: () => this.load(projectId, sourceId, requestedVersion)
+    });
   }
   async getMetrics({ projectId, sourceId, version: requestedVersion }) {
     await this.access('read', projectId, sourceId);

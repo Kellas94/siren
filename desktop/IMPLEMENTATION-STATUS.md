@@ -1,5 +1,15 @@
 # Desktop foundation — development evidence
 
+## Current: source-backed editor and Home design, 3 October 2026
+
+The isolated source-backed Code editor is implemented: real virtualized CodeMirror EditorView, exact Unicode/newline source loading, durable ordered edits, history, full-model Find, Python highlighting, light/dark controls and explicit source commit receipts. The final frozen unit/build suite passed 407/407, exit 0, with unchanged captured product inputs. A separately authored actual native six-case 100k/300k matrix passed edits/history/paste, exact EOF Find, native source Save and independent fresh-disk/reopen hashes. The tracked reproducible native probe passed six cases after a guarded startup predicate repair; original startup, search, observer and extracted-probe failures remain documented. See `reviews/2026-10-03-code-editor-root-evidence.md` and independently authored reports.
+
+These are isolated editor/transport qualifications. Production main/preload does not mount the new editor or expose the source channels yet. Native Code/Docs windows remain shells. All-view dirty-save barriers, explicit Docs linking, static analysis workers, production package and physical multi-monitor qualification remain open. Action timings include durable acknowledgement and hashing; input-to-frame p95 was not measured. Native Terminal process-family ownership remains NOT ADMITTED. No main merge or public release.
+
+A fresh actual development-app UX audit confirms direct entry into a starter diagram, inconsistent navigation and crowded shared controls. `reviews/2026-10-03-home-native-diagrams-flow-audit.md` contains inspected screenshots and its capture limits. The written proposal `../docs/superpowers/specs/2026-10-03-siren-home-diagrams-design.md` adds metadata-only Home/Continue/project selection, a shared compact topbar and coordinated native Diagram views. It awaits written-spec review; neither Home nor native Diagram editing is implemented. Existing large-source/native plans remain approved and continue.
+
+CI27 remains an historical hosted failure. Its canonical temporary-fixture correction and bounded unit-step deadline are committed, with local 388-test evidence; no local result relabels that hosted run. Historical sections below retain their original dates/scopes and are superseded for current state by this section.
+
 ## Verified foundation update, 3 October 2026
 
 Native Code/Docs role shells now use a pinned workspace owner, exact native caller grants, strict URLs, isolated preloads and CSP, bounded close confirmation and epoch revocation. The actual two-Code/two-Docs probe passed opening, privacy, workspace close, Lock and original/migrated disk invariance. These remain data-free shells; shared editors and full multi-monitor behavior are subsequent tasks.
@@ -531,3 +541,11 @@ Still open:
 Build with Node 24.16.0 and the committed npm lock; generated output, profiles,
 toolchains, credentials and local evidence are ignored. Development package
 identity explicitly records unqualified account, feed, inventory and launcher.
+
+## 2026-10-03 — verified source loading foundation
+
+Root source/unit batch: version-pinned repository readers, hard two pending/active shared read snapshots, Unicode-safe acknowledged chunk boundaries, registered-window-bound typed read service, verified CodeMirror Text loading and source-client cancellation/generation integration. Frozen Python build extraction and actual pinned editor dependency inventory are separately reviewed. Final frozen suite388/388 passed181043.0853ms, actualexit0/allinputsunchanged; see reviews/2026-10-03-source-loading-root-evidence.md and separately authored independent reports. Original failures and first365/387 preremediation suites remain preserved.
+
+Measured initial Node snapshot path loaded the same300k Python source in130.717ms+28.797ms transfer wall versus17342.15ms original range wall, with exact full hashes for six fixtures. This is not a live IPC/EditorView/RSS/native-window qualification. No new large-source UI/editor satellite is enabled; coordinated dirty-window barriers, source-aware Docs/linking, presentation and native Terminal ownership remain open. Source/client/build work still needs product transport/editor/package integration.
+
+Private sync throughlocal3d7d035: PR2 draft/unmerged, head d1a65f52a86f98084fd09da66b76a833dde9537a, main688c unchanged;118 changed blobs/813 unrelated preserved. HostedCI27FAILEDunits; renderer/native/packageSKIPPED. Authenticated2-entry ZIP797582dc... retained; explicit shortTEMP/canonical difference and six-minute outer unit interruption are being diagnosed separately. LauncherCI18SUCCESS. No historical failure is relabeled and no release/main merge occurred.
