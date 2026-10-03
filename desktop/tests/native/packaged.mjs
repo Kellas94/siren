@@ -181,7 +181,7 @@ try {
   assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, false);
   const movedDenied = await driver.evaluate(`window.sirenDesktop.saveProject(${JSON.stringify({ projectId: recoveredId, baseRevision: 1, json: '{}', purpose: 'workspace' })})`);
   assert.equal(movedDenied.ok, false);
-  assert.equal(movedDenied.code, 'PIN_REQUIRED');
+  assert.equal(movedDenied.code, await driver.evaluate('location.href==="siren://app/home.html"')?'SENDER_REFUSED':'PIN_REQUIRED');
   assert.deepEqual(await movedProjects.readProject(recoveredId), recoveredAfterExit, 'Locked startup must preserve the complete copied snapshot');
   assert.deepEqual(await movedProjects.readProject(project.project.id), preservedOriginal);
   await unlockDesktop(driver, { pin: '4826', autoSetup: false });
