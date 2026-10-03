@@ -146,6 +146,15 @@ export class WorkspaceCoordinator {
     return operation;
   }
   saveWorkspace(grant,payload) {return this.invoke(grant,{kind:'workspace',method:'saveProject',payload});}
+  // Main-only admission for immutable pooled readers. This is a current read
+  // check, not a persistence/quiescence proof or a renderer-issued capability.
+  canRead(grant,sourceId) {
+    try{return !this.#paused && this.#current(grant,sourceId) && this.#access(grant,{action:'read',sourceId})===true;}
+    catch{return false;}
+  }
+  canReadDomain(grant,kind,entityId) {
+    return !this.#paused && ['docs','diagram'].includes(kind) && this.#currentDomain(grant,kind,kind==='docs'?'readDocument':'readDiagram',{entityId});
+  }
   pause(reason) {
     if(typeof reason!=='string' || reason.length<1 || reason.length>128)throw error('REQUEST_REFUSED');
     this.#paused=true;this.#pauseGeneration++;this.#flushes.clear();

@@ -1,4 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
+contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]))));
 const methods = ['pickProject', 'saveProject', 'exportProject', 'getAccess', 'beginLogin', 'logout', 'getUpdate', 'checkForUpdates', 'downloadUpdate', 'cancelUpdate', 'restartAndUpdate', 'getRecovery', 'restoreRecovery', 'exportRecovery', 'requestClose', 'exportDiagnostics', 'getPinState', 'setupPin', 'unlockPin', 'verifyCurrentPin', 'changePin', 'lockPin'];
 const bridge = Object.fromEntries(methods.map(name => [name, payload => ipcRenderer.invoke('siren:desktop', name, payload)]));

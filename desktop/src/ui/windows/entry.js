@@ -11,8 +11,10 @@
       status.textContent = 'Waiting for the workspace…'; return;
     }
     heading.textContent = result.view.role === 'code' ? '⌘ Code' : 'Docs';
-    status.textContent = 'Connected to the project. Shared editor integration is in development.';
     document.body.dataset.connected = 'true';
+    if(result.view.role==='code'&&window.sirenNativeCodeView){await window.sirenNativeCodeView.connect();return;}
+    if(result.view.role==='docs'&&window.sirenNativeDocsView){await window.sirenNativeDocsView.connect();return;}
+    status.textContent = 'Connected to the project. Shared editor integration is in development.';
   };
   window.sirenWindow.onReady(() => { void connect(); });
   document.getElementById('closeView').addEventListener('click', async () => {

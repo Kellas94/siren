@@ -9,7 +9,7 @@ import { ProjectStore } from '../src/projects/store.mjs';
 import { SourceRepository } from '../src/sources/repository.mjs';
 import { sourceClient } from '../src/ui/code/source-client.js';
 
-async function fixture(t) {
+async function fixture(t,{readonly=false}={}) {
   const root = await mkdtemp(join(tmpdir(), 'siren-client-loading-')); t.after(() => rm(root, { recursive: true, force: true }));
   const projectId = (await new ProjectStore(root).createProject({ label: 'Loading', json: '{}' })).project.id;
   const repo = new SourceRepository(root), text = '\ufeff' + 'python😀\r\n'.repeat(20000) + 'end\rbare';
@@ -24,11 +24,30 @@ async function fixture(t) {
     readChunk: async request => { await beforeChunk(); return { ok: true, readId: request.readId, ...await readers.get(request.readId).readChunk(request) }; },
     closeRead: async request => { closes++; readers.get(request.readId)?.dispose(); readers.delete(request.readId); afterClose(); return { ok: true, ...request }; }
   };
-  const client = sourceClient({ bridge, sourceRef: ref });
+  if(readonly){delete bridge.applyEdit;delete bridge.commitSource;}
+  const client = sourceClient({ bridge, sourceRef: ref, readonly });
   t.after(() => { client.dispose(); for (const reader of readers.values()) reader.dispose(); });
   return { repo, projectId, ref, text, client, closes: () => closes, delayChunks: fn => { beforeChunk = fn; }, afterClose: fn => { afterClose = fn; } };
 }
 const deferred = () => { let resolve; const promise = new Promise(yes => { resolve = yes; }); return { promise, resolve }; };
+
+test('explicit readonly client loads exact large Unicode/CRLF CM text through real reader leases without mutation adapters',async t=>{
+  const f=await fixture(t,{readonly:true});
+  const loaded=await f.client.loadDocument();assert.equal(loaded.ok,true);
+  assert.equal(loaded.doc.toString('\n'),f.text);assert.equal(loaded.sha256,f.ref.sha256);assert.equal(f.closes(),1);
+  assert.equal((await f.client.applyEdit({operationId:'must-not-edit',expectedVersion:1,start:0,end:0,insertedText:'bad'})).code,'READ_ONLY');
+  assert.equal((await f.client.commitSource({operationId:'must-not-commit',expectedVersion:1})).code,'READ_ONLY');
+  assert.equal(f.client.getState().fenced,false);assert.equal(f.client.getState().version,1);
+  assert.deepEqual(await f.repo.exportSource({projectId:f.projectId,sourceId:f.ref.sourceId,version:1}),Buffer.from(f.text));
+  assert.equal((await f.repo.getMetrics({projectId:f.projectId,sourceId:f.ref.sourceId})).version,1);
+  assert.equal(f.client.pauseView().ok,true);assert.equal((await f.client.drain()).ok,true);assert.equal(f.client.resumeView().ok,true);
+});
+
+test('readonly selection is explicit boolean and default writable clients still require mutation adapters',()=>{
+  const sourceRef={sourceId:'source-a',version:1,sha256:'a'.repeat(64)},bridge={getMetrics:async()=>{},readRange:async()=>{}};
+  assert.throws(()=>sourceClient({sourceRef,bridge}),/INVALID_BRIDGE/);
+  for(const readonly of ['true',null,1])assert.throws(()=>sourceClient({sourceRef,bridge,readonly}),/INVALID_CLIENT_OPTIONS/);
+});
 
 test('client loads verified CM Text with exact identity and no retained text in its state', async t => {
   const f = await fixture(t); assert.equal(typeof f.client.loadDocument, 'function');

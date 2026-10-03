@@ -96,6 +96,28 @@ test('service bounds opening and active handles; disposal fences pending admissi
   f.service.dispose(); refuse(await f.open(), 'ACCESS_REFUSED');
 });
 
+test('destroying one native reader window immediately releases its budget without closing another window lease', async t => {
+  const f=await fixture(t),request={sourceId:f.ref.sourceId,version:1,sha256:f.ref.sha256};
+  const primary=await f.open(),code=await f.call('openRead',request,1);assert.equal(primary.ok,true);assert.equal(code.ok,true);
+  refuse(await f.open(),'SOURCE_READER_BUDGET');
+  f.windows[1].destroy();
+  assert.equal(f.windows[1].webContents.listenerCount('destroyed'),0);assert.equal(f.windows[1].webContents.listenerCount('did-start-navigation'),0);
+  const replacement=await f.open();assert.equal(replacement.ok,true,'Closed native window must not consume the shared reader budget until TTL');
+  assert.equal((await f.call('readChunk',{sourceId:f.ref.sourceId,version:1,readId:primary.readId,start:0,maxUnits:2})).text,f.original.slice(0,2));
+  refuse(await f.call('readChunk',{sourceId:f.ref.sourceId,version:1,readId:code.readId,start:0,maxUnits:2},1),'ACCESS_REFUSED');
+});
+
+test('a native window lost while a reader opens cannot publish bytes or retain the opening budget', async t => {
+  const f=await fixture(t);let entered,release;
+  const ready=new Promise(resolve=>{entered=resolve;}),gate=new Promise(resolve=>{release=resolve;});
+  // Hold the real repository admission after its reader was acquired.
+  f.wrap(reader=>{entered();return gate.then(()=>reader);});
+  const pending=f.call('openRead',{sourceId:f.ref.sourceId,version:1,sha256:f.ref.sha256},1);await ready;
+  f.windows[1].destroy();release();refuse(await pending,'ACCESS_REFUSED');
+  f.wrap(reader=>reader);
+  assert.equal((await f.open()).ok,true);assert.equal((await f.open()).ok,true);
+});
+
 test('legitimate disk corruption retains its error attribution and releases the failed open', async t => {
   const f = await fixture(t);
   const blob = join(f.root, 'Projects', f.projectId, 'sources', f.ref.sourceId, 'blobs', `${f.ref.sha256}.bin`);

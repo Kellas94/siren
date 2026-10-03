@@ -56,11 +56,12 @@ function insertionBytes(text) {
 }
 
 /** One source identity, no text cache. The registered native bridge owns access and bytes. */
-export function sourceClient({ bridge, sourceRef } = {}) {
+export function sourceClient({ bridge, sourceRef, readonly = false } = {}) {
+  if(typeof readonly!=='boolean')invalid('INVALID_CLIENT_OPTIONS');
   let current = reference(sourceRef);
   if (!current) invalid('INVALID_REFERENCE');
   const functions = {};
-  for (const method of ['getMetrics', 'readRange', 'applyEdit', 'commitSource']) {
+  for (const method of ['getMetrics', 'readRange', ...(readonly ? [] : ['applyEdit', 'commitSource'])]) {
     const descriptor = bridge && Object.getOwnPropertyDescriptor(bridge, method);
     if (typeof descriptor?.value !== 'function') invalid('INVALID_BRIDGE');
     functions[method] = descriptor.value.bind(bridge);
@@ -143,6 +144,7 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     if (disposed) return Promise.resolve(failure('CLIENT_DISPOSED'));
     if (paused) return Promise.resolve(failure('CLIENT_PAUSED'));
     if (fenced) return Promise.resolve(failure('CLIENT_FENCED'));
+    if (readonly) return Promise.resolve(failure('READ_ONLY'));
     const allowed = method === 'applyEdit' ? ['operationId', 'expectedVersion', 'start', 'end', 'insertedText', 'sourceId'] : ['operationId', 'expectedVersion', 'sourceId'];
     const data = fields(input, allowed, allowed.filter(key => key !== 'sourceId'));
     const retainedBytes = method === 'applyEdit' && typeof data?.insertedText === 'string' ? insertionBytes(data.insertedText) : 0;

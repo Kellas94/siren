@@ -1,4 +1,12 @@
-# 3 October 2026 — production readonly source transport
+# 3 October 2026 — native readonly Docs and Code
+
+**618/618** final frozen tests passed, exit 0, captured inputs unchanged. Docs now displays its actual selected document in a separate native window, with section outline, expandable fields, agent/source-reference/release metadata, Refresh and System/Light/Dark. Imported markup remains literal text. Native identity, selected fingerprint and owner/access checks prevent cross-document reads or stale publication. Production two-Code/Docs/PIN/Lock probe completes five groups, including the actual 300,000-line Code editor. `reviews/2026-10-03-native-docs-root-evidence.md` retains the first 613/618 fixture failure and scope limits. Writable source/Docs/Diagram/Present, Home routes, native catalog/shelf and physical-monitor qualification remain open; work continues.
+
+## Previous checkpoint — native readonly Code editor
+
+**613/613** frozen tests passed, exit 0, captured inputs unchanged. The actual native Code entry now opens exact selected sources in CodeMirror with Python highlighting, Find, Wrap and System/Light/Dark appearance. A production 300,000-line probe reached its EOF marker through Find, refused readonly text changes, preserved exact disk/project bytes and completed Lock. Closed/crashed native readers release their shared slots immediately. Native Home and Python checkpoint/Quit/restart regressions completed. See `reviews/2026-10-03-native-code-root-evidence.md` for implementer evidence, original adverse results and scope limits. Writable source saving, production Home routes, editable Docs/Diagram/Present and physical-monitor qualification remain open; implementation continues. This batch is not a public release or independent approval.
+
+## Previous checkpoint — production readonly source transport
 
 **600/600** frozen tests, exit0 and unchanged captured inputs. Production App/Code source reads now require genuine native identity and an exact selected version/hash; explicit historical Code requests cannot read a future draft. Readonly legacy cleanup no longer mutates its mirror or poisons the Lock drain. Actual production two-Code/Docs/PIN probe completes three groups, existing writable Python checkpoint/Quit/restart completes, corrected standalone Home completes six groups. `reviews/2026-10-03-source-read-root-evidence.md` retains RED cases and original hosted CI38 failure/artifact. Launcher29 succeeded; no new hosted/package PASS is inferred. CodeMirror, writable source transport, production Home routing and all-view transitions remain open; work continues.
 

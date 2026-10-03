@@ -11,7 +11,7 @@ const hash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const integer = value => Number.isSafeInteger(value) && value >= 1;
 const metrics = ['sourceId', 'version', 'sha256', 'utf8Bytes', 'utf16Units', 'lines', 'longestLineUnits', 'encoding', 'bom', 'newline'];
 function normalize(method, input) {
-  if (!Object.hasOwn(schemas, method) || !input || typeof input !== 'object' ||
+  if (typeof method !== 'string' || !Object.hasOwn(schemas, method) || !input || typeof input !== 'object' ||
       ![Object.prototype, null].includes(Object.getPrototypeOf(input))) return null;
   const allowed = schemas[method], descriptors = Object.getOwnPropertyDescriptors(input);
   const keys = Reflect.ownKeys(descriptors);
@@ -48,6 +48,8 @@ export class SourceReadService {
   }
   #close(entry) {
     entry.closed = true; clearTimeout(entry.timer);
+    for(const [target,name,listener] of entry.listeners??[])target.off(name,listener);
+    entry.listeners=[];
     entry.reader?.dispose(); this.#entries.delete(entry.readId);
   }
   dispose() {
@@ -65,15 +67,23 @@ export class SourceReadService {
       if (!grant || this.#disposed) return fail('ACCESS_REFUSED');
       live = () => {
         try { return !this.#disposed && !entry?.closed && same(this.#registry.caller(nativeEvent), grant, payload.sourceId) &&
-          this.#access(grant, Object.freeze({ sourceId: payload.sourceId, action: 'read' })) === true; }
+          this.#access(grant, Object.freeze({ sourceId: payload.sourceId, version: payload.version, action: 'read' }), nativeEvent) === true; }
         catch { return false; }
       };
       if (!live()) return fail('ACCESS_REFUSED');
       if (method === 'openRead') {
         if (this.#entries.size >= 2) return fail('SOURCE_READER_BUDGET');
         const readId = randomUUID();
-        entry = { readId, grant, sourceId: payload.sourceId, version: payload.version, reader: null, closed: false, reading: false };
+        entry = { readId, grant, sourceId: payload.sourceId, version: payload.version, reader: null, closed: false, reading: false, listeners: [] };
         this.#entries.set(readId, entry); opened = true;
+        // Native renderer lifecycle owns leases, including unfinished opens.
+        // Closing/crashing one window must immediately return its shared budget.
+        if(typeof nativeEvent.sender?.on!=='function'||typeof nativeEvent.sender?.off!=='function'){this.#close(entry);return fail('ACCESS_REFUSED');}
+        for(const name of ['destroyed','render-process-gone','will-navigate']){
+          const listener=()=>this.#close(entry);nativeEvent.sender.on(name,listener);entry.listeners.push([nativeEvent.sender,name,listener]);
+        }
+        const navigating=(details,_url,_inPlace,isMainFrame)=>{if((details?.isMainFrame??isMainFrame)===true)this.#close(entry);};
+        nativeEvent.sender.on('did-start-navigation',navigating);entry.listeners.push([nativeEvent.sender,'did-start-navigation',navigating]);
         entry.timer = setTimeout(() => this.#close(entry), 60000); entry.timer.unref();
         const canWrite = context => context?.action === 'read' && context.projectId === grant.projectId &&
           context.sourceId === payload.sourceId && live();
@@ -111,3 +121,5 @@ export class SourceReadService {
     }
   }
 }
+
+export {normalize as normalizeSourceReadRequest};

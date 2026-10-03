@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sourceReadFixture} from './fixtures/source-read-context.mjs';
 
+test('native read admission reflects genuine private captures, owner pause and access revocation without creating writes',async()=>{
+  const f=await sourceReadFixture(),grant=f.registry.capture(f.event(0)),id=f.refs[0].sourceId;
+  assert.equal(f.owner.canRead(grant,id),true);
+  assert.equal(f.owner.canRead({...grant},id),false);assert.equal(f.owner.canRead(grant,f.refs[1].sourceId),false);
+  f.owner.pause('prepare native source readers');assert.equal(f.owner.canRead(grant,id),false);
+  f.owner.resume();assert.equal(f.owner.canRead(grant,id),true);
+  f.lock();assert.equal(f.owner.canRead(grant,id),false);assert.equal(f.factories(),0);
+});
+
 test('production reads require an explicit selected version and cannot disclose a newer unselected draft',async()=>{
   const f=await sourceReadFixture(),ref=f.refs[0];
   const edited=await f.sources.applyEdit({projectId:f.selected.project.id,edit:{sourceId:ref.sourceId,expectedVersion:1,operationId:'private-newer-draft',start:0,end:0,insertedText:'PRIVATE_FUTURE_VERSION'}});

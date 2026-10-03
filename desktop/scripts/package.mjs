@@ -12,9 +12,9 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','budgets','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
-  ...['manifest','metrics','migration','readers','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
+  ...['manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
   ...['contracts','entries'].map(n=>`src/navigation/${n}.mjs`),
-  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
+  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','docs-reads'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;

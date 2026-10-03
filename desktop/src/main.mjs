@@ -14,9 +14,12 @@ import { WindowRegistry } from './windows/registry.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead} from './windows/source-bridge.mjs';
+import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
+import {NativeDocsReads} from './windows/docs-reads.mjs';
+import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
-import { workspaceEntities } from './windows/entities.mjs';
+import { workspaceEntities,workspaceMetadata } from './windows/entities.mjs';
 import { openOwnedSelection } from './projects/selection.mjs';
 import { parseLegacyImport } from './projects/migration.mjs';
 import { validateImportedProject } from './projects/import-validation.mjs';
@@ -301,14 +304,20 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
     (scope.action==='read'
       ? !pinTransition && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
-      : scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
+      : scope.action==='read-domain'
+        ? !pinTransition && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
+        : ['edit-domain','flush-domain','docs-link'].includes(scope.action)?false:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
+  domains:new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}),
   primary:new PrimaryPersistence({
     projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context) && canWrite(context)}),
     recovery,onSelected:current=>{snapshot=current;bootstrap={...bootstrap,snapshot:current};},
   }),
 });
+let sourceReads=null;
+const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId)});
 const retireNativeViews = () => {
+  sourceReads?.dispose();sourceReads=null;
   let failed = false;
   try { windowRegistry.invalidateEpoch({ preserveWorkspace: true }); } catch { failed = true; }
   // Includes hidden pending factories, which have no registry grant yet.
@@ -367,14 +376,22 @@ ipcMain.handle('siren:desktop', (event, method, payload) => {
 });
 ipcMain.handle('siren:sources', async (event, method, payload) => {
   const operation=invokeSourceRead({event,method,payload,registry:windowRegistry,owner:workspaceOwner,
-    referenceFor:(grant,request)=>{
-      const scope=windowRegistry.sourceScope(grant);
-      if(grant.role==='code'&&(!scope||scope.sourceId!==request.sourceId||scope.version!==undefined&&scope.version!==request.version))return null;
-      return snapshot?.schema===2?snapshot.sourceRefs?.find(ref=>ref.sourceId===request.sourceId&&ref.version===request.version):null;
-    },
+    referenceFor:(grant,request)=>selectedSourceReference(snapshot,windowRegistry,grant,request),
   });
   writes.add(operation);
   try { return await operation; } finally { writes.delete(operation); }
+});
+ipcMain.handle('siren:source-readers', async (event, method, payload) => {
+  sourceReads??=new NativeSourceReads({registry:windowRegistry,owner:workspaceOwner,
+    referenceFor:(grant,request)=>selectedSourceReference(snapshot,windowRegistry,grant,request),
+    repositoryFactory:({canWrite,readers})=>new SourceRepository(dataRoot,{...writerOptions,canWrite,readers}),
+  });
+  const operation=sourceReads.invoke({event,method,payload});writes.add(operation);
+  try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:docs-read', async (event, method, payload) => {
+  const operation=docsReads.invoke({event,method,payload});writes.add(operation);
+  try{return await operation;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:windows', async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');

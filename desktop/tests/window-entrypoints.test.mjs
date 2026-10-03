@@ -18,8 +18,12 @@ test('renderer emits only data-free hashed role entrypoints and exact packaged m
   await buildRenderer({ baselinePath, outputDir: root, expectedSha256: createHash('sha256').update(baseline).digest('hex') });
   for (const role of ['code', 'docs']) {
     const html = await readFile(join(root, 'windows', `${role}.html`), 'utf8');
-    const script = /<script>([\s\S]*?)<\/script>/.exec(html)[1];
-    assert.ok(html.includes(`'sha256-${createHash('sha256').update(script).digest('base64')}'`));
+    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
+    assert.equal(scripts.length,2);
+    for(const script of scripts)assert.ok(html.includes(`'sha256-${createHash('sha256').update(script).digest('base64')}'`));
+    assert.equal(html.includes('SirenCodeEditor'),role==='code');
+    assert.equal(html.includes('sirenNativeDocsView=Object.freeze'),role==='docs');
+    if(role==='docs')assert.ok(html.includes('id="documentContent"')&&html.includes('id="documentOutline"'));
     assert.equal(/sirenDesktopBootstrap|createSirenDesktopStore|localStorage|sourceText|codeFiles/.test(html), false);
     assert.equal(html.includes("script-src 'unsafe-inline'"), false);
     const url = `siren://app/windows/${role}.html?windowId=12345678-1234-4234-8234-123456789abc`;

@@ -57,7 +57,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   }
   const adapter = createEditorAdapter({ client, readonly, extensions: [lineNumbers(), drawSelection(), history(), search({ top: true }),
     indentUnit.of('    '), pythonSupport(pythonParser), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),
-    keymap.of([{ key: 'Mod-s', run: () => { void flush(); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
+    keymap.of([{ key: 'Mod-s', run: () => { if(!readonly)void flush(); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
   ] });
   // Search panels live outside CM's contentDOM. Its editor input handlers do
   // not receive panel events; observe the owned root to commit pasted queries
@@ -73,6 +73,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     view.dispatch({ effects: wrap.reconfigure(wrapping ? EditorView.lineWrapping : []) });
   }); wrappingButton.setAttribute('aria-pressed', 'false');
   button('save', 'Save source', () => { void flush(); });
+  if(readonly)for(const name of ['undo','redo','save'])buttons.get(name).hidden=true;
   const language = document.createElement('span'); language.textContent = 'Python'; Object.assign(language.style, { marginLeft: 'auto', font: '12px system-ui' }); toolbar.append(language);
   root.append(toolbar, surface, status); container.replaceChildren(root);
   function paintTheme() {

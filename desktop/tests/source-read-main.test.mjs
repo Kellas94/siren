@@ -2,27 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
-import {sourceReadFixture} from './fixtures/source-read-context.mjs';
-import {WorkspaceCoordinator} from '../src/windows/coordinator.mjs';
-import {PrimaryPersistence} from '../src/windows/primary.mjs';
-import {ProjectStore} from '../src/projects/store.mjs';
-import {SourceRepository} from '../src/sources/repository.mjs';
-import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
-import {invokeSourceRead} from '../src/windows/source-bridge.mjs';
-
-const main=await readFile(new URL('../src/main.mjs',import.meta.url),'utf8');
-function slice(from,to){const start=main.indexOf(from),stop=main.indexOf(to,start);assert.ok(start>=0&&stop>start,'Actual native main integration block missing');return main.slice(start,stop);}
-async function nativeContext(){
-  const f=await sourceReadFixture();const handlers=new Map();
-  class IPCRealmCoordinator extends WorkspaceCoordinator{invoke(grant,intent,...rest){return super.invoke(grant,structuredClone(intent),...rest);}}
-  const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,
-    windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
-    snapshot:f.selected,selectedId:f.selected.project.id,mode:'readonly',nativeReadonly:true,pinTransition:false,accountQuiesced:false,nativeShellFailure:false,writes:new Set(),bootstrap:{snapshot:f.selected},
-    ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
-  });
-  vm.runInContext(slice('const workspaceOwner=new WorkspaceCoordinator','const retireNativeViews')+';globalThis.owner=workspaceOwner;',context);
-  return {...f,context,handlers};
-}
+import {nativeSourceContext as nativeContext,mainSlice as slice} from './fixtures/source-main-context.mjs';
 test('actual native main owner allows verified selected schema-2 reads in readonly while preserving legacy write gates',async()=>{
   const f=await nativeContext(),grant=f.registry.capture(f.event(0));
   const result=await f.context.owner.invoke(grant,{kind:'source',method:'getMetrics',payload:{sourceId:f.refs[0].sourceId,version:1}});

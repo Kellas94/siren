@@ -10,9 +10,11 @@ import {PrimaryPersistence} from '../src/windows/primary.mjs';
 import {ProjectStore} from '../src/projects/store.mjs';
 import {SourceRepository} from '../src/sources/repository.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
+import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
+import {DomainRepository} from '../src/windows/domain.mjs';
 import { invokeWindow } from '../src/windows/ipc.mjs';
 import { nativeViewFactory } from '../src/windows/factory.mjs';
-import { workspaceEntities } from '../src/windows/entities.mjs';
+import { workspaceEntities,workspaceMetadata } from '../src/windows/entities.mjs';
 import { failure } from '../src/ipc.mjs';
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const slice = (a,b) => { const start = main.indexOf(a); const stop = main.indexOf(b,start); assert.ok(start>=0 && stop>start); return main.slice(start,stop); };
@@ -32,7 +34,7 @@ function fixture() {
   const owner = new NativeWindow(); owner.webContents.mainFrame.url='siren://app/app.html'; const handlers=new Map();
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
-  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     screen:{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]},
     localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
