@@ -17,6 +17,10 @@ import {invokeSourceRead} from './windows/source-bridge.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
+import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
+import {NativeAllViewControl} from './windows/control.mjs';
+import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
+import {navigationFields} from './navigation/contracts.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
@@ -118,7 +122,7 @@ const changeSelection = async action => {
   try {
     // Renderer flush can still submit writes until it locks its adapter. Only
     // then refuse late native saves and drain the tracked operations.
-    await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+    await prepareNativeWorkspace();
     writes.selectionQuiesced = true;
     await Promise.all([...writes]);
     retireNativeViews();
@@ -127,6 +131,7 @@ const changeSelection = async action => {
     writes.selectionQuiesced = false; writes.selectionTransition = false;
     // A successful selection reloads the renderer; keep that old view frozen.
     if (!changed) {
+      await rollbackNativePreparation();
       await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
       try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
     }
@@ -167,12 +172,13 @@ const services = {
     if (pinTransition || accountTransition) return failure('PIN_BUSY', 'Local access is changing.');
     pinTransition = true;
     try {
-      await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+      await prepareNativeWorkspace();
       accountQuiesced = true;
       await Promise.all([...writes]);
       retireNativeViews();
       localPin.lock(); return { ok: true };
     } catch (error) {
+      await rollbackNativePreparation();
       await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
       if (error?.code === 'WINDOW_DESTROY_FAILED') return failure('WINDOW_DESTROY_FAILED', 'SIREN could not protect every native window. Lock was not confirmed; your project was retained.');
       return failure('SAVE_FAILED', 'SIREN could not confirm your local changes. The workspace remains open.');
@@ -193,7 +199,7 @@ const services = {
     accountTransition = true; let committed = false;
     try {
       const state = await account.beginLogin({ beforeCommit: async () => {
-        await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+        await prepareNativeWorkspace();
         accountQuiesced = true;
         await Promise.all([...writes]);
         retireNativeViews();
@@ -203,6 +209,7 @@ const services = {
     } finally {
       accountQuiesced = false; accountTransition = false;
       if (!committed) {
+        await rollbackNativePreparation();
         await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
         try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
       }
@@ -212,13 +219,14 @@ const services = {
     if (accountTransition) return failure('ACCOUNT_BUSY', 'An account transition is already pending');
     accountTransition = true; let committed = false;
     try {
-      await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');
+      await prepareNativeWorkspace();
       accountQuiesced = true; await Promise.all([...writes]);
       retireNativeViews();
       const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
     } finally {
       accountQuiesced = false; accountTransition = false;
       if (!committed) {
+        await rollbackNativePreparation();
         await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
         try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
       }
@@ -309,13 +317,18 @@ const windowRegistry = new WindowRegistry({
   } }),
 });
 windowRegistry.bindWorkspace(window);
+const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
+  isReadonly:grant=>['code','docs'].includes(grant.role)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
+  snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
+});
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
+  readonlyViews,
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
     (scope.action==='read'
       ? !pinTransition && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
       : scope.action==='read-domain'
         ? !pinTransition && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
-        : ['edit-domain','flush-domain','docs-link'].includes(scope.action)?false:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
+        : ['edit-domain','flush-domain','docs-link'].includes(scope.action)?false:scope.action==='readonly'?bootstrap.readonly===true:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}),
   primary:new PrimaryPersistence({
@@ -326,6 +339,38 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
 let sourceReads=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId)});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
+const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket)});
+let workspaceBarrier=null;
+const rollbackNativePreparation=async()=>{
+  if(!workspaceBarrier)return;
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
+  for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
+};
+const prepareNativeWorkspace=async()=>{
+  if(!snapshot){await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');return;}
+  if(workspaceBarrier)throw Object.assign(Error('Preparation pending'),{code:'PROJECT_BUSY'});
+  workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:workspaceOwner,control:{
+    flushView:async grant=>{const receipt=await viewControl.flushView(grant);if(!receipt.ok)console.warn('SIREN_NATIVE_VIEW_FLUSH_FAILURE',JSON.stringify({role:grant.role,code:receipt.code}));return receipt;},
+    cancelView:grant=>viewControl.cancelView(grant),
+  },cover:()=>{}});
+  const result=await workspaceBarrier.prepare('native-workspace-transition');
+  if(!result.ok){console.warn('SIREN_WORKSPACE_PREPARE_FAILURE',JSON.stringify({code:result.code}));await rollbackNativePreparation();throw Object.assign(Error('Native preparation refused'),{code:result.code});}
+  await Promise.all([...writes]);
+  if(!workspaceBarrier.isPrepared(result.proof)){await rollbackNativePreparation();throw Object.assign(Error('Native roster changed'),{code:'ROSTER_CHANGED'});}
+};
+ipcMain.handle('siren:view-ack',async(event,input)=>{
+  const result=await viewControl.acknowledge(event,input);
+  if(!result.ok){const role=windowRegistry.capture(event)?.role;console.warn('SIREN_VIEW_PREPARE_FAILURE',JSON.stringify({role:['workspace','code','docs'].includes(role)?role:'unknown',code:result.code,rendererCode:typeof input?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(input.code)?input.code:null}));}
+  return result;
+});
+ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
+  const grant=windowRegistry.capturePrimary(event);
+  if(!grant||grant.role!=='workspace'||grant.projectId!==selectedId)return failure('ACCESS_REFUSED','Native preparation scope refused');
+  let payload;try{payload=navigationFields(input,method==='saveProject'?['nonce','request']:['nonce']);}catch{return failure('REQUEST_REFUSED','Invalid preparation request');}
+  if(!['saveProject','sealReadonly'].includes(method)||typeof payload.nonce!=='string')return failure('REQUEST_REFUSED','Invalid preparation request');
+  const operation=workspaceOwner.invoke(grant,{kind:'workspace',method,payload:method==='saveProject'?payload.request:{}},payload.nonce);
+  writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
+});
 const retireNativeViews = () => {
   sourceReads?.dispose();sourceReads=null;
   let failed = false;
@@ -335,6 +380,7 @@ const retireNativeViews = () => {
     try { if (!view.isDestroyed()) view.destroy(); if (!view.isDestroyed()) failed = true; } catch { failed = true; }
   }
   nativeShellFailure = failed;
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
   if (failed) throw Object.assign(new Error('Native window protection incomplete'), { code: 'WINDOW_DESTROY_FAILED' });
 };
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
@@ -446,13 +492,15 @@ window.on('close', event => {
   if (closeRequested) return;
   closeRequested = true;
   (async () => {
-    await window.webContents.executeJavaScript('window.sirenDesktopRequestClose?.()');
+    if(localPin.state().unlocked)await prepareNativeWorkspace();
+    else await window.webContents.executeJavaScript('window.sirenDesktopRequestClose?.()');
     await Promise.all([...writes]);
     retireNativeViews();
     if (processIdentity) await journal.recordSession({ event: 'clean-close', sessionId, version: app.getVersion(), processIdentity });
     closing = true; window.close();
   })().catch(() => {
     closeRequested = false;
+    void rollbackNativePreparation();
     try { windowRegistry.activateWorkspace(); } catch { /* Failed native destruction remains fenced. */ }
     dialog.showErrorBox('SIREN — Close delayed', 'Save/recovery did not complete. Export live work before forcing close.');
   });

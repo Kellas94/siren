@@ -151,6 +151,18 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           accountTransitionBodyState = null;
           document.body.classList.remove('desktop-account-transition');
         };
+        window.sirenViewControl?.onPrepare(async () => {
+          if (window.sirenDesktopBootstrap?.readonly) {
+            accountTransitionBodyState = document.body.inert;
+            document.body.inert = true;
+            document.body.classList.add('desktop-account-transition');
+            window.sirenDesktopStorageLocked = true;
+            return window.sirenViewControl.sealReadonly();
+          }
+          await window.sirenDesktopBeginAccountTransition();
+          return {ok:true};
+        });
+        window.sirenViewControl?.onResume(() => window.sirenDesktopEndAccountTransition());
         window.sirenDesktopStartOpening = () => { cacheElements(); return playSirenIntro(); };
         if (window.sirenDesktopBootstrap?.mode && window.sirenDesktopBootstrap.mode !== 'normal') return;
         sirenStore.start()`);

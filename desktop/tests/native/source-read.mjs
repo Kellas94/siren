@@ -12,7 +12,8 @@ const evidence=resolve('evidence/source-read',new Date().toISOString().replaceAl
 await mkdir(evidence,{recursive:true});const data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const paths=['src/main.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
-paths.push('src/windows/catalog.mjs','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
+paths.push('src/windows/catalog.mjs','src/windows/control.mjs','src/windows/source-barrier.mjs','src/windows/readonly-seals.mjs','src/windows/primary.mjs','src/ui/code/view-lifecycle.js','src/ui/storage.js','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
+if(process.argv.includes('--owned-source-corruption'))paths.push('tests/native/view-control-rollback.mjs');
 const capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))])));
 const inputs=await capture(),projects=new ProjectStore(data),sources=new SourceRepository(data);
 const first=await projects.createProject({label:'Owned exact native source reads',json:'{}'});
@@ -123,6 +124,23 @@ try{
  assert.deepEqual(await projects.readProject(first.project.id),selected);
  assert.deepEqual(await sources.exportSource({projectId:first.project.id,sourceId:a.sourceId,version:1}),Buffer.from(text));
  result.closePreparation=await driver.evaluate('window.sirenDesktopRequestClose().then(()=>({ok:true})).catch(error=>({ok:false,message:error.message}))');
+ if(process.argv.includes('--owned-source-corruption')){
+  // Corrupt only this probe's owned blob; restore the independently hashed
+  // original in finally. No user data or product authority bypass is involved.
+  const blob=join(data,'Projects',first.project.id,'Sources',a.sourceId,'blobs',a.sha256+'.bin');
+  const originalBlob=await readFile(blob);assert.equal(hash(originalBlob),a.sha256);
+  try{
+   await writeFile(blob,'owned deliberate source corruption');
+   result.refusedLock=await driver.evaluate('window.sirenDesktop.lockPin()');assert.equal(result.refusedLock.ok,false);
+   assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked,true);
+   assert.equal((await driver.send('Target.getTargets')).targetInfos.filter(t=>t.url.startsWith('siren://app/windows/')).length,3);
+   for(const page of pages)await page.waitFor('document.body.inert===false && getComputedStyle(document.documentElement).visibility!=="hidden"');
+   for(const page of pages.slice(0,2))assert.equal(await page.evaluate('document.body.dataset.sourceReady'), 'true');
+   assert.deepEqual(await projects.readProject(first.project.id),selected);
+  }finally{await writeFile(blob,originalBlob);}
+  assert.deepEqual(await readFile(blob),originalBlob);
+  result.cases.push({name:'corrupt selected source refuses Lock, preserves PIN authority and returns visible ready Code/Docs; exact original restored before successful retry',ok:true});
+ }
  result.lockReceipt=await driver.evaluate('window.sirenDesktop.lockPin()');assert.equal(result.lockReceipt.ok,true);
  assert.equal((await driver.evaluate(`window.sirenSource.getMetrics(${JSON.stringify({sourceId:a.sourceId,version:1})})`)).code,'ACCESS_REFUSED');
  const liveTargets=await driver.send('Target.getTargets');assert.equal(liveTargets.targetInfos.some(t=>t.url.startsWith('siren://app/windows/')),false);

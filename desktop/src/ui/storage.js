@@ -21,7 +21,10 @@ window.createSirenDesktopStore = ({ workspaceKey }) => {
       let result;
       const baseRevision = snapshot?.revision;
       if (!snapshot) result = { ok: false, code: 'NO_PROJECT', message: 'Choose or import a desktop project before saving' };
-      else result = await window.sirenDesktop.saveProject({ projectId: snapshot.project.id, baseRevision: snapshot.revision, json, purpose });
+      else {
+        const request={ projectId: snapshot.project.id, baseRevision: snapshot.revision, json, purpose };
+        result=await (window.sirenViewControl?.isPreparing() ? window.sirenViewControl.saveWorkspace(request) : window.sirenDesktop.saveProject(request));
+      }
       // Retain only typed receipt metadata. Never copy workspace text or other
       // arbitrary native fields into diagnostics, and never infer commitment.
       const receipt = { ok: result.ok, backend: 'native', error: result.ok ? null : new Error(result.message) };

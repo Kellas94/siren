@@ -1,3 +1,7 @@
+## 3 October — production native view preparation
+
+637/637 final frozen tests passed with unchanged inputs. Actual native Code/Docs/primary preparation is now mounted for Lock, selection and Quit. Owned corruption regression verifies refusal, visible ready editors, exact restoration and successful retry. Evidence: reviews/2026-10-03-production-view-control-root-evidence.md. Home routing and writable satellites remain open.
+
 ## 3 October — readonly roster prerequisite
 
 633/633 frozen checks passed; actual native minimized Code/Docs/primary recovery and prepared entry handoff completed in scoped protocol fixtures. Authentic selected-byte proofs are separate from writable commit receipts. Production mounting and Home routing remain open. Evidence: reviews/2026-10-03-readonly-roster-root-evidence.md. CI41 failure and skipped package remain preserved.

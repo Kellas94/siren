@@ -12,6 +12,10 @@ import {SourceRepository} from '../src/sources/repository.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {NativeWindowCatalog} from '../src/windows/catalog.mjs';
+import {NativeReadonlyViewSeals} from '../src/windows/readonly-seals.mjs';
+import {NativeAllViewControl} from '../src/windows/control.mjs';
+import {NativeAllWorkspaceBarrier} from '../src/windows/source-barrier.mjs';
+import {navigationFields} from '../src/navigation/contracts.mjs';
 import {DomainRepository} from '../src/windows/domain.mjs';
 import { invokeWindow } from '../src/windows/ipc.mjs';
 import { nativeViewFactory } from '../src/windows/factory.mjs';
@@ -35,7 +39,7 @@ function fixture() {
   const owner = new NativeWindow(); owner.webContents.mainFrame.url='siren://app/app.html'; const handlers=new Map();
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
-  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,NativeWindowCatalog,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,NativeWindowCatalog,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     screen:{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]},
     localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
@@ -92,10 +96,16 @@ test('actual ready/send/show failures dispose the admitted shell or fence retain
     else assert.equal(f.handles[1].isDestroyed(),true);
   }
 });
-test('actual clean-close journal failure retains the owner and restores its trusted grant after shell retirement',async()=>{
+test('actual locked clean-close journal failure retains the owner after shell retirement, then admits a fresh unlocked grant',async()=>{
   const f=fixture(); f.bootstrap(); await f.invoke('openView',{role:'docs',entityId:'doc_a'}); f.failJournal();
+  // This metadata-only fixture has no persisted editor/project. Its locked close
+  // tests the actual journal/destruction boundary; unlocked persistence is
+  // qualified with real repositories and the Electron recovery/close probe.
+  f.setLocked(true);
   f.owner.close(); await new Promise(resolve=>setImmediate(resolve));
   assert.equal(f.closeErrors(),1); assert.equal(f.owner.isDestroyed(),false); assert.equal(f.handles[1].isDestroyed(),true);
+  assert.equal(f.context.registry.caller(f.event()),null);
+  f.setLocked(false);f.bootstrap();
   assert.equal(f.context.registry.caller(f.event()).role,'workspace');
   assert.equal((await f.invoke('openView',{role:'docs',entityId:'doc_b'})).ok,true);
 });

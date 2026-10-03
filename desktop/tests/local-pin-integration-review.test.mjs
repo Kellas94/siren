@@ -1,4 +1,5 @@
-// Independent review of coordinator integration, not a review of the author's PIN service.
+// Legacy primary coordinator regression. Updated by the implementing coordinator;
+// it is not a new independent approval of the native all-view transport.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';

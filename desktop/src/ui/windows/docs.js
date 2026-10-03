@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
- let generation=0,disposed=false;const media=matchMedia('(prefers-color-scheme: dark)');
+ let generation=0,disposed=false,paused=false,pending=null;const media=matchMedia('(prefers-color-scheme: dark)');
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
  const appearance=()=>{document.documentElement.style.colorScheme=theme.value==='system'?(media.matches?'dark':'light'):theme.value;};
@@ -37,7 +37,7 @@
   }end=next;more.hidden=end===entries.length;};more.addEventListener('click',extend);extend();
   if(!entries.length)make('p',content,'This document has no additional sections.');
  }
- async function connect(){
+ async function readDocument(){
   if(disposed)return false;const token=++generation;clear();retry.hidden=true;status.textContent='Opening selected document…';appearance();
   try{
    const result=await window.sirenDocsRead.getDocument();if(disposed||token!==generation)return false;
@@ -47,6 +47,19 @@
    retry.hidden=false;retry.textContent='Refresh';return true;
   }catch{if(!disposed&&token===generation){clear();heading.textContent='Docs';status.textContent='Document could not be opened. Existing project data was retained.';retry.hidden=false;retry.textContent='Retry';}return false;}
  }
+ function connect(){
+  if(paused||disposed)return Promise.resolve(false);
+  const own=readDocument();pending=own;own.finally(()=>{if(pending===own)pending=null;});return own;
+ }
+ window.sirenViewControl.onPrepare(async()=>{
+  paused=true;document.body.inert=true;document.documentElement.style.visibility='hidden';
+  if(pending)await pending;
+  return {ok:!disposed&&document.body.dataset.documentReady==='true'};
+ });
+ window.sirenViewControl.onResume(()=>{
+  if(disposed||!paused)return;
+  paused=false;document.body.inert=false;document.documentElement.style.visibility='';
+ });
  theme.addEventListener('change',appearance);media.addEventListener('change',appearance);retry.addEventListener('click',()=>{void connect();});
  window.addEventListener('beforeunload',()=>{disposed=true;generation++;clear();media.removeEventListener('change',appearance);},{once:true});
  window.sirenNativeDocsView=Object.freeze({connect});

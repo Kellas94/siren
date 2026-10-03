@@ -10,7 +10,7 @@ import { SourceRepository } from '../src/sources/repository.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { AccessPolicy } from '../src/account/access.mjs';
 import { failure } from '../src/ipc.mjs';
-import {installPrimaryOwner} from './fixtures/primary-owner-context.mjs';
+import {installPrimaryOwner,installLegacyPreparation} from './fixtures/primary-owner-context.mjs';
 
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const between = (start, end) => main.slice(main.indexOf(start), main.indexOf(end));
@@ -95,6 +95,7 @@ test('failed account-transition flush retains original authority and does not re
     window: { webContents: { executeJavaScript: async code => vm.runInContext(code, context) }, sirenDesktopBeginAccountTransition: async () => { throw new Error('Disk full'); }, sirenDesktopEndAccountTransition: () => {} },
   });
   vm.runInContext('const services = {\n' + login + '\n};', context);
+  installLegacyPreparation(context);
   const result = await vm.runInContext('services', context).beginLogin();
   assert.equal(result.ok, false); assert.equal(switched, false); assert.equal(context.grants.has(originalGrant), true);
   assert.equal(vm.runInContext('accountTransition', context), false);
