@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'large-source-docs', 'code-view-flush', 'domain-workspaces')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'home-entry')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -118,6 +118,12 @@ jobs:
             desktop/evidence/domain-workspaces/*/native-progress.json
             desktop/evidence/domain-workspaces/*/prepared.json
             desktop/evidence/domain-workspaces/*/electron.log
+            desktop/evidence/home-entry/*/result.json
+            desktop/evidence/home-entry/*/native-result.json
+            desktop/evidence/home-entry/*/native-progress.json
+            desktop/evidence/home-entry/*/prepared.json
+            desktop/evidence/home-entry/*/electron.log
+            desktop/evidence/home-entry/*/*.png
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14

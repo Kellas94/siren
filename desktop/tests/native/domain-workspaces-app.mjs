@@ -10,6 +10,8 @@ import {NativeAllViewControl} from '../../src/windows/control.mjs';
 import {NativeWorkspaceBarrier,NativeAllWorkspaceBarrier} from '../../src/windows/source-barrier.mjs';
 import {PrimaryPersistence} from '../../src/windows/primary.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
+import {runAfterWorkspaceLoad} from '../../src/windows/readiness.mjs';
+import {HomeAuthority} from '../../src/navigation/authority.mjs';
 import {DomainRepository} from '../../src/windows/domain.mjs';
 import {createImportValidator} from '../../src/projects/import-validator-window.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
@@ -20,14 +22,15 @@ app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()
 protocol.registerSchemesAsPrivileged([{scheme:'siren',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const hash=b=>createHash('sha256').update(b).digest('hex');
 app.whenReady().then(async()=>{
- const result={status:'ADVERSE',pid:process.pid,scope:'Isolated native domain and primary-readonly services, frozen validators and five protocol fixtures; no production editors, product Lock, Home or physical monitors',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,control,barrier,validator;
+ const result={status:'ADVERSE',pid:process.pid,scope:'Isolated domain/primary-readonly services and native Home identity boundaries with frozen protocol fixtures; no production editors, product Lock, Home UI or physical monitors',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,control,barrier,validator;
  const progress=()=>writeFile(join(root,'native-progress.json'),JSON.stringify(result,null,2));
  try{
   const prepared=JSON.parse(await readFile(join(root,'prepared.json'),'utf8')),data=join(root,'owned-data'),projectId=prepared.project.project.id,windows=[];
   for(const role of ['docs','diagram'])assert.equal(hash(await readFile(join(root,'generated/windows/'+role+'.html'))),prepared.htmlSHA256);
   assert.equal(hash(await readFile(join(root,'generated/app.html'))),prepared.htmlSHA256);
+  assert.equal(hash(await readFile(join(root,'generated/home.html'))),prepared.htmlSHA256);
   assert.equal(hash(await readFile(join(root,'owned-preload.cjs'))),prepared.preloadSHA256);
-  protocol.handle('siren',async request=>{const url=new URL(request.url);if(url.hostname!=='app'||!['/app.html','/windows/docs.html','/windows/diagram.html'].includes(url.pathname))return new Response('Refused',{status:403});return net.fetch(pathToFileURL(join(root,'generated',url.pathname.slice(1))).href);});
+  protocol.handle('siren',async request=>{const url=new URL(request.url);if(url.hostname!=='app'||!['/app.html','/home.html','/windows/docs.html','/windows/diagram.html'].includes(url.pathname))return new Response('Refused',{status:403});return net.fetch(pathToFileURL(join(root,'generated',url.pathname.slice(1))).href);});
   // This finite owned factory qualifies the registry/domain protocol only. The
   // production factory does not yet admit Diagram and is not represented here.
   registry=new WindowRegistry({authorize:()=>({projectId,mode:'normal',access:'write',entityIds:['doc-a','doc-b','diagram-a','diagram-b']}),createWindow:async record=>{const window=new BrowserWindow({show:false,width:900,height:600,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,preload:join(root,'owned-preload.cjs')}});window.webContents.setWindowOpenHandler(()=>({action:'deny'}));await window.loadURL(record.mainFrameUrl);windows.push(window);return window;}});
@@ -88,7 +91,19 @@ app.whenReady().then(async()=>{
   barrier=new NativeWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});const preparing=barrier.prepare('owned-domain-failure');release();assert.equal((await pending).ok,false);assert.equal((await preparing).ok,false);
   assert.equal(await evaluate(1,'owned.dirty'),true);assert.equal(await evaluate(1,'document.querySelector("textarea").value.includes("Retained unsaved draft")'),true);assert.equal(await evaluate(1,'owned.resume()'),false);
   assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);assert.equal(registry.listViews().length,4);assert.equal(await evaluate(0,'owned.paused'),true);
-  result.cases.push({name:'real durable write refusal retains the local draft and selected originals and refuses the entire roster',status:'COMPLETE'});result.status='COMPLETE';
+  result.cases.push({name:'real durable write refusal retains the local draft and selected originals and refuses the entire roster',status:'COMPLETE'});
+  const homeWindow=new BrowserWindow({show:false,width:900,height:600,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
+  homeWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));await homeWindow.loadURL('siren://app/home.html');
+  const homeRegistry=new WindowRegistry({createWindow:()=>{throw Error('No Home data factory');},authorize:()=>({projectId,mode:'normal',access:'write',entityIds:['doc-a',prepared.source.sourceId]})});homeRegistry.bindWorkspace(homeWindow);
+  assert.throws(()=>homeRegistry.activateWorkspace(),{code:'ACCESS_REFUSED'});homeRegistry.activateWorkspace({entryUrl:'siren://app/home.html'});
+  const homeEvent={sender:homeWindow.webContents,senderFrame:homeWindow.webContents.mainFrame},homeGrant=homeRegistry.capture(homeEvent);assert.deepEqual(homeGrant.entityIds,[]);
+  let sourceFactoryCalled=false;const homeOwner=new WorkspaceCoordinator({registry:homeRegistry,access:()=>true,sources:()=>{sourceFactoryCalled=true;return new SourceRepository(data);}});
+  assert.equal((await homeOwner.invoke(homeGrant,{kind:'source',method:'getMetrics',payload:{sourceId:prepared.source.sourceId}})).code,'ACCESS_REFUSED');assert.equal(sourceFactoryCalled,false);
+  let ready=false;await assert.rejects(runAfterWorkspaceLoad(homeWindow.webContents,()=>ready=true),{code:'WORKSPACE_NOT_READY'});
+  await runAfterWorkspaceLoad(homeWindow.webContents,()=>ready=true,{expectedUrl:'siren://app/home.html'});assert.equal(ready,true);
+  const homeAuthority=new HomeAuthority({workspace:homeWindow,state:()=>({unlocked:true,projectId:null,mode:'normal',generation:0})}),homeScope=homeAuthority.capture(homeEvent);assert.equal(homeAuthority.isCurrent(homeScope),true);homeAuthority.invalidate();assert.equal(homeAuthority.isCurrent(homeScope),false);
+  homeRegistry.invalidateEpoch({preserveWorkspace:true});homeWindow.destroy();
+  result.cases.push({name:'actual exact Home frame has metadata authority but no source grants, and native readiness requires the explicit Home entry',status:'COMPLETE'});result.status='COMPLETE';
  }catch(cause){result.error={message:cause.message,code:cause.code,stack:cause.stack};}
  finally{try{barrier?.dispose();control?.dispose();registry?.invalidateEpoch();await validator?.dispose();}catch(cause){result.cleanupError=cause.message;result.status='ADVERSE';}for(const window of BrowserWindow.getAllWindows())try{window.destroy();}catch{}result.remainingWindows=BrowserWindow.getAllWindows().length;result.finished=new Date().toISOString();await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:result.status,error:result.error?.message,remainingWindows:result.remainingWindows}));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
 });

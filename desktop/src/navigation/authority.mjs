@@ -1,6 +1,7 @@
 import { validId } from '../projects/paths.mjs';
+import {WORKSPACE_ENTRIES} from './entries.mjs';
 
-const entries=new Set(['siren://app/home.html','siren://app/app.html']);
+const entries=new Set(Object.values(WORKSPACE_ENTRIES));
 /** Isolated native Home authority: main must invalidate synchronously for every
  * Lock/navigation/access transition before awaiting anything. No data grant or
  * production channel is created here, even when no project is selected. */

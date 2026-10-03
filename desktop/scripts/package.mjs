@@ -13,13 +13,13 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['atomic','budgets','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
-  'src/navigation/contracts.mjs',
+  ...['contracts','entries'].map(n=>`src/navigation/${n}.mjs`),
   ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
   if (typeof path !== 'string' || path.split('/').some(p => !p || p === '.' || p === '..') || path.includes('\\') || /(?:\.map|\.d\.ts|\.log|\.pem|\.key)$/.test(path) || /(?:^|\/)(?:\.env[^/]*|credentials[^/]*|test-[^/]*|[^/]*\.test\.[^/]*)$/.test(path)) return false;
-  if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/build.json' || path === 'generated/import-validation.html' || ['generated/windows/code.html','generated/windows/docs.html'].includes(path)) return true;
+  if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/home.html' || path === 'generated/build.json' || path === 'generated/import-validation.html' || ['generated/windows/code.html','generated/windows/docs.html'].includes(path)) return true;
   if (path.startsWith('src/')) return false;
   const match = path.match(/^node_modules\/((?:@[^/]+\/)?[^/]+)\/(.+)$/);
   return !!match && production.has(match[1]) && /\.(?:js|mjs|cjs|json)$|(?:^|\/)LICENSE(?:\.md|\.txt)?$/i.test(match[2]);

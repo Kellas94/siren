@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import {navigationFields} from '../navigation/contracts.mjs';
+import {WORKSPACE_ENTRIES,workspaceEntryURL} from '../navigation/entries.mjs';
 
 const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
@@ -82,13 +84,14 @@ export class WindowRegistry {
 
   // Explicit native activation after a successful PIN unlock/reload. Unlike
   // satellite factories, only the permanently pinned owner can be reactivated.
-  activateWorkspace() {
+  activateWorkspace(options={}) {
+    let entryUrl;try{const values=navigationFields(options,['entryUrl'],[]);entryUrl=workspaceEntryURL(Object.hasOwn(values,'entryUrl')?values.entryUrl:WORKSPACE_ENTRIES.module);}catch{throw refuse('ACCESS_REFUSED','Workspace entry refused');}
     if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
     const bound = this.#workspace; const request = normalizeRequest({ role: 'workspace', entityId: null });
     if (!bound || this.#destructionFailed) throw refuse('ACCESS_REFUSED', 'Workspace activation refused');
     const scope = this.#policy(request); const { window, webContents: wc } = bound;
     if (window.isDestroyed() || wc.isDestroyed() || window.id !== bound.nativeId || window.webContents !== wc
-      || wc.id !== bound.webContentsId || wc.getURL() !== 'siren://app/app.html' || wc.mainFrame?.url !== 'siren://app/app.html') {
+      || wc.id !== bound.webContentsId || wc.getURL() !== entryUrl || wc.mainFrame?.url !== entryUrl) {
       throw refuse('ACCESS_REFUSED', 'Workspace native identity unavailable');
     }
     const existing = [...this.#views.values()].find(entry => entry.window === window);
@@ -98,7 +101,7 @@ export class WindowRegistry {
     }
     const record = Object.freeze({ windowId: randomUUID(), role: 'workspace', projectId: scope.projectId,
       epoch: this.#epoch, entityId: null, state: 'active' });
-    this.#register({ window, request, scope, record, mainFrameUrl: 'siren://app/app.html' });
+    this.#register({ window, request, scope, record, mainFrameUrl: entryUrl });
     return record;
   }
 
@@ -372,7 +375,7 @@ export class WindowRegistry {
           || event.senderFrame.url !== mainFrameUrl || webContents.getURL() !== mainFrameUrl) return null;
         const current = this.#policy(request);
         if (current.projectId !== scope.projectId || current.mode !== scope.mode || current.access !== scope.access) return null;
-        const entityIds = request.role === 'audience' ? []
+        const entityIds = request.role === 'audience' || mainFrameUrl===WORKSPACE_ENTRIES.home ? []
           : request.entityId === null ? (entry.window===this.#workspace?.window?current.entityIds:scope.entityIds) : [request.entityId];
         if (!entityIds.every(id => current.entityIds.includes(id))) return null;
         return Object.freeze({ webContentsId: entry.webContentsId, mainFrameUrl, windowId: record.windowId,

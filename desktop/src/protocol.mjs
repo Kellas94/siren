@@ -13,9 +13,10 @@ export async function resolveLocalResource({ url, rendererRoot }) {
   if (!segments.length || segments.some(s => !s || s === '.' || s === '..' || /[%\\:\x00-\x1f<>"|?*]/.test(s))) throw refused();
   // Serve only the built renderer. This is not a general file-reading API.
   const appEntry = segments.length === 1 && segments[0] === 'app.html';
+  const homeEntry = url === 'siren://app/home.html';
   const viewEntry = segments.length === 2 && segments[0] === 'windows' && ['code.html', 'docs.html'].includes(segments[1])
     && /^siren:\/\/app\/windows\/(?:code|docs)\.html\?windowId=[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(url);
-  if (!appEntry && !viewEntry) throw refused();
+  if (!appEntry && !homeEntry && !viewEntry) throw refused();
   const root = await realpath(rendererRoot);
   const target = await realpath(resolve(root, ...segments));
   const rel = relative(root, target);

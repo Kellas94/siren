@@ -5,6 +5,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parse } from 'parse5';
 import { Script } from 'node:vm';
 import { buildWindowEntrypoints } from './windows.mjs';
+import { buildWorkspaceEntrypoint } from './workspace.mjs';
 import { importHelper, buildImportValidation } from './import-validation.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
@@ -201,8 +202,9 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, 'app.html'), html, { encoding: 'utf8' });
   const windowEntrypoints = await buildWindowEntrypoints(outputDir);
+  const homeEntrypoint = await buildWorkspaceEntrypoint({outputDir});
   const importValidation=expectedSha256.toLowerCase()===BASELINE_SHA256?await buildImportValidation({baselinePath,outputDir}):null;
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,...(importValidation?{importValidation}:{}) };
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,...(importValidation?{importValidation}:{}) };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }
