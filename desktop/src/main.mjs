@@ -25,6 +25,7 @@ import {navigationFields} from './navigation/contracts.mjs';
 import {HomeAuthority} from './navigation/authority.mjs';
 import {HomeService} from './navigation/service.mjs';
 import {HomeTransitionReceipts} from './navigation/transition-receipts.mjs';
+import {continueSavedLocation} from './navigation/continue.mjs';
 import {NavigationStore} from './navigation/store.mjs';
 import {ProjectCatalog} from './navigation/catalog.mjs';
 import {createLocationResolver} from './navigation/resolver.mjs';
@@ -476,16 +477,10 @@ ipcMain.handle('siren:home',(event,method,payload)=>invokeHome({event,method,pay
   openProject:(input,scope)=>selectHomeProject(input,scope),createProject:(input,scope)=>selectHomeProject(input,scope,{create:true}),
   continueWork:async(_input,scope)=>{
     const state=await homeService.getHomeState({},scope),location=state.continuation?.location;
-    if(!location)return {ok:false,code:'ENTITY_UNAVAILABLE'};
-    if(location.projectId!==selectedId)return selectHomeProject({projectId:location.projectId},scope);
-    if(location.surface==='diagrams')return navigateEntry(scope,'siren://app/app.html');
-    if(!['code','docs'].includes(location.surface))return {ok:false,code:'UNAVAILABLE'};
-    const {schema,projectId,...relative}=location;
-    const resolved=await homeService.resolveEntity({projectId:selectedId,snapshot:await projects.readProject(selectedId),location:relative,isCurrent:scope.isCurrent});
-    if(!resolved.ok)return resolved;
-    if(!resolved.location.entityId)return {ok:false,code:'ENTITY_UNAVAILABLE'};
-    const result=await invokeNativeWindow(event,'openView',{role:location.surface,entityId:location.entityId,...(location.sourceRef?{version:location.sourceRef.version}:{})});
-    return result.ok?{ok:true,epoch:result.view.epoch}:result;
+    return continueSavedLocation({scope,location,projects,selectedProjectId:()=>selectedId,
+      resolveEntity:input=>homeService.resolveEntity(input),selectProject:selectHomeProject,
+      selectionIsCurrent:(ticket,receipt)=>homeTransitions.selectionIsCurrent(ticket,receipt),
+      openView:input=>invokeNativeWindow(event,'openView',input),navigateDiagrams:own=>navigateEntry(own,'siren://app/app.html')});
   },
 },transitions:homeTransitions}));
 ipcMain.handle('siren:home-route',(event,input)=>{
@@ -623,7 +618,11 @@ window.webContents.on('will-navigate', event => { if (event.url !== window.webCo
 window.webContents.on('will-attach-webview', event => event.preventDefault());
 window.webContents.on('will-frame-navigate', event => { if (!event.isMainFrame || event.url!==window.webContents.getURL()&&event.url!==nativeNavigationTarget) event.preventDefault(); });
 window.webContents.on('before-input-event', (event, input) => {
-  if (input.type === 'keyDown' && input.control && !input.alt && !input.shift && input.key.toLowerCase() === 'q') { event.preventDefault(); window.close(); }
+  if(input.type!=='keyDown'||!input.control||input.shift||input.meta||input.isComposing||typeof input.key!=='string')return;
+  const key=input.key.toLowerCase();
+  const command=input.alt?new Map([['l','desktopLockPin'],['o','desktopOpenProject'],['e','desktopExportProject'],['u','desktopCheckUpdates'],['r','desktopRecovery']]).get(key):key===','?'desktopPinSettings':null;
+  if(command){event.preventDefault();if(!input.isAutoRepeat)desktopCommand(command);}
+  else if(!input.alt&&key==='q'){event.preventDefault();if(!input.isAutoRepeat)window.close();}
 });
 await window.loadURL('siren://app/home.html');
 const automaticUpdateTimer = setTimeout(() => { if (!window.isDestroyed()) void updates.automaticCheck({ online: net.isOnline() }); }, 10000);

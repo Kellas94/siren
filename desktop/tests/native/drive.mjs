@@ -112,8 +112,11 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
       throw new Error('UI condition not met: ' + expression);
     };
     const screenshot = async path => { const r = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(path, Buffer.from(r.data, 'base64')); };
-    const click = async selector => {
-      const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control'); const r=e.getBoundingClientRect(); const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);return {x,y,hit:r.width>0&&r.height>0&&e.contains(h),cover:h?.id||h?.className||h?.tagName};})()`);
+      const click = async selector => {
+        // Hosted displays can be shorter than the owned local window. Bring the
+        // control into the real viewport; still refuse covered or absent hits.
+        await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control');e.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});})()`);
+        const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control'); const r=e.getBoundingClientRect(); const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);return {x,y,hit:r.width>0&&r.height>0&&e.contains(h),cover:h?.id||h?.className||h?.tagName};})()`);
       if (!point.hit) throw new Error('Occluded control: ' + selector + ' by ' + point.cover);
       await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 });
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 });

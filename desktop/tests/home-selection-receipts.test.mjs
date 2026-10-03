@@ -38,3 +38,12 @@ test('copied selection metadata and Lock after a genuine selection do not publis
   const f=await fixture();const result=await invokeHome({event:f.event(),method:'createProject',payload:{label:'selected'},authority:f.authority,transitions:f.transitions,services:{createProject:async(_input,scope)=>{await f.select();const receipt=await f.transitions.completeSelection(scope.transition);assert.equal(receipt.ok,true);if(mode==='lock')f.lock();return mode==='copy'?{...receipt}:receipt;}}});assert.equal(result.code,'ACCESS_REFUSED');
  }
 });
+
+test('only genuine Continue selection permits a finite follow-up and Lock retires that scope',async()=>{
+ const f=await fixture(),grant=f.authority.capture(f.event()),ticket=f.transitions.begin(grant,'continueWork');
+ await f.select();const receipt=await f.transitions.completeSelection(ticket);assert.equal(receipt.ok,true);
+ assert.equal(f.transitions.selectionIsCurrent(ticket,{...receipt}),false);
+ assert.equal(f.transitions.selectionIsCurrent({...ticket},receipt),false);
+ assert.equal(f.transitions.selectionIsCurrent(ticket,receipt),true);f.lock();
+ assert.equal(f.transitions.selectionIsCurrent(ticket,receipt),false);f.transitions.cancel(ticket);
+});

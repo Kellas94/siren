@@ -46,3 +46,10 @@ test('Lock during actual native snapshot selection suppresses the pending catalo
  const f=await fixture();let entered,release;const ready=new Promise(r=>{entered=r;}),gate=new Promise(r=>{release=r;});
  f.provider(async()=>{entered();await gate;return f.selected;});const pending=f.call();await ready;f.lock();release();const result=await pending;assert.equal(result.code,'ACCESS_REFUSED');assert.equal(result.items,undefined);
 });
+
+test('role-filtered pages bound the chosen library without first mounting unrelated Docs rows',async()=>{
+ const f=await fixture();f.select({...f.selected,json:JSON.stringify({workpapers:Array.from({length:130},(_,n)=>({id:'doc-'+n,title:'Doc '+n,content:'PRIVATE'}))})});
+ const code=await f.call({role:'code',cursor:0});assert.equal(code.ok,true);assert.equal(code.items.length,2);assert.equal(code.total,2);assert.equal(code.hasMore,false);assert.ok(code.items.every(item=>item.role==='code'));
+ const docs=await f.call({role:'docs',cursor:0}),next=await f.call({role:'docs',cursor:docs.nextCursor});assert.equal(docs.items.length,64);assert.equal(next.items.length,64);assert.equal(docs.total,130);assert.equal(docs.hasMore,true);assert.ok(next.items.every(item=>item.role==='docs'));assert.equal(JSON.stringify(docs).includes('PRIVATE'),false);
+ for(const role of ['diagram','presenter',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
+});

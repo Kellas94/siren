@@ -18,7 +18,7 @@ export class NativeWindowCatalog {
  }
  async invoke({event,payload}){
   try{
-   let cursor;try{const request=navigationFields(payload??{},['cursor'],[]);cursor=request.cursor??0;if(!Number.isSafeInteger(cursor)||cursor<0||cursor>4096)return fail('REQUEST_REFUSED');}catch{return fail('REQUEST_REFUSED');}
+   let cursor,role;try{const request=navigationFields(payload??{},['cursor','role'],[]);cursor=request.cursor??0;role=request.role;if(!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs'].includes(role))return fail('REQUEST_REFUSED');}catch{return fail('REQUEST_REFUSED');}
    const grant=this.#capture(event);if(!grant)return fail('ACCESS_REFUSED');
    const snapshot=await this.#snapshotFor(grant),live=this.#capture(event);
    if(!live||live.windowId!==grant.windowId||live.epoch!==grant.epoch||snapshot?.project?.id!==grant.projectId)return fail('ACCESS_REFUSED');
@@ -33,7 +33,8 @@ export class NativeWindowCatalog {
     if(!refs.has(ref.sourceId)||refs.get(ref.sourceId).version<ref.version)refs.set(ref.sourceId,ref);
    }
    for(const ref of refs.values())rows.push({role:'code',entityId:ref.sourceId,label:'Source '+ref.sourceId.slice(0,8),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}});
-   const total=rows.length,limit=Math.min(total,4096),items=rows.slice(cursor,Math.min(cursor+64,limit)),nextCursor=cursor+items.length;
+   const selected=role?rows.filter(item=>item.role===role):rows;
+   const total=selected.length,limit=Math.min(total,4096),items=selected.slice(cursor,Math.min(cursor+64,limit)),nextCursor=cursor+items.length;
    return Object.freeze({ok:true,items,total,truncated:total>limit,hasMore:nextCursor<limit,nextCursor});
   }catch{return fail('CATALOG_REFUSED');}
  }

@@ -62,6 +62,11 @@ export class HomeTransitionReceipts {
    this.#receipts.set(receipt,{ticket,state});return receipt;
   }catch{return fail();}
  }
+ selectionIsCurrent(ticket,receipt){
+  const proof=receipt&&this.#receipts.get(receipt),state=ticket&&this.#tickets.get(ticket);
+  try{return Boolean(proof&&proof.ticket===ticket&&proof.state===state&&state.method==='continueWork'&&state.receipt===receipt&&state.native&&
+    HomeAuthority.prototype.isCurrent.call(this.#authority,state.after)&&WindowRegistry.prototype.isCurrent.call(this.#registry,state.native));}catch{return false;}
+ }
  completeEmptyRecovery(ticket,roster,entryUrl){
   const state=ticket&&this.#tickets.get(ticket);if(!state||state.receipt||state.before||!this.#projects)return fail();
   try{

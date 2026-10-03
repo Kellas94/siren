@@ -3,8 +3,16 @@
   const modules=[['diagrams','Diagrams','Connections made clear.','◇'],['docs','Docs','Context, decisions and agents.','▤'],['code','⌘ Code','Explore how your code works.','⌘'],['present','Present','Share the bigger picture.','▻']];
   const errors={ACCESS_REFUSED:'Access changed. Return to the unlocked workspace.',PROJECT_UNAVAILABLE:'This project is unavailable. Its existing data was retained.',ENTITY_UNAVAILABLE:'The saved item is unavailable. Open its project to review it.',SOURCE_VERSION_UNAVAILABLE:'The saved code version is unavailable. Your private draft was retained.',RECOVERY_REQUIRED:'This project needs recovery before it can be opened.',UNAVAILABLE:'This action is not connected in this build.',TRANSITION_FAILED:'The workspace could not change. Your work was retained.'};
   const make=(tag,parent,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;parent?.append(node);return node;};
+  window.installSirenHomeCommands=({desktop,commands,enabled})=>{
+    const allowed=new Set(['desktopPinSettings','desktopLockPin','desktopOpenProject','desktopCheckUpdates','desktopRecovery','desktopGuide','desktopExportProject']);
+    if(typeof desktop?.onCommand!=='function')return()=>{};
+    let disposed=false;const off=desktop.onCommand(id=>{
+      if(disposed||!allowed.has(id)||!Object.hasOwn(commands,id)||typeof commands[id]!=='function'||enabled(id)!==true)return;
+      try{Promise.resolve(commands[id]()).catch(()=>{});}catch{/* Each UI action retains its own failure status. */}
+    });return()=>{if(disposed)return;disposed=true;off?.();};
+  };
   window.renderSirenHome=({container,bridge,desktop,bootstrap})=>{
-    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off;
+    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off,offCommands;
     const events=[];
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
     const clear=()=>{for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
@@ -25,6 +33,7 @@
         const result=await bridge?.[method]?.(payload);
         if(disposed||blocked||turn!==serial)return;
         if(result?.ok===true){if(location.href==='siren://app/home.html')await refresh();else say('Opening your workspace…');return;}
+        if(result?.code==='CANCELLED'){say('');return;}
         say(message(result));
       }catch{if(!disposed&&!blocked&&turn===serial)say('The action could not complete. Your work was retained.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
@@ -53,22 +62,51 @@
         finally{if(!disposed&&!blocked&&turn===serial){creating=false;busy=false;controls();submit.disabled=cancel.disabled=false;input.disabled=false;input.focus();}}
       });dialog.showModal();input.focus();
     };
+    const lockWorkspace=async()=>{
+      if(blocked||disposed)return;cover();
+      const operation=Promise.resolve().then(()=>desktop.lockPin());
+      const animation=window.sirenHomeCloseVault?.();let result;try{result=await operation;}catch{}
+      await animation;if(disposed)return;
+      if(result?.ok===true){location.reload();return;}
+      document.getElementById('sirenLockVault').hidden=true;blocked=false;await refresh();say(message(result));
+    };
+    const infoDialog=(title,id)=>{
+      const existing=document.getElementById(id);if(existing?.open)return null;
+      const dialog=make('dialog',container,undefined,'home-create');dialog.id=id;
+      const heading=make('h2',dialog,title);heading.id=id+'Title';dialog.setAttribute('aria-labelledby',heading.id);
+      listen(dialog,'close',()=>dialog.remove());return dialog;
+    };
+    const done=dialog=>button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});
+    const showGuide=()=>{
+      if(blocked||disposed)return;const dialog=infoDialog('Your SIREN workspace','homeGuide');if(!dialog)return;
+      for(const [title,text] of [['Diagrams','Open your project in Diagrams for Build, Mermaid and Guided editing, vector export and the existing inline tools.'],['Docs','Inspect a saved document in its own native window. Agent sections load when you expand them.'],['⌘ Code','Inspect the exact selected source version with Python colours, Find, Wrap and native window controls. This native view is read only; existing inline Code retains its private edit workflow.'],['Continue work','Reopen the last recorded Docs or Code item, including its project. Home keeps the open-window list available across your displays.'],['Keyboard','Ctrl+, opens Settings. Ctrl+Alt+L locks SIREN. Ctrl+Alt+O opens a project. Ctrl+Alt+U checks for updates. Ctrl+Q quits after preparing your work.']]){make('h3',dialog,title);make('p',dialog,text);}
+      done(dialog);dialog.showModal();
+    };
+    const showUpdates=async()=>{
+      if(blocked||disposed)return;const dialog=infoDialog('SIREN updates','homeUpdates');if(!dialog)return;const turn=serial;
+      const note=make('p',dialog,'Checking update status…');note.id='homeUpdateStatus';note.setAttribute('role','status');
+      const paintUpdate=value=>{if(disposed||blocked||serial!==turn||!dialog.open)return;const phase=value?.phase;
+        note.textContent={unconfigured:'Updates are not configured for this development build.',idle:'Check for a signed SIREN update.',checking:'Checking for updates…',current:'This version is up to date.',available:`SIREN ${value?.version||''} is available.`,downloading:'An update is downloading.',ready:'The update is verified. Installation is not yet qualified in this development build.',applying:'Preparing to restart…',error:'Updates could not be checked. Try again.'}[phase]||'Update status unavailable.';};
+      const check=button(dialog,'Check for updates',async()=>{check.disabled=true;try{paintUpdate(await desktop.checkForUpdates());}catch{paintUpdate({phase:'error'});}finally{if(dialog.open)check.disabled=false;}},{id:'homeCheckUpdates',className:'home-primary'});
+      done(dialog);dialog.showModal();try{paintUpdate(await desktop.getUpdate());}catch{paintUpdate({phase:'error'});}
+      if(disposed||blocked||serial!==turn||!dialog.open)return;
+      const unsubscribe=desktop.onStatus?.(value=>{if(value?.kind==='updates')paintUpdate(value.state);});
+      listen(dialog,'close',()=>unsubscribe?.());events.push(()=>unsubscribe?.());
+    };
+    const showSettings=()=>{
+      if(blocked||busy||disposed)return;const dialog=infoDialog('Settings','homeSettingsPanel');if(!dialog)return;
+      button(dialog,'Change PIN',()=>{dialog.close();window.sirenDesktopShowPin?.('change');},{id:'homePinSettings',className:'home-project-row'});
+      button(dialog,'Check for updates',()=>{dialog.close();void showUpdates();},{id:'homeSettingsUpdates',className:'home-project-row'});
+      button(dialog,'Quick guide',()=>{dialog.close();showGuide();},{id:'homeQuickGuide',className:'home-project-row'});
+      done(dialog);dialog.showModal();
+    };
     const paint=value=>{
       clear();state=value;container.hidden=false;container.className='home-root';
       const top=make('header',container,undefined,'home-topbar');make('span',top,'SIREN','home-brand');make('span',top,'Home','home-current');
       const tools=make('div',top,undefined,'home-topbar-tools');
       if(value.mode!=='normal'&&typeof bridge?.showRecovery==='function')button(tools,'Recovery',()=>perform('showRecovery',{}),{id:'homeRecovery'});
-      const settings=button(tools,'PIN settings',()=>window.sirenDesktopShowPin?.('change'),{id:'homePinSettings'});unavailable(settings,typeof window.sirenDesktopShowPin!=='function'||typeof desktop?.changePin!=='function');
-      const lock=button(tools,'Lock',async()=>{
-        if(busy||blocked||disposed)return;cover();
-        // Native invalidation starts before any animation await.
-        const operation=Promise.resolve().then(()=>desktop.lockPin());
-        const animation=window.sirenHomeCloseVault?.();
-        let result;try{result=await operation;}catch{}
-        await animation;if(disposed)return;
-        if(result?.ok===true){location.reload();return;}
-        document.getElementById('sirenLockVault').hidden=true;blocked=false;await refresh();say(message(result));
-      },{id:'homeLock'});unavailable(lock,typeof desktop?.lockPin!=='function');
+      const settings=button(tools,'Settings',showSettings,{id:'homeSettings'});unavailable(settings,typeof window.sirenDesktopShowPin!=='function'||typeof desktop?.changePin!=='function');
+      const lock=button(tools,'Lock',lockWorkspace,{id:'homeLock'});unavailable(lock,typeof desktop?.lockPin!=='function');
       const content=make('div',container,undefined,'home-content');
       const greeting=make('div',content,undefined,'home-greeting');make('p',greeting,'YOUR WORKSPACE','home-eyebrow');make('h1',greeting,'Where ideas connect.');make('p',greeting,'Pick up where you left off, or start something new.','home-subtitle');
       if(value.mode!=='normal'){const warning=make('p',content,value.mode==='recovery'?'Recovery mode · Existing work is retained. Review recovery before editing.':'Read-only mode · You can inspect existing work. Editing is unavailable.','home-warning');warning.setAttribute('role','status');}
@@ -77,7 +115,7 @@
       if(previous){make('span',hero,'CONTINUE WORK','home-eyebrow');make('h2',hero,project?.label||'Local project');const surface=modules.find(m=>m[0]===previous.location.surface)?.[1]||'Project overview';make('p',hero,previous.reason?message({code:previous.reason}):`${surface} · Your last recorded location`,'home-subtitle');const resume=button(hero,'Continue work',()=>perform('continueWork',{}),{className:'home-primary',id:'homeContinue'});unavailable(resume,previous.availability==='missing'||typeof bridge?.continueWork!=='function');}
       else{make('span',hero,'A FRESH START','home-eyebrow');make('h2',hero,'Make room for your next idea.');make('p',hero,'Create a local project or open your existing work.','home-subtitle');}
       const start=make('div',hero,undefined,'home-start-actions');const newProject=button(start,'New project',create,{id:'homeNewProject',className:previous?'home-secondary':'home-primary'});unavailable(newProject,value.mode!=='normal'||typeof bridge?.createProject!=='function');
-      const open=button(start,'Open project…',()=>perform('importProject',{}),{id:'homeImportProject',className:'home-secondary'});unavailable(open,typeof bridge?.importProject!=='function');
+      const open=button(start,'Open project…',()=>perform('importProject',{}),{id:'homeImportProject',className:'home-secondary'});unavailable(open,value.mode!=='normal'||typeof bridge?.importProject!=='function');
       const moduleHeading=make('div',content,undefined,'home-section-heading');make('h2',moduleHeading,'Explore your project');make('span',moduleHeading,'One context. Four perspectives.');
       const grid=make('div',content,undefined,'home-module-grid');
       for(const [surface,title,description,icon] of modules){const enabled=value.selectedProjectId!==null&&value.capabilities[surface]===true&&typeof bridge?.openModule==='function';
@@ -107,9 +145,13 @@
       const dialog=make('dialog',container,undefined,'home-create home-library');dialog.setAttribute('aria-labelledby','homeLibraryTitle');
       make('h2',dialog,surface==='code'?'⌘ Code':'Docs').id='homeLibraryTitle';make('p',dialog,'Open a saved item in its own window. This build provides read-only inspection.');
       const rows=make('div',dialog,undefined,'home-library-items'),note=make('p',dialog,'Loading…');note.setAttribute('role','status');
+      let cursor=0,found=0,loading=false;
+      const more=button(dialog,'Load more',()=>{void loadPage();},{id:'homeLibraryMore',className:'home-secondary'});more.hidden=true;
       const finish=()=>{if(turn===serial){busy=false;controls();}dialog.remove();};button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});listen(dialog,'close',finish);dialog.showModal();
-      try{let cursor=0,found=0;do{
-        const result=await bridge.getCatalog({cursor});if(disposed||blocked||turn!==serial||!dialog.open)return;
+      const loadPage=async()=>{
+      if(loading||blocked||disposed||turn!==serial||!dialog.open)return;loading=true;more.disabled=true;
+      try{
+        const result=await bridge.getCatalog({cursor,role:surface});if(disposed||blocked||turn!==serial||!dialog.open)return;
         if(!result?.ok){note.textContent=message(result);return;}
         for(const item of result.items.filter(item=>item.role===surface)){found++;const row=button(rows,item.label,async()=>{
           if(blocked||disposed||turn!==serial)return;row.disabled=true;note.textContent='Opening…';
@@ -119,12 +161,15 @@
             else{note.textContent=message(opened);row.disabled=false;}
           }catch{if(!blocked&&turn===serial){note.textContent='The window could not open. Your work was retained.';row.disabled=false;}}
         },{className:'home-project-row'});row.dataset.entityId=item.entityId;}
-        cursor=result.nextCursor;if(!result.hasMore)break;
-      }while(cursor<=4096);note.textContent=found?'Select an item.':'No saved items in this project yet.';
+        cursor=result.nextCursor;more.hidden=result.hasMore!==true;
+        note.textContent=found?`${found.toLocaleString()} of ${Math.min(result.total,4096).toLocaleString()} items · Select an item.${result.truncated?' The first 4,096 items are available here.':''}`:'No saved items in this project yet.';
       }catch{if(!blocked&&turn===serial)note.textContent='The library could not load. Your work was retained.';}
+      finally{loading=false;if(dialog.open)more.disabled=false;}
+      };await loadPage();
     };
     if(typeof bridge?.onInvalidated==='function')off=bridge.onInvalidated(cover);
-    return Object.freeze({refresh,cover,resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();}});
+    offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:()=>say('Open Diagrams to export your saved project.')}});
+    return Object.freeze({refresh,cover,resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();}});
   };
   const start=()=>{
     const boot=window.sirenDesktopBootstrap;

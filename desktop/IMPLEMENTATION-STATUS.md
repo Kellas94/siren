@@ -1,3 +1,8 @@
+# 3 October 2026 — Home continuation and commands qualified locally
+
+Cross-project Continue now opens exact selected Code/Docs entities after genuine durable selection. Home Settings/Updates/Guide, native finite shortcuts and 64-row filtered libraries are implemented. Frozen 673/673 tests passed with unchanged captured inputs; actual Home11 in the hosted short viewport, library/keyboard4, Guided/intro and PIN reruns completed. The native fixture corrections after the frozen suite are qualified separately. Evidence: reviews/2026-10-03-home-continuation-root-evidence.md, written by the implementer. CI45 remains FAILED and its original artifact is retained; no new hosted/package result is inferred. Cross-project Diagram/cursor/layout restoration, editable native Code/Docs and Diagram/Present/Terminal remain open; implementation continues.
+
+--- Earlier status retained below ---
 # 2026-10-03 — production Home batch under qualification
 
 Implemented cold lightweight Intro/PIN/Home; no implicit scratch project, explicit durable New/Open, genuine prepared App/Home handoff, metadata-only readonly Code/Docs libraries and Continue, native window shelf/restore, and explicit readonly Recovery for damaged-journal startup. Existing all-view preparation remains enforced. Private receipts validate actual frame/durable selection rather than trusting success/hash labels. Home never receives a project envelope/source. Present, cross-project exact Continue, writable native editors and native Diagram/Presenter/Terminal remain open.
