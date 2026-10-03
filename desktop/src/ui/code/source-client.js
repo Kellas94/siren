@@ -69,12 +69,13 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     const descriptor = bridge && Object.getOwnPropertyDescriptor(bridge, method);
     return [method, typeof descriptor?.value === 'function' ? descriptor.value.bind(bridge) : null];
   }));
-  let disposed = false, fenced = false, durability = null, generation = 0, readGeneration = 0, pending = 0, pendingBytes = 0;
+  let disposed = false, fenced = false, paused = false, lastFailure = null, durability = null, generation = 0, readGeneration = 0, pending = 0, pendingBytes = 0;
   let tail = Promise.resolve();
+  const inFlight = new Set(); let pausedOperations = [], pauseGeneration = 0;
   const operations = new Set(), subscribers = new Set();
   const loads = new Set();
   const abortLoads = () => { for (const controller of loads) controller.abort(); };
-  const getState = () => Object.freeze({ ...current, durability, fenced, disposed });
+  const getState = () => Object.freeze({ ...current, durability, fenced, disposed, paused });
   const live = token => disposed ? failure('CLIENT_DISPOSED') : token !== generation ? failure('STALE_RESULT') : null;
   function publish(type, code) {
     const token = generation;
@@ -86,10 +87,11 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     }
   }
   function fence(result) {
-    fenced = true; readGeneration++; abortLoads(); publish('refused', result.code); return result;
+    fenced = true; lastFailure = result; readGeneration++; abortLoads(); publish('refused', result.code); return result;
   }
   async function loadDocument({ signal, onProgress } = {}) {
     if (disposed) return failure('CLIENT_DISPOSED');
+    if (paused) return failure('CLIENT_PAUSED');
     if (fenced) return failure('CLIENT_FENCED');
     if (pending || loads.size) return failure('SOURCE_BUSY');
     if (Object.values(readBridge).some(method => typeof method !== 'function')) return failure('SOURCE_READER_UNAVAILABLE');
@@ -106,6 +108,7 @@ export function sourceClient({ bridge, sourceRef } = {}) {
   }
   async function read(method, input) {
     if (disposed) return failure('CLIENT_DISPOSED');
+    if (paused) return failure('CLIENT_PAUSED');
     if (fenced) return failure('CLIENT_FENCED');
     if (pending) return failure('SOURCE_BUSY');
     let range;
@@ -138,6 +141,7 @@ export function sourceClient({ bridge, sourceRef } = {}) {
   }
   function mutate(method, input) {
     if (disposed) return Promise.resolve(failure('CLIENT_DISPOSED'));
+    if (paused) return Promise.resolve(failure('CLIENT_PAUSED'));
     if (fenced) return Promise.resolve(failure('CLIENT_FENCED'));
     const allowed = method === 'applyEdit' ? ['operationId', 'expectedVersion', 'start', 'end', 'insertedText', 'sourceId'] : ['operationId', 'expectedVersion', 'sourceId'];
     const data = fields(input, allowed, allowed.filter(key => key !== 'sourceId'));
@@ -174,11 +178,34 @@ export function sourceClient({ bridge, sourceRef } = {}) {
       durability = accepted.durability; publish(durability);
       return Object.freeze({ ...accepted });
     });
-    tail = result.then(() => { pending--; pendingBytes -= retainedBytes; }, () => { pending--; pendingBytes -= retainedBytes; });
+    inFlight.add(result);
+    const complete = () => { pending--; pendingBytes -= retainedBytes; inFlight.delete(result); };
+    tail = result.then(complete, complete);
     return result;
   }
   return Object.freeze({
     getState,
+    pauseView: () => {
+      if (disposed) return failure('CLIENT_DISPOSED');
+      if (!paused) { paused = true; pauseGeneration++; pausedOperations = [...inFlight]; readGeneration++; abortLoads(); publish('paused'); }
+      return Object.freeze({ ok: true, state: getState(), pending });
+    },
+    resumeView: () => {
+      if (disposed) return failure('CLIENT_DISPOSED');
+      if (pending) return failure('SOURCE_BUSY');
+      paused = false; pauseGeneration++; pausedOperations = []; publish('resumed');
+      return Object.freeze({ ok: true, state: getState() });
+    },
+    drain: async () => {
+      if (disposed) return failure('CLIENT_DISPOSED');
+      if (!paused) return failure('CLIENT_NOT_PAUSED');
+      const token = generation, pauseToken = pauseGeneration, receipts = Object.freeze(await Promise.all(pausedOperations));
+      await tail; // Include queue accounting after actual acknowledgements.
+      const stale = live(token); if (stale) return stale;
+      if (!paused || pauseGeneration !== pauseToken) return failure('STALE_RESULT');
+      const refusal = receipts.find(value => value.ok !== true) || (fenced ? lastFailure || failure('CLIENT_FENCED') : null);
+      return Object.freeze(refusal ? { ok: false, code: refusal.code, receipts } : { ok: true, receipts, state: getState() });
+    },
     loadDocument,
     getMetrics: () => read('getMetrics'),
     readRange: range => read('readRange', range),
@@ -191,9 +218,10 @@ export function sourceClient({ bridge, sourceRef } = {}) {
     },
     reset: sourceRef => {
       if (disposed) return failure('CLIENT_DISPOSED');
+      if (paused) return failure('CLIENT_PAUSED');
       const next = reference(sourceRef);
       if (!next || next.sourceId !== current.sourceId) return failure('INVALID_REFERENCE');
-      generation++; readGeneration++; abortLoads(); current = next; fenced = false; durability = null; publish('reset');
+      generation++; readGeneration++; abortLoads(); current = next; fenced = false; lastFailure = null; durability = null; publish('reset');
       return Object.freeze({ ok: true, ...current });
     },
     dispose: () => { if (!disposed) { disposed = true; generation++; readGeneration++; abortLoads(); subscribers.clear(); } },

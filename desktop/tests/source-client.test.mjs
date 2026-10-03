@@ -20,6 +20,63 @@ const mutation = (request, durability = 'draft', sha256 = H2) => ({ ok: true, so
 const metrics = (sha256 = H1) => ({ ok: true, sourceId: 'source-a', version: 1, sha256, utf8Bytes: 8, utf16Units: 5, lines: 1, longestLineUnits: 5, encoding: 'utf8', bom: false, newline: 'none' });
 const bridge = (overrides = {}) => ({ getMetrics: async () => metrics(), readRange: async request => ({ ok: true, ...request, text: 'a😀b'.slice(request.start, request.end) }), applyEdit: async request => mutation(request), commitSource: async request => mutation(request, 'committed', H2), ...overrides });
 
+check('view pause rejects new edits without fencing admitted local edits; drain waits for every native receipt', async () => {
+  const gate=deferred();let count=0;
+  const client=sourceClient({sourceRef:ref(),bridge:bridge({applyEdit:async request=>{count++;if(count===1)await gate.promise;return mutation(request,'draft',count===1?H2:H1);}})});
+  const first=client.applyEdit(edit()),second=client.applyEdit(edit('pause-second',2));
+  assert.equal(client.pauseView().ok,true);assert.equal(client.getState().paused,true);
+  assert.equal((await client.applyEdit(edit('late',3))).code,'CLIENT_PAUSED');assert.equal(client.getState().fenced,false);
+  assert.equal((await client.commitSource({operationId:'late-save',expectedVersion:3})).code,'CLIENT_PAUSED');
+  let drained=false;const waiting=client.drain().then(value=>{drained=true;return value;});
+  await Promise.resolve();await Promise.resolve();assert.equal(drained,false);
+  assert.equal(client.resumeView().code,'SOURCE_BUSY');gate.resolve();
+  const receipts=[await first,await second],result=await waiting;
+  assert.equal(result.ok,true);assert.deepEqual(result.receipts,receipts);assert.equal(result.state.version,3);assert.equal(result.state.durability,'draft');
+  assert.equal(client.resumeView().ok,true);assert.equal(client.getState().paused,false);
+});
+
+check('failed or disposed paused queues cannot report a successful drain or reset themselves clean',async()=>{
+  const client=sourceClient({sourceRef:ref(),bridge:bridge({applyEdit:async()=>({ok:false,code:'REVISION_CONFLICT'})})});
+  const work=client.applyEdit(edit());client.pauseView();
+  const drained=await client.drain();assert.equal((await work).ok,false);assert.equal(drained.ok,false);assert.equal(drained.code,'REVISION_CONFLICT');
+  assert.equal((await client.drain()).ok,false);assert.equal(client.reset(ref()).code,'CLIENT_PAUSED');
+  client.dispose();assert.equal((await client.drain()).code,'CLIENT_DISPOSED');
+});
+
+check('pause invalidates pending reads while an unpaused drain refuses a false barrier',async()=>{
+  const gate=deferred(),client=sourceClient({sourceRef:ref(),bridge:bridge({readRange:async request=>{await gate.promise;return {ok:true,...request,text:'a'};}})});
+  assert.equal((await client.drain()).code,'CLIENT_NOT_PAUSED');
+  const read=client.readRange({start:0,end:1});client.pauseView();gate.resolve();
+  assert.equal((await read).code,'STALE_RESULT');assert.equal((await client.readRange({start:0,end:1})).code,'CLIENT_PAUSED');
+  assert.equal((await client.drain()).ok,true);
+});
+
+check('resume and a new pause retire an older drain even when both have the same source identity',async()=>{
+  const gate=deferred(),client=sourceClient({sourceRef:ref(),bridge:bridge({applyEdit:async request=>{await gate.promise;return mutation(request);}})});
+  const work=client.applyEdit(edit());client.pauseView();
+  work.then(()=>{assert.equal(client.resumeView().ok,true);client.pauseView();});
+  const drained=client.drain();gate.resolve();
+  assert.equal((await drained).code,'STALE_RESULT');
+});
+
+check('real paused local queue drains edits and an already admitted commit with exact fresh disk bytes',async t=>{
+  const root=await mkdtemp(join(tmpdir(),'siren-paused-client-'));t.after(()=>rm(root,{recursive:true,force:true}));
+  const projects=new ProjectStore(root),project=await projects.createProject({label:'Owned paused source',json:'{"workpapers":[]}'}),projectId=project.project.id;
+  const repo=new SourceRepository(root),ref=await repo.importSource({projectId,bytes:Buffer.from('a😀b\r\nc')});
+  const gate=deferred();let held=false;
+  const writer=new SourceRepository(root,{fault:async()=>{if(!held){held=true;await gate.promise;}}});
+  const client=sourceClient({sourceRef:ref,bridge:bridge({applyEdit:edit=>writer.applyEdit({projectId,edit}),commitSource:request=>writer.commitSource({projectId,...request})})});
+  const first=client.applyEdit({operationId:'real-pause-one',expectedVersion:1,start:0,end:1,insertedText:'X'});
+  const second=client.applyEdit({operationId:'real-pause-two',expectedVersion:2,start:3,end:4,insertedText:'Ș'});
+  const save=client.commitSource({operationId:'real-pause-save',expectedVersion:3});
+  client.pauseView();const drained=client.drain();
+  assert.equal((await client.applyEdit({operationId:'real-late',expectedVersion:4,start:0,end:0,insertedText:'WRONG'})).code,'CLIENT_PAUSED');
+  gate.resolve();const result=await drained;
+  assert.equal(result.ok,true);assert.deepEqual(result.receipts,[await first,await second,await save]);assert.equal(result.state.durability,'committed');
+  assert.deepEqual(await new SourceRepository(root).exportSource({projectId,sourceId:ref.sourceId,version:3}),Buffer.from('X😀Ș\r\nc'));
+  assert.deepEqual(await projects.readProject(projectId),project);assert.equal(client.getState().fenced,false);
+});
+
 check('copies immutable identity and refuses malformed references or bridge', () => {
   const original = ref(); const client = sourceClient({ bridge: bridge(), sourceRef: original }); original.version = 100; original.sha256 = H2;
   assert.equal(client.getState().version, 1); assert.equal(client.getState().sha256, H1); assert.equal(Object.isFrozen(client.getState()), true);
