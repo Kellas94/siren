@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'large-source-docs', 'code-view-flush')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'large-source-docs', 'code-view-flush', 'domain-workspaces')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -85,6 +85,7 @@ jobs:
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
             desktop/evidence/*/failure.json
+            desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
             desktop/evidence/*/save-diagnostic.json
             desktop/evidence/*/restore-boundary.json
@@ -112,6 +113,11 @@ jobs:
             desktop/evidence/code-view-flush/*/native-progress.json
             desktop/evidence/code-view-flush/*/prepared.json
             desktop/evidence/code-view-flush/*/electron.log
+            desktop/evidence/domain-workspaces/*/result.json
+            desktop/evidence/domain-workspaces/*/native-result.json
+            desktop/evidence/domain-workspaces/*/native-progress.json
+            desktop/evidence/domain-workspaces/*/prepared.json
+            desktop/evidence/domain-workspaces/*/electron.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14

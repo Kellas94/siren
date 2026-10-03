@@ -7,6 +7,31 @@ import { readOwnedBytes } from '../src/projects/io.mjs';
 
 const baselineHash='5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+export const domainHelper = `
+        window.sirenDesktopValidateDomainPatch = ({domain,action,payload,before}) => {
+          const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
+          const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
+          if(domain==='docs'&&action==='rename')return typeof payload.title==='string'&&payload.title.length<=160;
+          if(domain==='diagram'&&['replace-source','update-model'].includes(action))return typeof payload.source==='string';
+          if(domain==='docs'&&action==='replace-blocks') {
+            const existing=new Set((before?.blocks||[]).map(block=>JSON.stringify(canonical(block))));
+            return payload.blocks.length<=MAX_WP_BLOCKS&&payload.blocks.every(block=>{
+              if(existing.has(JSON.stringify(canonical(block))))return true;
+              const report=[];return same(sanitizeWorkpaperBlock(block,report),block)&&report.length===0;
+            });
+          }
+          if(domain!=='diagram'||action!=='update-style')return false;
+          const validators={nodeStyles:sanitizeNodeStyles,styleClasses:sanitizeStyleClasses,nodeClasses:sanitizeNodeClasses,edgeStyles:sanitizeEdgeStyles,edgeRoutes:sanitizeEdgeRoutes,nodeMetadata:sanitizeNodeMetadata,comments:sanitizeComments,layout:sanitizeLayout,view:sanitizeView,links:sanitizeNodeLinks,icons:sanitizeNodeIcons,rules:sanitizeFormatRules,numbering:sanitizeNumbering,legend:sanitizeLegend,gitBranchColours:sanitizeGitBranchColours,presentation:sanitizePresentation,fontFamily:normalizeFontFamily,fontWeight:normalizeFontWeight};
+          return Object.entries(payload).every(([key,value])=>{
+            if(key==='fontSize')return Number.isFinite(value)&&value>=10&&value<=28;
+            if(key==='diagramTitle')return typeof value==='string'&&value.length<=300;
+            if(key==='diagramTitleTouched')return typeof value==='boolean';
+            if(key==='direction')return ['TD','TB','BT','LR','RL'].includes(value);
+            if(key==='curve')return ['basis','linear','cardinal','monotoneX','monotoneY','step','stepBefore','stepAfter'].includes(value);
+            return typeof validators[key]==='function'&&same(validators[key](value),value);
+          });
+        };
+`;
 
 // Shared with the module renderer: the same frozen workpaper/signoff functions
 // run in both doors. Do not replace them with migration-only JSON parsing.
@@ -41,7 +66,7 @@ export async function buildImportValidation({baselinePath,outputDir}) {
   let html=bytes.toString('utf8');
   const startup="document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
   if(html.split(startup).length!==2)throw Error('Frozen import startup marker mismatch');
-  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+importHelper+`
+  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+importHelper+domainHelper+`
         if (!window.mermaid || typeof window.mermaid.parse !== 'function') throw new Error('Embedded import engine unavailable');
         window.mermaid.initialize({startOnLoad:false,securityLevel:'strict'});
         rendererMode = 'mermaid';

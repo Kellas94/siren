@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-const roles = new Set(['workspace', 'docs', 'code', 'presenter', 'audience']);
+const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const refuse = (code, message) => Object.assign(new Error(message), { code });
 

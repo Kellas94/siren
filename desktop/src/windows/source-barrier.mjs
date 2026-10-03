@@ -4,18 +4,19 @@ const fail=code=>Object.freeze({ok:false,code});
  * general Docs/Diagram/legacy workspace saving is not established by sources.
  * No PIN, project selection, destruction or clean-close journal is changed. */
 export class NativeSourceBarrier {
-  #registry;#owner;#control;#cover;#timeout;#active=null;#disposed=false;
-  constructor({registry,owner,control,cover,timeoutMs=10000}) {
+  #registry;#owner;#control;#cover;#timeout;#roles;#active=null;#disposed=false;
+  constructor({registry,owner,control,cover,timeoutMs=10000},roles=['code']) {
     for(const [adapter,methods] of [[registry,['freezeRoster','isRosterCurrent','releaseRoster']],[owner,['pause','resume','drain','reconcileSourceReceipts','captureQuiescence','isQuiescent']],[control,['flushView','cancelView']]])
       if(!adapter || !methods.every(key=>typeof adapter[key]==='function'))throw TypeError('Native source barrier adapters required');
     if(typeof cover!=='function'||!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native source barrier deadline required');
-    this.#registry=registry;this.#owner=owner;this.#control=control;this.#cover=cover;this.#timeout=timeoutMs;
+    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['code','docs','diagram'].includes(role))||roles.length>1&&typeof owner.reconcileWorkspaceReceipts!=='function')throw TypeError('Native domain barrier adapters required');
+    this.#registry=registry;this.#owner=owner;this.#control=control;this.#cover=cover;this.#timeout=timeoutMs;this.#roles=new Set(roles);
   }
   async prepare(reason) {
     if(this.#disposed)return fail('BARRIER_DISPOSED');if(this.#active)return fail('BARRIER_BUSY');
     if(typeof reason!=='string'||reason.length<1||reason.length>128)return fail('REQUEST_REFUSED');
     let roster;try{roster=this.#registry.freezeRoster();}catch(cause){return fail(cause.code==='ROSTER_BUSY'?'BARRIER_BUSY':'ROSTER_REFUSED');}
-    if(!roster.grants.length || roster.grants.some(grant=>grant.role!=='code')){this.#registry.releaseRoster(roster);return fail('VIEW_ROLE_UNSUPPORTED');}
+    if(!roster.grants.length || roster.grants.some(grant=>!this.#roles.has(grant.role))){this.#registry.releaseRoster(roster);return fail('VIEW_ROLE_UNSUPPORTED');}
     const ticket={roster,prepared:false,cancelled:false};this.#active=ticket;
     const current=()=>this.#active===ticket && !ticket.cancelled && !this.#disposed && this.#registry.isRosterCurrent(roster);
     let timer;
@@ -31,7 +32,7 @@ export class NativeSourceBarrier {
         if(!current())return fail('ROSTER_CHANGED');
         if(settled.some(item=>item.status!=='fulfilled'||item.value?.ok!==true))return fail('VIEW_FLUSH_FAILED');
         const receipts=[...drained,...settled.flatMap(item=>item.value.receipts??[])];
-        const reconciled=await this.#owner.reconcileSourceReceipts(roster.grants,receipts,current);
+        const reconciled=await this.#owner[this.#roles.size===1?'reconcileSourceReceipts':'reconcileWorkspaceReceipts'](roster.grants,receipts,current);
         if(!current())return fail('ROSTER_CHANGED');
         if(reconciled.ok!==true)return reconciled;
         ticket.quiescence=this.#owner.captureQuiescence();
@@ -62,3 +63,6 @@ export class NativeSourceBarrier {
     // Disposal never resumes writes or manufactures successful preparation.
   }
 }
+// General domain roster still refuses the legacy primary workspace and
+// presentation until their distinct adapters are installed and qualified.
+export class NativeWorkspaceBarrier extends NativeSourceBarrier {constructor(options){super(options,['code','docs','diagram']);}}

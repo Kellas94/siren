@@ -67,6 +67,16 @@ export async function createImportValidator({BrowserWindow,entryPath,entrySha256
           });
         } finally {busy=false;}
       },
+      validatePatch:async input=>{
+        if(!live())throw error('IMPORT_ENTRY_REFUSED');
+        if(busy)throw error('IMPORT_BUSY');busy=true;
+        try {return await bounded(async()=>{
+          if(!live())throw error('IMPORT_ENTRY_REFUSED');
+          const text=JSON.stringify(input);if(text.length>12*1024*1024)throw error('DOMAIN_VALIDATION_BUDGET');
+          const result=await wc.executeJavaScript(`window.sirenDesktopValidateDomainPatch(${text})`);
+          if(!live())throw error('IMPORT_ENTRY_REFUSED');return result===true;
+        });}finally{busy=false;}
+      },
       dispose
     };
   } catch(cause) {await dispose();throw cause;}

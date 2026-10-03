@@ -1,0 +1,36 @@
+import {spawn} from 'node:child_process';
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {buildImportValidation} from '../../build/import-validation.mjs';
+import {ProjectStore} from '../../src/projects/store.mjs';
+import {SourceRepository} from '../../src/sources/repository.mjs';
+import {commitManifest} from '../../src/sources/manifest.mjs';
+const desktop=fileURLToPath(new URL('../../',import.meta.url)),root=resolve(desktop,'evidence/domain-workspaces',new Date().toISOString().replaceAll(':','-'));
+await mkdir(join(root,'owned-data'),{recursive:true});await mkdir(join(root,'generated/windows'),{recursive:true});
+const hash=b=>createHash('sha256').update(b).digest('hex'),names=['package.json','package-lock.json','baseline/R78.html','tests/native/domain-workspaces.mjs','tests/native/domain-workspaces-app.mjs'];
+async function walk(dir){for(const item of await readdir(join(desktop,dir),{withFileTypes:true})){const name=dir+'/'+item.name;if(item.isDirectory())await walk(name);else if(item.isFile())names.push(name);}}
+await walk('src');await walk('build');const capture=async()=>Object.fromEntries(await Promise.all(names.sort().map(async name=>[name,hash(await readFile(join(desktop,name)))])));
+const inputs=await capture(),data=join(root,'owned-data'),projects=new ProjectStore(data),sources=new SourceRepository(data),initial=await projects.createProject({label:'Owned native Docs and Diagrams',json:'{}'}),projectId=initial.project.id;
+const source=await sources.importSource({projectId,bytes:Buffer.from('print("😀")\r\n')}),point={sourceId:source.sourceId,version:source.version,sha256:source.sha256};
+const workspace={diagrams:[{id:'diagram-a',source:'flowchart TD\nA-->B',nodeStyles:{A:{fill:'#ff0000'}},future:{keep:true}},{id:'diagram-b',source:'sequenceDiagram\nA->>B: Before'}],workpapers:['doc-a','doc-b'].map(id=>({id,title:id,agent:{id:'original-agent'},releases:[{id:'original-release',verdict:'not-run'}],blocks:[{id:'linked-'+id,kind:'knowledge',rows:[{id:'row-original',sourceRef:point}]}]}))};
+const saved=await commitManifest({projects,repository:sources,projectId,baseRevision:1,sourceRefs:[source],metadata:workspace,operationId:'initial-domains'});if(!saved.ok)throw Error(saved.code);
+const project=await projects.readProject(projectId),build=await buildImportValidation({baselinePath:join(desktop,'baseline/R78.html'),outputDir:join(root,'validator')});
+const script=`window.owned={};
+owned.start=async()=>{const initial=await ownedBridge.read();if(!initial.ok)throw Error(initial.code);owned.current=initial;owned.domain=initial.domain;owned.id=initial.entityId;owned.queue=Promise.resolve();owned.ready=true;};
+owned.invoke=(intent,nonce)=>ownedBridge.invoke(intent,nonce);
+owned.edit=(action,payload,operationId)=>{if(owned.paused)throw Error('OWNED_PAUSED');document.querySelector('textarea').value=JSON.stringify(payload);owned.dirty=true;const job=owned.queue.then(async()=>{const method=owned.domain==='docs'?'applyDocument':'applyDiagram',key=owned.domain==='docs'?'documentId':'diagramId';const result=await ownedBridge.invoke({kind:owned.domain,method,payload:{[key]:owned.id,expectedVersion:owned.current.version,operationId,action,payload}},owned.nonce);if(!result.ok){owned.failed=result.code;return result;}owned.current=result;owned.dirty=false;return result;});owned.queue=job;return job;};
+owned.resume=()=>{if(owned.failed)return false;owned.paused=false;owned.nonce=undefined;document.querySelector('textarea').disabled=false;document.body.style.visibility='visible';document.body.dataset.covered='false';return true;};
+ownedBridge.onPrepare(async request=>{owned.paused=true;owned.nonce=request.nonce;document.querySelector('textarea').disabled=true;await owned.queue;if(owned.failed)return {requestId:request.requestId,ok:false,code:owned.failed};const result=await ownedBridge.invoke({kind:owned.domain,method:owned.domain==='docs'?'flushDocument':'flushDiagram',payload:{entityId:owned.id,expectedVersion:owned.current.version}},request.nonce);owned.lastFlush=result;return result.ok?{requestId:request.requestId,ok:true}:{requestId:request.requestId,ok:false,code:result.code};});`;
+const csp="default-src 'none'; script-src 'sha256-"+createHash('sha256').update(script).digest('base64')+"'; style-src 'unsafe-inline'; base-uri 'none'; object-src 'none'; form-action 'none'";
+const html=`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>Owned domain protocol fixture</title><textarea aria-label="Owned retained draft"></textarea><script>${script}</script>`;
+for(const role of ['docs','diagram'])await writeFile(join(root,'generated/windows/'+role+'.html'),html);
+await writeFile(join(root,'owned-preload.cjs'),`const {contextBridge,ipcRenderer}=require('electron');ipcRenderer.on('owned:cover',()=>{document.body.dataset.covered='true';document.body.style.visibility='hidden';});contextBridge.exposeInMainWorld('ownedBridge',Object.freeze({read:()=>ipcRenderer.invoke('owned:read'),invoke:(intent,nonce)=>ipcRenderer.invoke('owned:intent',intent,nonce),onPrepare:callback=>ipcRenderer.on('owned:prepare',(_event,request)=>{Promise.resolve(callback(request)).then(reply=>ipcRenderer.invoke('owned:ack',reply)).catch(()=>{});})}));`);
+await writeFile(join(root,'prepared.json'),JSON.stringify({inputs,build,project,source,htmlSHA256:hash(Buffer.from(html)),preloadSHA256:hash(await readFile(join(root,'owned-preload.cjs')))},null,2));
+const child=spawn(join(desktop,'node_modules/electron/dist/electron.exe'),[join(desktop,'tests/native/domain-workspaces-app.mjs'),'--siren-domain-fixture='+root],{cwd:desktop,windowsHide:true,env:{...process.env,ELECTRON_RUN_AS_NODE:undefined},stdio:['ignore','pipe','pipe']});
+let logs='',timedOut=false;child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=>logs+=b);const timer=setTimeout(()=>{timedOut=true;child.kill();},120000);
+const exit=await new Promise((yes,no)=>{child.once('error',no);child.once('exit',(code,signal)=>yes({code,signal}));}).finally(()=>clearTimeout(timer));
+await writeFile(join(root,'electron.log'),logs);const after=await capture();let native;try{native=JSON.parse(await readFile(join(root,'native-result.json'),'utf8'));}catch{}
+const result={root,ownedPid:child.pid,exit,timedOut,inputs,afterInputs:after,inputsUnchanged:JSON.stringify(inputs)===JSON.stringify(after),nativeStatus:native?.status};result.status=exit.code===0&&!timedOut&&result.inputsUnchanged&&native?.status==='COMPLETE'?'COMPLETE':'ADVERSE';
+await writeFile(join(root,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({root,status:result.status,exit,error:native?.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;

@@ -2,16 +2,17 @@ import {randomUUID} from 'node:crypto';
 import {navigationFields} from '../navigation/contracts.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 
-/** Main-owned Code-only preparation transport. Main supplies a captured grant
+/** Main-owned scoped view preparation transport. Main supplies a captured grant
  * and a synchronous sender adapter. No IPC channel/preload or all-view Lock is
  * installed here. A renderer ACK merely requests sealing actual owner receipts. */
-export class NativeCodeControl {
-  #registry;#owner;#send;#timeout;#pending=new Map();#disposed=false;
-  constructor({registry,owner,send,timeoutMs=10000}) {
+export class NativeViewControl {
+  #registry;#owner;#send;#timeout;#roles;#pending=new Map();#disposed=false;
+  constructor({registry,owner,send,timeoutMs=10000},roles=['code','docs','diagram']) {
     if(!registry || !['capture','eventFor','isCurrent'].every(key=>typeof registry[key]==='function') || !owner ||
       !['beginViewFlush','finishViewFlush','cancelViewFlush'].every(key=>typeof owner[key]==='function') || typeof send!=='function')throw TypeError('Native view control adapters required');
     if(!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native view deadline refused');
-    this.#registry=registry;this.#owner=owner;this.#send=send;this.#timeout=timeoutMs;
+    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['code','docs','diagram'].includes(role)))throw TypeError('Native control roles refused');
+    this.#registry=registry;this.#owner=owner;this.#send=send;this.#timeout=timeoutMs;this.#roles=new Set(roles);
   }
   #settle(ticket,result) {
     if(this.#pending.get(ticket.requestId)!==ticket)return false;
@@ -22,7 +23,7 @@ export class NativeCodeControl {
   }
   flushView(grant) {
     if(this.#disposed)return Promise.resolve(fail('CONTROL_DISPOSED'));
-    if(grant?.role!=='code' || !this.#registry.isCurrent(grant))return Promise.resolve(fail('ACCESS_REFUSED'));
+    if(!this.#roles.has(grant?.role) || !this.#registry.isCurrent(grant))return Promise.resolve(fail('ACCESS_REFUSED'));
     if(this.#pending.size>=64 || [...this.#pending.values()].some(item=>item.grant.windowId===grant.windowId))return Promise.resolve(fail('VIEW_BUSY'));
     const event=this.#registry.eventFor(grant);
     if(!event || typeof event.sender?.on!=='function' || typeof event.sender?.off!=='function')return Promise.resolve(fail('ACCESS_REFUSED'));
@@ -63,3 +64,5 @@ export class NativeCodeControl {
     this.#settle(ticket,fail('VIEW_CANCELLED'));return Object.freeze({ok:true});
   }
 }
+// Preserve the already qualified strict Code-only interface.
+export class NativeCodeControl extends NativeViewControl {constructor(options){super(options,['code']);}}
