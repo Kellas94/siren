@@ -54,6 +54,63 @@ test('pause refuses new admission while accepted in-flight work drains with its 
   f.coordinator.resume();assert.equal((await f.coordinator.invoke(f.grants[1],intent(f.b,'after-resume','Y'))).ok,true);
 });
 
+test('a paused owner admits only bounded source flushes from the captured native frame',async()=>{
+  const f=await fixture();f.coordinator.pause('lock');
+  const ticket=f.coordinator.beginViewFlush(f.grants[0],{maxOperations:2,maxBytes:1024});
+  assert.equal(typeof ticket,'string');
+  const fresh=()=>f.registry.capture({sender:f.windows[0].webContents,senderFrame:f.windows[0].webContents.mainFrame});
+  assert.equal((await f.coordinator.invoke(f.grants[1],intent(f.b,'stolen-ticket','Y'),ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.coordinator.invoke({...f.grants[0]},intent(f.a,'forged-ticket','X'),ticket)).code,'ACCESS_REFUSED');
+  assert.equal((await f.coordinator.invoke(fresh(),intent(f.a,'accepted-queue','X'),ticket)).ok,true);
+  const commit={kind:'source',method:'commitSource',payload:{sourceId:f.a.sourceId,expectedVersion:2,operationId:'final-flush-commit'}};
+  const saved=await f.coordinator.invoke(fresh(),commit,ticket);assert.equal(saved.durability,'committed');
+  assert.equal((await f.coordinator.invoke(fresh(),intent({...f.a,version:2},'excess-ticket','Z'),ticket)).code,'FLUSH_BUDGET');
+  const result=await f.coordinator.finishViewFlush(fresh(),ticket);assert.equal(result.ok,true);assert.deepEqual(result.receipts.map(r=>r.operationId),['accepted-queue','final-flush-commit']);
+  assert.equal((await f.coordinator.invoke(fresh(),commit,ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.coordinator.finishViewFlush(fresh(),ticket)).code,'FLUSH_REFUSED');
+  assert.deepEqual(await f.repo.exportSource({projectId:f.project.project.id,sourceId:f.a.sourceId,version:2}),Buffer.from('X😀b\r\nc'));
+});
+
+test('a flush ticket is not a successful save when only a draft or a failed operation was received',async()=>{
+  const f=await fixture();f.coordinator.pause('select');
+  const first=f.coordinator.beginViewFlush(f.grants[0]);
+  await f.coordinator.invoke(f.grants[0],intent(f.a,'draft-only','X'),first);
+  assert.equal((await f.coordinator.finishViewFlush(f.grants[0],first)).code,'FLUSH_NOT_COMMITTED');
+  const second=f.coordinator.beginViewFlush(f.grants[0]);
+  assert.equal((await f.coordinator.invoke(f.grants[0],intent(f.a,'stale-flush','wrong'),second)).code,'REVISION_CONFLICT');
+  assert.equal((await f.coordinator.finishViewFlush(f.grants[0],second)).code,'FLUSH_FAILED');
+});
+
+test('flush sealing waits for native selection and prevents additional work while it waits',async()=>{
+  const f=await fixture(),g=gate();f.coordinator.pause('quit');const ticket=f.coordinator.beginViewFlush(f.grants[0]);f.setFault(g.fault);
+  const commit={kind:'source',method:'commitSource',payload:{sourceId:f.a.sourceId,expectedVersion:1,operationId:'held-commit'}};
+  const pending=f.coordinator.invoke(f.grants[0],commit,ticket);await g.entered;
+  let done=false;const sealing=f.coordinator.finishViewFlush(f.grants[0],ticket).then(value=>{done=true;return value;});
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(done,false);
+  assert.equal((await f.coordinator.invoke(f.grants[0],intent(f.a,'after-seal','Z'),ticket)).code,'FLUSH_REFUSED');
+  g.release();assert.equal((await pending).ok,true);assert.equal((await sealing).ok,true);
+});
+
+test('flush admission rejects reads, foreign sources, byte overflow and stale pause generations',async()=>{
+  const f=await fixture();f.coordinator.pause('lock');const ticket=f.coordinator.beginViewFlush(f.grants[0],{maxOperations:2,maxBytes:256});
+  assert.equal((await f.coordinator.invoke(f.grants[0],{kind:'source',method:'getMetrics',payload:{sourceId:f.a.sourceId}},ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.coordinator.invoke(f.grants[0],intent(f.b,'foreign-flush','Z'),ticket)).code,'ACCESS_REFUSED');
+  assert.equal((await f.coordinator.invoke(f.grants[0],intent(f.a,'overflow-flush','X'.repeat(512)),ticket)).code,'FLUSH_BUDGET');
+  f.coordinator.resume();f.coordinator.pause('lock-again');
+  assert.equal((await f.coordinator.invoke(f.grants[0],intent(f.a,'obsolete-flush','Z'),ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.coordinator.finishViewFlush(f.grants[0],ticket)).code,'FLUSH_REFUSED');
+  assert.throws(()=>f.coordinator.beginViewFlush({...f.grants[0]}),{code:'ACCESS_REFUSED'});
+});
+
+test('resuming authority inside a flush write fences publication and cannot seal a stale success',async()=>{
+  const f=await fixture(),g=gate();f.coordinator.pause('lock');const ticket=f.coordinator.beginViewFlush(f.grants[0]);f.setFault(g.fault);
+  const pending=f.coordinator.invoke(f.grants[0],intent(f.a,'retired-flush-write','X'),ticket);await g.entered;
+  f.coordinator.resume();f.coordinator.pause('new-lock');g.release();
+  assert.equal((await pending).code,'ACCESS_REFUSED');assert.equal((await f.coordinator.finishViewFlush(f.grants[0],ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.repo.getMetrics({projectId:f.project.project.id,sourceId:f.a.sourceId})).version,1);
+  assert.deepEqual(await f.repo.exportSource({projectId:f.project.project.id,sourceId:f.a.sourceId,version:1}),Buffer.from('a😀b\r\nc'));
+});
+
 test('captured frame revocation inside source write prevents late selection and receipt disclosure',async()=>{
   const f=await fixture(),g=gate();f.setFault(g.fault);const pending=f.coordinator.invoke(f.grants[0],intent(f.a,'revoked-edit','X'));await g.entered;
   f.registry.invalidateEpoch();g.release();assert.equal((await pending).code,'ACCESS_REFUSED');

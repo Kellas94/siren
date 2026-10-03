@@ -38,6 +38,64 @@ async function fixture(t, text = '\ufeffa😀b\r\nc\nd\rbare', readonly = false)
     export: version => repo.exportSource({ projectId, sourceId: ref.sourceId, version }) };
 }
 
+check('view pause freezes upstream admission while all earlier multi-range edits reach the source commit', async t => {
+  const f = await fixture(t, 'a😀b\r\nc'); await f.editor.open(f.ref);
+  const entered = deferred(), gate = deferred(); f.delayEdit(() => { entered.resolve(); return gate.promise; });
+  f.editor.dispatch({ changes: [{ from: 0, to: 1, insert: 'X' }, { from: 6, to: 7, insert: 'Ș' }] });
+  await entered.promise;
+  assert.equal(f.editor.pauseView().ok, true); assert.equal(f.editor.getStatus().paused, true);
+  assert.equal(f.editor.dispatch({ changes: { from: 0, insert: 'late' } }).code, 'EDITOR_PAUSED');
+  assert.equal(f.editor.dispatch({ selection: { anchor: 4 } }).ok, true);
+  assert.equal(f.editor.resumeView().code, 'EDITOR_BUSY');
+  const saving = f.editor.flush(); gate.resolve();
+  const receipt = await saving; assert.equal(receipt.ok, true); assert.equal(receipt.version, 3);
+  assert.deepEqual(await f.export(3), Buffer.from('X😀b\r\nȘ'));
+  assert.equal(f.editor.getStatus().dirty, false); assert.equal(f.editor.getStatus().paused, true);
+  f.client.pauseView(); assert.equal((await f.client.drain()).ok, true);
+  assert.equal(f.client.resumeView().ok, true); assert.equal(f.editor.resumeView().ok, true);
+  assert.equal(f.editor.dispatch({ changes: { from: 0, insert: 'after' } }).ok, true);
+  assert.equal((await f.editor.flush()).ok, true);
+});
+
+check('pausing downstream first cannot falsely acknowledge an upstream editor queue as saved', async t => {
+  const f = await fixture(t, 'abc'); await f.editor.open(f.ref);
+  f.editor.dispatch({ changes: { from: 3, insert: '!' } });
+  f.client.pauseView(); f.editor.pauseView();
+  const receipt = await f.editor.flush(); assert.equal(receipt.ok, false); assert.equal(receipt.code, 'CLIENT_PAUSED');
+  assert.equal(f.editor.getState().doc.toString('\n'), 'abc!'); assert.equal(f.editor.getStatus().dirty, true);
+  assert.equal(f.editor.resumeView().ok, false); assert.equal(f.commits(), 0);
+  assert.deepEqual(await f.export(1), Buffer.from('abc'));
+});
+
+check('pause retains local text and refuses resumed editing when an accepted native write fails', async t => {
+  const f = await fixture(t, 'abc'); await f.editor.open(f.ref);
+  f.delayEdit(() => ({ ok: false, code: 'REVISION_CONFLICT' }));
+  f.editor.dispatch({ changes: { from: 3, insert: '!' } }); f.editor.pauseView();
+  assert.equal((await f.editor.flush()).code, 'REVISION_CONFLICT');
+  assert.equal(f.editor.getStatus().paused, true); assert.equal(f.editor.getStatus().dirty, true);
+  assert.equal(f.editor.resumeView().code, 'EDITOR_FENCED');
+  assert.equal(f.editor.getState().doc.toString('\n'), 'abc!'); assert.equal(f.commits(), 0);
+});
+
+check('pause aborts an incomplete load and never reports it as a prepared view', async t => {
+  const f = await fixture(t, 'abc'), entered = deferred(), gate = deferred();
+  f.delayOpen(() => { entered.resolve(); return gate.promise; });
+  const loading = f.editor.open(f.ref); await entered.promise;
+  assert.equal(f.editor.pauseView().code, 'EDITOR_LOADING');
+  assert.equal(f.editor.getStatus().paused, true); assert.equal(f.editor.resumeView().code, 'EDITOR_BUSY');
+  gate.resolve(); assert.equal((await loading).ok, false); assert.equal(f.editor.getState(), null);
+  assert.equal(f.editor.resumeView().ok, true); assert.equal((await f.editor.open(f.ref)).ok, true);
+});
+
+check('readonly pause preserves selection without pretending to commit and disposal cannot resume', async t => {
+  const f = await fixture(t, 'abc', true); await f.editor.open(f.ref);
+  assert.equal(f.editor.pauseView().ok, true);
+  assert.equal(f.editor.dispatch({ selection: { anchor: 2 } }).ok, true);
+  assert.equal((await f.editor.flush()).code, 'EDITOR_READONLY'); assert.equal(f.commits(), 0);
+  assert.equal(f.editor.resumeView().ok, true); f.editor.dispose();
+  assert.equal(f.editor.pauseView().code, 'EDITOR_DISPOSED'); assert.equal(f.editor.resumeView().code, 'EDITOR_DISPOSED');
+});
+
 check('verified CM document and LF transaction parsing preserve BOM, literal CR and source offsets', async t => {
   const f = await fixture(t); assert.equal((await f.editor.open(f.ref)).ok, true);
   assert.equal(f.editor.getState().doc.toString('\n'), f.text);

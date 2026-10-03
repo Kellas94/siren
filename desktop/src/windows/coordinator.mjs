@@ -1,6 +1,7 @@
 import { invokeSource, normalizeSourceRequest } from '../sources/ipc.mjs';
 import { navigationFields } from '../navigation/contracts.mjs';
 import { normalizeDocsLink, projectDocsReceipt } from './docs.mjs';
+import { randomUUID } from 'node:crypto';
 
 const fail=code=>Object.freeze({ok:false,code});
 const error=code=>Object.assign(new Error(code),{code});
@@ -11,6 +12,7 @@ const error=code=>Object.assign(new Error(code),{code});
 export class WorkspaceCoordinator {
   #registry;#sources;#docs;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
+  #flushes=new Map();#pauseGeneration=0;
   constructor({sources,docs,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
@@ -29,7 +31,42 @@ export class WorkspaceCoordinator {
         this.#access(grant,{action:'docs-link',sourceId:payload.sourceReceipt.sourceId,documentId:payload.documentId})===true;
     } catch{return false;}
   }
-  invoke(grant,intent) {
+  #flushCurrent(grant,ticket) {
+    try {
+      const event=this.#registry.eventFor(grant);
+      return this.#paused && ticket.generation===this.#pauseGeneration && this.#registry.isCurrent(ticket.grant) &&
+        this.#registry.isCurrent(grant) && event?.sender===ticket.event.sender && event?.senderFrame===ticket.event.senderFrame;
+    } catch {return false;}
+  }
+  // Main-only issuance. The control transport may disclose the nonce solely to
+  // its captured frame. It grants finite draining of existing source authority,
+  // never another entity, role, frame, epoch, read or general Docs operation.
+  beginViewFlush(grant,options={}) {
+    if(!this.#registry.isCurrent(grant) || !['workspace','code'].includes(grant?.role))throw error('ACCESS_REFUSED');
+    if(!this.#paused)throw error('WORKSPACE_NOT_PAUSED');
+    let values;try{values=navigationFields(options,['maxOperations','maxBytes'],[]);}catch{throw error('FLUSH_BUDGET');}
+    const maxOperations=values.maxOperations??65,maxBytes=values.maxBytes??17*1024*1024;
+    if(!Number.isSafeInteger(maxOperations)||maxOperations<1||maxOperations>65||!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>17*1024*1024)throw error('FLUSH_BUDGET');
+    if(this.#flushes.size>=64 || [...this.#flushes.values()].some(ticket=>ticket.grant.windowId===grant.windowId))throw error('FLUSH_BUDGET');
+    const nonce=randomUUID(),event=this.#registry.eventFor(grant);
+    if(!event)throw error('ACCESS_REFUSED');
+    this.#flushes.set(nonce,{grant,event,generation:this.#pauseGeneration,maxOperations,maxBytes,bytes:0,operations:[],sealed:false});
+    return nonce;
+  }
+  async finishViewFlush(grant,nonce) {
+    const ticket=typeof nonce==='string'?this.#flushes.get(nonce):null;
+    if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket))return fail('FLUSH_REFUSED');
+    ticket.sealed=true;
+    const operations=[...ticket.operations],receipts=Object.freeze(await Promise.all(operations.map(item=>item.promise)));
+    const current=this.#flushCurrent(grant,ticket);
+    this.#flushes.delete(nonce);
+    if(!current)return fail('ACCESS_REFUSED');
+    if(receipts.some(receipt=>receipt.ok!==true))return fail('FLUSH_FAILED');
+    const final=new Map();operations.forEach((operation,index)=>final.set(operation.sourceId,{method:operation.method,receipt:receipts[index]}));
+    if(!final.size || [...final.values()].some(item=>item.method!=='commitSource' || !['committed','recovery-degraded'].includes(item.receipt.durability)))return fail('FLUSH_NOT_COMMITTED');
+    return Object.freeze({ok:true,receipts});
+  }
+  invoke(grant,intent,flushNonce) {
     let kind,method,payload,bytes;
     try {
       const input=navigationFields(intent,['kind','method','payload']);
@@ -40,17 +77,24 @@ export class WorkspaceCoordinator {
       if(!payload)return Promise.resolve(fail('REQUEST_REFUSED'));
       bytes=Buffer.byteLength(JSON.stringify(payload));
     } catch{return Promise.resolve(fail('REQUEST_REFUSED'));}
-    const current=()=>kind==='source'?this.#current(grant,payload.sourceId):this.#currentDocs(grant,payload);
+    let ticket;
+    const current=()=> (kind==='source'?this.#current(grant,payload.sourceId):this.#currentDocs(grant,payload)) &&
+      (!ticket || this.#flushCurrent(grant,ticket));
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
-    if(this.#paused)return Promise.resolve(fail('WORKSPACE_PAUSED'));
+    if(flushNonce!==undefined) {
+      ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
+      if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket) || kind!=='source' || !['applyEdit','commitSource'].includes(method))return Promise.resolve(fail('FLUSH_REFUSED'));
+      if(ticket.operations.length>=ticket.maxOperations || ticket.bytes+bytes>ticket.maxBytes)return Promise.resolve(fail('FLUSH_BUDGET'));
+    } else if(this.#paused)return Promise.resolve(fail('WORKSPACE_PAUSED'));
     if(this.#pending.size>=this.#maxPending || this.#bytes+bytes>this.#maxBytes)return Promise.resolve(fail('OWNER_BUDGET'));
+    if(ticket)ticket.bytes+=bytes;
     this.#bytes+=bytes;
     const operation=this.#tail.catch(()=>{}).then(async()=>{
       if(!current())return fail('ACCESS_REFUSED');
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
       const receipt=kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
-        access:(current,scope)=>this.#current(grant,payload.sourceId) && this.#access(current,scope)===true}):
+        access:(caller,scope)=>current() && this.#access(caller,scope)===true}):
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');
       if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt);
@@ -58,14 +102,15 @@ export class WorkspaceCoordinator {
       return current()?receipt:fail('ACCESS_REFUSED');
     }).catch(()=>fail('OWNER_OPERATION_FAILED'));
     this.#pending.add(operation);this.#tail=operation;
+    if(ticket)ticket.operations.push({method,sourceId:payload.sourceId,promise:operation});
     operation.then(()=>{this.#pending.delete(operation);this.#bytes-=bytes;});
     return operation;
   }
   pause(reason) {
     if(typeof reason!=='string' || reason.length<1 || reason.length>128)throw error('REQUEST_REFUSED');
-    this.#paused=true;
+    this.#paused=true;this.#pauseGeneration++;this.#flushes.clear();
   }
-  resume() {this.#paused=false;}
+  resume() {this.#paused=false;this.#pauseGeneration++;this.#flushes.clear();}
   async drain() {
     const receipts=[];
     while(this.#pending.size) {

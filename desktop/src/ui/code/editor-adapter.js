@@ -43,7 +43,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
   }
   if (typeof readonly !== 'boolean' || !Array.isArray(extensions)) throw new TypeError('INVALID_EDITOR_OPTIONS');
   const configured = [...extensions];
-  let state = null, bound = null, bytes = 0, disposed = false, opening = false, fenced = false, dirty = false;
+  let state = null, bound = null, bytes = 0, disposed = false, opening = false, fenced = false, dirty = false, paused = false;
   let error = null, generation = 0, pending = 0, queuedBytes = 0, saving = null, lastReceipt = null;
   let tail = Promise.resolve(), loadingController = null;
   const observers = new Set();
@@ -51,7 +51,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
     const current = methods.getState();
     return { ref: identity(current), disposed: current?.disposed, fenced: current?.fenced };
   };
-  const status = () => Object.freeze({ ready: !!state, disposed, opening, readonly, fenced, dirty,
+  const status = () => Object.freeze({ ready: !!state, disposed, opening, readonly, fenced, dirty, paused,
     pending, saving: !!saving, code: error, sourceRef: bound, durability: lastReceipt?.durability ?? null });
   function publish() {
     const value = status(), token = generation, clientAtPublish = lifecycle();
@@ -71,6 +71,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
   }
   async function open(sourceRef) {
     if (disposed) return failure('EDITOR_DISPOSED');
+    if (paused) return failure('EDITOR_PAUSED');
     if (state) return failure(dirty ? 'EDITOR_DIRTY' : 'EDITOR_ALREADY_OPEN');
     if (opening) return failure('EDITOR_LOADING');
     const requested = identity(sourceRef);
@@ -106,6 +107,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
     if (!transaction.docChanged) { state = transaction.state; publish(); return Object.freeze({ ok: true }); }
     if (readonly) return failure('EDITOR_READONLY');
     if (fenced) return failure('EDITOR_FENCED');
+    if (paused) return failure('EDITOR_PAUSED');
     if (saving) return failure('EDITOR_SAVING');
     const token = generation, stale = live(token); if (stale) return refuse(stale.code);
     const edits = []; let delta = 0, insertionCost = 0, newBytes = bytes, invalid = null;
@@ -183,7 +185,32 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
       });
     tail = saving.then(() => {}); publish(); return saving;
   }
-  return Object.freeze({ open, dispatch, applyTransaction, flush, getState: () => state, getStatus: status,
+  // Freeze this upstream queue first. Its already accepted writes and a final
+  // source commit must finish before pausing the downstream source client.
+  // A pause is only an admission barrier, never a durable-save acknowledgement.
+  function pauseView() {
+    if (disposed) return failure('EDITOR_DISPOSED');
+    paused = true;
+    if (opening) loadingController?.abort();
+    publish();
+    if (disposed) return failure('EDITOR_DISPOSED');
+    if (opening) return failure('EDITOR_LOADING');
+    if (fenced) return failure('EDITOR_FENCED');
+    if (!state) return failure('EDITOR_NOT_READY');
+    return Object.freeze({ ok: true });
+  }
+  function resumeView() {
+    if (disposed) return failure('EDITOR_DISPOSED');
+    if (opening || pending || saving) return failure('EDITOR_BUSY');
+    if (fenced) return failure('EDITOR_FENCED');
+    // A paused/fenced downstream client must not accept newly optimistic text.
+    const current = methods.getState();
+    if (current?.disposed || current?.fenced || (state && !same(bound, identity(current)))) return refuse('EDITOR_IDENTITY_CHANGED');
+    if (current?.paused) return failure('CLIENT_PAUSED');
+    paused = false; publish();
+    return disposed ? failure('EDITOR_DISPOSED') : Object.freeze({ ok: true });
+  }
+  return Object.freeze({ open, dispatch, applyTransaction, flush, pauseView, resumeView, getState: () => state, getStatus: status,
     subscribe(callback) {
       if (typeof callback !== 'function') throw new TypeError('INVALID_SUBSCRIBER');
       if (!disposed) observers.add(callback); return () => observers.delete(callback);

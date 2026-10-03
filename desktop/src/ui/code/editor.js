@@ -6,6 +6,7 @@ import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, languageData
 import { pythonLanguage, python } from '@codemirror/lang-python';
 import { tags } from '@lezer/highlight';
 import { createEditorAdapter } from './editor-adapter.js';
+import { createCodeViewLifecycle } from './view-lifecycle.js';
 
 function pythonSupport(parser) {
   if (!parser || typeof parser.configure !== 'function') throw new TypeError('PATCHED_PYTHON_REQUIRED');
@@ -80,12 +81,13 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   }
   function refresh(value = adapter.getStatus()) {
     if (disposed) return;
-    const nextEnabled = value.ready && !value.readonly && !value.fenced && !value.saving;
+    const nextEnabled = value.ready && !value.readonly && !value.fenced && !value.saving && !value.paused;
     for (const name of ['undo', 'redo', 'save']) buttons.get(name).disabled = !nextEnabled;
     for (const name of ['find', 'wrap']) buttons.get(name).disabled = !value.ready;
     status.textContent = value.code ? (value.ready ? `Source not saved · ${value.code} · local text retained` : `Source not opened · ${value.code}`)
       : value.opening ? 'Opening verified source…' : value.saving ? 'Saving source…'
       : value.pending ? `Storing draft · ${value.pending} edit${value.pending === 1 ? '' : 's'} pending`
+      : value.paused ? 'Editing paused'
       : value.readonly ? 'Read only' : value.durability === 'recovery-degraded' ? 'Source saved · recovery degraded'
       : value.dirty ? 'Draft stored · Save source to commit' : value.durability === 'committed' ? 'Source saved' : value.ready ? 'Ready' : 'Choose a source';
     if (view && nextEnabled !== enabled) { enabled = nextEnabled; view.dispatch({ effects: editable.reconfigure(EditorView.editable.of(enabled)) }); }
@@ -107,7 +109,8 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     } }); refresh(); return receipt;
   }
   async function flush() { const receipt = await adapter.flush(); refresh(); return receipt; }
-  return Object.freeze({ open, flush, getStatus: adapter.getStatus,
+  const lifecycle = createCodeViewLifecycle({editor: adapter, client});
+  return Object.freeze({ open, flush, pauseView: adapter.pauseView, flushView: lifecycle.flushView, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
     getState: adapter.getState,
     focus: () => view?.focus(),
     select(from, to = from) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); view.focus(); } },
