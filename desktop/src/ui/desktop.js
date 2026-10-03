@@ -2,11 +2,55 @@
   const boot = window.sirenDesktopBootstrap; const bridge = window.sirenDesktop;
   if (!bridge) return;
   let panel = null; let status = null; let updateState = null;
+  let windowsPanel=null,windowsGeneration=0;
   const button = (parent, id, text, action) => {
     const element = document.createElement('button'); element.id = id; element.type = 'button'; element.className = 'btn ghost compact'; element.textContent = text;
     element.addEventListener('click', () => Promise.resolve(action()).catch(() => { if (status) status.textContent = 'The operation did not complete. Your local data was retained.'; }));
     parent.append(element); return element;
   };
+  async function showWindows(){
+    if(windowsPanel){windowsPanel.remove();windowsPanel=null;windowsGeneration++;return;}
+    const view=document.createElement('section');view.id='desktopWindowsPanel';view.className='desktop-windows-panel';view.setAttribute('role','dialog');view.setAttribute('aria-modal','false');view.setAttribute('aria-labelledby','desktopWindowsTitle');windowsPanel=view;
+    const title=document.createElement('h2');title.id='desktopWindowsTitle';title.textContent='Your windows';view.append(title);
+    const note=document.createElement('p');note.id='desktopWindowsStatus';note.setAttribute('role','status');note.setAttribute('aria-live','polite');view.append(note);
+    const open=document.createElement('div');open.id='desktopOpenWindows';view.append(open);
+    const heading=document.createElement('h3');heading.textContent='Documents and sources';view.append(heading);
+    const library=document.createElement('div');library.id='desktopWindowLibrary';view.append(library);
+    const footer=document.createElement('div');footer.className='desktop-window-actions';view.append(footer);let cursor=0,loading=false;
+    const alive=token=>windowsPanel===view&&token===windowsGeneration&&!window.sirenDesktopStorageLocked;
+    const refreshViews=async()=>{
+      const token=windowsGeneration;let result;
+      try{result=await window.sirenWindow.listViews();}catch{if(alive(token))note.textContent='Window list unavailable. Your work was retained.';return;}
+      if(!alive(token))return;
+      open.replaceChildren();if(!result?.ok){note.textContent='Window list unavailable. Your work was retained.';return;}
+      const rows=result.views.filter(item=>item.role!=='workspace');
+      if(!rows.length){const empty=document.createElement('p');empty.textContent='No other windows are open.';open.append(empty);}
+      for(const row of rows){const control=button(open,'','',async()=>{try{const result=await window.sirenWindow.focusView({windowId:row.windowId});if(alive(token)){note.textContent=result?.ok?'Window restored.':'That window is no longer available.';await refreshViews();}}catch{if(alive(token))note.textContent='Window could not be restored. Your work was retained.';}});control.removeAttribute('id');control.dataset.windowId=row.windowId;control.textContent=`${row.role==='code'?'⌘ Code':'Docs'} · ${row.entityId.slice(0,16)} · ${row.state==='minimized'?'Restore':'Show'}`;}
+    };
+    const more=button(footer,'desktopWindowsMore','More items',async()=>{await loadPage(false);});more.hidden=true;
+    const loadPage=async(reset)=>{
+      if(loading)return;const token=windowsGeneration;loading=true;more.disabled=true;
+      try{
+        const result=await window.sirenWindow.getCatalog({cursor:reset?0:cursor});if(!alive(token))return;
+        if(!result?.ok){note.textContent='Documents and sources are unavailable. Existing work was retained.';return;}
+        if(reset)library.replaceChildren();cursor=result.nextCursor;more.hidden=!result.hasMore;
+        note.textContent=result.truncated?'Showing the first 4,096 items. Open another project to narrow the list.':'Open saved documents and sources in separate windows · Read only';
+        if(!result.items.length&&reset){const empty=document.createElement('p');empty.textContent='Saved Docs and source-backed Code appear here.';library.append(empty);}
+        for(const item of result.items){
+          const control=button(library,'',`${item.role==='code'?'⌘ Code':'Docs'} · ${item.label}${item.sourceRef?' · v'+item.sourceRef.version:''}`,async()=>{
+            if(!alive(token))return;control.disabled=true;note.textContent='Opening window…';
+            try{const result=await window.sirenWindow.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});if(alive(token)){note.textContent=result?.ok?'Window opened. You can continue working here.':'The selected item could not open. Its data was retained.';await refreshViews();}}
+            catch{if(alive(token))note.textContent='Window could not open. Your work was retained.';}finally{if(alive(token))control.disabled=false;}
+          });control.removeAttribute('id');control.dataset.entityId=item.entityId;control.dataset.role=item.role;
+        }
+      }catch{if(alive(token))note.textContent='Window list could not load. Your work was retained.';}
+      finally{loading=false;if(alive(token))more.disabled=false;}
+    };
+    button(footer,'desktopWindowsRefresh','Refresh',async()=>{await Promise.all([refreshViews(),loadPage(true)]);});
+    button(footer,'desktopWindowsClose','Done',()=>{view.remove();windowsPanel=null;windowsGeneration++;document.getElementById('desktopWindows')?.focus();});
+    view.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();document.getElementById('desktopWindowsClose').click();}});
+    document.body.append(view);windowsGeneration++;await Promise.all([refreshViews(),loadPage(true)]);
+  }
   const message = value => { if (status) status.textContent = value; };
   function showPinSettings(notice = '') {
     if (boot?.mode === 'locked' || document.getElementById('desktopPinSettingsPanel')) return;
@@ -108,7 +152,7 @@
     document.getElementById('desktopCloseControls').focus();
   }
   function showGuide() {
-    message('Local projects\nOpen an owned project or explicitly import a complete .siren export. Nothing is imported automatically from a browser profile. Export saved backup contains the last committed desktop workspace; use the regular Export → Project (.siren) for a portable exchange file.\n\nRecovery\nVerified saved revisions, private drafts and unacknowledged work can be opened as new project copies. The damaged original stays intact. Code drafts remain private until you explicitly save them in Docs.\n\nPIN and updates\nCreate a local 4- or 6-digit PIN on first launch. Change it from Settings using your current PIN. Lock SIREN saves acknowledged local changes before locking. Ctrl+, opens Settings; Ctrl+Alt+L locks SIREN. Online accounts and 30-day activation are deferred. Signed updates can be checked without login; download never means installed. This development build has no production account service or update feed.\n\nScale\nExisting Code limits still apply. Hundreds of thousands of lines are a later development target.');
+    message('Local projects\nOpen an owned project or explicitly import a complete .siren export. Nothing is imported automatically from a browser profile. Export saved backup contains the last committed desktop workspace; use the regular Export → Project (.siren) for a portable exchange file.\n\nRecovery\nVerified saved revisions, private drafts and unacknowledged work can be opened as new project copies. The damaged original stays intact. Code drafts remain private until you explicitly save them in Docs.\n\nPIN and updates\nCreate a local 4- or 6-digit PIN on first launch. Change it from Settings using your current PIN. Lock SIREN saves acknowledged local changes before locking. Ctrl+, opens Settings; Ctrl+Alt+L locks SIREN. Online accounts and 30-day activation are deferred. Signed updates can be checked without login; download never means installed. This development build has no production account service or update feed.\n\nScale\nWindows opens saved Docs and source-backed Code in separate read-only native windows. The native Code viewer has been tested with 300,000 lines and uses a 32 MiB source budget; this is a tested case, not a promise for every script. Legacy editable Code retains its existing limits.');
   }
   window.sirenDesktopCommand = async id => {
     const allowed = new Set(['desktopOpenProject', 'desktopExportProject', 'desktopLogin', 'desktopPinSettings', 'desktopLockPin', 'desktopCheckUpdates', 'desktopRecovery', 'desktopGuide']);
@@ -146,7 +190,7 @@
     if (guide) {
       const section = document.createElement('section'); section.className = 'guide-section'; section.id = 'guideDesktopSection';
       const heading = document.createElement('h3'); heading.textContent = 'Your local desktop workspace'; section.append(heading);
-      for (const text of ['Desktop opens local projects and explicitly imports complete .siren exports. Export saved backup keeps the committed desktop workspace; the regular Project (.siren) export is the exchange file. No browser profile is imported automatically.', 'Disaster Recovery opens verified saved revisions, private drafts and unacknowledged work as new project copies. The original remains intact. Code changes stay private until you explicitly Save to Docs.', 'Set up a local 4- or 6-digit PIN on first launch. Settings changes the PIN after current-PIN verification. Ctrl+, opens Settings and Ctrl+Alt+L saves and locks SIREN. Online accounts and 30-day activation are deferred. Check for Updates verifies a public signed package; downloading is separate from installation. This development build has no production account service or update installer. Existing Code size limits remain unchanged.']) {
+      for (const text of ['Desktop opens local projects and explicitly imports complete .siren exports. Export saved backup keeps the committed desktop workspace; the regular Project (.siren) export is the exchange file. No browser profile is imported automatically.', 'Disaster Recovery opens verified saved revisions, private drafts and unacknowledged work as new project copies. The original remains intact. Code changes stay private until you explicitly Save to Docs.', 'Set up a local 4- or 6-digit PIN on first launch. Settings changes the PIN after current-PIN verification. Ctrl+, opens Settings and Ctrl+Alt+L saves and locks SIREN. Online accounts and 30-day activation are deferred. Check for Updates verifies a public signed package; downloading is separate from installation. This development build has no production account service or update installer. Windows opens saved Docs and source-backed Code in separate read-only native windows. Native Code has been tested with 300,000 lines and uses a 32 MiB source budget. Legacy editable Code retains its existing limits.']) {
         const paragraph = document.createElement('p'); paragraph.textContent = text; section.append(paragraph);
       }
       button(section, 'guideOpenDesktop', 'Open Desktop', () => { document.getElementById('guideDialog').close(); showDesktop(); });
@@ -154,6 +198,7 @@
     }
     const bar = document.createElement('aside'); bar.id = 'desktopBar'; bar.setAttribute('aria-label', 'Local desktop project');
     const label = document.createElement('span'); label.id = 'desktopProjectLabel'; label.textContent = `Local · ${boot?.snapshot?.project.label || 'Choose a project'} · Development build`; bar.append(label);
+    if(typeof window.sirenWindow?.getCatalog==='function')button(bar,'desktopWindows','Windows',showWindows);
     button(bar, 'desktopOptions', 'Desktop…', showDesktop); document.body.append(bar);
     bridge.onStatus(event => {
       if (event?.kind === 'updates') updateView(event.state);

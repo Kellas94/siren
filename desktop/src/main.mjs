@@ -16,6 +16,7 @@ import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead} from './windows/source-bridge.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
+import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
@@ -57,7 +58,15 @@ if (!dataRoot) { app.exit(0); return; }
 else app.setPath('userData', dataRoot);
 if (!app.requestSingleInstanceLock()) { app.quit(); return; }
 const sessionId = randomUUID();
-const processIdentity = await inspectWindowsProcess(process.pid);
+const processIdentity = await inspectWindowsProcess(process.pid, { onFailure: observed => {
+  // Native startup attribution only: no PID, executable path, stack or output.
+  // Unknown identity still selects readonly; diagnostics never grant ownership.
+  console.warn('SIREN_PROCESS_IDENTITY_FAILURE ' + JSON.stringify({
+    category: ['Error', 'SyntaxError', 'TypeError'].includes(observed.name) ? observed.name : 'UNKNOWN',
+    code: (Number.isSafeInteger(observed.code) || (typeof observed.code === 'string' && /^[A-Z_]{1,32}$/.test(observed.code))) ? observed.code : null,
+    killed: observed.killed === true, signal: observed.signal === 'SIGTERM' ? 'SIGTERM' : null,
+  }));
+} });
 const journal = new SessionJournal(dataRoot, { inspectProcess: inspectWindowsProcess });
 const startup = processIdentity ? await journal.inspectStartup() : { mode: 'readonly', reason: 'Process identity unavailable; use explicit recovery/export' };
 if (processIdentity) await journal.recordSession({ event: 'opened', sessionId, version: app.getVersion(), processIdentity });
@@ -316,6 +325,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
 });
 let sourceReads=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId)});
+const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
 const retireNativeViews = () => {
   sourceReads?.dispose();sourceReads=null;
   let failed = false;
@@ -395,6 +405,10 @@ ipcMain.handle('siren:docs-read', async (event, method, payload) => {
 });
 ipcMain.handle('siren:windows', async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
+  if(method==='getCatalog'){
+    const operation=windowCatalog.invoke({event,payload});writes.add(operation);
+    try{return await operation;}finally{writes.delete(operation);}
+  }
   const before = windowRegistry.caller(event);
   const result = await invokeWindow({ event, method, payload, registry: windowRegistry });
   if (result.code === 'WINDOW_DESTROY_FAILED') nativeShellFailure = true;

@@ -12,6 +12,7 @@ const evidence=resolve('evidence/source-read',new Date().toISOString().replaceAl
 await mkdir(evidence,{recursive:true});const data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const paths=['src/main.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
+paths.push('src/windows/catalog.mjs','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
 const capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))])));
 const inputs=await capture(),projects=new ProjectStore(data),sources=new SourceRepository(data);
 const first=await projects.createProject({label:'Owned exact native source reads',json:'{}'});
@@ -47,11 +48,35 @@ try{
  await unlockDesktop(driver,{pin:'4826',autoSetup:true});
  assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.readonly'),true);
  assert.equal((await driver.evaluate(`window.sirenSource.getMetrics(${JSON.stringify({sourceId:a.sourceId,version:1})})`)).sha256,a.sha256);
+ // Exercise the actual primary Windows shelf. This source-only fixture has no
+ // legacy diagram envelope; dismiss its real legacy warning using native input.
+ await driver.waitFor("document.getElementById('desktopWindows')!=null && document.getElementById('confirmDialog')?.open===true");
+ await driver.click('#cancelConfirmButton');
+ await driver.waitFor("!document.getElementById('sirenIntroOverlay')||document.getElementById('sirenIntroOverlay').hidden");
+ if(await driver.evaluate("document.getElementById('introOverviewDialog')?.open===true"))await driver.click('#closeIntroOverview');
+ await driver.click('#desktopWindows');
+ await driver.waitFor("document.querySelectorAll('#desktopWindowLibrary [data-entity-id]').length===4");
+ assert.equal(await driver.evaluate("document.querySelector('#desktopWindowsPanel').getAttribute('aria-modal')"),'false');
+ const panelColors=await driver.evaluate("(()=>{const s=getComputedStyle(document.querySelector('#desktopWindowsPanel')),c=document.createElement('canvas');c.width=c.height=1;const ctx=c.getContext('2d');const rgba=color=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return Array.from(ctx.getImageData(0,0,1,1).data)};return {background:rgba(s.backgroundColor),text:rgba(s.color),expected:rgba(getComputedStyle(document.body).getPropertyValue('--panel-bg').trim())};})()");
+ assert.deepEqual(panelColors.background,panelColors.expected,'Windows panel must use the selected application theme background');
+ const luminance=rgba=>rgba.slice(0,3).map(n=>n/255).map(n=>n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4).reduce((sum,n,i)=>sum+n*[0.2126,0.7152,0.0722][i],0);
+ assert.ok((Math.max(luminance(panelColors.text),luminance(panelColors.background))+0.05)/(Math.min(luminance(panelColors.text),luminance(panelColors.background))+0.05)>=4.5,'Windows panel text must remain readable');result.windowPanelColors=panelColors;
+ assert.equal(await driver.evaluate("document.querySelector('#desktopWindowsPanel').textContent.includes('OTHER_DOC_PRIVATE_CONTENT')"),false);
  const pages=[],openedAt=Date.now();
  for(const request of [{role:'code',entityId:a.sourceId,version:1},{role:'code',entityId:b.sourceId,version:1},{role:'docs',entityId:'doc-a'}]){
-  const opened=await driver.evaluate(`window.sirenWindow.openView(${JSON.stringify(request)})`);assert.equal(opened.ok,true);
-  pages.push(await attachPage(`siren://app/windows/${request.role}.html?windowId=${opened.view.windowId}`));
+  await driver.click(`#desktopWindowLibrary [data-entity-id="${request.entityId}"][data-role="${request.role}"]`);
+  await driver.waitFor(`document.querySelectorAll('#desktopOpenWindows [data-window-id]').length===${pages.length+1}`);
+  const listed=await driver.evaluate('window.sirenWindow.listViews()');assert.equal(listed.ok,true);
+  const opened=listed.views.find(v=>v.role===request.role&&v.entityId===request.entityId);assert.ok(opened,'The clicked library row must create the real native view');
+  pages.push(await attachPage(`siren://app/windows/${request.role}.html?windowId=${opened.windowId}`));
  }
+ const listed=await driver.evaluate('window.sirenWindow.listViews()'),codeWindow=listed.views.find(v=>v.role==='code'&&v.entityId===a.sourceId);
+ await driver.click(`#desktopOpenWindows [data-window-id="${codeWindow.windowId}"]`);
+ await driver.waitFor("document.querySelector('#desktopWindowsStatus').textContent==='Window restored.'");
+ await driver.screenshot(join(evidence,'windows-shelf.png'));
+ await driver.click('#desktopWindowsClose');
+ await driver.waitFor("document.querySelector('#desktopWindowsPanel')===null");
+ result.cases.push({name:'actual nonmodal Windows library opens two native Code views and Docs, lists live native views and invokes Show through native input',ok:true});
  await pages[0].waitFor("document.body.dataset.sourceReady==='true'");await pages[1].waitFor("document.body.dataset.sourceReady==='true'");
  const editorState=await pages[0].evaluate("(()=>({source:{...document.body.dataset},editors:document.querySelectorAll('.cm-editor').length,readonly:document.querySelector('.cm-content').getAttribute('contenteditable'),hiddenWrites:['undo','redo','save'].every(name=>document.querySelector('[data-command='+name+']').hidden),syntaxSpans:document.querySelectorAll('.cm-line span').length,theme:document.querySelector('.siren-code-editor').dataset.theme}))()");
  assert.equal(editorState.editors,1);assert.equal(editorState.readonly,'false');assert.equal(editorState.hiddenWrites,true);assert.ok(editorState.syntaxSpans>0);

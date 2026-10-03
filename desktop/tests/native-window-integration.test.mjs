@@ -11,6 +11,7 @@ import {ProjectStore} from '../src/projects/store.mjs';
 import {SourceRepository} from '../src/sources/repository.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
+import {NativeWindowCatalog} from '../src/windows/catalog.mjs';
 import {DomainRepository} from '../src/windows/domain.mjs';
 import { invokeWindow } from '../src/windows/ipc.mjs';
 import { nativeViewFactory } from '../src/windows/factory.mjs';
@@ -34,7 +35,7 @@ function fixture() {
   const owner = new NativeWindow(); owner.webContents.mainFrame.url='siren://app/app.html'; const handlers=new Map();
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
-  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,NativeDocsReads,NativeWindowCatalog,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     screen:{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]},
     localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
@@ -58,6 +59,15 @@ test('actual main binds exact native owner, scoped shell entries and locked null
   assert.equal((await f.invoke('listViews',undefined,sender)).code,'ACCESS_REFUSED');
   assert.equal(f.context.registry.listViews().length,3);
   f.context.retire(); assert.equal(f.owner.isDestroyed(),false); assert.equal(f.handles.slice(1).every(w=>w.isDestroyed()),true); assert.equal(f.context.registry.listViews().length,0);
+});
+
+test('actual main exposes bounded selected Docs/Code metadata to the genuine App owner, never its satellite',async()=>{
+ const f=fixture();f.bootstrap();const result=await f.invoke('getCatalog');assert.equal(result.ok,true);assert.equal(result.items.length,3);
+ assert.deepEqual(result.items.filter(item=>item.role==='docs').map(item=>item.entityId),['doc_a','doc_b']);
+ assert.deepEqual(result.items.find(item=>item.role==='code').sourceRef,{sourceId,version:1,sha256:'a'.repeat(64)});
+ const opened=await f.invoke('openView',{role:'docs',entityId:'doc_a'});assert.equal(opened.ok,true);const child=f.handles[1];
+ assert.equal((await f.invoke('getCatalog',undefined,{sender:child.webContents,senderFrame:child.webContents.mainFrame})).code,'ACCESS_REFUSED');
+ f.setLocked(true);assert.equal((await f.invoke('getCatalog')).code,'ACCESS_REFUSED');
 });
 test('main failed factory destruction fences every later open and data bootstrap until native handles are destroyed',async()=>{
   const f=fixture(); f.bootstrap(); f.setFaults(true,true);
