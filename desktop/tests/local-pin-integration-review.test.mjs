@@ -13,6 +13,7 @@ import { SourceRepository } from '../src/sources/repository.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { atomicWrite } from '../src/projects/atomic.mjs';
 import { invokeDesktop, failure } from '../src/ipc.mjs';
+import {installPrimaryOwner} from './fixtures/primary-owner-context.mjs';
 
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const builder = await readFile(new URL('../build/renderer.mjs', import.meta.url), 'utf8');
@@ -94,6 +95,7 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   const window = context.window;
   window.webContents = { executeJavaScript: async text => vm.runInContext(text, context) };
   vm.runInContext(factory + '\nconst services={\n' + pinServices + saveService + '\n};globalThis.services=services;', context);
+  installPrimaryOwner(context);
   window.sirenDesktop = context.services; window.sirenDesktopBootstrap = context.bootstrap;
   vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), context);
   const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });

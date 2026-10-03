@@ -11,7 +11,7 @@ export class NativeViewControl {
     if(!registry || !['capture','eventFor','isCurrent'].every(key=>typeof registry[key]==='function') || !owner ||
       !['beginViewFlush','finishViewFlush','cancelViewFlush'].every(key=>typeof owner[key]==='function') || typeof send!=='function')throw TypeError('Native view control adapters required');
     if(!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native view deadline refused');
-    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['code','docs','diagram'].includes(role)))throw TypeError('Native control roles refused');
+    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['workspace','code','docs','diagram'].includes(role)))throw TypeError('Native control roles refused');
     this.#registry=registry;this.#owner=owner;this.#send=send;this.#timeout=timeoutMs;this.#roles=new Set(roles);
   }
   #settle(ticket,result) {
@@ -66,3 +66,4 @@ export class NativeViewControl {
 }
 // Preserve the already qualified strict Code-only interface.
 export class NativeCodeControl extends NativeViewControl {constructor(options){super(options,['code']);}}
+export class NativeAllViewControl extends NativeViewControl {constructor(options){super(options,['workspace','code','docs','diagram']);}}

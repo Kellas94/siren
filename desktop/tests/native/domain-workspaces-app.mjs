@@ -6,8 +6,10 @@ import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {WindowRegistry} from '../../src/windows/registry.mjs';
 import {WorkspaceCoordinator} from '../../src/windows/coordinator.mjs';
-import {NativeViewControl} from '../../src/windows/control.mjs';
-import {NativeWorkspaceBarrier} from '../../src/windows/source-barrier.mjs';
+import {NativeAllViewControl} from '../../src/windows/control.mjs';
+import {NativeWorkspaceBarrier,NativeAllWorkspaceBarrier} from '../../src/windows/source-barrier.mjs';
+import {PrimaryPersistence} from '../../src/windows/primary.mjs';
+import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
 import {DomainRepository} from '../../src/windows/domain.mjs';
 import {createImportValidator} from '../../src/projects/import-validator-window.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
@@ -18,24 +20,27 @@ app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()
 protocol.registerSchemesAsPrivileged([{scheme:'siren',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const hash=b=>createHash('sha256').update(b).digest('hex');
 app.whenReady().then(async()=>{
- const result={status:'ADVERSE',pid:process.pid,scope:'Isolated native domain service, real frozen validators and four protocol fixtures; no production editor, primary workspace, Lock or physical monitors',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,control,barrier,validator;
+ const result={status:'ADVERSE',pid:process.pid,scope:'Isolated native domain and primary-readonly services, frozen validators and five protocol fixtures; no production editors, product Lock, Home or physical monitors',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,control,barrier,validator;
  const progress=()=>writeFile(join(root,'native-progress.json'),JSON.stringify(result,null,2));
  try{
   const prepared=JSON.parse(await readFile(join(root,'prepared.json'),'utf8')),data=join(root,'owned-data'),projectId=prepared.project.project.id,windows=[];
   for(const role of ['docs','diagram'])assert.equal(hash(await readFile(join(root,'generated/windows/'+role+'.html'))),prepared.htmlSHA256);
+  assert.equal(hash(await readFile(join(root,'generated/app.html'))),prepared.htmlSHA256);
   assert.equal(hash(await readFile(join(root,'owned-preload.cjs'))),prepared.preloadSHA256);
-  protocol.handle('siren',async request=>{const url=new URL(request.url);if(url.hostname!=='app'||!['/windows/docs.html','/windows/diagram.html'].includes(url.pathname))return new Response('Refused',{status:403});return net.fetch(pathToFileURL(join(root,'generated',url.pathname.slice(1))).href);});
+  protocol.handle('siren',async request=>{const url=new URL(request.url);if(url.hostname!=='app'||!['/app.html','/windows/docs.html','/windows/diagram.html'].includes(url.pathname))return new Response('Refused',{status:403});return net.fetch(pathToFileURL(join(root,'generated',url.pathname.slice(1))).href);});
   // This finite owned factory qualifies the registry/domain protocol only. The
   // production factory does not yet admit Diagram and is not represented here.
   registry=new WindowRegistry({authorize:()=>({projectId,mode:'normal',access:'write',entityIds:['doc-a','doc-b','diagram-a','diagram-b']}),createWindow:async record=>{const window=new BrowserWindow({show:false,width:900,height:600,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,preload:join(root,'owned-preload.cjs')}});window.webContents.setWindowOpenHandler(()=>({action:'deny'}));await window.loadURL(record.mainFrameUrl);windows.push(window);return window;}});
   validator=await createImportValidator({BrowserWindow,entryPath:join(root,'validator/import-validation.html'),entrySha256:prepared.build.entrySha256});
   let fault=async()=>{};
   const domains=new DomainRepository({projects:({canWrite})=>new ProjectStore(data,{canSave:canWrite,fault:p=>fault(p)}),sources:({canWrite})=>new SourceRepository(data,{canWrite}),validatePatch:input=>validator.validatePatch(input)});
-  owner=new WorkspaceCoordinator({registry,domains,sources:({canWrite})=>new SourceRepository(data,{canWrite}),access:()=>true});
-  control=new NativeViewControl({registry,owner,send:(event,request)=>event.sender.send('owned:prepare',request)});
+  let recoveryFault=async()=>{};
+  const primary=new PrimaryPersistence({projects:({canWrite})=>new ProjectStore(data,{canSave:canWrite}),recovery:new RecoveryStore(data,{sources:new SourceRepository(data),fault:p=>recoveryFault(p)})});
+  owner=new WorkspaceCoordinator({registry,domains,primary,sources:({canWrite})=>new SourceRepository(data,{canWrite}),access:(grant,scope)=>scope.action!=='readonly'||grant.role==='workspace'&&prepared.project.schema===2});
+  control=new NativeAllViewControl({registry,owner,send:(event,request)=>event.sender.send('owned:prepare',request)});
   ipcMain.handle('owned:intent',(event,intent,nonce)=>owner.invoke(registry.capture(event),intent,nonce));
   ipcMain.handle('owned:ack',(event,input)=>control.acknowledge(event,input));
-  ipcMain.handle('owned:read',event=>{const grant=registry.capture(event);return owner.invoke(grant,{kind:grant.role,method:grant.role==='docs'?'readDocument':'readDiagram',payload:{entityId:grant.entityIds[0]}});});
+  ipcMain.handle('owned:read',async event=>{const grant=registry.capture(event);if(grant?.role==='workspace'){const selected=await new ProjectStore(data).readProject(grant.projectId);return registry.isCurrent(grant)?{ok:true,domain:'workspace',entityId:grant.projectId,version:selected.revision}:{ok:false,code:'ACCESS_REFUSED'};}return owner.invoke(grant,{kind:grant.role,method:grant.role==='docs'?'readDocument':'readDiagram',payload:{entityId:grant.entityIds[0]}});});
   for(const [role,entityId] of [['docs','doc-a'],['docs','doc-b'],['diagram','diagram-a'],['diagram','diagram-b']])await registry.openView({role,entityId});
   const evaluate=(i,code)=>windows[i].webContents.executeJavaScript(code),edit=(i,action,payload,operation)=>evaluate(i,`owned.edit(${JSON.stringify(action)},${JSON.stringify(payload)},${JSON.stringify(operation)})`);
   for(let i=0;i<4;i++)await evaluate(i,'owned.start()');
@@ -64,6 +69,20 @@ app.whenReady().then(async()=>{
   assert.equal(barrier.release(preparedRoster.proof),true);for(let i=0;i<4;i++)assert.equal(await evaluate(i,'owned.resume()'),true);barrier.dispose();barrier=null;
   assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
   result.cases.push({name:'all four native frames including minimized Diagram seal and reconcile the latest saved versions',status:'COMPLETE',refs:preparedRoster.proof.refs});await progress();
+  const primaryWindow=new BrowserWindow({show:false,width:900,height:600,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,preload:join(root,'owned-preload.cjs')}});
+  primaryWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));registry.bindWorkspace(primaryWindow);await primaryWindow.loadURL('siren://app/app.html');registry.activateWorkspace();windows.push(primaryWindow);await evaluate(4,'owned.start()');
+  const downgrade={kind:'workspace',method:'saveProject',payload:{projectId,baseRevision:selected.revision,json:'{}',purpose:'workspace'}};
+  assert.equal((await evaluate(4,`owned.invoke(${JSON.stringify(downgrade)})`)).code,'SCHEMA_UNSUPPORTED');assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
+  barrier=new NativeAllWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});
+  const all=await barrier.prepare('owned-primary-and-domains');assert.equal(all.ok,true);assert.equal(all.proof.refs.length,5);
+  const primaryRef=all.proof.refs.find(ref=>ref.domain==='workspace');assert.equal(primaryRef.purpose,'readonly');assert.equal(primaryRef.sha256,selected.sha256);assert.equal(primaryRef.revision,selected.revision);
+  for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.paused'),true);
+  assert.equal(barrier.isPrepared(all.proof),true);assert.equal(barrier.release(all.proof),true);for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);barrier.dispose();barrier=null;
+  recoveryFault=async phase=>{if(phase==='checkpoint-verified')throw Object.assign(Error('Owned primary checkpoint failure'),{code:'ENOSPC'});};
+  barrier=new NativeAllWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});
+  const refused=await barrier.prepare('owned-primary-recovery-refusal');assert.equal(refused.ok,false);assert.equal(Object.hasOwn(refused,'proof'),false);assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
+  barrier.dispose();barrier=null;owner.resume();recoveryFault=async()=>{};for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);primaryWindow.destroy();
+  result.cases.push({name:'genuine pinned primary plus four native domain frames require exact source-aware readonly recovery and refuse a failed primary checkpoint',status:'COMPLETE',refs:all.proof.refs});await progress();
   let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);fault=async phase=>{if(phase==='before-select'){enter();await gate;throw Object.assign(Error('Owned durable refusal'),{code:'MANIFEST_WRITE_FAILED'});}};
   const pending=edit(1,'rename',{title:'Retained unsaved draft'},'failed-draft');await entered;
   barrier=new NativeWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});const preparing=barrier.prepare('owned-domain-failure');release();assert.equal((await pending).ok,false);assert.equal((await preparing).ok,false);

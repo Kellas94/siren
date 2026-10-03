@@ -10,6 +10,7 @@ import { SourceRepository } from '../src/sources/repository.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { AccessPolicy } from '../src/account/access.mjs';
 import { failure } from '../src/ipc.mjs';
+import {installPrimaryOwner} from './fixtures/primary-owner-context.mjs';
 
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const between = (start, end) => main.slice(main.indexOf(start), main.indexOf(end));
@@ -34,6 +35,7 @@ for (const scenario of [{ packaged: true, mode: 'readonly' }, { packaged: false,
       processIdentity: { pid: process.pid }, sessionId: 'fixture', journal: { recordSession: async () => { throw new Error('Readiness journal unavailable'); } },
     });
     vm.runInContext(factory + '\nconst services = {\n' + save + '\n};\n' + readiness, context);
+    installPrimaryOwner(context);
     if (scenario.failReady) await listener({ sender: webContents, senderFrame: webContents.mainFrame });
     const result = await vm.runInContext('services', context).saveProject({ projectId: original.project.id, baseRevision: 1, purpose: 'workspace', json: '{"source":"forbidden"}' });
     assert.equal(result.ok, false, 'An unlocked PIN cannot override native safety');
@@ -63,6 +65,7 @@ test('successful login preserves edits queued during the browser round trip befo
     location: { reload: () => { reloaded = true; } }, message: () => {},
   });
   vm.runInContext('const services = {\n' + login + '\n' + save + '\n};', context);
+  installPrimaryOwner(context,{projects:()=>context.projects});
   const window = context.window; window.sirenDesktopBootstrap = { snapshot: original }; window.sirenDesktop = vm.runInContext('services', context); context.bridge = window.sirenDesktop;
   vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), context);
   const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });

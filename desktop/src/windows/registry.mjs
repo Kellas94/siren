@@ -343,6 +343,14 @@ export class WindowRegistry {
     if(grant)this.#captures.set(grant,pinned);
     return grant;
   }
+  // A primary whole-workspace save is scoped to the genuine frame/project,
+  // not every entity that happened to exist when the frame was opened. This
+  // capture grants no source/domain entity access and is never renderer-issued.
+  capturePrimary(event) {
+    const pinned=Object.freeze({sender:event?.sender,senderFrame:event?.senderFrame}),caller=this.caller(pinned);
+    if(caller?.role!=='workspace'||pinned.sender!==this.#workspace?.webContents)return null;
+    const grant=Object.freeze({...caller,entityIds:Object.freeze([])});this.#captures.set(grant,pinned);return grant;
+  }
 
   isCurrent(grant) {
     const event=grant && this.#captures.get(grant);
@@ -365,7 +373,7 @@ export class WindowRegistry {
         const current = this.#policy(request);
         if (current.projectId !== scope.projectId || current.mode !== scope.mode || current.access !== scope.access) return null;
         const entityIds = request.role === 'audience' ? []
-          : request.entityId === null ? scope.entityIds : [request.entityId];
+          : request.entityId === null ? (entry.window===this.#workspace?.window?current.entityIds:scope.entityIds) : [request.entityId];
         if (!entityIds.every(id => current.entityIds.includes(id))) return null;
         return Object.freeze({ webContentsId: entry.webContentsId, mainFrameUrl, windowId: record.windowId,
           role: record.role, projectId: record.projectId, epoch: record.epoch, entityIds: Object.freeze([...entityIds]) });

@@ -3,24 +3,25 @@ import { navigationFields } from '../navigation/contracts.mjs';
 import { normalizeDocsLink, projectDocsReceipt } from './docs.mjs';
 import { randomUUID } from 'node:crypto';
 import {normalizeDomainRequest,projectDomainResult} from './domain.mjs';
+import {normalizeWorkspaceSave,projectWorkspaceResult,MAX_WORKSPACE_BYTES} from './primary.mjs';
 
 const fail=code=>Object.freeze({ok:false,code});
 const error=code=>Object.assign(new Error(code),{code});
 
-/** Native source and explicit Docs-link owner. Sources is a repository factory
- * with a per-invocation publication guard, never a renderer mirror.
- * General Docs/Diagram edits and all-view transitions remain unadmitted. */
+/** Native FIFO owner for scoped source/domain operations and schema-1 primary
+ * persistence. All-view transitions require separately qualified native seals. */
 export class WorkspaceCoordinator {
-  #registry;#sources;#docs;#domains;#access;#tail=Promise.resolve();#pending=new Set();
+  #registry;#sources;#docs;#domains;#primary;#workspaceBytes=0;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
   #flushes=new Map();#pauseGeneration=0;
   #activityGeneration=0;#quiescence=new WeakMap();
-  constructor({sources,docs,domains,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
+  constructor({sources,docs,domains,primary,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
     if(docs!==undefined && typeof docs.commitCodeToDocs!=='function')throw TypeError('Native Docs adapter required');
     if(domains!==undefined && !['read','apply','flush'].every(key=>typeof domains?.[key]==='function'))throw TypeError('Native domain adapter required');
-    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#access=access;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
+    if(primary!==undefined && typeof primary?.save!=='function')throw TypeError('Native primary adapter required');
+    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#access=access;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
   }
   #current(grant,sourceId) {
     try {return this.#registry.isCurrent(grant) && ['workspace','code'].includes(grant.role) && grant.entityIds.includes(sourceId);}
@@ -45,6 +46,10 @@ export class WorkspaceCoordinator {
     try {const entityId=payload.entityId??payload.documentId??payload.diagramId;return this.#registry.isCurrent(grant) && ['workspace',kind].includes(grant.role) && grant.entityIds.includes(entityId) &&
       this.#access(grant,{action:method.startsWith('read')?'read-domain':method.startsWith('flush')?'flush-domain':'edit-domain',domain:kind,entityId})===true;}catch{return false;}
   }
+  #currentWorkspace(grant,payload) {
+    try{return this.#registry.isCurrent(grant)&&grant.role==='workspace'&&grant.projectId===payload.projectId&&
+      this.#access(grant,{action:payload.purpose,projectId:payload.projectId})===true;}catch{return false;}
+  }
   // Main-only issuance. The control transport may disclose the nonce solely to
   // its captured frame. It grants finite draining of existing source authority,
   // never another entity, role, frame, epoch, read or general Docs operation.
@@ -52,8 +57,9 @@ export class WorkspaceCoordinator {
     if(!this.#registry.isCurrent(grant) || !['workspace','code',...(this.#domains?['docs','diagram']:[])].includes(grant?.role))throw error('ACCESS_REFUSED');
     if(!this.#paused)throw error('WORKSPACE_NOT_PAUSED');
     let values;try{values=navigationFields(options,['maxOperations','maxBytes'],[]);}catch{throw error('FLUSH_BUDGET');}
-    const maxOperations=values.maxOperations??65,maxBytes=values.maxBytes??17*1024*1024;
-    if(!Number.isSafeInteger(maxOperations)||maxOperations<1||maxOperations>65||!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>17*1024*1024)throw error('FLUSH_BUDGET');
+    const byteLimit=grant.role==='workspace'&&this.#primary?MAX_WORKSPACE_BYTES:17*1024*1024;
+    const maxOperations=values.maxOperations??65,maxBytes=values.maxBytes??byteLimit;
+    if(!Number.isSafeInteger(maxOperations)||maxOperations<1||maxOperations>65||!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>byteLimit)throw error('FLUSH_BUDGET');
     if(this.#flushes.size>=64 || [...this.#flushes.values()].some(ticket=>ticket.grant.windowId===grant.windowId))throw error('FLUSH_BUDGET');
     const nonce=randomUUID(),event=this.#registry.eventFor(grant);
     if(!event)throw error('ACCESS_REFUSED');
@@ -65,13 +71,21 @@ export class WorkspaceCoordinator {
     const ticket=typeof nonce==='string'?this.#flushes.get(nonce):null;
     if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket))return fail('FLUSH_REFUSED');
     ticket.sealed=true;
-    const operations=[...ticket.operations],receipts=Object.freeze(await Promise.all(operations.map(item=>item.promise)));
+    const operations=[...ticket.operations],actual=await Promise.all(operations.map(item=>item.promise));
+    const receipts=Object.freeze(actual.map((receipt,index)=>operations[index].domain==='workspace'?Object.freeze({...receipt,domain:'workspace',entityId:grant.projectId,purpose:operations[index].purpose}):receipt));
     const current=this.#flushCurrent(grant,ticket);
     this.#flushes.delete(nonce);
     if(!current)return fail('ACCESS_REFUSED');
     if(receipts.some(receipt=>receipt.ok!==true))return fail('FLUSH_FAILED');
-    const final=new Map();operations.forEach((operation,index)=>final.set(`${operation.domain}:${operation.entityId}`,{method:operation.method,receipt:receipts[index]}));
-    if(!final.size || [...final.values()].some(item=>!['commitSource','flushDocument','flushDiagram'].includes(item.method) || !['committed','recovery-degraded'].includes(item.receipt.durability)))return fail('FLUSH_NOT_COMMITTED');
+    const final=new Map();operations.forEach((operation,index)=>final.set(`${operation.domain}:${operation.entityId}:${operation.purpose??''}`,{method:operation.method,receipt:receipts[index],payload:operation.payload}));
+    if(!final.size)return fail('FLUSH_NOT_COMMITTED');
+    for(const item of final.values()) {
+      if(item.receipt.domain==='workspace') {
+        if(!['saveProject','sealReadonly'].includes(item.method)||typeof this.#primary?.verify!=='function')return fail('FLUSH_NOT_COMMITTED');
+        const verified=await this.#primary.verify({ok:true,revision:item.receipt.revision,sha256:item.receipt.sha256},{projectId:grant.projectId,purpose:item.receipt.purpose,isCurrent:()=>this.#registry.isCurrent(grant)&&this.#paused&&ticket.generation===this.#pauseGeneration&&!ticket.cancelled});
+        if(!verified.ok)return verified;
+      } else if(!['commitSource','flushDocument','flushDiagram'].includes(item.method)||!['committed','recovery-degraded'].includes(item.receipt.durability))return fail('FLUSH_NOT_COMMITTED');
+    }
     return Object.freeze({ok:true,receipts});
   }
   cancelViewFlush(grant,nonce) {
@@ -89,29 +103,34 @@ export class WorkspaceCoordinator {
       if(kind==='source')payload=normalizeSourceRequest(method,input.payload);
       else if(kind==='docs' && method==='commitCodeToDocs' && this.#docs)payload=normalizeDocsLink(input.payload);
       else if(['docs','diagram'].includes(kind) && this.#domains)payload=normalizeDomainRequest(kind,method,input.payload);
+      else if(kind==='workspace' && method==='saveProject' && this.#primary)payload=normalizeWorkspaceSave(input.payload);
+      else if(kind==='workspace' && method==='sealReadonly' && typeof this.#primary?.sealReadonly==='function')payload={...navigationFields(input.payload,[]),projectId:grant?.projectId,purpose:'readonly'};
       else return Promise.resolve(fail('REQUEST_REFUSED'));
       if(!payload)return Promise.resolve(fail('REQUEST_REFUSED'));
-      bytes=Buffer.byteLength(JSON.stringify(payload));
+      // Preserve the legacy 64 MiB UTF-8 workspace limit. JSON-escaping that
+      // string a second time must not silently lower its accepted capacity.
+      bytes=kind==='workspace'?(method==='saveProject'?Buffer.byteLength(payload.json):128):Buffer.byteLength(JSON.stringify(payload));
     } catch{return Promise.resolve(fail('REQUEST_REFUSED'));}
     let ticket;
-    const domainOperation=kind!=='source' && method!=='commitCodeToDocs';
-    const current=()=> (kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload)) &&
+    const primaryOperation=kind==='workspace';
+    const domainOperation=!primaryOperation && kind!=='source' && method!=='commitCodeToDocs';
+    const current=()=> (primaryOperation?this.#currentWorkspace(grant,payload):kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload)) &&
       (!ticket || this.#flushCurrent(grant,ticket));
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
     if(flushNonce!==undefined) {
       ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
-      if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket) || !(kind==='source'?['applyEdit','commitSource'].includes(method):domainOperation && !method.startsWith('read')))return Promise.resolve(fail('FLUSH_REFUSED'));
+      if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket) || !(primaryOperation?grant.role==='workspace':kind==='source'?['applyEdit','commitSource'].includes(method):domainOperation && !method.startsWith('read')))return Promise.resolve(fail('FLUSH_REFUSED'));
       if(ticket.operations.length>=ticket.maxOperations || ticket.bytes+bytes>ticket.maxBytes)return Promise.resolve(fail('FLUSH_BUDGET'));
     } else if(this.#paused)return Promise.resolve(fail('WORKSPACE_PAUSED'));
-    if(this.#pending.size>=this.#maxPending || this.#bytes+bytes>this.#maxBytes)return Promise.resolve(fail('OWNER_BUDGET'));
+    if(this.#pending.size>=this.#maxPending || (primaryOperation?this.#workspaceBytes+bytes>MAX_WORKSPACE_BYTES:this.#bytes+bytes>this.#maxBytes))return Promise.resolve(fail('OWNER_BUDGET'));
     if(ticket)ticket.bytes+=bytes;
     this.#activityGeneration++;
-    this.#bytes+=bytes;
+    if(primaryOperation)this.#workspaceBytes+=bytes;else this.#bytes+=bytes;
     const operation=this.#tail.catch(()=>{}).then(async()=>{
       if(!current())return fail('ACCESS_REFUSED');
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
-      const receipt=kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
+      const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
         access:(caller,scope)=>current() && this.#access(caller,scope)===true}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
@@ -122,10 +141,11 @@ export class WorkspaceCoordinator {
       return current()?receipt:fail('ACCESS_REFUSED');
     }).catch(()=>fail('OWNER_OPERATION_FAILED'));
     this.#pending.add(operation);this.#tail=operation;
-    if(ticket)ticket.operations.push({method,domain:kind==='source'?'source':kind,entityId:payload.sourceId??payload.entityId??payload.documentId??payload.diagramId,promise:operation});
-    operation.then(()=>{this.#pending.delete(operation);this.#bytes-=bytes;});
+    if(ticket)ticket.operations.push({method,domain:kind==='source'?'source':kind,entityId:primaryOperation?payload.projectId:payload.sourceId??payload.entityId??payload.documentId??payload.diagramId,...(primaryOperation?{purpose:payload.purpose}:{}),promise:operation});
+    operation.then(()=>{this.#pending.delete(operation);if(primaryOperation)this.#workspaceBytes-=bytes;else this.#bytes-=bytes;});
     return operation;
   }
+  saveWorkspace(grant,payload) {return this.invoke(grant,{kind:'workspace',method:'saveProject',payload});}
   pause(reason) {
     if(typeof reason!=='string' || reason.length<1 || reason.length>128)throw error('REQUEST_REFUSED');
     this.#paused=true;this.#pauseGeneration++;this.#flushes.clear();
@@ -191,12 +211,22 @@ export class WorkspaceCoordinator {
     if(!this.#paused||this.#pending.size||this.#flushes.size)return fail('OWNER_NOT_QUIESCENT');
     if(!Array.isArray(grants)||!grants.length||grants.length>64||!Array.isArray(receipts)||receipts.length>4224||typeof isCurrent!=='function')return fail('REQUEST_REFUSED');
     const proof=this.captureQuiescence(),projectId=grants[0]?.projectId;
-    const current=()=>{try{return this.isQuiescent(proof)&&isCurrent()===true&&grants.every(grant=>grant.projectId===projectId&&this.#registry.isCurrent(grant)&&['code','docs','diagram'].includes(grant.role));}catch{return false;}};
+    const current=()=>{try{return this.isQuiescent(proof)&&isCurrent()===true&&grants.every(grant=>grant.projectId===projectId&&this.#registry.isCurrent(grant)&&['workspace','code','docs','diagram'].includes(grant.role));}catch{return false;}};
     if(!current())return fail('ACCESS_REFUSED');if(receipts.some(receipt=>receipt?.ok!==true))return fail('WORKSPACE_FLUSH_FAILED');
     const code=grants.filter(grant=>grant.role==='code'),sourceReceipts=receipts.filter(receipt=>!receipt.domain && receipt.sourceId);
     let sources={ok:true,refs:[]};if(code.length)sources=await this.reconcileSourceReceipts(code,sourceReceipts,current);if(!sources.ok)return sources;
     const refs=[...sources.refs],seen=new Set();
-    for(const grant of grants.filter(grant=>grant.role!=='code'))for(const entityId of grant.entityIds) {
+    for(const grant of grants.filter(grant=>grant.role==='workspace')) {
+      const candidates=receipts.filter(receipt=>receipt.domain==='workspace'&&receipt.entityId===projectId);
+      if(!this.#primary?.verify||!candidates.some(receipt=>['workspace','readonly'].includes(receipt.purpose)))return fail('WORKSPACE_NOT_FLUSHED');
+      for(const purpose of ['workspace','recovery','readonly']) {
+        const versions=candidates.filter(receipt=>receipt.purpose===purpose);if(!versions.length)continue;
+        const latest=versions.at(-1),live=()=>current()&&this.#currentWorkspace(grant,{projectId,purpose});
+        const actual=await this.#primary.verify({ok:true,revision:latest.revision,sha256:latest.sha256},{projectId,purpose,isCurrent:live});
+        if(!live())return fail('ACCESS_REFUSED');if(!actual.ok)return actual;refs.push(Object.freeze(actual));
+      }
+    }
+    for(const grant of grants.filter(grant=>!['code','workspace'].includes(grant.role)))for(const entityId of grant.entityIds) {
       const key=`${grant.role}:${entityId}`;if(seen.has(key))continue;seen.add(key);
       const candidates=receipts.filter(receipt=>receipt.domain===grant.role&&receipt.entityId===entityId&&!Object.hasOwn(receipt,'entity'));
       const flushed=candidates.filter(receipt=>!Object.hasOwn(receipt,'operationId')).sort((a,b)=>b.projectRevision-a.projectRevision)[0];

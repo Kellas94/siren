@@ -105,6 +105,14 @@ export class RecoveryStore {
     if (!record) throw new Error('Recovery point unavailable or invalid');
     return record;
   }
+  async readProjectPoint(projectId,pointId) {
+    if(!validId(projectId)||!uuid(pointId))throw new Error('Invalid scoped recovery point');
+    const directory=await childDirectory(await this.directory(),projectId);
+    const record=verifyPoint(JSON.parse((await readOwnedBytes(join(directory,`${pointId}.json`),MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
+    if(record.id!==pointId||record.snapshot.project.id!==projectId)throw new Error('Recovery point identity refused');
+    if(record.snapshot.schema===2)await verifySourceSnapshot({snapshot:record.snapshot,repository:this.sources});
+    return record;
+  }
   async restoreRecovery({ pointId, destination, projects }) {
     if (destination !== 'new-project') throw new Error('Recovery must create a new project');
     const record = await this.readPoint(pointId);

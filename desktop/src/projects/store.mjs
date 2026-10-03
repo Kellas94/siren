@@ -114,10 +114,10 @@ export class ProjectStore {
         // recovery bytes do not change the selected workspace used here.
         if (current.json === request.json) return { ok: true, revision: current.revision, sha256: current.sha256, pendingId, unchanged: true };
         const snapshot = { ...current, revision: current.revision + 1, json: request.json, sha256: digest(Buffer.from(request.json)) };
-        await this.commit(dir, snapshot);
+        await this.commit(dir, snapshot, { canSelect: () => this.canSave({ action: request.purpose, projectId: request.projectId }) });
         return { ok: true, revision: snapshot.revision, sha256: snapshot.sha256, pendingId };
       }, this.writerOptions);
-    } catch (error) { return failure(error.code === 'WRITER_BUSY' ? 'WRITER_BUSY' : 'SAVE_FAILED', 'Save was not acknowledged; retain/export live work and inspect recovery'); }
+    } catch (error) { return failure(['WRITER_BUSY', 'ACCESS_REFUSED'].includes(error.code) ? error.code : 'SAVE_FAILED', 'Save was not acknowledged; retain/export live work and inspect recovery'); }
   }
   async pruneRevisions({ snapshot, recovery }) {
     verifySnapshot(snapshot);

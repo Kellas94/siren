@@ -8,14 +8,16 @@ import { ProjectStore } from '../src/projects/store.mjs';
 import { RecoveryStore } from '../src/recovery/checkpoints.mjs';
 import { failure } from '../src/ipc.mjs';
 import { mkdtemp } from './fixtures/temporary.mjs';
+import {installPrimaryOwner} from './fixtures/primary-owner-context.mjs';
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const start = main.indexOf('  saveProject:'); const stop = main.indexOf('  exportProject:', start);
 assert.ok(start >= 0 && stop > start);
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'siren-project-noop-')); const projects = new ProjectStore(root);
   const original = await projects.createProject({ label: 'Owned no-op boundary', json: JSON.stringify({ kind: 'siren-desktop', schema: 1, storage: { workspace: '{"source":"unchanged"}' } }) });
-  const context = vm.createContext({ projects, recovery: new RecoveryStore(root), failure, writes: new Set(), grants: new Set([original.project.id]), selectedId: original.project.id, snapshot: original, bootstrap: { snapshot: original, selectionGeneration: 0 } });
+  const context = vm.createContext({ projects, recovery: new RecoveryStore(root), failure, writes: new Set(), grants: new Set([original.project.id]), selectedId: original.project.id, snapshot: original, mode:'normal',nativeReadonly:false,window:{webContents:{}},bootstrap: { snapshot: original, selectionGeneration: 0 } });
   vm.runInContext(`globalThis.services = {${main.slice(start, stop)}};`, context);
+  installPrimaryOwner(context,{projects:()=>projects});
   return { root, projects, original, context };
 }
 test('a repeated exact acknowledged workspace save retains the complete selected revision and pointer bytes', async () => {
@@ -46,7 +48,7 @@ test('same text with stale CAS refuses and private recovery does not suppress a 
 });
 test('a no-op save still refuses a failed recovery checkpoint and does not advance the original revision',async()=>{
   const {projects,original,context}=await fixture();
-  context.recovery={checkpointProject:async()=>{throw Object.assign(new Error('Owned checkpoint failure'),{code:'CHECKPOINT_FAILED'});}};
+  context.recovery.fault=async()=>{throw Object.assign(new Error('Owned checkpoint failure'),{code:'CHECKPOINT_FAILED'});};
   const result=await context.services.saveProject({projectId:original.project.id,baseRevision:original.revision,json:original.json,purpose:'workspace'});
   assert.equal(result.ok,false); assert.equal(result.code,'RECOVERY_DEGRADED'); assert.equal(result.workspaceCommitted,true); assert.equal(result.unchanged,true); assert.equal(result.committedRevision,original.revision); assert.equal(result.committedSha256,original.sha256);
   assert.deepEqual(await projects.readProject(original.project.id),original);

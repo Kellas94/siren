@@ -12,6 +12,7 @@ import { RecoveryAccess } from '../src/recovery/access.mjs';
 import { atomicWrite, digest } from '../src/projects/atomic.mjs';
 import { failure } from '../src/ipc.mjs';
 import { buildRenderer } from '../build/renderer.mjs';
+import {installPrimaryOwner} from './fixtures/primary-owner-context.mjs';
 
 // Synthetic diagnostics, not a native reproduction or CI26 root-cause verdict.
 // Extract the actual current service bodies without importing Electron or
@@ -56,6 +57,7 @@ async function fixture() {
     selectedId: original.project.id, snapshot: original, nativeReadonly: false, mode: 'normal', reason: null,
     bootstrap: { mode: 'normal', readonly: false, snapshot: original, recoveryProjectId: original.project.id } });
   vm.runInContext(`${selectedSource}\nconst diagnosticServices = {\n${saveSource}${restoreSource}\n};`, context);
+  installPrimaryOwner(context,{projects:()=>projects});
   const services = vm.runInContext('diagnosticServices', context);
   const recovered = await services.restoreRecovery(point.id);
   assert.notEqual(recovered.project.id, original.project.id);
@@ -146,10 +148,10 @@ test('recovery selection drains an old operation before changing the selected bo
   f.projects.readProject = async id => {
     // Genuine old save reads current for CAS, then for commit readback, then
     // the main service reads it for checkpointing. Pause only the third read.
-    if (id === f.original.project.id && ++oldReads === 3) await blocked.pause();
+    if (id === f.recovered.project.id && ++oldReads === 3) await blocked.pause();
     return originalRead(id);
   };
-  const oldSave = f.services.saveProject({ projectId: f.original.project.id, baseRevision: 1, json: bag('old generation'), purpose: 'workspace' });
+  const oldSave = f.services.saveProject({ projectId: f.recovered.project.id, baseRevision: 1, json: bag('old generation'), purpose: 'workspace' });
   await blocked.entered;
   const point = (await f.recovery.scan(f.original.project.id)).valid.find(point => point.kind === 'saved');
   let next, signal;
@@ -165,7 +167,7 @@ test('recovery selection drains an old operation before changing the selected bo
     const late = await f.services.saveProject({ projectId: f.recovered.project.id, baseRevision: 1, json: bag('late'), purpose: 'workspace' });
     assert.equal(late.ok, false); assert.equal(late.code, 'PROJECT_BUSY', 'Native barrier refuses new save starts after renderer quiescence');
   } finally { blocked.release(); }
-  assert.equal((await oldSave).ok, true);
+  assert.equal((await oldSave).code, 'ACCESS_REFUSED', 'A deliberately non-draining synthetic renderer cannot acknowledge a revoked old operation');
   next = await restoring;
   assert.equal(f.context.selectedId, next.project.id);
   assert.equal(f.context.bootstrap.recoveryProjectId, next.project.id);
@@ -189,7 +191,7 @@ test('old operation cannot publish into a later selection generation, even when 
     // independent of the transition drain; production transitions also drain.
     await vm.runInContext('selected', f.context)(f.recovered);
   } finally { blocked.release(); }
-  assert.equal((await pending).ok, true);
+  assert.equal((await pending).code, 'ACCESS_REFUSED');
   assert.deepEqual(plain(f.context.bootstrap.snapshot), f.recovered, 'Old completion must not replace this newly selected generation snapshot');
 });
 

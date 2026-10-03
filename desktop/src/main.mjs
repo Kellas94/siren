@@ -11,6 +11,8 @@ import { ProjectStore } from './projects/store.mjs';
 import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
+import {WorkspaceCoordinator} from './windows/coordinator.mjs';
+import {PrimaryPersistence} from './windows/primary.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory } from './windows/factory.mjs';
 import { workspaceEntities } from './windows/entities.mjs';
@@ -251,20 +253,9 @@ const services = {
   saveProject: async request => {
     if (writes.selectionQuiesced) return failure('PROJECT_BUSY', 'Project selection is changing; keep the live work and retry after opening');
     if (!grants.has(request.projectId)) return failure('PROJECT_REFUSED', 'Project is not open in this session');
-    const selectionId = selectedId; const selectionGeneration = bootstrap.selectionGeneration;
-    const operation = (async () => {
-      const result = await projects.saveProject(request);
-      if (!result.ok) return result;
-      const current = request.purpose === 'workspace' ? await projects.readProject(request.projectId) : { ...await projects.readProject(request.projectId), json: request.json, sha256: result.sha256 };
-      const workspaceCommitted = request.purpose === 'workspace' && current.revision === request.baseRevision + (result.unchanged === true ? 0 : 1) && current.revision === result.revision && current.json === request.json && current.sha256 === result.sha256;
-      if (request.purpose === 'workspace' && !workspaceCommitted) return failure('SAVE_UNVERIFIED', 'The attempted workspace commit could not be verified; inspect recovery before retrying');
-      if (workspaceCommitted && selectionId === request.projectId && selectedId === selectionId && bootstrap.selectionGeneration === selectionGeneration) { snapshot = current; bootstrap = { ...bootstrap, snapshot: current }; }
-      try { await recovery.checkpointProject({ snapshot: current, kind: request.purpose === 'workspace' ? 'saved' : 'draft' }); }
-      catch (error) { return { ...failure('RECOVERY_DEGRADED', 'Recovery checkpoint was not acknowledged. Export and inspect recovery.'), workspaceCommitted, ...(result.unchanged === true ? { unchanged: true } : {}), ...(workspaceCommitted ? { committedRevision: current.revision, committedSha256: current.sha256 } : {}), checkpointAcknowledged: false, recoveryCode: typeof error.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(error.code) ? error.code : 'CHECKPOINT_FAILED' }; }
-      if (request.purpose === 'workspace') { try { await projects.pruneRevisions({ snapshot: current, recovery }); } catch { /* safe to retain extra revisions */ } }
-      try { await projects.acknowledgePending(request.projectId, result.pendingId); } catch { /* keep original if cleanup fails */ }
-      return { ok: true, revision: result.revision, sha256: result.sha256 };
-    })();
+    const grant=windowRegistry.capturePrimary({sender:window.webContents,senderFrame:window.webContents.mainFrame});
+    if(!grant || grant.role!=='workspace' || grant.projectId!==request.projectId)return failure('ACCESS_REFUSED','Save scope is no longer current; retain live work.');
+    const operation=workspaceOwner.saveWorkspace(grant,request);
     writes.add(operation); try { return await operation; } finally { writes.delete(operation); }
   },
   exportProject: async id => {
@@ -305,6 +296,15 @@ const windowRegistry = new WindowRegistry({
   } }),
 });
 windowRegistry.bindWorkspace(window);
+const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
+  access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
+    (scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
+  sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
+  primary:new PrimaryPersistence({
+    projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context) && canWrite(context)}),
+    recovery,onSelected:current=>{snapshot=current;bootstrap={...bootstrap,snapshot:current};},
+  }),
+});
 const retireNativeViews = () => {
   let failed = false;
   try { windowRegistry.invalidateEpoch({ preserveWorkspace: true }); } catch { failed = true; }
