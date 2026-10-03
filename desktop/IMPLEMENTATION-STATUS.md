@@ -1,3 +1,7 @@
+## 3 October — readonly roster prerequisite
+
+633/633 frozen checks passed; actual native minimized Code/Docs/primary recovery and prepared entry handoff completed in scoped protocol fixtures. Authentic selected-byte proofs are separate from writable commit receipts. Production mounting and Home routing remain open. Evidence: reviews/2026-10-03-readonly-roster-root-evidence.md. CI41 failure and skipped package remain preserved.
+
 # 3 October 2026 — native Windows library and startup attribution
 
 **624/624** frozen tests passed, captured inputs unchanged. Windows now opens selected readonly Docs/Code in native windows, lists live views with Show/Restore and paginates saved-item metadata without content leakage. Actual native input completes six Code/Docs/Lock groups; theme contrast was inspected, corrected and asserted. Home and Python checkpoint/Quit/restart regressions completed. See reviews/2026-10-03-window-shelf-root-evidence.md. Hosted CI40 at the preceding Code/Docs commit failed because process identity was unavailable; package was skipped. Original artifact is retained; bounded startup diagnostics were added without weakening readonly or deadlines. See reviews/2026-10-03-ci40-startup-root-evidence.md. Production Home routing, all-view transitions, writable sources/Docs/Diagram/Present and physical-monitor qualification remain open; work continues.

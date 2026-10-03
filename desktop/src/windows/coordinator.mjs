@@ -11,17 +11,18 @@ const error=code=>Object.assign(new Error(code),{code});
 /** Native FIFO owner for scoped source/domain operations and schema-1 primary
  * persistence. All-view transitions require separately qualified native seals. */
 export class WorkspaceCoordinator {
-  #registry;#sources;#docs;#domains;#primary;#workspaceBytes=0;#access;#tail=Promise.resolve();#pending=new Set();
+  #registry;#sources;#docs;#domains;#primary;#readonly;#workspaceBytes=0;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
   #flushes=new Map();#pauseGeneration=0;
   #activityGeneration=0;#quiescence=new WeakMap();
-  constructor({sources,docs,domains,primary,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
+  constructor({sources,docs,domains,primary,readonlyViews,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
     if(docs!==undefined && typeof docs.commitCodeToDocs!=='function')throw TypeError('Native Docs adapter required');
     if(domains!==undefined && !['read','apply','flush'].every(key=>typeof domains?.[key]==='function'))throw TypeError('Native domain adapter required');
     if(primary!==undefined && typeof primary?.save!=='function')throw TypeError('Native primary adapter required');
-    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#access=access;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
+    if(readonlyViews!==undefined&&!['isReadonly','seal','verify'].every(method=>typeof readonlyViews?.[method]==='function'))throw TypeError('Native readonly proof adapter required');
+    this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#readonly=readonlyViews;this.#access=access;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
   }
   #current(grant,sourceId) {
     try {return this.#registry.isCurrent(grant) && ['workspace','code'].includes(grant.role) && grant.entityIds.includes(sourceId);}
@@ -72,11 +73,17 @@ export class WorkspaceCoordinator {
     if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket))return fail('FLUSH_REFUSED');
     ticket.sealed=true;
     const operations=[...ticket.operations],actual=await Promise.all(operations.map(item=>item.promise));
-    const receipts=Object.freeze(actual.map((receipt,index)=>operations[index].domain==='workspace'?Object.freeze({...receipt,domain:'workspace',entityId:grant.projectId,purpose:operations[index].purpose}):receipt));
+    let readonlyReceipt;
+    if(!operations.length&&this.#readonly?.isReadonly(grant))readonlyReceipt=await this.#readonly.seal(grant,{isCurrent:()=>this.#flushCurrent(grant,ticket)});
+    const receipts=Object.freeze(readonlyReceipt?[readonlyReceipt]:actual.map((receipt,index)=>operations[index].domain==='workspace'?Object.freeze({...receipt,domain:'workspace',entityId:grant.projectId,purpose:operations[index].purpose}):receipt));
     const current=this.#flushCurrent(grant,ticket);
     this.#flushes.delete(nonce);
     if(!current)return fail('ACCESS_REFUSED');
     if(receipts.some(receipt=>receipt.ok!==true))return fail('FLUSH_FAILED');
+    if(readonlyReceipt){
+      const verified=await this.#readonly.verify(grant,readonlyReceipt,{isCurrent:()=>this.#flushCurrent(grant,ticket)});
+      return verified&&this.#flushCurrent(grant,ticket)?Object.freeze({ok:true,receipts}):fail('READONLY_PROOF_FAILED');
+    }
     const final=new Map();operations.forEach((operation,index)=>final.set(`${operation.domain}:${operation.entityId}:${operation.purpose??''}`,{method:operation.method,receipt:receipts[index],payload:operation.payload}));
     if(!final.size)return fail('FLUSH_NOT_COMMITTED');
     for(const item of final.values()) {
@@ -111,6 +118,8 @@ export class WorkspaceCoordinator {
       // string a second time must not silently lower its accepted capacity.
       bytes=kind==='workspace'?(method==='saveProject'?Buffer.byteLength(payload.json):128):Buffer.byteLength(JSON.stringify(payload));
     } catch{return Promise.resolve(fail('REQUEST_REFUSED'));}
+    // A native draining nonce never promotes an explicitly readonly view.
+    if(this.#readonly?.isReadonly(grant)&&!(kind==='source'?['getMetrics','readRange'].includes(method):['docs','diagram'].includes(kind)&&method.startsWith('read')))return Promise.resolve(fail('ACCESS_REFUSED'));
     let ticket;
     const primaryOperation=kind==='workspace';
     const domainOperation=!primaryOperation && kind!=='source' && method!=='commitCodeToDocs';
@@ -222,9 +231,17 @@ export class WorkspaceCoordinator {
     const proof=this.captureQuiescence(),projectId=grants[0]?.projectId;
     const current=()=>{try{return this.isQuiescent(proof)&&isCurrent()===true&&grants.every(grant=>grant.projectId===projectId&&this.#registry.isCurrent(grant)&&['workspace','code','docs','diagram'].includes(grant.role));}catch{return false;}};
     if(!current())return fail('ACCESS_REFUSED');if(receipts.some(receipt=>receipt?.ok!==true))return fail('WORKSPACE_FLUSH_FAILED');
-    const code=grants.filter(grant=>grant.role==='code'),sourceReceipts=receipts.filter(receipt=>!receipt.domain && receipt.sourceId);
+    const immutable=grants.filter(grant=>this.#readonly?.isReadonly(grant)),immutableIds=new Set(immutable.map(grant=>grant.windowId));
+    const immutableRefs=[];
+    for(const grant of immutable){
+      const candidates=receipts.filter(receipt=>receipt.purpose==='readonly'&&receipt.domain===(grant.role==='code'?'source':'docs')&&receipt.entityId===grant.entityIds[0]);
+      let verified;
+      for(const receipt of candidates)if(await this.#readonly.verify(grant,receipt,{isCurrent:current})){verified=receipt;break;}
+      if(!current())return fail('ACCESS_REFUSED');if(!verified)return fail('READONLY_PROOF_FAILED');immutableRefs.push(verified);
+    }
+    const code=grants.filter(grant=>grant.role==='code'&&!immutableIds.has(grant.windowId)),sourceReceipts=receipts.filter(receipt=>!receipt.domain && receipt.sourceId);
     let sources={ok:true,refs:[]};if(code.length)sources=await this.reconcileSourceReceipts(code,sourceReceipts,current);if(!sources.ok)return sources;
-    const refs=[...sources.refs],seen=new Set();
+    const refs=[...sources.refs,...immutableRefs],seen=new Set();
     for(const grant of grants.filter(grant=>grant.role==='workspace')) {
       const candidates=receipts.filter(receipt=>receipt.domain==='workspace'&&receipt.entityId===projectId);
       if(!this.#primary?.verify||!candidates.some(receipt=>['workspace','readonly'].includes(receipt.purpose)))return fail('WORKSPACE_NOT_FLUSHED');
@@ -235,9 +252,9 @@ export class WorkspaceCoordinator {
         if(!live())return fail('ACCESS_REFUSED');if(!actual.ok)return actual;refs.push(Object.freeze(actual));
       }
     }
-    for(const grant of grants.filter(grant=>!['code','workspace'].includes(grant.role)))for(const entityId of grant.entityIds) {
+    for(const grant of grants.filter(grant=>!['code','workspace'].includes(grant.role)&&!immutableIds.has(grant.windowId)))for(const entityId of grant.entityIds) {
       const key=`${grant.role}:${entityId}`;if(seen.has(key))continue;seen.add(key);
-      const candidates=receipts.filter(receipt=>receipt.domain===grant.role&&receipt.entityId===entityId&&!Object.hasOwn(receipt,'entity'));
+      const candidates=receipts.filter(receipt=>receipt.domain===grant.role&&receipt.entityId===entityId&&receipt.purpose!=='readonly'&&!Object.hasOwn(receipt,'entity'));
       const flushed=candidates.filter(receipt=>!Object.hasOwn(receipt,'operationId')).sort((a,b)=>b.projectRevision-a.projectRevision)[0];
       if(!flushed||candidates.some(receipt=>receipt.projectRevision>flushed.projectRevision))return fail('DOMAIN_NOT_FLUSHED');
       const method=grant.role==='docs'?'flushDocument':'flushDiagram',payload={entityId,expectedVersion:flushed.version};
