@@ -2,8 +2,9 @@
   'use strict';
   const surface=document.getElementById('codeSurface'),status=document.getElementById('viewStatus'),retry=document.getElementById('retrySource'),theme=document.getElementById('codeTheme'),working=document.getElementById('openWorkingCopy');
   const media=matchMedia('(prefers-color-scheme: dark)');let generation=0,editor=null,client=null,disposed=false,paused=false;
+  const linkButton=document.getElementById('linkCodeDocs');let links=null;
   const appearance=()=>theme.value==='system'?(media.matches?'dark':'light'):theme.value;
-  const clear=()=>{editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines'])delete document.body.dataset[key];};
+  const clear=()=>{links?.pause();linkButton.hidden=true;editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines'])delete document.body.dataset[key];};
   const paint=()=>{const value=appearance();document.documentElement.style.colorScheme=value;editor?.setTheme(value);};
   async function connect(){
     if(disposed||paused)return false;
@@ -28,6 +29,7 @@
       document.body.dataset.sourceReady='true';document.body.dataset.sourceId=context.sourceRef.sourceId;document.body.dataset.sourceVersion=String(context.sourceRef.version);document.body.dataset.sourceSha256=context.sourceRef.sha256;
       document.body.dataset.sourceUnits=String(state.doc.length);document.body.dataset.sourceLines=String(metrics.lines);
       document.body.dataset.sourceReadonly=String(readonly);
+      linkButton.hidden=readonly;
       client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
       ownEditor.focus();return true;
     }catch{
@@ -35,6 +37,7 @@
       return false;
     }
   }
+  links=window.SirenNativeDocsLinks.create({button:linkButton,editorFor:()=>editor,isCurrent:()=>!disposed&&!paused&&document.body.dataset.sourceReady==='true'&&document.body.dataset.sourceReadonly==='false',onStatus:text=>{status.textContent=text;}});
   const changed=()=>paint();theme.addEventListener('change',changed);media.addEventListener('change',changed);
   retry.addEventListener('click',()=>{void connect();});
   working.addEventListener('click',async()=>{
@@ -44,7 +47,7 @@
     finally{working.disabled=false;}
   });
   window.sirenViewControl.onPrepare(async()=>{
-    paused=true;document.body.inert=true;document.documentElement.style.visibility='hidden';
+    paused=true;links.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
     const current=editor;
     if(!current||document.body.dataset.sourceReady!=='true')return {ok:false};
     const result=await current.flushView();
@@ -57,6 +60,6 @@
     }
     paused=false;document.body.inert=false;document.documentElement.style.visibility='';
   });
-  window.addEventListener('beforeunload',()=>{disposed=true;generation++;clear();media.removeEventListener('change',changed);},{once:true});
+  window.addEventListener('beforeunload',()=>{disposed=true;generation++;links.dispose();clear();media.removeEventListener('change',changed);},{once:true});
   window.sirenNativeCodeView=Object.freeze({connect});
 })();

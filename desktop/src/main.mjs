@@ -15,6 +15,8 @@ import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead,invokeSourceMutation} from './windows/source-bridge.mjs';
 import {NativeWorkingSources} from './windows/working-sources.mjs';
+import {NativeCodeDocs} from './windows/code-docs.mjs';
+import {DocsLinkService} from './windows/docs.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
@@ -338,6 +340,11 @@ let workingSources=null;
 const workingEnabled=grant=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure&&snapshot?.schema===2&&grant?.projectId===selectedId;
 const canOpenWorking=grant=>Boolean(workingEnabled(grant)&&grant.role==='code'&&windowRegistry.isCurrent(grant)&&snapshot.sourceRefs.some(ref=>ref.sourceId===windowRegistry.sourceScope(grant)?.sourceId));
 const sourceReferenceFor=(grant,request)=>workingSources?.isWorking(grant)?workingSources.referenceFor(grant,request):selectedSourceReference(snapshot,windowRegistry,grant,request);
+const canLinkCodeDocs=grant=>workingSources?.isWorking(grant)===true&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing;
+const codeDocsLinkService=new DocsLinkService({
+  projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),
+  sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
+});
 const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
   isReadonly:grant=>['code','docs'].includes(grant.role)&&!workingSources?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
@@ -350,9 +357,19 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
       : scope.action==='read-domain'
         ? !pinTransition && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
         : ['edit','commit'].includes(scope.action)?workingSources?.isWorking(grant)===true
-        : ['edit-domain','flush-domain','docs-link'].includes(scope.action)?false:scope.action==='readonly'?bootstrap.readonly===true:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
+        : scope.action==='docs-link'?canLinkCodeDocs(grant)&&windowRegistry.sourceScope(grant)?.sourceId===scope.sourceId
+        : ['edit-domain','flush-domain'].includes(scope.action)?false:scope.action==='readonly'?bootstrap.readonly===true:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}),
+  docs:{async commitCodeToDocs(input,scope){
+    const result=await codeDocsLinkService.commitCodeToDocs(input,scope);
+    if(!result.ok||!scope.isCurrent())return scope.isCurrent()?result:{ok:false,code:'ACCESS_REFUSED'};
+    try{
+      const current=await projects.readProject(scope.projectId);
+      if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+      snapshot=current;bootstrap={...bootstrap,snapshot:current};return result;
+    }catch{nativeShellFailure=true;return {ok:false,code:'DOCS_LINK_FAILED'};}
+  }},
   primary:new PrimaryPersistence({
     projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context) && canWrite(context)}),
     recovery,onSelected:current=>{snapshot=current;bootstrap={...bootstrap,snapshot:current};},
@@ -360,6 +377,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
 });
 let sourceReads=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId)});
+const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
 const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket)});
 let workspaceBarrier=null;
@@ -625,6 +643,10 @@ ipcMain.handle('siren:source-editors',async(event,method,payload)=>{
    }
   })();
   writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:code-docs',async(event,method,payload)=>{
+  const operation=codeDocs.invoke({event,method,payload});writes.add(operation);
+  try{return await operation;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:docs-read', async (event, method, payload) => {
   const operation=docsReads.invoke({event,method,payload});writes.add(operation);

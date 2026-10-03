@@ -27,7 +27,13 @@ function linkedRow(doc,rowId) {
 // returned. Exact restored content is the same content version by definition.
 export function documentVersion(snapshot,documentId) {
   verifySnapshot(snapshot);
-  return fingerprint({projectId:snapshot.project.id,documentId,document:document(workspaceMetadata(snapshot),documentId)});
+  return documentContentVersion(snapshot.project.id,document(workspaceMetadata(snapshot),documentId));
+}
+// Native metadata catalogs verify their whole snapshot once, then hash each
+// selected document once. The content token stays identical to documentVersion.
+export function documentContentVersion(projectId,doc){
+  if(!validId(projectId)||!entity(doc?.id))throw error('DOCUMENT_REFUSED');
+  return fingerprint({projectId,documentId:doc.id,document:doc});
 }
 export function normalizeDocsLink(input) {
   const data=navigationFields(input,['operationId','documentId','rowId','expectedDocumentVersion','sourceReceipt']);

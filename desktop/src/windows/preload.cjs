@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(
  ...['applyEdit','commitSource'].map(method=>[method,payload=>ipcRenderer.invoke('siren:source-mutations',method,payload,sourceFlushNonce??undefined)])
 ])));
 contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({openWorkingCopy:()=>ipcRenderer.invoke('siren:source-editors','openWorkingCopy',{})}));
+contextBridge.exposeInMainWorld('sirenCodeDocs',Object.freeze(Object.fromEntries(['listTargets','commitCodeToDocs'].map(method=>[method,payload=>ipcRenderer.invoke('siren:code-docs',method,payload)]))));
 const methods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
 const bridge = Object.fromEntries(methods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]));
 bridge.onReady = callback => {

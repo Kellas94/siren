@@ -111,3 +111,7 @@ Integrated execution order: Sources 1–3 → Native Workspaces 1 (registry) →
 ## Self-review and handoff
 
 Spec coverage: metrics/repository/model = Task 2; transactions/migration/recovery = Task 3; editor/find/Python themes = Tasks 1/4; cancellation/index/diff/maps = Task 5; explicit Docs/provenance and full matrix = Task 6. All five Review Focus cases have named owning tests. No implementation starts until the user reviews this plan. Preserve the previously chosen method: implementation here in coordinated batches, independent review of completed boundaries and final package; agents may handle isolated reviews/probes within explicit scope.
+
+## 3 October native production checkpoint
+
+Task4 working copies now have real production native edit/commit/Close/Lock admission, qualified100k/300k; Task6 existing linked-row explicit Docs integration is mounted and qualified with exact source/manifest/other-row/history oracles. Root evidence reviews/2026-10-03-native-code-edit-root-evidence.md and reviews/2026-10-03-native-code-docs-root-evidence.md; frozen692/692 unchanged inputs. Whole tasks are not marked complete: analysis/diff, new unlinked-source target creation, complete input/performance/packaged/independent qualification remain open. Continue execution of remaining approved work.
