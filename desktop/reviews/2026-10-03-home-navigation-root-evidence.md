@@ -1,0 +1,24 @@
+# Home navigation metadata — coordinator implementation evidence
+
+User approved the written Home/native Diagrams plan on 3 October 2026. Root implemented Task 1's isolated native metadata boundary. Home UI and production IPC are not activated by this task.
+
+`src/navigation/contracts.mjs` copies and strictly validates own data fields for project-scoped surface/entity/source-version/hash/cursor/scroll/layout references. It refuses accessors without evaluation, inherited authority, hidden unknown or symbol fields, invalid identifiers/references/numbers and malformed native records. Limits: 64 project locations, 16 layouts per location, 256-character metadata labels and a complete 64-KiB file. The native owner must still resolve entity/source length and current display bounds; this record supplies no grants.
+
+`NavigationStore` stores only `Data/UI/navigation.json`, using existing owned-path, bounded-read and atomic flushed replacement/readback helpers. Intents serialize across store instances within the one native owner. Updating an existing project retains the other 63; over-budget additions are refused before replacement. Corrupt/oversized/non-UTF8 metadata is ignored with a diagnostic and preserved, never silently reset. Permission is rechecked at the final replacement boundary and before outward acknowledgement. Post-rename failure honestly refuses acknowledgement without pretending the durable replacement was rolled back.
+
+TDD retained in ignored `desktop/evidence`:
+
+- `navigation-task1-red.log`: expected missing contracts/store modules, exit 1.
+- First implementation `navigation-task1-green.log`: 6/14 passed, 8 failed. Root cause: `childDirectory` validates lower-case project IDs and rejects fixed `UI`; no path restriction was relaxed.
+- `navigation-task1-green-02.log`: 14/14 passed after using a literal `UI` directory with the same native ownership checks.
+- Added genuine failed-readback/non-UTF8 and caller-mutation-during-await controls. `navigation-task1-final.log`: **30/30 passed**, exit 0, 3017.9553 ms, zero skipped/cancelled/todo. This includes 16 new contract/store tests plus existing project no-op and source-reader suites. The original 407-test CI correction result predates these new tests and is separate.
+
+The real ProjectStore/source fixture's complete `Projects` file hashes, snapshot and revision remain unchanged after metadata recording; fresh store reads preserve the exact immutable source version/hash. Other cases check prior navigation bytes after size/input/access/refusal, exact 64-KiB/+1 reads, 64-project recency, concurrent writes, pre-rename failure and genuine corrupt post-rename readback. No project checkpoint API is invoked. No production Home/Continue claim, editor/native-window/package admission or physical-monitor proof.
+
+Independent diagram audits are separately authored in `2026-10-03-diagram-interaction-inventory.md` and `2026-10-03-diagram-mouse-native-audit.md`. Root inspected their fresh flowchart-edit, C4 and State captures. The native audit withdraws invalid empty-storage invariance receipts; source edits and UI observations retain their narrower scope. Planned capability grouping preserves specialist sources and conditional inspectors; no diagram family has been removed.
+
+Task 2 partial: `ProjectCatalog.list(NavigationRecord)` reads only validated navigation labels/timestamps and owned directory/pointer existence. It never reads a project revision, source, document or current-pointer contents. At most 12 summaries are returned; cold discovery scans at most 4096 directory entries. A pointer's existence is labeled `cached`, never `verified`; cold projects have a generic label and no invented last-visited timestamp. Missing recent projects retain their metadata with `missing` status. A fresh empty data root creates no files or scratch project.
+
+`home-catalog-red.log` preserves expected missing-module RED. `home-metadata-batch.log` is 22/22 GREEN, exit 0, 837.2681 ms, zero skip/cancel/todo: 16 navigation cases plus six catalog cases. The catalog's real fixtures contain oversized invalid pointers with planted private content; listing succeeds without disclosure or byte changes. Production Home service/IPC/import validation and actual lazy startup remain open. This is not an application entry implementation.
+
+Final full frozen unit/build suite: `evidence/home-metadata-suite.log` and start/result JSON, **429/429**, exit 0, 181389.1389 ms, zero fail/skip/cancel/todo. Started `2026-10-03T07:13:37.791Z`, completed `2026-10-03T07:16:39.242Z`; log SHA-256 `8ddf5b2c412a06ea13e531525d7f6449d319e79bb8287ccd8e417188498f1a49`, `changedInputs: []`. Captured recursive src/build/tests, manifest/lock, package builder, frozen baseline and editor notices stayed unchanged. This supersedes 407 only for current local unit/build scope, not historical CI or native/package qualification.

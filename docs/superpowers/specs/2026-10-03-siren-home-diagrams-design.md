@@ -1,6 +1,6 @@
 # SIREN Home, shared navigation and native Diagrams
 
-Date: 3 October 2026. Author: /root. **Written design proposal for review.** The user requested a main entry surface, Continue work, project selection, Diagrams/Docs/Code/Present and diagrams on other monitors. This extends the approved source/native-window work; it does not mark those technical prerequisites complete or admit a new role already.
+Date: 3 October 2026. Author: /root. **Written specification approved by the user on 3 October 2026 ("confirm").** The user requested a main entry surface, Continue work, project selection, Diagrams/Docs/Code/Present and diagrams on other monitors. Approval permits implementation planning; it does not mark technical prerequisites complete or admit a new role already.
 
 ## Purpose and success
 

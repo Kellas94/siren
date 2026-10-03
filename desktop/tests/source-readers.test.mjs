@@ -119,22 +119,35 @@ test('pool capacity cannot be expanded by overwriting exposed configuration', as
 
 test('an expired pending open keeps its capacity until the original I/O settles', async t => {
   const readers = new SourceReaderPool({ maxReaders: 1, ttlMs: 10 });
+  t.after(() => readers.dispose());
   const { projectId, repo } = await fixture(t, { readers });
   const ref = await repo.importSource({ projectId, bytes: Buffer.from('pending') });
   const request = { projectId, sourceId: ref.sourceId, version: 1 };
   // Native authorizer delayed across an epoch transition: genuine async guard,
   // not a stubbed repository/model. Pool must not launch additional loads.
-  let release; const gate = new Promise(resolve => { release = resolve; });
-  repo.canWrite = async () => { await gate; return true; };
+  let release, entered;
+  const gate = new Promise(resolve => { release = resolve; });
+  const guardEntered = new Promise(resolve => { entered = resolve; });
+  // Only the expiry clock is controlled. Repository I/O/model/authorization
+  // remain real, and the original 10-ms TTL is unchanged. A fresh post-settle
+  // disk load need not beat an unrelated 10-ms wall-clock race on a busy runner.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  repo.canWrite = async () => { entered(); await gate; return true; };
   const opening = repo.openReader(request);
   const rejection = assert.rejects(opening, { code: 'SOURCE_READER_CLOSED' });
-  await new Promise(resolve => setTimeout(resolve, 30));
+  await guardEntered;
+  t.mock.timers.tick(11);
   const second = repo.openReader(request).then(reader => { reader.dispose(); return 'ADMITTED'; }, e => e.code);
-  const outcome = await Promise.race([second, new Promise(resolve => setTimeout(() => resolve('ADMITTED_PENDING'), 30))]);
+  // A budget refusal settles before the next native event-loop turn. If the
+  // pending reservation was incorrectly released, the second guard stays gated.
+  const outcome = await Promise.race([second, new Promise(resolve => setImmediate(() => resolve('ADMITTED_PENDING')))]);
   release(); await rejection; await second;
   assert.equal(outcome, 'SOURCE_READER_BUDGET');
   repo.canWrite = () => true;
-  const fresh = await repo.openReader(request); fresh.dispose();
+  const fresh = await repo.openReader(request);
+  assert.equal(fresh.info.sha256, ref.sha256);
+  assert.equal((await fresh.readChunk({ start: 0, maxUnits: 10 })).text, 'pending');
+  fresh.dispose();
 });
 
 test('dispose during the final read guard suppresses already computed private text', async t => {
