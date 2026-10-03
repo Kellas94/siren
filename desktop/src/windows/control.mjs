@@ -56,4 +56,10 @@ export class NativeCodeControl {
     if(this.#disposed)return;this.#disposed=true;
     for(const ticket of [...this.#pending.values()])this.#settle(ticket,fail('CONTROL_DISPOSED'));
   }
+  // Trusted main rollback/failure adapter, not a renderer cancellation channel.
+  cancelView(grant) {
+    const ticket=[...this.#pending.values()].find(item=>item.grant===grant);
+    if(!ticket)return fail('CONTROL_STALE');
+    this.#settle(ticket,fail('VIEW_CANCELLED'));return Object.freeze({ok:true});
+  }
 }

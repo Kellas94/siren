@@ -84,6 +84,8 @@ Headless import boundary now implemented: frozen on-demand hidden entry with sta
 
 ### Task 3: One owner for Home/module transitions and dirty-view retention
 
+Source-roster prerequisite now implemented in isolation: native immutable64-view roster/factory fence, latest selected source/commit reconciliation, private owner quiescence proofs and complete Code-only cover/prepare/drain with bounded deadline. Seventeen new tests plus actual two-EditorView minimized/write-refusal probe qualify this boundary; root report `desktop/reviews/2026-10-03-source-roster-root-evidence.md` records scope and adverse assertions. Unsupported Docs/workspace/presentation roles are explicitly refused, so this is not Task3 completion or production Lock/Quit admission. General Docs/Diagram intents, primary workspace integration, production bridge and Home remain open.
+
 **Files:** Complete approved `desktop/src/windows/coordinator.mjs` and `src/ui/windows/client.js`; extend them for navigation. Create `desktop/src/navigation/router.mjs`, `desktop/tests/{home-transitions,module-routing}.test.mjs`; modify main PIN/selection/close hooks and `windows/{registry,readiness}.mjs`.
 
 **Interfaces:** Consume approved `WorkspaceCoordinator.invoke/subscribe/pause/resume/drain/transition` and view `flushView/pauseView/resumeView`. Extend `transition({kind:'home'|'module',route?})` with same `{ok,code?,epoch}` result; existing lock/select/quit/close-view signatures stay compatible. `WorkspaceRouter({window,registry,coordinator,home,readiness}).navigate(RouteRequest): Promise<TransitionReceipt>`. `runAfterWorkspaceLoad` takes native-only `expectedUrl` with current default preserved; `activateWorkspace({entryUrl})` accepts the finite Home/module entry set only.

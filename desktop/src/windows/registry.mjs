@@ -50,6 +50,9 @@ export class WindowRegistry {
   #closeTimeoutMs;
   #closedCallers = new WeakMap();
   #captures = new WeakMap();
+  #roster = null;
+  #membershipGeneration = 0;
+  #admissionGeneration = 0;
 
   constructor({ createWindow, authorize, closeTimeoutMs = 10000 }) {
     if (typeof createWindow !== 'function' || typeof authorize !== 'function') throw new TypeError('Native factory and authorization required');
@@ -67,6 +70,7 @@ export class WindowRegistry {
   // Main binds the one genuine workspace owner before loading a locked page.
   // This creates no grant. IPC cannot select or substitute the native owner.
   bindWorkspace(window) {
+    if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
     const wc = window?.webContents;
     if (this.#workspace || !window || !wc || !Number.isSafeInteger(window.id) || window.id < 1
       || !Number.isSafeInteger(wc.id) || wc.id < 1 || window.isDestroyed() || wc.isDestroyed()
@@ -79,6 +83,7 @@ export class WindowRegistry {
   // Explicit native activation after a successful PIN unlock/reload. Unlike
   // satellite factories, only the permanently pinned owner can be reactivated.
   activateWorkspace() {
+    if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
     const bound = this.#workspace; const request = normalizeRequest({ role: 'workspace', entityId: null });
     if (!bound || this.#destructionFailed) throw refuse('ACCESS_REFUSED', 'Workspace activation refused');
     const scope = this.#policy(request); const { window, webContents: wc } = bound;
@@ -98,6 +103,8 @@ export class WindowRegistry {
   }
 
   async openView(value) {
+    if(this.#roster)throw refuse('ROSTER_FROZEN','Native view admission paused');
+    const admissionGeneration=this.#admissionGeneration;
     const request = normalizeRequest(value);
     if (request.role === 'workspace' && this.#workspace) throw refuse('REQUEST_REFUSED', 'The native workspace owner is already bound');
     if (this.#destructionFailed) throw refuse('ACCESS_REFUSED', 'Native window destruction still incomplete');
@@ -117,7 +124,7 @@ export class WindowRegistry {
     }
     try {
       const current = this.#policy(request);
-      if (request.role === 'workspace' && this.#workspace || this.#destructionFailed || record.epoch !== this.#epoch || current.projectId !== scope.projectId || current.mode !== scope.mode
+      if (this.#roster || admissionGeneration!==this.#admissionGeneration || request.role === 'workspace' && this.#workspace || this.#destructionFailed || record.epoch !== this.#epoch || current.projectId !== scope.projectId || current.mode !== scope.mode
         || current.access !== scope.access || !scope.entityIds.every(id => current.entityIds.includes(id))
         || !window || !Number.isSafeInteger(window.id) || window.id < 1
         || !webContents || !Number.isSafeInteger(webContents.id) || webContents.id < 1
@@ -142,6 +149,7 @@ export class WindowRegistry {
     const entry = { record, window, request, scope, mainFrameUrl,
       nativeId: window.id, webContents, mainFrame: webContents.mainFrame, webContentsId: webContents.id, revoked: false, listeners: [] };
     this.#views.set(record.windowId, entry);
+    this.#membershipGeneration++;
     const listen = (target, name, callback) => {
       target.on(name, callback);
       entry.listeners.push([target, name, callback]);
@@ -181,7 +189,7 @@ export class WindowRegistry {
   #forget(entry) {
     entry.revoked = true;
     this.#retiredContents.add(entry.webContents);
-    if (this.#views.get(entry.record.windowId) === entry) this.#views.delete(entry.record.windowId);
+    if (this.#views.get(entry.record.windowId) === entry) {this.#views.delete(entry.record.windowId);this.#membershipGeneration++;}
     for (const [target, name, callback] of entry.listeners) target.off(name, callback);
     entry.listeners = [];
   }
@@ -196,6 +204,35 @@ export class WindowRegistry {
     return [...this.#views.values()].filter(entry => this.#live(entry)).map(({ record, window }) => ({
       ...record, state: window.isMinimized() ? 'minimized' : 'active',
     }));
+  }
+
+  // Main-only roster proof: no identifiers from IPC can stand in for captured
+  // native frames. Freeze before the first await; even an older pending factory
+  // is refused after a later release. Closing/crashing a member invalidates it.
+  freezeRoster() {
+    if(this.#roster)throw refuse('ROSTER_BUSY','Native roster already captured');
+    if(this.#destructionFailed)throw refuse('ACCESS_REFUSED','Native destruction incomplete');
+    if(this.#views.size>64)throw refuse('ROSTER_LIMIT','Native roster limit exceeded');
+    const grants=[];
+    for(const entry of this.#views.values()) {
+      const grant=this.capture({sender:entry.webContents,senderFrame:entry.mainFrame});
+      if(!grant)throw refuse('ACCESS_REFUSED','Native roster contains a retired frame');
+      grants.push(grant);
+    }
+    this.#admissionGeneration++;
+    const proof=Object.freeze({epoch:this.#epoch,grants:Object.freeze(grants)});
+    this.#roster={proof,generation:this.#membershipGeneration};return proof;
+  }
+
+  isRosterCurrent(proof) {
+    return Boolean(proof && this.#roster?.proof===proof && !this.#destructionFailed &&
+      proof.epoch===this.#epoch && this.#roster.generation===this.#membershipGeneration &&
+      proof.grants.length===this.#views.size && proof.grants.every(grant=>this.isCurrent(grant)));
+  }
+
+  releaseRoster(proof) {
+    if(!proof || this.#roster?.proof!==proof)return false;
+    this.#roster=null;return true;
   }
 
   focusView(windowId) {

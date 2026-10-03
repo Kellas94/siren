@@ -8,6 +8,7 @@ import {WindowRegistry} from '../../src/windows/registry.mjs';
 import {nativeViewFactory} from '../../src/windows/factory.mjs';
 import {WorkspaceCoordinator} from '../../src/windows/coordinator.mjs';
 import {NativeCodeControl} from '../../src/windows/control.mjs';
+import {NativeSourceBarrier} from '../../src/windows/source-barrier.mjs';
 import {SourceReadService} from '../../src/sources/read-ipc.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
@@ -18,7 +19,7 @@ app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()
 protocol.registerSchemesAsPrivileged([{scheme:'siren',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const hash=b=>createHash('sha256').update(b).digest('hex');
 app.whenReady().then(async()=>{
-  const result={status:'ADVERSE',pid:process.pid,scope:'Isolated real Code view flush/admission/control; no production Lock, Home, Docs save or clean close',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,readers,control;
+  const result={status:'ADVERSE',pid:process.pid,scope:'Isolated real Code flush/control and complete Code roster preparation; no production Lock, Home, Docs save or clean close',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,readers,control,barrier;
   const progress=()=>writeFile(join(root,'native-progress.json'),JSON.stringify(result,null,2));
   try {
     const prepared=JSON.parse(await readFile(join(root,'prepared.json'),'utf8')),data=join(root,'owned-data'),windows=[],repo=new SourceRepository(data),projectId=prepared.project.project.id;
@@ -49,18 +50,35 @@ app.whenReady().then(async()=>{
     result.cases.push({name:'actual minimized EditorView drains two accepted edits through a frame-bound native commit',status:'COMPLETE',renderer,native,sha256:hash(fresh)});await progress();
     fault=async()=>{};owner.resume();assert.equal((await evaluate(0,'ownedCode.resume()')).ok,true);windows[0].restore();
     assert.equal((await evaluate(0,'ownedCode.status()')).paused,false);await wait(0,'document.querySelector(".cm-content").getAttribute("contenteditable")==="true"');
+    windows[1].minimize();assert.equal(windows[1].isMinimized(),true);
+    barrier=new NativeSourceBarrier({registry,owner,control,cover:g=>registry.eventFor(g).sender.send('owned:cover')});
+    const rosterPrepared=await barrier.prepare('owned-all-Code-roster');assert.equal(rosterPrepared.ok,true);assert.equal(barrier.isPrepared(rosterPrepared.proof),true);
+    assert.equal(rosterPrepared.proof.refs.length,2);
+    assert.equal(rosterPrepared.proof.refs.find(ref=>ref.sourceId===prepared.a.sourceId).sha256,hash(fresh));
+    assert.equal(rosterPrepared.proof.refs.find(ref=>ref.sourceId===prepared.b.sourceId).sha256,hash(Buffer.from('second source\n')));
+    for(let i=0;i<2;i++){assert.equal((await evaluate(i,'ownedCode.status()')).paused,true);assert.equal(await evaluate(i,'document.body.dataset.covered'), 'true');}
+    await assert.rejects(registry.openView({role:'code',entityId:prepared.a.sourceId}),{code:'ROSTER_FROZEN'});
+    assert.equal(barrier.isPrepared({...rosterPrepared.proof}),false);assert.equal(barrier.release(rosterPrepared.proof),true);assert.equal(barrier.isPrepared(rosterPrepared.proof),false);
+    for(let i=0;i<2;i++){assert.equal((await evaluate(i,'ownedCode.resume()')).ok,true);await evaluate(i,'document.body.dataset.covered="false";document.body.style.visibility="visible"');}
+    barrier.dispose();barrier=null;windows[1].restore();
+    assert.deepEqual(await new ProjectStore(data).readProject(projectId),prepared.project);
+    result.cases.push({name:'every real Code frame including minimized view covers and seals before exact latest source proof; new admission refused',status:'COMPLETE',refs:rosterPrepared.proof.refs});await progress();
     let failureEnter,failureRelease;const failureEntered=new Promise(resolve=>{failureEnter=resolve;}),failureGate=new Promise(resolve=>{failureRelease=resolve;});
     windows[1].focus();fault=async()=>{failureEnter();await failureGate;throw Object.assign(Error('Owned write refusal'),{code:'SOURCE_WRITE_FAILED'});};await evaluate(1,'ownedCode.select(0)');await windows[1].webContents.insertText('Retained');await failureEntered;
-    owner.pause('owned-failed-preparation');const failurePreparing=control.flushView(grant(1));await wait(1,'ownedCode.status().paused');failureRelease();const nativeFailed=await failurePreparing,failed=await evaluate(1,'ownedCode.lastPrepared');assert.equal(nativeFailed.code,'VIEW_FLUSH_FAILED');assert.equal(failed.ok,false);assert.equal(failed.code,'SOURCE_WRITE_FAILED');
+    barrier=new NativeSourceBarrier({registry,owner,control,cover:g=>registry.eventFor(g).sender.send('owned:cover')});
+    const failurePreparing=barrier.prepare('owned-failed-roster');await wait(1,'ownedCode.status().paused');failureRelease();const nativeFailed=await failurePreparing,failed=await evaluate(1,'ownedCode.lastPrepared');assert.equal(nativeFailed.code,'VIEW_FLUSH_FAILED');assert.equal(failed.ok,false);assert.equal(failed.code,'SOURCE_WRITE_FAILED');
+    assert.equal(barrier.isPrepared(nativeFailed.proof),false);await assert.rejects(registry.openView({role:'code',entityId:prepared.a.sourceId}),{code:'ROSTER_FROZEN'});
     const status=await evaluate(1,'ownedCode.status()');assert.equal(status.dirty,true);assert.equal(status.fenced,true);assert.equal((await evaluate(1,'ownedCode.resume()')).ok,false);
     assert.equal(await evaluate(1,'document.querySelector(".cm-content").textContent.startsWith("Retained")'),true);
     assert.deepEqual(await new SourceRepository(data).exportSource({projectId,sourceId:prepared.b.sourceId,version:1}),Buffer.from('second source\n'));
     assert.deepEqual(await new ProjectStore(data).readProject(projectId),prepared.project);
-    result.cases.push({name:'real native write refusal preserves visible optimistic text and refuses preparation',status:'COMPLETE',code:failed.code});await progress();
+    assert.equal((await evaluate(0,'ownedCode.status()')).paused,true);assert.equal(registry.isCurrent(grant(0)),true);
+    result.cases.push({name:'real native write refusal preserves optimistic text, covers both frames and refuses the complete Code roster',status:'COMPLETE',code:failed.code});await progress();
+    barrier.dispose();barrier=null;
     control.dispose();control=new NativeCodeControl({registry,owner,send:()=>{}});const retired=grant(1),retiring=control.flushView(retired),contents=windows[1].webContents,destruction=contents.isDestroyed()?Promise.resolve():new Promise(resolve=>contents.once('destroyed',resolve));windows[1].destroy();assert.equal((await retiring).code,'VIEW_RETIRED');
     await Promise.race([destruction,new Promise((_,reject)=>{const timer=setTimeout(()=>reject(Error('OWNED_DESTRUCTION_TIMEOUT')),10000);timer.unref();})]);assert.equal(contents.isDestroyed(),true);assert.throws(()=>owner.beginViewFlush(retired),{code:'ACCESS_REFUSED'});
     const remaining=windows[0].webContents,remainingDestroyed=remaining.isDestroyed()?Promise.resolve():new Promise(resolve=>remaining.once('destroyed',resolve));registry.invalidateEpoch();await remainingDestroyed;assert.equal(registry.isCurrent(retired),false);assert.equal(BrowserWindow.getAllWindows().length,0);
     result.cases.push({name:'actual renderer retirement revokes flush authority; originals and Docs remain intact',status:'COMPLETE'});result.status='COMPLETE';
   }catch(cause){result.error={message:cause.message,code:cause.code,stack:cause.stack};}
-  finally {control?.dispose();readers?.dispose();try{registry?.invalidateEpoch();}catch{}for(const w of BrowserWindow.getAllWindows())try{w.destroy();}catch{}result.remainingWindows=BrowserWindow.getAllWindows().length;result.finished=new Date().toISOString();await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:result.status,error:result.error?.message}));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
+  finally {barrier?.dispose();control?.dispose();readers?.dispose();try{registry?.invalidateEpoch();}catch{}for(const w of BrowserWindow.getAllWindows())try{w.destroy();}catch{}result.remainingWindows=BrowserWindow.getAllWindows().length;result.finished=new Date().toISOString();await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:result.status,error:result.error?.message}));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
 });

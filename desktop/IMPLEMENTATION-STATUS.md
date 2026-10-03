@@ -1,3 +1,4 @@
+Latest Code-roster prerequisite (3 October 2026): immutable native roster and pending-factory fence, latest selected source/commit reconciliation, private quiescence proof and bounded complete Code-only preparation. Full frozen local suite **538/538**, exit0, zero skipped/cancelled/todo, captured inputs unchanged. Actual two-EditorView four-group probe and source-owner/Code-Docs native regressions passed with original hashes and no owned processes left. Root evidence: `reviews/2026-10-03-source-roster-root-evidence.md`. Prior hosted CI34/Launcher25 succeeded for local203bc5c; they do not qualify this later batch. Production Home, primary workspace/general Docs/Diagram barriers, source/editor mounting and all-view Lock/Quit remain OPEN. Existing Code/Docs native entries are still shells; no release admission.
 # Desktop foundation — development evidence
 
 ## Current: source-backed editor and Home design, 3 October 2026

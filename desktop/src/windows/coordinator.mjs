@@ -13,6 +13,7 @@ export class WorkspaceCoordinator {
   #registry;#sources;#docs;#access;#tail=Promise.resolve();#pending=new Set();
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
   #flushes=new Map();#pauseGeneration=0;
+  #activityGeneration=0;#quiescence=new WeakMap();
   constructor({sources,docs,registry,access,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
@@ -51,6 +52,7 @@ export class WorkspaceCoordinator {
     const nonce=randomUUID(),event=this.#registry.eventFor(grant);
     if(!event)throw error('ACCESS_REFUSED');
     this.#flushes.set(nonce,{grant,event,generation:this.#pauseGeneration,maxOperations,maxBytes,bytes:0,operations:[],sealed:false});
+    this.#activityGeneration++;
     return nonce;
   }
   async finishViewFlush(grant,nonce) {
@@ -95,6 +97,7 @@ export class WorkspaceCoordinator {
     } else if(this.#paused)return Promise.resolve(fail('WORKSPACE_PAUSED'));
     if(this.#pending.size>=this.#maxPending || this.#bytes+bytes>this.#maxBytes)return Promise.resolve(fail('OWNER_BUDGET'));
     if(ticket)ticket.bytes+=bytes;
+    this.#activityGeneration++;
     this.#bytes+=bytes;
     const operation=this.#tail.catch(()=>{}).then(async()=>{
       if(!current())return fail('ACCESS_REFUSED');
@@ -124,6 +127,55 @@ export class WorkspaceCoordinator {
       const batch=[...this.#pending];receipts.push(...await Promise.all(batch));
     }
     return receipts;
+  }
+  captureQuiescence() {
+    if(!this.#paused || this.#pending.size || this.#flushes.size)throw error('OWNER_NOT_QUIESCENT');
+    const proof=Object.freeze({});this.#quiescence.set(proof,{pause:this.#pauseGeneration,activity:this.#activityGeneration});return proof;
+  }
+  isQuiescent(proof) {
+    const scope=proof && this.#quiescence.get(proof);
+    return Boolean(scope && this.#paused && !this.#pending.size && !this.#flushes.size && scope.pause===this.#pauseGeneration && scope.activity===this.#activityGeneration);
+  }
+  // Main-only final source proof after every captured view has sealed and the
+  // owner has drained. Historical commits remain valid history, but cannot
+  // represent a newer selected draft. No source text or paths are returned.
+  async reconcileSourceReceipts(grants,receipts,isCurrent) {
+    if(!this.#paused || this.#pending.size || this.#flushes.size)return fail('OWNER_NOT_QUIESCENT');
+    if(!Array.isArray(grants)||!grants.length||grants.length>64||!Array.isArray(receipts)||receipts.length>4224||typeof isCurrent!=='function')return fail('REQUEST_REFUSED');
+    const generation=this.#pauseGeneration,activity=this.#activityGeneration,projectId=grants[0]?.projectId;
+    const current=()=>{try{return this.#paused && generation===this.#pauseGeneration && activity===this.#activityGeneration && !this.#pending.size && !this.#flushes.size &&
+      isCurrent()===true && grants.every(grant=>grant.projectId===projectId && this.#registry.isCurrent(grant) && ['workspace','code'].includes(grant.role));}catch{return false;}};
+    if(!current())return fail('ACCESS_REFUSED');
+    if(receipts.some(receipt=>receipt?.ok!==true))return fail('SOURCE_FLUSH_FAILED');
+    const sources=new Map();
+    for(const receipt of receipts) {
+      if(!['draft','committed','recovery-degraded'].includes(receipt.durability))continue;
+      if(typeof receipt.sourceId!=='string'||!Number.isSafeInteger(receipt.version)||receipt.version<1||typeof receipt.operationId!=='string'||! /^[a-f0-9]{64}$/.test(receipt.sha256))return fail('SOURCE_PROOF_FAILED');
+      const previous=sources.get(receipt.sourceId);
+      if(!previous || receipt.version>previous.version)sources.set(receipt.sourceId,receipt);
+      else if(receipt.version===previous.version) {
+        if(receipt.sha256!==previous.sha256)return fail('SOURCE_PROOF_FAILED');
+        if(receipt.durability!=='draft')sources.set(receipt.sourceId,receipt);
+      }
+    }
+    const refs=[];
+    if(!sources.size || grants.some(grant=>grant.role==='code' && grant.entityIds.some(sourceId=>!sources.has(sourceId))))return fail('SOURCE_NOT_COMMITTED');
+    try {
+      for(const receipt of sources.values()) {
+        if(receipt.durability==='draft')return fail('SOURCE_NOT_COMMITTED');
+        const grant=grants.find(grant=>this.#current(grant,receipt.sourceId));if(!grant)return fail('ACCESS_REFUSED');
+        const repository=this.#sources(Object.freeze({grant,canWrite:context=>context?.action==='read' && context.projectId===projectId && context.sourceId===receipt.sourceId && current() && this.#access(grant,{action:'read',sourceId:receipt.sourceId})===true}));
+        if(!current())return fail('ACCESS_REFUSED');
+        const latest=await repository.getMetrics({projectId,sourceId:receipt.sourceId});
+        if(!current())return fail('ACCESS_REFUSED');
+        if(latest.version!==receipt.version || latest.sha256!==receipt.sha256)return fail('SOURCE_VERSION_CHANGED');
+        const verified=await repository.getCommitReceipt({projectId,sourceId:receipt.sourceId,expectedVersion:receipt.version,operationId:receipt.operationId,sha256:receipt.sha256});
+        if(!current())return fail('ACCESS_REFUSED');
+        if(verified?.ok!==true || verified.sourceId!==receipt.sourceId || verified.version!==receipt.version || verified.sha256!==receipt.sha256 || !['committed','recovery-degraded'].includes(verified.durability))return fail('SOURCE_PROOF_FAILED');
+        refs.push(Object.freeze({sourceId:receipt.sourceId,version:receipt.version,sha256:receipt.sha256,durability:verified.durability}));
+      }
+    } catch {return fail(current()?'SOURCE_PROOF_FAILED':'ACCESS_REFUSED');}
+    return current()?Object.freeze({ok:true,refs:Object.freeze(refs)}):fail('ACCESS_REFUSED');
   }
   #subscriptionCurrent(grant,entityId,domain) {
     try {return this.#registry.isCurrent(grant) && grant.entityIds.includes(entityId) &&
