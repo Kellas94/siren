@@ -10,6 +10,20 @@ const result = { completed: false, scope: 'Actual local PIN Settings/change flow
 let driver;
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
+  result.ownedPid = driver.pid; result.phase = 'startup'; result.commands = [];
+  // Record only controlled stage/method labels, never PINs, expressions,
+  // bootstrap snapshots or project data. Original assertions/deadlines remain.
+  let commandSequence = 0;
+  for (const method of ['evaluate', 'waitFor', 'click', 'send', 'screenshot']) {
+    const execute = driver[method].bind(driver);
+    driver[method] = async (...args) => {
+      const command = { sequence: ++commandSequence, phase: result.phase, method, started: new Date().toISOString() };
+      result.commands.push(command); if (result.commands.length > 32) result.commands.shift();
+      await writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
+      try { const value = await execute(...args); command.finished = new Date().toISOString(); return value; }
+      catch (cause) { command.error = cause.message; result.failedCommand ??= { ...command }; throw cause; }
+    };
+  }
   await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), null);
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
@@ -24,6 +38,7 @@ try {
   const snapshot = await driver.evaluate('window.sirenDesktopBootstrap.snapshot');
   assert.ok(snapshot?.project?.id);
   const openChange = async () => {
+    result.phase = 'open-change-settings';
     await driver.click('#desktopOptions'); await driver.click('#desktopPinSettings');
     await driver.waitFor('document.getElementById("desktopPinSettingsPanel")?.open');
     await driver.waitFor('Number(getComputedStyle(document.getElementById("desktopPinSettingsPanel")).opacity)>.99');
@@ -36,17 +51,20 @@ try {
   await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
   assert.equal(await driver.evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches'), false);
   for (const theme of ['dark', 'light']) {
+    result.phase = `${theme}:select-theme`;
     await driver.click('#themeMenuButton');
     await driver.waitFor(`(()=>{const e=document.querySelector('[data-theme-value="${theme}"]'),r=e?.getBoundingClientRect();return !!r&&r.width>0&&e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})()`);
     await driver.click(`[data-theme-value="${theme}"]`);
     await driver.waitFor(`document.body.dataset.theme==='${theme}'`);
     await openChange();
+    result.phase = `${theme}:toast-isolation`;
     // Reproduce the existing workspace toast entering the browser top layer
     // above a modal. Synthetic notification only; no project content is read.
     await driver.evaluate(`(()=>{const t=document.getElementById('toast');t.textContent='Synthetic workspace notification';t.classList.add('is-visible');t.showPopover();})()`);
     await driver.waitFor('Number(getComputedStyle(document.getElementById("toast")).opacity)>.99');
     assert.equal(await driver.evaluate('document.getElementById("toast").checkVisibility({checkOpacity:true,checkVisibilityCSS:true})'), false, 'Workspace notifications must not cover the access preview');
     await driver.evaluate('document.getElementById("toast").hidePopover()');
+    result.phase = `${theme}:layout-and-motion`;
     const state = await driver.evaluate(`(()=>{const e=document.getElementById('desktopAccessScreen'),r=e.getBoundingClientRect();return {rect:r.toJSON(),w:innerWidth,h:innerHeight,fields:[...e.querySelectorAll('input')].map(i=>({id:i.id,type:i.type})),decorative:e.querySelector('.desktop-access-scene')?.getAttribute('aria-hidden'),focused:document.activeElement?.id,background:getComputedStyle(e).backgroundColor,animated:e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length};})()`);
     assert.equal(state.rect.x, 0); assert.equal(state.rect.y, 0);
     assert.equal(state.rect.width, state.w); assert.equal(state.rect.height, state.h);
@@ -56,19 +74,24 @@ try {
     assert.equal(await driver.evaluate('document.querySelectorAll(".desktop-pin-key[data-digit]").length'), 10);
     assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").dataset.stage'), 'current');
     assert.ok(state.animated > 0); result[theme] = state;
+    result.phase = `${theme}:wrong-current-pin`;
     await driver.click('#desktopAccessPin'); await driver.send('Input.insertText', { text: '0000' });
     // Full-length entry auto-submits through the real native verifier.
     await driver.waitFor('/incorrect/i.test(document.getElementById("desktopAccessStatus").textContent) && document.getElementById("desktopAccessPin").value===""');
     assert.equal(await driver.evaluate('document.getElementById("desktopAccessPin").value'), '');
+    result.phase = `${theme}:session-authority-after-refusal`;
     assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true, 'Wrong current PIN must not revoke the existing editing session');
     assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").dataset.stage'), 'current');
     assert.deepEqual(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), snapshot);
     assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
+    result.phase = `${theme}:refusal-screenshot`;
     await driver.screenshot(join(evidence, `access-${theme}.png`));
+    result.phase = `${theme}:correct-current-pin`;
     for (const digit of '4826') await driver.click(`.desktop-pin-key[data-digit="${digit}"]`);
     await driver.waitFor('document.getElementById("desktopAccessScreen").dataset.stage==="new"');
     assert.equal(await driver.evaluate('document.getElementById("desktopAccessPin").value'), '');
     assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
+    result.phase = `${theme}:cancel-change`;
     // Cancel before selecting a replacement PIN; this fixture retains 4826.
     await driver.click('#desktopAccessBack');
     await driver.waitFor('!document.getElementById("desktopAccessScreen")');
@@ -77,13 +100,14 @@ try {
   }
   await driver.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await openChange();
+  result.phase = 'reduced-motion-and-escape';
   assert.equal(await driver.evaluate('document.getElementById("desktopAccessScreen").getAnimations({subtree:true}).filter(a=>a.playState==="running").length'), 0);
   await driver.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
   await driver.waitFor('!document.getElementById("desktopAccessScreen")');
   assert.equal(await driver.evaluate('document.activeElement?.id'), 'desktopOptions');
   assert.deepEqual(await driver.evaluate('window.sirenDesktop.getAccess()'), before);
   assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
-  result.reducedMotion = true; result.completed = true;
+  result.reducedMotion = true; result.phase = 'complete'; result.completed = true;
   console.log(JSON.stringify({ completed: true, evidence }));
 } catch (error) {
   result.error = String(error.stack || error); if (driver) await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});

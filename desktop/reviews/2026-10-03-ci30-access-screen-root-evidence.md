@@ -1,0 +1,15 @@
+# CI30 access-screen failure — root investigation
+
+Author: root implementer, 3 October 2026. Investigation and diagnostic changes, not an independent approval or a claim that the hosted failure is fixed.
+
+Actual private DesktopCI30 run37112867194/job111174019944 on remote97873f91a5d8e5f266428ae9ebf66fce3f00efff concluded FAILURE. The unit step passed492/492 (identity2 plus490), and guarded renderer build succeeded. Native behavior failed only access-screen with `CDP timeout: Runtime.evaluate` at the driver's existing20-second command deadline. The other twelve scheduled native groups reported completion, including headless import. Downstream package identity was SKIPPED, never PASS. LauncherCI21 succeeded separately.
+
+Downloaded private artifact11271096450 with exact verified ZIP SHA-256 `7e95f48cb8f9734ae5bc7246c8a4bddcfdb77c33c290470b06ff8a90a4fc2146`. Bounded archive reads inspected only access-screen's owned synthetic record/log/failure screenshot. No arbitrary archive path extraction, baseline overwrite, credentials or source exports. Normalized decoded log SHA-256 `dab4b9357e20be2d3f2bf61d0bb26278d676cae4a35d8e212407c431e5365652`; access result `602d1d369929845484369165bde7152e69fe57c8d357210bc3873fb675b73af5`.
+
+The original result is completed:false with dark and light layout/motion observations; the screenshot shows the light current-PIN screen with “PIN incorrect”. The exact timed-out Runtime.evaluate expression was not retained. Renderer hang, bridge/host scheduling and observation failure remain unconfirmed; the screenshot alone cannot choose a cause. No timeout was increased, oracle removed or historic result relabelled.
+
+The original unchanged probe ran locally to completion at `evidence/access-screen-2026-10-03T09-39-43.200Z`, exit0, result SHA-256 `05d47b76cc6b5bed1c9d9acedd9c4ce04b28452a13120928408e7079c5f5560e`. This narrower local result does not prove that hosted behavior is fixed.
+
+The probe now retains controlled phase/method/time labels before each observed command, a bounded32-command history and the first failed command. It records no PIN, expression, project snapshot or native response data. Existing product code,20-second CDP/30-second UI deadlines and all assertions remain unchanged. Actual diagnostic probe ran locally at `evidence/access-screen-2026-10-03T09-41-43.657Z`, exit0/completed:true through dark/light wrong/correct current-PIN, cancellation, session authority and reduced-motion Escape; result SHA-256 `fcc94227e638558b80ffbfd6df8a8853868470d59527b99b60697a507cbd0829`. Owned PID48500 exited; read-only census found no remaining synthetic access-screen Electron processes.
+
+Last full local497/497 frozen product/unit/build result predates this diagnostic-only native probe edit. Product files are unchanged by it; the modified probe has its own actual native result. HostedCI31 on remote90e36618 is a separate pending result; LauncherCI22 succeeded. New hosted evidence is required before claiming access-screen qualification or admitting a package. The native failure remains open for exact-stage diagnosis.
