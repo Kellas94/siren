@@ -1,0 +1,9 @@
+# Hosted CI33 timeout observation — root investigation
+
+Author: root implementer, not independent approval. Actual private Actions run37117167752/job111186083612 at remoteae0e3459/local26ee914 completed FAILURE. Native identity2/2 passed; remaining511 tests passed510, failed1: `tests/oidc.test.mjs:43`, actual180-second callback deadline. Assertion `Date.now() - started >= 180000` was false; reported whole-test duration180068.1326ms. Guarded renderer/native/package stages SKIPPED. Launcher24 run37117167745 SUCCESS.
+
+The existing test uses calendar-clock elapsed time, while the product timeout is scheduled by setTimeout with unchanged CALLBACK_TIMEOUT_MS180000. No measured monotonic callback duration or wall-clock delta was logged in the failed run, so calendar adjustment/rounding versus genuinely early timer resolution cannot be distinguished from that artifact. Root does not label it a confirmed false positive or a product fix.
+
+Next correction keeps the real180-second wait, strict180000 lower bound, timeout rejection and actually closed loopback listener assertion. It measures elapsed duration with performance.now and records both elapsed clocks in the assertion diagnostic. No product authentication logic or timeout, PKCE/state/nonce/audience/signature validation or wrapper deadline is relaxed. New inputs require their own frozen qualification; prior CI33 remains FAILED.
+
+The test-only correction is implemented. Final frozen suite521/521exit0, zerochangedinputs/skips/cancels/todo, including the real180-second rejection/minimum/closed-listener test. Log `45b107013ec118350b17048d7b1f1f136321eed38b9bef799528d40fb2791ad9`; `evidence/view-control-clock-suite-result.json`. Previous local pre-correction521 result remains separate. No new hosted outcome inferred and no product cause-fix claimed.

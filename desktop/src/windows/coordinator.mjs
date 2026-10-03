@@ -35,7 +35,7 @@ export class WorkspaceCoordinator {
     try {
       const event=this.#registry.eventFor(grant);
       return this.#paused && ticket.generation===this.#pauseGeneration && this.#registry.isCurrent(ticket.grant) &&
-        this.#registry.isCurrent(grant) && event?.sender===ticket.event.sender && event?.senderFrame===ticket.event.senderFrame;
+        !ticket.cancelled && this.#registry.isCurrent(grant) && event?.sender===ticket.event.sender && event?.senderFrame===ticket.event.senderFrame;
     } catch {return false;}
   }
   // Main-only issuance. The control transport may disclose the nonce solely to
@@ -65,6 +65,13 @@ export class WorkspaceCoordinator {
     const final=new Map();operations.forEach((operation,index)=>final.set(operation.sourceId,{method:operation.method,receipt:receipts[index]}));
     if(!final.size || [...final.values()].some(item=>item.method!=='commitSource' || !['committed','recovery-degraded'].includes(item.receipt.durability)))return fail('FLUSH_NOT_COMMITTED');
     return Object.freeze({ok:true,receipts});
+  }
+  cancelViewFlush(grant,nonce) {
+    const ticket=typeof nonce==='string'?this.#flushes.get(nonce):null;
+    // The original private native capture may retire before its main-owned
+    // deadline cleanup. A cloned capture or another frame cannot cancel it.
+    if(!ticket || !(ticket.grant===grant || this.#flushCurrent(grant,ticket)))return fail('FLUSH_REFUSED');
+    ticket.cancelled=true;this.#flushes.delete(nonce);return Object.freeze({ok:true});
   }
   invoke(grant,intent,flushNonce) {
     let kind,method,payload,bytes;

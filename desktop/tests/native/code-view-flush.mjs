@@ -23,12 +23,16 @@ window.ownedCode.start=()=>(async()=>{
   const opened=await editor.open(ref);if(!opened.ok)throw Error(opened.code);
   Object.assign(window.ownedCode,{ready:true,status:editor.getStatus,select:editor.select,flushView:ticket=>{nonce=ticket;return editor.flushView();},
     resume:()=>{nonce=undefined;return editor.resumeView();},dispose:editor.dispose});
+  window.ownedSource.onPrepare(async request=>{
+    const result=await window.ownedCode.flushView(request.nonce);window.ownedCode.lastPrepared=result;
+    return result.ok?{requestId:request.requestId,ok:true}:{requestId:request.requestId,ok:false,code:result.code};
+  });
 })().catch(error=>window.ownedCode.error=error.message);
 `;
 if(/<\/script/i.test(script))throw Error('PROBE_SCRIPT_CLOSE_REFUSED');
 const csp="default-src 'none'; script-src 'sha256-"+createHash('sha256').update(script).digest('base64')+"'; style-src 'unsafe-inline'; base-uri 'none'; object-src 'none'; form-action 'none'";
 await writeFile(join(root,'generated/windows/code.html'),`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>Owned Code flush probe</title><body style="margin:0"><main id="editor" style="height:100vh"></main><script>${script}</script>`);
-await writeFile(join(root,'owned-preload.cjs'),`const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('ownedSource',Object.freeze({fixture:()=>ipcRenderer.invoke('owned:fixture'),invoke:(method,payload,nonce)=>ipcRenderer.invoke('owned:source',method,payload,nonce)}));`);
+await writeFile(join(root,'owned-preload.cjs'),`const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('ownedSource',Object.freeze({fixture:()=>ipcRenderer.invoke('owned:fixture'),invoke:(method,payload,nonce)=>ipcRenderer.invoke('owned:source',method,payload,nonce),onPrepare:callback=>ipcRenderer.on('owned:prepare',(_event,request)=>{Promise.resolve(callback(request)).then(reply=>ipcRenderer.invoke('owned:ack',reply)).catch(()=>{});})}));`);
 await writeFile(join(root,'prepared.json'),JSON.stringify({inputs,build,project,a,b,htmlSHA256:hash(await readFile(join(root,'generated/windows/code.html'))),preloadSHA256:hash(await readFile(join(root,'owned-preload.cjs')))},null,2));
 const child=spawn(join(desktop,'node_modules/electron/dist/electron.exe'),[join(desktop,'tests/native/code-view-flush-app.mjs'),'--siren-flush-fixture='+root],{cwd:desktop,windowsHide:true,env:{...process.env,ELECTRON_RUN_AS_NODE:undefined},stdio:['ignore','pipe','pipe']});
 let logs='',timedOut=false;child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=>logs+=b);const timer=setTimeout(()=>{timedOut=true;child.kill();},120000);

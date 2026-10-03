@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {WindowRegistry} from '../../src/windows/registry.mjs';
 import {nativeViewFactory} from '../../src/windows/factory.mjs';
 import {WorkspaceCoordinator} from '../../src/windows/coordinator.mjs';
+import {NativeCodeControl} from '../../src/windows/control.mjs';
 import {SourceReadService} from '../../src/sources/read-ipc.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
@@ -17,7 +18,7 @@ app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()
 protocol.registerSchemesAsPrivileged([{scheme:'siren',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const hash=b=>createHash('sha256').update(b).digest('hex');
 app.whenReady().then(async()=>{
-  const result={status:'ADVERSE',pid:process.pid,scope:'Isolated real Code view flush/admission; no production Lock, Home, Docs save or clean close',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,readers;
+  const result={status:'ADVERSE',pid:process.pid,scope:'Isolated real Code view flush/admission/control; no production Lock, Home, Docs save or clean close',started:new Date().toISOString(),cases:[],versions:process.versions};let registry,owner,readers,control;
   const progress=()=>writeFile(join(root,'native-progress.json'),JSON.stringify(result,null,2));
   try {
     const prepared=JSON.parse(await readFile(join(root,'prepared.json'),'utf8')),data=join(root,'owned-data'),windows=[],repo=new SourceRepository(data),projectId=prepared.project.project.id;
@@ -26,6 +27,8 @@ app.whenReady().then(async()=>{
     registry=new WindowRegistry({authorize:()=>({projectId,mode:'normal',access:'write',entityIds:[prepared.a.sourceId,prepared.b.sourceId]}),createWindow:nativeViewFactory({BrowserWindow,displays:()=>[{id:1,primary:true,workArea:{x:0,y:0,width:1200,height:800}}],preload:join(root,'owned-preload.cjs'),onCreated:w=>windows.push(w)})});
     let fault=async()=>{};const factory=({canWrite,readers})=>new SourceRepository(data,{canWrite,...(readers?{readers}:{}),fault:phase=>fault(phase)});
     owner=new WorkspaceCoordinator({registry,sources:factory,access:()=>true});readers=new SourceReadService({registry,repositoryFactory:factory,access:()=>true});
+    control=new NativeCodeControl({registry,owner,send:(event,request)=>{result.lastRequest=request;event.sender.send('owned:prepare',request);}});
+    ipcMain.handle('owned:ack',(event,payload)=>control.acknowledge(event,payload));
     ipcMain.handle('owned:fixture',async event=>{const grant=registry.capture(event);if(!registry.isCurrent(grant))return {ok:false,code:'ACCESS_REFUSED'};const ref=grant.entityIds[0];const m=await repo.getMetrics({projectId,sourceId:ref});return {sourceId:m.sourceId,version:m.version,sha256:m.sha256};});
     ipcMain.handle('owned:source',(event,method,payload,nonce)=>['openRead','readChunk','closeRead'].includes(method)?readers.invoke({event,method,payload}):owner.invoke(registry.capture(event),{kind:'source',method,payload},nonce));
     await registry.openView({role:'code',entityId:prepared.a.sourceId});await registry.openView({role:'code',entityId:prepared.b.sourceId});
@@ -36,29 +39,28 @@ app.whenReady().then(async()=>{
     let enter,release,held=false;const entered=new Promise(resolve=>{enter=resolve;});fault=async()=>{if(!held){held=true;enter();await new Promise(resolve=>{release=resolve;});}};
     windows[0].focus();await evaluate(0,'ownedCode.select(0)');await windows[0].webContents.insertText('X');await entered;await windows[0].webContents.insertText('Y');
     assert.equal((await evaluate(0,'ownedCode.status()')).pending,2);
-    owner.pause('owned-lock-preparation');const ticket=owner.beginViewFlush(grant(0));
-    const preparing=evaluate(0,`ownedCode.flushView(${JSON.stringify(ticket)})`);await wait(0,'ownedCode.status().paused');
+    owner.pause('owned-lock-preparation');const preparing=control.flushView(grant(0)),ticket=result.lastRequest.nonce;await wait(0,'ownedCode.status().paused');
     await wait(0,'document.querySelector(".cm-content").getAttribute("contenteditable")==="false"');
     windows[0].minimize();assert.equal(windows[0].isMinimized(),true);
     const stolen=await evaluate(1,`ownedSource.invoke('commitSource',${JSON.stringify({sourceId:prepared.b.sourceId,expectedVersion:1,operationId:'foreign-frame-ticket'})},${JSON.stringify(ticket)})`);assert.equal(stolen.code,'FLUSH_REFUSED');
-    release();const renderer=await preparing;assert.equal(renderer.ok,true);assert.equal(renderer.sourceReceipt.version,3);
-    const native=await owner.finishViewFlush(grant(0),ticket);assert.equal(native.ok,true);assert.equal(native.receipts.at(-1).durability,'committed');assert.deepEqual(native.receipts.at(-1),renderer.sourceReceipt);
+    release();const native=await preparing,renderer=await evaluate(0,'ownedCode.lastPrepared');assert.equal(renderer.ok,true);assert.equal(renderer.sourceReceipt.version,3);
+    assert.equal(native.ok,true);assert.equal(native.receipts.at(-1).durability,'committed');assert.deepEqual(native.receipts.at(-1),renderer.sourceReceipt);
     const fresh=await new SourceRepository(data).exportSource({projectId,sourceId:prepared.a.sourceId,version:3});assert.deepEqual(fresh,Buffer.from('XYa😀b\r\nc'));
     result.cases.push({name:'actual minimized EditorView drains two accepted edits through a frame-bound native commit',status:'COMPLETE',renderer,native,sha256:hash(fresh)});await progress();
     fault=async()=>{};owner.resume();assert.equal((await evaluate(0,'ownedCode.resume()')).ok,true);windows[0].restore();
     assert.equal((await evaluate(0,'ownedCode.status()')).paused,false);await wait(0,'document.querySelector(".cm-content").getAttribute("contenteditable")==="true"');
     let failureEnter,failureRelease;const failureEntered=new Promise(resolve=>{failureEnter=resolve;}),failureGate=new Promise(resolve=>{failureRelease=resolve;});
     windows[1].focus();fault=async()=>{failureEnter();await failureGate;throw Object.assign(Error('Owned write refusal'),{code:'SOURCE_WRITE_FAILED'});};await evaluate(1,'ownedCode.select(0)');await windows[1].webContents.insertText('Retained');await failureEntered;
-    owner.pause('owned-failed-preparation');const failedTicket=owner.beginViewFlush(grant(1)),failurePreparing=evaluate(1,`ownedCode.flushView(${JSON.stringify(failedTicket)})`);await wait(1,'ownedCode.status().paused');failureRelease();const failed=await failurePreparing;assert.equal(failed.ok,false);assert.equal(failed.code,'SOURCE_WRITE_FAILED');
-    assert.equal((await owner.finishViewFlush(grant(1),failedTicket)).ok,false);const status=await evaluate(1,'ownedCode.status()');assert.equal(status.dirty,true);assert.equal(status.fenced,true);assert.equal((await evaluate(1,'ownedCode.resume()')).ok,false);
+    owner.pause('owned-failed-preparation');const failurePreparing=control.flushView(grant(1));await wait(1,'ownedCode.status().paused');failureRelease();const nativeFailed=await failurePreparing,failed=await evaluate(1,'ownedCode.lastPrepared');assert.equal(nativeFailed.code,'VIEW_FLUSH_FAILED');assert.equal(failed.ok,false);assert.equal(failed.code,'SOURCE_WRITE_FAILED');
+    const status=await evaluate(1,'ownedCode.status()');assert.equal(status.dirty,true);assert.equal(status.fenced,true);assert.equal((await evaluate(1,'ownedCode.resume()')).ok,false);
     assert.equal(await evaluate(1,'document.querySelector(".cm-content").textContent.startsWith("Retained")'),true);
     assert.deepEqual(await new SourceRepository(data).exportSource({projectId,sourceId:prepared.b.sourceId,version:1}),Buffer.from('second source\n'));
     assert.deepEqual(await new ProjectStore(data).readProject(projectId),prepared.project);
     result.cases.push({name:'real native write refusal preserves visible optimistic text and refuses preparation',status:'COMPLETE',code:failed.code});await progress();
-    const retired=grant(1),contents=windows[1].webContents,destruction=contents.isDestroyed()?Promise.resolve():new Promise(resolve=>contents.once('destroyed',resolve));windows[1].destroy();
+    control.dispose();control=new NativeCodeControl({registry,owner,send:()=>{}});const retired=grant(1),retiring=control.flushView(retired),contents=windows[1].webContents,destruction=contents.isDestroyed()?Promise.resolve():new Promise(resolve=>contents.once('destroyed',resolve));windows[1].destroy();assert.equal((await retiring).code,'VIEW_RETIRED');
     await Promise.race([destruction,new Promise((_,reject)=>{const timer=setTimeout(()=>reject(Error('OWNED_DESTRUCTION_TIMEOUT')),10000);timer.unref();})]);assert.equal(contents.isDestroyed(),true);assert.throws(()=>owner.beginViewFlush(retired),{code:'ACCESS_REFUSED'});
     const remaining=windows[0].webContents,remainingDestroyed=remaining.isDestroyed()?Promise.resolve():new Promise(resolve=>remaining.once('destroyed',resolve));registry.invalidateEpoch();await remainingDestroyed;assert.equal(registry.isCurrent(retired),false);assert.equal(BrowserWindow.getAllWindows().length,0);
     result.cases.push({name:'actual renderer retirement revokes flush authority; originals and Docs remain intact',status:'COMPLETE'});result.status='COMPLETE';
   }catch(cause){result.error={message:cause.message,code:cause.code,stack:cause.stack};}
-  finally {readers?.dispose();try{registry?.invalidateEpoch();}catch{}for(const w of BrowserWindow.getAllWindows())try{w.destroy();}catch{}result.remainingWindows=BrowserWindow.getAllWindows().length;result.finished=new Date().toISOString();await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:result.status,error:result.error?.message}));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
+  finally {control?.dispose();readers?.dispose();try{registry?.invalidateEpoch();}catch{}for(const w of BrowserWindow.getAllWindows())try{w.destroy();}catch{}result.remainingWindows=BrowserWindow.getAllWindows().length;result.finished=new Date().toISOString();await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:result.status,error:result.error?.message}));app.exit(result.status==='COMPLETE'&&result.remainingWindows===0?0:1);}
 });

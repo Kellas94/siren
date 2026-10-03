@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { performance } from 'node:perf_hooks';
 import { startTestIssuer } from './fixtures/oidc-issuer.mjs';
 
 async function browser(url, mutate = null) {
@@ -45,8 +46,11 @@ test('the actual 180-second callback deadline closes the owned listener without 
   const issuer = await startTestIssuer(); let redirect;
   try {
     const login = createTestOidcLogin({ issuer: issuer.issuer, clientId: 'test-siren-client', openBrowser: async url => { redirect = new URL(url).searchParams.get('redirect_uri'); } });
-    const started = Date.now(); await assert.rejects(login.beginLogin(), /timeout/i);
-    assert.ok(Date.now() - started >= 180000);
+    const started = performance.now(), startedWall = Date.now(); await assert.rejects(login.beginLogin(), /timeout/i);
+    const elapsedMs = performance.now() - started, wallElapsedMs = Date.now() - startedWall;
+    // Calendar adjustment/precision cannot establish a runtime timer duration.
+    // Retain the strict real deadline and both clocks for a premature result.
+    assert.ok(elapsedMs >= 180000, JSON.stringify({ elapsedMs, wallElapsedMs, minimumMs: 180000 }));
     await assert.rejects(fetch(redirect, { signal: AbortSignal.timeout(2000) }));
   } finally { await issuer.close(); }
 });

@@ -111,6 +111,16 @@ test('resuming authority inside a flush write fences publication and cannot seal
   assert.deepEqual(await f.repo.exportSource({projectId:f.project.project.id,sourceId:f.a.sourceId,version:1}),Buffer.from('a😀b\r\nc'));
 });
 
+test('native cancellation refuses clone or foreign frame and fences a pending flush publication',async()=>{
+  const f=await fixture(),g=gate();f.coordinator.pause('lock');const ticket=f.coordinator.beginViewFlush(f.grants[0]);f.setFault(g.fault);
+  const pending=f.coordinator.invoke(f.grants[0],intent(f.a,'cancelled-flush-write','X'),ticket);await g.entered;
+  assert.equal(f.coordinator.cancelViewFlush({...f.grants[0]},ticket).code,'FLUSH_REFUSED');
+  assert.equal(f.coordinator.cancelViewFlush(f.grants[1],ticket).code,'FLUSH_REFUSED');
+  assert.equal(f.coordinator.cancelViewFlush(f.grants[0],ticket).ok,true);g.release();
+  assert.equal((await pending).code,'ACCESS_REFUSED');assert.equal((await f.coordinator.finishViewFlush(f.grants[0],ticket)).code,'FLUSH_REFUSED');
+  assert.equal((await f.repo.getMetrics({projectId:f.project.project.id,sourceId:f.a.sourceId})).version,1);
+});
+
 test('captured frame revocation inside source write prevents late selection and receipt disclosure',async()=>{
   const f=await fixture(),g=gate();f.setFault(g.fault);const pending=f.coordinator.invoke(f.grants[0],intent(f.a,'revoked-edit','X'));await g.entered;
   f.registry.invalidateEpoch();g.release();assert.equal((await pending).code,'ACCESS_REFUSED');
