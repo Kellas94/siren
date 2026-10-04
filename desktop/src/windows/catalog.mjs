@@ -18,7 +18,7 @@ export class NativeWindowCatalog {
  }
  async invoke({event,payload}){
   try{
-   let cursor,role;try{const request=navigationFields(payload??{},['cursor','role'],[]);cursor=request.cursor??0;role=request.role;if(!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs','diagram','presenter'].includes(role))return fail('REQUEST_REFUSED');}catch{return fail('REQUEST_REFUSED');}
+   let cursor,role,query;try{const request=navigationFields(payload??{},['cursor','role','query'],[]);cursor=request.cursor??0;role=request.role;query=request.query??'';if(Object.hasOwn(request,'query')&&(typeof request.query!=='string'||!request.query.isWellFormed()||request.query.length>160||/[\u0000-\u001f\u007f]/.test(request.query))||!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs','diagram','presenter'].includes(role))return fail('REQUEST_REFUSED');query=query.trim().normalize('NFKC').toLowerCase();}catch{return fail('REQUEST_REFUSED');}
    const grant=this.#capture(event);if(!grant)return fail('ACCESS_REFUSED');
    const snapshot=await this.#snapshotFor(grant),live=this.#capture(event);
    if(!live||live.windowId!==grant.windowId||live.epoch!==grant.epoch||snapshot?.project?.id!==grant.projectId)return fail('ACCESS_REFUSED');
@@ -42,8 +42,9 @@ export class NativeWindowCatalog {
     rows.push({role:role==='presenter'?'presenter':'diagram',entityId:diagram.id,label:typeof diagram.name==='string'&&diagram.name?label(diagram.name):'Untitled diagram',readonly:true});
    }
    const selected=role?rows.filter(item=>item.role===role):rows;
-   const total=selected.length,limit=Math.min(total,4096),items=selected.slice(cursor,Math.min(cursor+64,limit)),nextCursor=cursor+items.length;
-   return Object.freeze({ok:true,items,total,truncated:total>limit,hasMore:nextCursor<limit,nextCursor});
+   const bounded=selected.slice(0,4096),matches=query?bounded.filter(item=>item.label.normalize('NFKC').toLowerCase().includes(query)):bounded;
+   const total=query?matches.length:selected.length,limit=matches.length,items=matches.slice(cursor,Math.min(cursor+64,limit)),nextCursor=cursor+items.length;
+   return Object.freeze({ok:true,items,total,truncated:selected.length>4096,hasMore:nextCursor<limit,nextCursor});
   }catch{return fail('CATALOG_REFUSED');}
  }
 }

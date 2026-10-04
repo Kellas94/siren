@@ -4,6 +4,8 @@
 
 **Goal:** Open SIREN into a calm Home, resume verified work, navigate consistently and edit detached diagrams through one shared native owner.
 
+4 October partial Task5: Home libraries search allowed names across the existing first4,096 role rows before64-row paging. Literal Unicode search, private-body exclusion, reset, exact Docs selection and late closed-query suppression qualified natively; original Guide/commands/paging/Lock assertions retained. Final frozen924/924 and five native groups passed unchanged captures, Home65,444bytes within original64KiB budget. Root report desktop/reviews/2026-10-04-home-name-search-root-evidence.md is implementation-authored. Committed-source package/private qualification follows; full global content search, attach-back, physical displays and final independent review remain open. Original CI69 packaged Home Continue failure is separately retained, not a search regression or retrospective PASS.
+
 **Architecture:** A lightweight Home entry precedes module initialization. Native authority owns project selection, resumable metadata and versioned diagram edits; the existing workspace window and satellites share coordinated save/access transitions. Contextual module tools replace competing global bars.
 
 **Tech Stack:** Existing Electron 44.5.1, Node ES modules, DOM/CSS, frozen-baseline build adapters, admitted CodeMirror/Lezer and existing diagram engines. No new framework, Python execution, online account service or AI dependency.

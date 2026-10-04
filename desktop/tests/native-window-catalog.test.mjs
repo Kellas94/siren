@@ -70,3 +70,21 @@ test('Code library uses selected file names and marks unlinked code without expo
  f.select({...f.selected,json:JSON.stringify({codeFiles:[{id:'owned-file',name:'C:/PRIVATE_PATH.py',sourceRef:point}],workpapers:[]})});
  assert.equal(JSON.stringify(await f.call({role:'code'})).includes('PRIVATE_PATH'),false);
 });
+
+test('name search finds literal Unicode labels past the first page without searching private bodies or escaping the catalog bound',async()=>{
+ const f=await fixture();const workpapers=Array.from({length:4097},(_,n)=>({id:'doc-'+n,title:n===2000?'Review Ș😀 [A+B]':n===4096?'Beyond catalog':'Document '+n,content:'PRIVATE_NEEDLE'}));
+ f.select({...f.selected,json:JSON.stringify({workpapers})});
+ const found=await f.call({role:'docs',query:'  review ș😀 [a+b]  '});assert.equal(found.ok,true);assert.deepEqual(found.items.map(x=>x.entityId),['doc-2000']);assert.equal(found.total,1);assert.equal(found.hasMore,false);assert.equal(found.truncated,true);assert.equal(JSON.stringify(found).includes('PRIVATE_NEEDLE'),false);
+ const empty=await f.call({role:'docs',query:'PRIVATE_NEEDLE'});assert.equal(empty.ok,true);assert.deepEqual(empty.items,[]);
+ const bounded=await f.call({role:'docs',query:'Beyond catalog'});assert.equal(bounded.ok,true);assert.deepEqual(bounded.items,[]);assert.equal(bounded.truncated,true);
+ const first=await f.call({role:'docs',query:'Document 12'}),second=await f.call({role:'docs',query:'Document 12',cursor:first.nextCursor});assert.equal(first.items.length,64);assert.equal(second.items.length,47);assert.equal(second.hasMore,false);assert.equal(new Set([...first.items,...second.items].map(x=>x.entityId)).size,111);
+ assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
+
+test('search rejects malformed input before reading a snapshot and retains genuine Lock and sender checks',async()=>{
+ const f=await fixture();let reads=0;f.provider(()=>{reads++;return f.selected;});
+ for(const query of [null,12,{},'x'.repeat(161),'\ud800','line\nfeed'])assert.equal((await f.call({role:'docs',query})).code,'REQUEST_REFUSED');
+ let ran=false;const getter=Object.defineProperty({role:'docs'},'query',{enumerable:true,get(){ran=true;return 'Document';}});assert.equal((await f.call(getter)).code,'REQUEST_REFUSED');assert.equal(ran,false);assert.equal(reads,0);
+ assert.equal((await f.call({role:'docs',query:'doc'},{sender:{...f.event.sender},senderFrame:f.event.senderFrame})).code,'ACCESS_REFUSED');assert.equal(reads,0);
+ let entered,release;const ready=new Promise(r=>entered=r),gate=new Promise(r=>release=r);f.provider(async()=>{entered();await gate;return f.selected;});const pending=f.call({role:'docs',query:'doc'});await ready;f.lock();release();assert.deepEqual(await pending,{ok:false,code:'ACCESS_REFUSED'});
+});
