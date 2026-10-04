@@ -101,16 +101,16 @@ test('controller disposal cancels queued recovery without native mutations or ne
  const f=await fixture(),pending=f.layout.bringAllBack();f.layout.dispose();
  assert.equal(await pending,false);assert.equal(await f.layout.recover(),false);assert.equal(await f.layout.bringAllBack(),false);assert.equal(f.main.changes,0);assert.equal(f.main.focuses,0);
 });
-test('superseded display recovery reports cancellation and coalesces against the latest workArea',async()=>{
- const f=await fixture();const pending=f.layout.recover();f.state.displays=[{id:2,primary:true,workArea:{x:100,y:200,width:800,height:600}}];const superseded=f.layout.recover();
- assert.equal(await pending,false);assert.equal(await superseded,false);
- // The coalesced operation is observable through its owned real boundary,
- // without a sleep or mutation retry. Explicit input is busy until it completes.
- const settled=new Promise(resolve=>{const w=f.windows.get(f.docs.windowId),original=w.getNormalBounds.bind(w);w.getNormalBounds=()=>{const b=original();if(b.x===100&&b.y===200)resolve();return b;};});
- await settled;assert.deepEqual(f.main.normal,{x:100,y:200,width:700,height:500});assert.equal(f.main.focuses,0);
+test('superseded display recovery cancels the old result and completes one coalesced latest-workArea operation',async()=>{
+ const f=await fixture(),docs=f.windows.get(f.docs.windowId),code=f.windows.get(f.code.windowId);docs.fullscreen=true;code.minimized=true;
+ const first=f.layout.recover();f.state.displays=[{id:2,primary:true,workArea:{x:100,y:200,width:800,height:600}}];const second=f.layout.recover();
+ f.state.displays=[{id:3,primary:true,workArea:{x:300,y:400,width:900,height:600}}];const third=f.layout.recover();
+ assert.equal(second,third,'Only one pending coalesced completion, not an unbounded queue');assert.equal(await first,false);
+ assert.equal(await second,true,'A coalesced request must return its own final native completion, not the cancelled predecessor');assert.equal(await third,true);
+ for(const w of [f.main,...f.windows.values()])assert.deepEqual(w.normal,{x:300,y:400,width:700,height:500});
+ assert.equal(docs.fullscreen,true);assert.equal(code.minimized,true);assert.equal(f.main.focuses,0);
  f.layout.dispose();
 });
-
 
 test('origin retirement during native completion cancels all remaining mutations and main focus',async()=>{
  const f=await fixture(),origin=f.windows.get(f.code.windowId),set=f.main.setBounds.bind(f.main);f.main.setBounds=b=>{set(b);queueMicrotask(()=>{origin.webContents.mainFrame={url:origin.webContents.getURL()};});};
@@ -119,4 +119,10 @@ test('origin retirement during native completion cancels all remaining mutations
 test('dispose during native completion prevents restoration, following target moves and focus',async()=>{
  const f=await fixture(),set=f.main.setBounds.bind(f.main);f.main.setBounds=b=>{set(b);queueMicrotask(()=>f.layout.dispose());};
  assert.equal(await f.layout.bringAllBack(),false);assert.equal(f.main.changes,1);assert.equal(f.windows.get(f.code.windowId).changes,0);assert.equal(f.windows.get(f.docs.windowId).changes,0);assert.equal(f.main.focuses,0);
+});
+
+
+test('disposing a queued coalesced completion resolves false without leaving a pending listener or moving targets',async()=>{
+ const f=await fixture(),first=f.layout.recover(),queued=f.layout.recover();f.layout.dispose();
+ assert.equal(await queued,false);assert.equal(await first,false);assert.equal(f.main.changes,0);assert.equal(f.windows.get(f.code.windowId).changes,0);assert.equal(f.windows.get(f.docs.windowId).changes,0);
 });

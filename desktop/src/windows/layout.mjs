@@ -10,7 +10,7 @@ function controlsReachable(bounds,displays){
  * No project/source state, renderer IPC, navigation or persistence is involved. */
 export class NativeWindowLayout{
  #registry;#main;#windowFor;#displays;#canRecover;#minimum=new WeakMap();
- #active=null;#pending=false;#generation=0;#disposed=false;
+ #active=null;#pending=null;#generation=0;#disposed=false;
  constructor({registry,mainWindow,windowFor,displays,canRecoverViews}){
   if(!['listViews','capture','isCurrent'].every(k=>typeof registry?.[k]==='function')||!mainWindow||![windowFor,displays,canRecoverViews].every(fn=>typeof fn==='function'))throw TypeError('NATIVE_LAYOUT_ADAPTERS_REQUIRED');
   this.#registry=registry;this.#main=mainWindow;this.#windowFor=windowFor;this.#displays=displays;this.#canRecover=canRecoverViews;
@@ -107,18 +107,24 @@ export class NativeWindowLayout{
   }catch{return Promise.resolve(false);}
   const operation=Promise.resolve().then(()=>this.#run(request)).catch(()=>false).finally(()=>{
    if(this.#active===operation)this.#active=null;
-   if(this.#pending&&!this.#disposed){this.#pending=false;void this.#start(false,this.#main);}
+   const pending=this.#pending;this.#pending=null;
+   if(pending){if(this.#disposed)pending.resolve(false);else void this.#start(false,this.#main).then(pending.resolve);}
   });
   this.#active=operation;return operation;
  }
  recover(){
   if(this.#disposed)return Promise.resolve(false);
   this.#generation++;
-  if(this.#active){this.#pending=true;return this.#active;}
+  if(this.#active){
+   // All superseding events share one bounded pending operation, but receive
+   // that operation's completion rather than the cancelled predecessor's.
+   if(!this.#pending){let resolve;const promise=new Promise(done=>{resolve=done;});this.#pending={promise,resolve};}
+   return this.#pending.promise;
+  }
   return this.#start(false,this.#main);
  }
  bringAllBack(originWindow=this.#main){return this.#start(true,originWindow);}
- dispose(){this.#disposed=true;this.#generation++;this.#pending=false;}
+ dispose(){this.#disposed=true;this.#generation++;this.#pending?.resolve(false);this.#pending=null;}
 }
 export function bindNativeDisplayRecovery(screen,layout){
  const removed=()=>layout.recover(),metrics=(_event,_display,changed)=>{if(Array.isArray(changed)&&changed.some(k=>['bounds','workArea','scaleFactor','rotation'].includes(k)))return layout.recover();};

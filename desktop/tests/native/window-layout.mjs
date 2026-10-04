@@ -17,5 +17,7 @@ export async function exerciseNativeLayout({native,driver,code,docs,diagram,resu
  result.cases.push({name:'permanent main window can be brought back through the native Window command',ok:true});
  await native.displaceView(code.url,'minimized');assert.equal(await native.windowShortcut('siren://app/home.html','B'),true);const shortcutState=await native.windowState(code.url);assert.equal(shortcutState.minimized,false);assert.equal(contained(shortcutState.normalBounds,areas),true);assert.equal((await native.windowState(docs.url)).maximized,true);assert.equal((await native.windowState(diagram.url)).fullScreen,true);
  result.cases.push({name:'actual native Ctrl+Alt+B restores displaced minimized Code while retaining Docs maximize and Diagram fullscreen',ok:true});
+ await native.displaceView(code.url,'minimized');assert.deepEqual(await native.layoutMetricsBurst(),[false,true,true],'Cancelled predecessor and the single coalesced actual native completion are distinct');const coalesced=await native.windowState(code.url);assert.equal(contained(coalesced.normalBounds,areas),true);assert.equal(coalesced.minimized,true);assert.equal((await native.windowState(docs.url)).maximized,true);assert.equal((await native.windowState(diagram.url)).fullScreen,true);
+ result.cases.push({name:'three actual synthesized metrics events cancel predecessor and await one completed native recovery with geometry and modes intact',ok:true});
  result.layoutScope={actualDisplayCount:areas.length,physicalMonitorRemovalQualified:false,physicalMixedDPIQualified:false};
 }
