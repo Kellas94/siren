@@ -1,16 +1,17 @@
 (() => {
  'use strict';
  const same=(a,b)=>a&&b&&a.sourceId===b.sourceId&&a.version===b.version&&a.sha256===b.sha256;
+ const explanations={selection:'The selected stored code range.',class:'Groups related data and behavior.',function:'Defines a reusable block of code.',loop:'Repeats a block of code.',branch:'Selects a branch using a condition.',call:'A call expression; its runtime target and result are not evaluated.',assignment:'Stores a value in a name or attribute.',return:'Returns a result from the current function.',yield:'Produces a value from a generator.',try:'Groups error-handling clauses.',match:'Matches a value against patterns.',with:'Uses a managed context.',raise:'Raises an exception.',await:'Waits for an asynchronous result.',lambda:'Creates an anonymous function.',break:'Exits the enclosing loop.',continue:'Moves to the next loop iteration.'};
  window.SirenNativeAnalysis=Object.freeze({create({button,panel,editorFor,bridge}){
-  let disposed=false,paused=false,generation=0,choiceGeneration=0,active=null,cancelling=null,result=null,bound=null,page=0,choices=[],refreshing=false;
+  let disposed=false,paused=false,generation=0,choiceGeneration=0,active=null,cancelling=null,result=null,bound=null,page=0,choices=[],refreshing=false;const collapsed=new Set();
   const make=(tag,text,id)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(id)e.id=id;return e;};
   const title=make('h2','Source structure'),description=make('p','Classes and functions from the stored Python source. Static analysis does not run the code.'),controls=make('div'),scope=make('select',null,'analysisScope');
-  scope.setAttribute('aria-label','Analysis range');for(const [value,label] of [['source','Source overview'],['selection','Selected code'],['compare','Compare sources']]){const option=make('option',label);option.value=value;scope.append(option);}
+  scope.setAttribute('aria-label','Analysis range');for(const [value,label] of [['source','Source overview'],['selection','Selected code'],['map','Selected code map'],['compare','Compare sources']]){const option=make('option',label);option.value=value;scope.append(option);}
   const compareControls=make('div'),compareWindow=make('select',null,'analysisCompareWindow'),refresh=make('button','Refresh windows','refreshAnalysisWindows'),identity=make('details',null,'analysisIdentity');refresh.type='button';compareWindow.setAttribute('aria-label','Stored source B in another Code window');compareControls.className='analysis-controls';compareControls.append(compareWindow,refresh);compareControls.hidden=true;
   const run=make('button','Analyze','analyzeSource'),cancel=make('button','Cancel','cancelAnalysis'),message=make('p','Choose Analyze to inspect this version.','analysisStatus'),filter=make('input',null,'analysisFilter'),list=make('div',null,'analysisDefinitions'),paging=make('div'),previous=make('button','Previous'),next=make('button','Next');
   for(const b of [run,cancel,previous,next])b.type='button';cancel.hidden=true;filter.type='search';filter.placeholder='Find a class or function';filter.maxLength=128;filter.setAttribute('aria-label','Filter source definitions');message.setAttribute('role','status');list.setAttribute('aria-label','Source definitions or comparison hunks');controls.className='analysis-controls';paging.className='analysis-paging';controls.append(scope,run,cancel);paging.append(previous,next);panel.append(title,description,controls,compareControls,message,identity,filter,list,paging);panel.hidden=true;
   const state=()=>editorFor()?.getStatus(),ready=value=>value?.ready&&!value.paused&&!value.fenced&&!value.pending&&!value.saving&&!value.dirty&&!disposed&&!paused;
-  const clearResult=()=>{result=null;bound=null;identity.textContent='';list.replaceChildren();filter.hidden=true;previous.hidden=next.hidden=true;};
+  const clearResult=()=>{result=null;bound=null;collapsed.clear();identity.textContent='';identity.hidden=true;list.replaceChildren();filter.hidden=true;previous.hidden=next.hidden=true;};
   const choice=()=>choices.find(item=>item.windowId===compareWindow.value);
   async function refreshChoices(){
    if(disposed||paused||active||cancelling)return;const token=++choiceGeneration,ref=state()?.sourceRef;refreshing=true;reconcile();
@@ -23,6 +24,19 @@
   }
   const cancelActive=()=>{generation++;const job=active;active=null;cancel.hidden=true;if(job){const pending=Promise.resolve().then(()=>bridge.cancel({jobId:job.id})).catch(()=>{}).finally(()=>{if(cancelling===pending)cancelling=null;if(!disposed&&!paused)reconcile();});cancelling=pending;}};
   function paint(){
+   if(result?.result?.semantics==='syntax-containment'){
+    list.replaceChildren();const nodes=result.result.nodes,byId=new Map(nodes.map(node=>[node.id,node]));
+    list.setAttribute('role','tree');
+    for(const node of nodes){
+     let ancestor=byId.get(node.parent),depth=0,hidden=false;while(ancestor){depth++;if(collapsed.has(ancestor.id)){hidden=true;break;}ancestor=byId.get(ancestor.parent);}if(hidden)continue;
+     const row=make('div');row.className='analysis-map-node';row.dataset.mapDepth=String(Math.min(depth,6));row.dataset.mapKind=node.kind;const select=make('button');select.type='button';select.dataset.mapNodeId=String(node.id);select.className='analysis-map-select';select.title=`${node.label}\n${explanations[node.kind]??'A syntax block from the selected code.'}`;
+     select.append(make('strong',node.label),make('span',`${node.kind} · line ${node.line}`));select.addEventListener('click',()=>{const editor=editorFor();if(!ready(state())||!same(state().sourceRef,bound)||node.from<0||node.to>editor.getState().doc.length)return;editor.select(node.from,node.to);});
+     if(nodes.some(child=>child.parent===node.id)){const fold=make('button',collapsed.has(node.id)?'▸':'▾');fold.type='button';fold.dataset.collapseId=String(node.id);fold.className='analysis-map-fold';fold.setAttribute('aria-label',`${collapsed.has(node.id)?'Expand':'Collapse'} ${node.label}`);fold.setAttribute('aria-expanded',String(!collapsed.has(node.id)));fold.addEventListener('click',()=>{if(collapsed.has(node.id))collapsed.delete(node.id);else collapsed.add(node.id);paint();});row.append(fold);}
+     row.append(select);list.append(row);
+    }
+    filter.hidden=previous.hidden=next.hidden=true;return;
+   }
+   list.setAttribute('role','list');
    if(result?.rightRef){
     list.replaceChildren();const hunks=result.result.hunks??[];page=Math.min(page,Math.max(0,Math.ceil(hunks.length/64)-1));
     for(const hunk of hunks.slice(page*64,(page+1)*64)){
@@ -47,27 +61,29 @@
   async function analyze(){
    const editor=editorFor(),value=state();if(!ready(value)||active||cancelling||refreshing)return;const ref=value.sourceRef,selection=editor.getState().selection.main,right=scope.value==='compare'?choice():null;
    if(scope.value==='compare'&&!right){message.textContent='Open another Code window, then refresh the window list.';return;}
-   if(scope.value==='selection'&&selection.from===selection.to){message.textContent='Select a code range in the editor first.';return;}
-   const token=++generation,id=crypto.randomUUID(),range=scope.value==='selection'?{from:selection.from,to:selection.to}:undefined;
+   if(['selection','map'].includes(scope.value)&&selection.from===selection.to){message.textContent='Select a code range in the editor first.';return;}
+   const map=scope.value==='map',token=++generation,id=crypto.randomUUID(),range=['selection','map'].includes(scope.value)?{from:selection.from,to:selection.to}:undefined;
    clearResult();active={id,ref};reconcile();message.textContent='Analyzing in the background…';panel.dataset.analysisState='running';
    try{
-    const answer=await bridge.submit({...ref,kind:right?'diff':'index',jobId:id,...(range?{range}:{}),...(right?{rightWindowId:right.windowId,rightRef:right.sourceRef}:{})});
+    const answer=await bridge.submit({...ref,kind:right?'diff':map?'map':'index',jobId:id,...(range?{range}:{}),...(right?{rightWindowId:right.windowId,rightRef:right.sourceRef}:{})});
     if(token!==generation||disposed||paused||!ready(state())||!same(state().sourceRef,ref))return;
     if(answer?.ok!==true||!['complete','partial'].includes(answer.status)||!answer.result||!answer.coverage){message.textContent=answer?.status==='budget-exceeded'?'Analysis reached its time or memory budget. Select a smaller range to inspect.':answer?.status==='cancelled'?'Analysis cancelled.':'Analysis unavailable. Stored source was retained.';panel.dataset.analysisState=answer?.status??'error';return;}
     if(answer.sourceId!==ref.sourceId||answer.version!==ref.version||answer.jobId!==id){message.textContent='Analysis version changed. Analyze again.';return;}
     if(right&&!same(answer.rightRef,right.sourceRef)){message.textContent='Comparison version changed. Refresh the windows and compare again.';return;}
     result=answer;bound=ref;page=0;filter.value='';paint();panel.dataset.analysisState=answer.status;
     if(right){
+     identity.hidden=false;
      identity.replaceChildren(make('summary',`A ${ref.sourceId.slice(0,8)} · v${ref.version} / B ${right.sourceRef.sourceId.slice(0,8)} · v${right.sourceRef.version}`),make('p',`Stored A: ${ref.sourceId} · v${ref.version} · SHA ${ref.sha256}\nStored B snapshot: ${right.sourceRef.sourceId} · v${right.sourceRef.version} · SHA ${right.sourceRef.sha256}`));
      message.textContent=`${answer.result.identical?'Identical stored sources':`${answer.result.hunks.length.toLocaleString()} changed regions`} · ${answer.result.approximate?'Approximate comparison':'Exact comparison'}${answer.result.previewTruncated?' · preview limited':''}. B is the stored version shown above; unsaved drafts are excluded.`;return;
     }
+    if(map){const coverage=answer.coverage;message.textContent=`${answer.result.nodes.length.toLocaleString()} blocks · ${answer.status==='complete'?'Complete range':'Partial map'} · syntax nesting${coverage.limited?' · map limit reached':''}${coverage.syntaxErrors?' · syntax errors found':''}${coverage.labelTruncated?' · labels shortened':''}`;identity.hidden=false;identity.replaceChildren(make('summary',`Version ${ref.version} · range details`),make('p',`Stored source ${ref.sourceId}\nSHA ${ref.sha256}\nCharacters ${coverage.from.toLocaleString()}–${coverage.to.toLocaleString()} of ${coverage.totalUnits.toLocaleString()}. Edges describe syntax containment. Static analysis does not execute Python or resolve runtime call targets.`));return;}
     const coverage=answer.coverage;message.textContent=`${answer.result.definitions.length.toLocaleString()} definitions · version ${ref.version} · ${answer.status==='complete'?'Complete range':'Partial analysis'} · characters ${coverage.from.toLocaleString()}–${coverage.to.toLocaleString()} of ${coverage.totalUnits.toLocaleString()}${coverage.syntaxErrors?' · syntax errors found':''}${coverage.limited?' · index limit reached':''}`;
    }catch{if(token===generation&&!disposed&&!paused){message.textContent='Analysis unavailable. Stored source was retained.';panel.dataset.analysisState='error';}}
    finally{if(token===generation&&!disposed){active=null;cancel.hidden=true;reconcile();}}
   }
   const toggle=()=>{if(paused||disposed)return;panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));document.getElementById('codeLayout')?.classList.toggle('has-analysis',!panel.hidden);if(!panel.hidden){reconcile();run.focus();}};
   button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls',panel.id);button.addEventListener('click',toggle);run.addEventListener('click',()=>void analyze());cancel.addEventListener('click',()=>{cancelActive();clearResult();message.textContent='Analysis cancelled.';panel.dataset.analysisState='cancelled';reconcile();});filter.addEventListener('input',()=>{page=0;paint();});previous.addEventListener('click',()=>{page--;paint();});next.addEventListener('click',()=>{page++;paint();});
-  scope.addEventListener('change',()=>{cancelActive();clearResult();compareControls.hidden=scope.value!=='compare';description.textContent=scope.value==='compare'?'Compare immutable stored sources in two open Code windows. Limited previews preserve the complete stored sources.':'Classes and functions from the stored Python source. Static analysis does not run the code.';message.textContent=scope.value==='compare'?'Choose stored source B.':'Choose Analyze to inspect this version.';reconcile();if(scope.value==='compare')void refreshChoices();});
+  scope.addEventListener('change',()=>{cancelActive();clearResult();compareControls.hidden=scope.value!=='compare';title.textContent=scope.value==='map'?'Selected code map':scope.value==='compare'?'Source comparison':'Source structure';description.textContent=scope.value==='map'?'Static Python syntax. Click a block to select code, fold a branch, or hover for its meaning.':scope.value==='compare'?'Compare immutable stored sources in two open Code windows. Limited previews preserve the complete stored sources.':'Classes and functions from the stored Python source. Static analysis does not run the code.';message.textContent=scope.value==='compare'?'Choose stored source B.':'Choose Analyze to inspect this version.';reconcile();if(scope.value==='compare')void refreshChoices();});
   refresh.addEventListener('click',()=>{clearResult();void refreshChoices();});compareWindow.addEventListener('change',()=>{clearResult();reconcile();});
   const shortcut=event=>{if((event.ctrlKey||event.metaKey)&&event.shiftKey&&event.key.toLowerCase()==='o'){event.preventDefault();toggle();}};document.addEventListener('keydown',shortcut);clearResult();reconcile();
   return Object.freeze({reconcile,reset(){choiceGeneration++;refreshing=false;choices=[];compareWindow.replaceChildren();cancelActive();clearResult();panel.dataset.analysisState='idle';reconcile();},pause(){paused=true;choiceGeneration++;refreshing=false;cancelActive();clearResult();},resume(){paused=false;reconcile();},dispose(){disposed=true;choiceGeneration++;cancelActive();clearResult();document.removeEventListener('keydown',shortcut);button.removeEventListener('click',toggle);}});

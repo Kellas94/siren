@@ -51,7 +51,9 @@ test('real Windows identity survives six-second native startup and remains fail-
   try {
     const [bytes] = await once(child.stdout, 'data');
     const expected = JSON.parse(bytes.toString('utf8').trim());
-    const first = await inspectWindowsProcess(child.pid);
+    const initialBegan=performance.now(),initialFailures=[];
+    const first = await inspectWindowsProcess(child.pid,{onFailure:failure=>initialFailures.push(failure)});
+    result.initialInspection={elapsedMs:performance.now()-initialBegan,deadlineMs:10000,observed:first!==undefined,failures:initialFailures,child:{pid:child.pid,exitCode:child.exitCode,signalCode:child.signalCode}};
     assert.equal(first?.pid, child.pid); assert.equal(first.path, expected.path); assert.match(first.startedAt, /^\d{4}-\d{2}-\d{2}T/);
     result.identity = first;
     const slower = await delayedInspector(6000, result.observations);

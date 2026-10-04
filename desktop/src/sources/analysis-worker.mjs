@@ -1,5 +1,6 @@
 import {parentPort,workerData} from 'node:worker_threads';
 import {diffSourceText} from './diff-worker.mjs';
+import {mapSelectedSyntax} from './map-worker.mjs';
 const fail=reason=>{throw Object.assign(Error(reason),{reason});};
 const boundary=(text,p)=>p===0||p===text.length||!(text.charCodeAt(p-1)>=0xd800&&text.charCodeAt(p-1)<=0xdbff&&text.charCodeAt(p)>=0xdc00&&text.charCodeAt(p)<=0xdfff);
 
@@ -18,6 +19,10 @@ export function runAnalysisWorker(parser){
   const lineFor=offset=>{let a=0,b=lines.length;while(a<b){const m=(a+b)>>>1;if(lines[m]<=offset)a=m+1;else b=m;}return baseLine+a-1;};
   const started=performance.now(),parse=parser.startParse(input);let tree;
   while(!(tree=parse.advance()))if(performance.now()-started>budget.wallMs)fail('PARSE_BUDGET');
+  if(request.kind==='map'){
+   const result=mapSelectedSyntax(tree,{input,from,to,lineFor,budget}),truncated=to<requestedTo,status=truncated||result.limited||result.errors.length?'partial':'complete';
+   parentPort.postMessage({status,coverage:{from,to,totalUnits:text.length,truncated,syntaxErrors:result.errors.length,limited:result.limited,labelTruncated:result.labelTruncated},result,...(result.limited?{reason:'GRAPH_BUDGET'}:truncated?{reason:'RANGE_BUDGET'}:result.errors.length?{reason:'SYNTAX_ERRORS'}:{})});return;
+  }
   const definitions=[],errors=[],parents=[];let visited=0,limited=false;
   try{tree.iterate({enter(node){
    if(++visited>budget.maxNodes)fail('INDEX_BUDGET');

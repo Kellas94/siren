@@ -45,6 +45,11 @@ test('real pause/drain denies pending source publication and permits a fresh job
  const f=await fixture(t),pending=f.call('submit',f.request);f.owner.pause('test-lock');f.service.pause();assert.equal(await f.service.drain(),true);assert.equal((await pending).code,'ACCESS_REFUSED');assert.equal(f.service.isIdle(),true);
  assert.equal((await f.call('submit',f.request)).code,'ACCESS_REFUSED');f.owner.resume();f.service.resume();assert.equal((await f.call('submit',f.request)).ok,true);
 });
+
+test('selected map uses the same genuine immutable Code frame authority and refuses Docs or missing ranges',async t=>{
+ const f=await fixture(t),request={...f.request,kind:'map',range:{from:0,to:5}},result=await f.call('submit',request);assert.equal(result.ok,true);assert.equal(result.result.semantics,'syntax-containment');assert.equal(result.coverage.from,0);assert.equal(result.coverage.to,5);
+ assert.equal((await f.call('submit',request,f.event(1))).code,'ACCESS_REFUSED');assert.equal((await f.call('submit',{...request,range:undefined})).code,'REQUEST_REFUSED');assert.equal((await f.call('submit',{...request,text:'forged'})).code,'REQUEST_REFUSED');assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
 test('two genuine captures from one native frame can cancel its pending load; another Code window cannot',async t=>{
  let started,release;const beginning=new Promise(resolve=>{started=resolve;}),gate=new Promise(resolve=>{release=resolve;});const f=await fixture(t,{beforeRead:async()=>{started();await gate;}});
  const pending=f.call('submit',f.request);await beginning;await f.registry.openView({role:'code',entityId:f.refs[0].sourceId});

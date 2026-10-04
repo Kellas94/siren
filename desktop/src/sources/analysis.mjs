@@ -14,13 +14,14 @@ function fields(input,allowed,required=allowed){
 }
 export function normalizeAnalysisRequest(input){
  const request=fields(input,['sourceId','version','sha256','kind','jobId','range','budget','rightRef'],['sourceId','version','sha256','kind','jobId']);
- if(!request||!id(request.sourceId)||!id(request.jobId)||!integer(request.version,1,Number.MAX_SAFE_INTEGER)||!hash(request.sha256)||!['index','diff'].includes(request.kind))return null;
+ if(!request||!id(request.sourceId)||!id(request.jobId)||!integer(request.version,1,Number.MAX_SAFE_INTEGER)||!hash(request.sha256)||!['index','diff','map'].includes(request.kind))return null;
  if(request.kind==='diff'){
   const right=fields(request.rightRef,['sourceId','version','sha256']);if(!right||!id(right.sourceId)||!integer(right.version,1,Number.MAX_SAFE_INTEGER)||!hash(right.sha256)||request.range!==undefined)return null;
   request.rightRef=Object.freeze(right);try{request.budget=normalizeDiffBudget(request.budget??{});}catch{return null;}return Object.freeze(request);
  }
  if(request.rightRef!==undefined)return null;
- const limits={maxUnits:2*1024*1024,maxDefinitions:2000,maxNodes:200000,wallMs:2500},budget=fields(request.budget??{},Object.keys(limits),[]);
+ if(request.kind==='map'&&request.range===undefined)return null;
+ const limits={maxUnits:2*1024*1024,maxDefinitions:2000,maxNodes:200000,wallMs:2500,...(request.kind==='map'?{maxGraphNodes:120,maxGraphEdges:120}:{})},budget=fields(request.budget??{},Object.keys(limits),[]);
  if(!budget||Object.entries(budget).some(([key,value])=>!integer(value,1,limits[key])))return null;
  request.budget={...limits,...budget};
  if(request.range!==undefined){const range=fields(request.range,['from','to']);if(!range||!integer(range.from,0,32*1024*1024)||!integer(range.to,range.from,32*1024*1024))return null;request.range=range;}

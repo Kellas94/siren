@@ -1,0 +1,25 @@
+# Selected Code syntax map
+
+Root implementer evidence only, not an independent verdict, merge or public release. Approved large-source Task5 remains open for incremental reuse and the complete performance matrix. This map describes syntax containment, not executed control flow or resolved runtime call targets.
+
+## Implemented behavior
+
+Native Code Structure offers Selected code map. An explicit nonempty editor selection is required; the request carries only genuine immutable source/version/SHA metadata and UTF16 offsets. The same current native Code authority, owner checks, exact repository/hash reads and cancellable SHA-bound worker used by Structure apply. Docs/foreign frames, missing selection ranges, raw text/path fields and excess graph budgets are refused.
+
+The existing frozen patched Python parser generates a bounded projection of its actual syntax tree: selection, classes/functions, loops/conditionals/context/error-handling, assignments, calls and return/yield/raise/break/continue. Edges are labelled `contains`, so no execution order or speculative cross-source call resolution is invented. Node offsets/line numbers are exact within the immutable selected range. Max120 nodes/120 edges,200000 visited syntax nodes,2Mi UTF16 selected parser input,160-unit UTF16-safe header labels and2500ms hard worker budget. Partial range, syntax errors, graph limits and shortened labels are explicit. Source/export bytes remain exact; no code execution/new dependency/source cache.
+
+The existing optional panel draws coloured nested blocks with actual containment depth. Clicking selects the exact Code range; folding/reopening a parent changes only the bounded view. Hover describes the Python construct for beginners. Complete/partial status stays concise, with full SHA/version/range/semantic details expandable. Empty identity details are hidden. Themes follow Code Light/Dark. This keeps the main editor visible and the optional inspection panel compact.
+
+## Verification so far
+
+Three actual-worker tests exhibited RED (unsupported map) then GREEN for Python containment, exact EOF selection beyond300k, literal/Unicode/CRLF ranges, immutable byte preservation, required range and finite graph/syntax partial states. Controller map test exhibited RED (`kind:index`) then GREEN for immutable metadata-only selection, literal labels, exact navigation and fold/reopen. Existing real Cancel regression tests remain intact. A real native-registry/repository test confirms selected map Code authority and Docs/missing-range/raw-text refusal. Focused16/16 passed.
+
+First native `source-map/2026-10-04T07-32-57.144Z` ADVERSE1 retained: the map itself passed its first exact-eight-block assertion, then a malformed quoted CDP read-only scroll selector caused SyntaxError. Only that fixture expression was corrected, retaining every original map/navigation/collapse/Lock oracle and deadline. Inspection of the original screenshot also motivated compact range details/description and hiding empty details; no source/parser authority was relaxed.
+
+Current `source-map/2026-10-04T07-34-33.430Z` COMPLETE4: actual keyboard selects176 UTF16 units after300k assignment rows; patched worker returns the exact eight-node class/function/loop/if/yield/call/return hierarchy. The `process(item)` node selects exactly13 source units; folding/reopening the function reduces/restores8→3→8 real blocks. Actual Light/Dark screenshots inspected. Common Lock joins the genuine worker and retires all satellites, primary snapshotnull, whole project and complete source bytes identical, captured inputs unchanged/process closed. End-to-end selected-map320.4759ms is one EOF-range case, not whole-source graph or input-p95 admission. Current Structure300k07-34-44 COMPLETE4/A-B300k07-34-55 COMPLETE5 regressions, closed/unchanged inputs.
+
+Prior comparison commit3c09ebe/privateb2c6b7 passed local840 tests and its actual committed-source package. Hosted CI57 on exactb2c6b7 failed its first real Windows identity query before the6s delayed phase; other838 units passed and renderer/native/package steps skipped. Launcher48 succeeded. Original archive/log retained in `reviews/2026-10-04-ci57-adverse.md`. First-query diagnostic now records real elapsed time/failure code/child liveness while retaining original assertions and10s native deadline; no hosted outcome is relabelled or defect claimed fixed.
+
+Full captured workflow suite, committed-source map package, exact private sync and remaining approved Diagram/Docs/Present/Terminal work follow inline. No entire plan task is closed on this evidence.
+
+Final frozen `native-map-final-suite`07:39:41.291–07:43:17.114Z passed845/845 (identity2+843), exit0, zero failed/skipped/cancelled/todo and zero changed captured inputs; logSHA256 `7643cd6bf32f52d468bbc86093b218a44553d443da0d579f9fdf9279d49cedd1`. The unchanged native identity assertions and10s deadline passed locally with extra initial-query diagnostics. This does not relabel CI57 or identify its precise cause. All owned processes closed; source commit/committed package/private sync follow.

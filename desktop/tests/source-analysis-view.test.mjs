@@ -49,3 +49,10 @@ test('Cancel keeps its click target after completion and becomes Clear, so a fin
 test('starting a fresh job enables the genuine Cancel control even after changing analysis scope',async()=>{
  const f=fixture();f.node('analysisScope').value='selection';f.node('analysisScope').listeners.change();f.run();const action=f.node('cancelAnalysis');assert.equal(action.disabled,false);assert.equal(action.textContent,'Cancel');action.listeners.click();await f.finish();assert.equal(f.node('analysisDefinitions').children.length,0);assert.equal(f.cancelled.length,1);
 });
+
+test('selected map sends only genuine range metadata, draws literal bounded nesting and supports collapse/navigation',async()=>{
+ const f=fixture();f.node('analysisScope').value='map';f.node('analysisScope').listeners.change();f.run();assert.equal(f.submitted[0].kind,'map');assert.deepEqual(JSON.parse(JSON.stringify(f.submitted[0].range)),{from:2,to:40});
+ await f.finish({ok:true,sourceId:'source-a',version:1,jobId:'job-a',status:'complete',coverage:{from:2,to:40,totalUnits:500,truncated:false,syntaxErrors:0,limited:false},result:{semantics:'syntax-containment',nodes:[{id:0,kind:'selection',label:'Selected code',from:2,to:40,line:1,parent:null},{id:1,kind:'function',label:'<img src=x>',from:3,to:39,line:1,parent:0},{id:2,kind:'call',label:'run()',from:8,to:13,line:2,parent:1}],edges:[{from:0,to:1,kind:'contains'},{from:1,to:2,kind:'contains'}]}});
+ assert.equal(f.node('analysisDefinitions').children.length,3);assert.match(f.node('analysisStatus').textContent,/syntax nesting/);const row=f.node('analysisDefinitions').children[1],select=row.children.find(node=>node.dataset.mapNodeId==='1');assert.equal(select.children[0].textContent,'<img src=x>');select.listeners.click();assert.deepEqual(f.selected,[[3,39]]);
+ row.children.find(node=>node.dataset.collapseId==='1').listeners.click();assert.equal(f.node('analysisDefinitions').children.length,2);f.node('analysisDefinitions').children[1].children.find(node=>node.dataset.collapseId==='1').listeners.click();assert.equal(f.node('analysisDefinitions').children.length,3);
+});
