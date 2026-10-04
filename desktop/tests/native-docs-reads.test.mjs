@@ -34,3 +34,10 @@ test('native Docs refuses publication after owner pause or selected document cha
  f.owner.resume();f.domains.read=original;f.select({...f.selected,json:JSON.stringify({workpapers:[{id:'doc-a',title:'changed selected content'}]})});
  assert.equal((await f.call()).code,'DOCUMENT_VERSION_CHANGED');assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
 });
+test('Docs preparation read is bound to its own genuine private ticket, cannot borrow Code or seal a read as persistence',async()=>{
+ const f=await fixture(),grant=f.registry.capture(f.event(1));f.owner.pause('native-close-view');const nonce=f.owner.beginViewFlush(grant);
+ assert.equal((await f.service.invoke({event:f.event(1),method:'getDocument',flushNonce:'forged'})).ok,false);
+ assert.equal((await f.service.invoke({event:f.event(0),method:'getDocument',flushNonce:nonce})).ok,false);
+ assert.equal((await f.call()).ok,false);const result=await f.service.invoke({event:f.event(1),method:'getDocument',flushNonce:nonce});assert.equal(result.ok,true);assert.equal(result.document.private,'PLANTED_DOCS_PRIVATE_CONTENT');
+ assert.equal((await f.owner.finishViewFlush(grant,nonce)).ok,false);f.owner.resume();assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});

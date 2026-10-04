@@ -25,5 +25,5 @@ export async function diagramContext(){
  const domains=new DomainRepository({projects:()=>new ProjectStore(root,{canSave:()=>false}),sources:()=>new SourceRepository(root,{canWrite:()=>false}),validatePatch:()=>false});
  const owner=new WorkspaceCoordinator({registry,domains,sources:()=>new SourceRepository(root,{canWrite:()=>false}),access:(_grant,scope)=>unlocked&&scope.action==='read-domain'&&scope.domain==='diagram'});
  const event=index=>({sender:windows[index].webContents,senderFrame:windows[index].webContents.mainFrame});
- return {root,projects,sources,selected,workspace,ref,registry,owner,domains,windows,event,lock:()=>{unlocked=false;},setSelected:value=>selected=value,diagramFor:(_grant,id)=>workspaceMetadata(selected).diagrams.find(diagram=>diagram.id===id)};
+ return {root,projects,sources,selected,workspace,ref,registry,owner,domains,windows,event,lock:()=>{unlocked=false;},setSelected:value=>selected=value,getSelected:()=>selected,diagramFor:(_grant,id)=>workspaceMetadata(selected).diagrams.find(diagram=>diagram.id===id)};
 }

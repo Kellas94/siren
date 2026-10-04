@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+test('actual Diagram preload has finite editor commands, private draining nonce and strictly numeric metadata notifications',async()=>{
+ const exposed={},callbacks=new Map(),calls=[];
+ const electron={contextBridge:{exposeInMainWorld:(key,value)=>exposed[key]=value},ipcRenderer:{on:(key,fn)=>callbacks.set(key,fn),removeListener:(key,fn)=>{if(callbacks.get(key)===fn)callbacks.delete(key);},invoke:async(...args)=>{calls.push(args);return {ok:true};}}};
+ const realm=vm.createContext({require:()=>electron});vm.runInContext(await readFile(new URL('../src/windows/preload.cjs',import.meta.url),'utf8'),realm);
+ assert.ok(exposed.sirenDiagramEdit);assert.equal(exposed.sirenDiagramEdit.nonce,undefined);assert.equal(exposed.sirenDiagramEdit.invoke,undefined);
+ await exposed.sirenDiagramEdit.openWorkingCopy();assert.deepEqual(calls.at(-1).slice(0,2),['siren:diagram-editors','openWorkingCopy']);
+ const notices=[],off=exposed.sirenDiagramEdit.onReferenceChanged(value=>notices.push(value)),changed=callbacks.get('siren:working-diagram-changed');
+ const cloned=value=>vm.runInContext('('+JSON.stringify(value)+')',realm);
+ changed({},cloned({diagramId:'diagram-a',version:2,projectRevision:3}));assert.equal(notices.length,1);
+ for(const value of [{diagramId:'diagram-a',version:'2',projectRevision:3},{diagramId:'diagram-a',version:2,projectRevision:3,source:'PRIVATE'},{diagramId:'diagram-a',version:0,projectRevision:3}])changed({},cloned(value));
+ realm.getter=false;changed({},vm.runInContext("Object.defineProperty({},'diagramId',{enumerable:true,get(){getter=true;return 'diagram-a';}})",realm));assert.equal(realm.getter,false);assert.equal(notices.length,1);off();assert.equal(callbacks.has('siren:working-diagram-changed'),false);
+ let release;exposed.sirenViewControl.onPrepare(()=>new Promise(done=>release=done));const nonce='22345678-1234-4234-8234-123456789abc';
+ const pending=callbacks.get('siren:view-prepare')({}, {nonce,requestId:'12345678-1234-4234-8234-123456789abc'});
+ await exposed.sirenDiagramEdit.flushDiagram({entityId:'diagram-a',expectedVersion:2});assert.equal(calls.at(-1)[3],nonce);release({ok:true});await pending;
+ assert.equal(exposed.sirenDiagramRead.nonce,undefined);assert.equal(exposed.sirenDocsRead.nonce,undefined);
+ await exposed.sirenDiagramEdit.applyDiagram({});assert.equal(calls.at(-1)[3],undefined);
+});

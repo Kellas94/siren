@@ -1,8 +1,26 @@
 const { contextBridge, ipcRenderer } = require('electron');
-contextBridge.exposeInMainWorld('sirenDiagramRead',Object.freeze({getDiagram:()=>ipcRenderer.invoke('siren:diagram-read','getDiagram')}));
-contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
+contextBridge.exposeInMainWorld('sirenDiagramRead',Object.freeze({getDiagram:()=>sourceFlushNonce===null?ipcRenderer.invoke('siren:diagram-read','getDiagram'):ipcRenderer.invoke('siren:diagram-read','getDiagram',undefined,sourceFlushNonce)}));
+contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>sourceFlushNonce===null?ipcRenderer.invoke('siren:docs-read','getDocument'):ipcRenderer.invoke('siren:docs-read','getDocument',undefined,sourceFlushNonce)}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 let sourceFlushNonce=null;
+contextBridge.exposeInMainWorld('sirenDiagramEdit',Object.freeze({
+ openWorkingCopy:()=>ipcRenderer.invoke('siren:diagram-editors','openWorkingCopy',{}),
+ openLatest:()=>ipcRenderer.invoke('siren:diagram-editors','openLatest',{}),
+ ...Object.fromEntries(['applyDiagram','flushDiagram'].map(method=>[method,payload=>ipcRenderer.invoke('siren:diagram-editors',method,payload,sourceFlushNonce??undefined)])),
+ onReferenceChanged(callback){
+  if(typeof callback!=='function')throw TypeError('Expected callback');
+  const listener=(_event,value)=>{
+   try{
+    if(!value||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return;
+    const fields=Object.getOwnPropertyDescriptors(value),keys=Reflect.ownKeys(fields);
+    if(keys.length!==3||keys.some(key=>!['diagramId','version','projectRevision'].includes(key)||!('value'in fields[key])))return;
+    const diagramId=fields.diagramId.value,version=fields.version.value,projectRevision=fields.projectRevision.value;
+    if(typeof diagramId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(diagramId)||!Number.isSafeInteger(version)||version<1||!Number.isSafeInteger(projectRevision)||projectRevision<1)return;
+    Promise.resolve(callback(Object.freeze({diagramId,version,projectRevision}))).catch(()=>{});
+   }catch{/* Metadata does not grant diagram access. */}
+  };ipcRenderer.on('siren:working-diagram-changed',listener);return()=>ipcRenderer.removeListener('siren:working-diagram-changed',listener);
+ },
+}));
 contextBridge.exposeInMainWorld('sirenDocsEdit',Object.freeze({
  openWorkingCopy:()=>ipcRenderer.invoke('siren:docs-editors','openWorkingCopy',{}),
  openLatest:()=>ipcRenderer.invoke('siren:docs-editors','openLatest',{}),

@@ -53,7 +53,8 @@ export class WorkspaceCoordinator {
   }
   // Main-only issuance. The control transport may disclose the nonce solely to
   // its captured frame. It grants finite draining of existing source authority,
-  // never another entity, role, frame, epoch, read or general Docs operation.
+  // never another entity, role, frame, epoch or general Docs operation. Diagram
+  // Docs/Diagram preparation may reread its own saved entity before its flush.
   beginViewFlush(grant,options={}) {
     if(!this.#registry.isCurrent(grant) || !['workspace','code',...(this.#domains?['docs','diagram']:[])].includes(grant?.role))throw error('ACCESS_REFUSED');
     if(!this.#paused)throw error('WORKSPACE_NOT_PAUSED');
@@ -128,7 +129,7 @@ export class WorkspaceCoordinator {
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
     if(flushNonce!==undefined) {
       ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
-      if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket) || !(primaryOperation?grant.role==='workspace':kind==='source'?['applyEdit','commitSource'].includes(method):domainOperation && !method.startsWith('read')))return Promise.resolve(fail('FLUSH_REFUSED'));
+      if(!ticket || ticket.sealed || !this.#flushCurrent(grant,ticket) || !(primaryOperation?grant.role==='workspace':kind==='source'?['applyEdit','commitSource'].includes(method):domainOperation && (!method.startsWith('read')||grant.role===kind&&['readDiagram','readDocument'].includes(method))))return Promise.resolve(fail('FLUSH_REFUSED'));
       if(ticket.operations.length>=ticket.maxOperations || ticket.bytes+bytes>ticket.maxBytes)return Promise.resolve(fail('FLUSH_BUDGET'));
     } else if(this.#paused)return Promise.resolve(fail('WORKSPACE_PAUSED'));
     if(this.#pending.size>=this.#maxPending || (primaryOperation?this.#workspaceBytes+bytes>MAX_WORKSPACE_BYTES:this.#bytes+bytes>this.#maxBytes))return Promise.resolve(fail('OWNER_BUDGET'));
@@ -161,8 +162,10 @@ export class WorkspaceCoordinator {
     try{return !this.#paused && this.#current(grant,sourceId) && this.#access(grant,{action:'read',sourceId})===true;}
     catch{return false;}
   }
-  canReadDomain(grant,kind,entityId) {
-    return !this.#paused && ['docs','diagram'].includes(kind) && this.#currentDomain(grant,kind,kind==='docs'?'readDocument':'readDiagram',{entityId});
+  canReadDomain(grant,kind,entityId,flushNonce) {
+    const ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
+    const readable=flushNonce===undefined?!this.#paused:['docs','diagram'].includes(kind)&&grant?.role===kind&&ticket&&!ticket.sealed&&this.#flushCurrent(grant,ticket);
+    return Boolean(readable && ['docs','diagram'].includes(kind) && this.#currentDomain(grant,kind,kind==='docs'?'readDocument':'readDiagram',{entityId}));
   }
   // Trusted native classification controls preparation order only. It creates
   // no read/write grant and does not substitute for a verified readonly seal.

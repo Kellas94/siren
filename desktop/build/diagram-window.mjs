@@ -6,7 +6,7 @@ import {Script} from 'node:vm';
 import {buildDiagramEngine} from './diagram.mjs';
 export async function buildDiagramWindow({outputDir}){
  const engine=await buildDiagramEngine({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.diagram-build')});
- const scripts=[await readFile(engine.bundlePath,'utf8'),(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
+ const scripts=[await readFile(engine.bundlePath,'utf8'),(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
  for(const code of scripts){if(/<\/script/i.test(code))throw Error('Diagram script tag refused');new Script(code);}
  const hashes=scripts.map(code=>"'sha256-"+createHash('sha256').update(code).digest('base64')+"'");
  const template=await readFile(new URL('../src/ui/diagram/window.html',import.meta.url),'utf8');

@@ -75,7 +75,7 @@
   try{
    const result=await window.sirenDocsRead.getDocument();if(disposed||paused||token!==generation)return false;
    if(result?.ok!==true||typeof result.readonly!=='boolean')throw Error('Document unavailable');
-   const own=window.SirenNativeDocsDraft.create({context:result,bridge:window.sirenDocsEdit,onChange:updateState});draft?.dispose();draft=own;readonly=result.readonly;paint(result.document);
+   const own=window.SirenNativeDocsDraft.create({context:result,bridge:{...window.sirenDocsEdit,getDocument:window.sirenDocsRead.getDocument},onChange:updateState});draft?.dispose();draft=own;readonly=result.readonly;paint(result.document);
    status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':'Document saved · Edit this working copy and save explicitly';
    working.hidden=!readonly||result.canEdit!==true;save.hidden=readonly;notice.hidden=true;latest=null;
    document.body.dataset.documentReady='true';document.body.dataset.documentId=result.document.id;document.body.dataset.documentVersion=result.version;document.body.dataset.documentSha256=result.sha256;
@@ -95,7 +95,7 @@
  });
  window.sirenViewControl.onResume(()=>{
   if(disposed||!paused)return;
-  paused=false;draft?.resumeView();document.body.inert=false;document.documentElement.style.visibility='';
+  paused=false;draft?.resumeView();if(draft&&!readonly){paint(draft.getDocument());updateState();}document.body.inert=false;document.documentElement.style.visibility='';
  });
  const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
  const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const result=await draft.save();if(!result.ok)status.textContent='Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';updateState();};

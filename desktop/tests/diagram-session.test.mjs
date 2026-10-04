@@ -5,6 +5,12 @@ import {runInNewContext} from 'node:vm';
 const implementation=await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8').catch(error=>{if(error.code!=='ENOENT')throw error;return '';});
 function create(options){const window={};runInNewContext(implementation,{window});assert.equal(typeof window.SirenNativeDiagramSession?.create,'function');return window.SirenNativeDiagramSession.create(options);}
 const context=source=>({ok:true,readonly:true,diagram:{id:'diagram-a',name:'Exact colour',source},version:1,sha256:'a'.repeat(64),projectRevision:2});
+test('working Diagram previews local source without rereading or changing its saved context, and Lock fences late local SVG',async()=>{
+ let reads=0,release;const painted=[],source=[];
+ const session=create({read:async()=>{reads++;return {...context('saved'),readonly:false};},render:async value=>{if(value.source==='delayed')await new Promise(done=>release=done);return value.source;},onSource:value=>source.push(value.diagram.source),onPreview:value=>painted.push(value),onError:()=>{}});
+ assert.equal(await session.refresh(),true);assert.equal(await session.renderLocal('local'),true);assert.equal(reads,1);assert.equal(session.context.diagram.source,'saved');assert.deepEqual(source,['saved']);assert.deepEqual(painted,['saved','local']);
+ const pending=session.renderLocal('delayed'),pause=session.pause();release();assert.equal(await pending,false);assert.equal(await pause,true);assert.deepEqual(painted,['saved','local']);session.resume();assert.equal(await session.renderLocal('retained'),true);session.dispose();
+});
 test('native Diagram retains exact imported source and preserves it when Mermaid rejects syntax',async()=>{
  const source='flowchart TD\nA-->B\nstyle A fill:#ff3366',opened=[],painted=[],errors=[];
  const session=create({read:async()=>context(source),render:async value=>{assert.equal(value.source,source);throw Error('parse rejected');},onSource:result=>opened.push(result.diagram.source),onPreview:svg=>painted.push(svg),onError:()=>errors.push(true)});

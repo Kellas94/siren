@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {rm} from 'node:fs/promises';
 import {diagramContext} from './fixtures/diagram-context.mjs';
+import {commitManifest} from '../src/sources/manifest.mjs';
 const module=await import('../src/windows/diagram-reads.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
 async function fixture(t){
  const f=await diagramContext();t.after(()=>rm(f.root,{recursive:true,force:true}));assert.equal(typeof module.NativeDiagramReads,'function','Native scoped Diagram reader must exist');
@@ -25,4 +26,18 @@ test('native Diagram suppresses actual disk-read results after owner pause or se
  f.domains.read=async(...args)=>{const result=await read(...args);enter();await gate;return result;};const pending=f.call();await entered;f.owner.pause('Lock');release();assert.equal((await pending).code,'ACCESS_REFUSED');
  f.owner.resume();f.domains.read=read;const metadata=JSON.parse(f.selected.json),workspace=JSON.parse(metadata.storage['t-industries-siren-v23-state']);workspace.diagrams[0].source='flowchart TD\nX-->Y';metadata.storage['t-industries-siren-v23-state']=JSON.stringify(workspace);f.setSelected({...f.selected,json:JSON.stringify(metadata)});
  assert.equal((await f.call()).code,'DIAGRAM_VERSION_CHANGED');assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
+test('paused Diagram reread needs its genuine private draining ticket, cannot borrow another role/entity and cannot seal a read alone',async t=>{
+ const f=await fixture(t),grant=f.registry.capture(f.event(0));f.owner.pause('native-close-view');const nonce=f.owner.beginViewFlush(grant);
+ assert.equal((await f.service.invoke({event:f.event(0),method:'getDiagram',flushNonce:'forged'})).ok,false);
+ assert.equal((await f.service.invoke({event:f.event(1),method:'getDiagram',flushNonce:nonce})).ok,false);
+ const actual=await f.service.invoke({event:f.event(0),method:'getDiagram',flushNonce:nonce});assert.equal(actual.ok,true);assert.deepEqual(actual.diagram,f.workspace.diagrams[0]);
+ const proof=await f.owner.finishViewFlush(grant,nonce);assert.equal(proof.ok,false,'A read cannot be used as a persistence proof');f.owner.resume();assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
+test('genuine clean preparation reads the selected entity after an earlier queued save, rather than comparing it to the stale pre-queue display',async t=>{
+ const f=await fixture(t),grant=f.registry.capture(f.event(0));f.owner.pause('native-close-view');const nonce=f.owner.beginViewFlush(grant);let entered,release;const entry=new Promise(resolve=>entered=resolve),gate=new Promise(resolve=>release=resolve),read=f.domains.read.bind(f.domains);
+ f.domains.read=async(...args)=>{entered();await gate;return read(...args);};const pending=f.service.invoke({event:f.event(0),method:'getDiagram',flushNonce:nonce});await entry;
+ const metadata=JSON.parse(f.selected.json),workspace=JSON.parse(metadata.storage['t-industries-siren-v23-state']);workspace.diagrams[0]={...workspace.diagrams[0],source:'flowchart TD\nA[Saved before read]-->B',sirenNativeVersion:2};metadata.storage['t-industries-siren-v23-state']=JSON.stringify(workspace);
+ assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId:f.selected.project.id,baseRevision:f.selected.revision,sourceRefs:f.selected.sourceRefs,metadata,operationId:'before-preparing-read'})).ok,true);const actual=await f.projects.readProject(f.selected.project.id);f.setSelected(actual);release();
+ const result=await pending;assert.equal(result.ok,true);assert.equal(result.version,2);assert.equal(result.diagram.source,workspace.diagrams[0].source);f.owner.cancelViewFlush(grant,nonce);f.owner.resume();assert.deepEqual(await f.projects.readProject(f.selected.project.id),actual);
 });

@@ -29,4 +29,4 @@ export type NativeDocumentContext = { ok: true; readonly: boolean; canEdit?: boo
 export type NativeDocumentEdit = { operationId: string; documentId: string; expectedVersion: string; action: 'rename' | 'replace-blocks' | 'replace-content'; payload: { title?: string; blocks?: unknown[] } };
 export type NativeDocumentReceipt = { ok: true; domain: 'docs'; entityId: string; version: string; sha256: string; projectRevision: number; durability: 'committed' | 'recovery-degraded'; operationId?: string };
 export type NativeDocumentChange = { documentId: string; version: string; projectRevision: number };
-export type NativeDiagramRead = { ok: true; readonly: true; diagram: { id: string; name?: string; source: string; [key: string]: unknown }; version: number; sha256: string; projectRevision: number } | { ok: false; code: string };
+export type NativeDiagramRead = { ok: true; readonly: boolean; canEdit?: boolean; diagram: { id: string; name?: string; source: string; [key: string]: unknown }; version: number; sha256: string; projectRevision: number } | { ok: false; code: string };

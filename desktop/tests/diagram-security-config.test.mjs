@@ -5,7 +5,7 @@ import {runInNewContext} from 'node:vm';
 test('native Mermaid protects its security policy and finite renderer budgets from imported init directives',async()=>{
  const code=await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8');let adapters,config;
  const element=()=>({addEventListener(){},append(){},remove(){},style:{},dataset:{}}),elements=new Map(),get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
- const window={SirenNativeDiagramSession:{create(value){adapters=value;return {refresh:()=>Promise.resolve(false)};}},mermaid:{initialize(value){config=value;},render:async()=>{throw Error('Intentional stopped render');}},sirenDiagramRead:{},sirenViewControl:{onPrepare(){},onResume(){}},sirenWindow:{onReady(){}},addEventListener(){}};
+ const window={SirenNativeDiagramSession:{create(value){adapters=value;return {refresh:()=>Promise.resolve(false)};}},mermaid:{initialize(value){config=value;},render:async()=>{throw Error('Intentional stopped render');}},sirenDiagramRead:{},sirenDiagramEdit:{onReferenceChanged:()=>()=>{}},sirenViewControl:{onPrepare(){},onResume(){}},sirenWindow:{onReady(){}},addEventListener(){}};
  runInNewContext(code,{window,document:{getElementById:get,createElement:element,documentElement:{style:{}},body:{dataset:{}}},matchMedia:()=>({matches:false,addEventListener(){}})});
  await assert.rejects(adapters.render({source:'%%{init:{"secure":[],"maxEdges":999999,"securityLevel":"loose"}}%%\nflowchart TD\nA-->B',token:1}));
  assert.equal(config.securityLevel,'strict');assert.equal(config.startOnLoad,false);assert.equal(config.maxTextSize,50000);assert.equal(config.maxEdges,500);assert.equal(config.htmlLabels,false);

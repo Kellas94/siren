@@ -9,13 +9,18 @@
    const operation=(async()=>{
     try{
      const result=await read();if(!current(token))return false;
-     if(result?.ok!==true||result.readonly!==true||typeof result.diagram?.source!=='string')throw Error('Diagram unavailable');
+     if(result?.ok!==true||typeof result.readonly!=='boolean'||typeof result.diagram?.source!=='string')throw Error('Diagram unavailable');
      context=result;onSource(result);
      const preview=await render({source:result.diagram.source,token});if(!current(token))return false;
      onPreview(preview);return true;
     }catch{if(current(token))onError();return false;}
    })();pending.add(operation);operation.finally(()=>pending.delete(operation));return operation;
   }
-  return Object.freeze({refresh,get context(){return context;},async pause(){paused=true;++generation;await Promise.allSettled([...pending]);return !disposed&&context!==null;},resume(){if(!disposed)paused=false;},dispose(){disposed=true;paused=true;++generation;context=null;}});
+  function renderLocal(source){
+   if(paused||disposed||!context||typeof source!=='string')return Promise.resolve(false);
+   const token=++generation,operation=(async()=>{try{const preview=await render({source,token});if(!current(token))return false;onPreview(preview);return true;}catch{if(current(token))onError();return false;}})();
+   pending.add(operation);operation.finally(()=>pending.delete(operation));return operation;
+  }
+  return Object.freeze({refresh,renderLocal,get context(){return context;},async pause(){paused=true;++generation;await Promise.allSettled([...pending]);return !disposed&&context!==null;},resume(){if(!disposed)paused=false;},dispose(){disposed=true;paused=true;++generation;context=null;}});
  }});
 })();
