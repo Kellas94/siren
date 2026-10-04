@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFile, rename, rm, symlink } from 'node:fs/promises';
+import { readFile, writeFile, rename, rm, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtemp } from './fixtures/temporary.mjs';
@@ -16,6 +16,20 @@ async function fixture(t, options = {}) {
   return { root, projectId: project.project.id, repo: new SourceRepository(root, options), SourceRepository };
 }
 const edit = (ref, operationId, start, end, insertedText) => ({ sourceId: ref.sourceId, expectedVersion: ref.version, operationId, start, end, insertedText });
+
+test('verified read never reuses bytes after the owned source blob changes or disappears',async t=>{
+ const {projectId,repo}=await fixture(t),bytes=Buffer.from('exact immutable Ș😀\r\n'),ref=await repo.importSource({projectId,bytes}),request={projectId,sourceId:ref.sourceId,version:1},blob=join(await repo.sourceDirectory(projectId,ref.sourceId),'blobs',ref.sha256+'.bin');
+ assert.deepEqual((await repo.readVerifiedVersion(request)).bytes,bytes);await writeFile(blob,Buffer.from('corrupt source'));await assert.rejects(repo.readVerifiedVersion(request),{code:'CORRUPT_SOURCE'});await writeFile(blob,bytes);assert.deepEqual((await repo.readVerifiedVersion(request)).bytes,bytes);await rm(blob);await assert.rejects(repo.readVerifiedVersion(request),{code:'ENOENT'});
+});
+
+test('verified version reads exact original or edited bytes with one genuine replay and rechecks read/export authority after it',async t=>{
+ const {projectId,repo}=await fixture(t),original=Buffer.from('\ufeffa😀\r\nb\nc'),ref=await repo.importSource({projectId,bytes:original,provenance:{agentId:'exact-agent'}});
+ const edited=await repo.applyEdit({projectId,edit:edit(ref,'verified-edit',1,2,'Ș')});assert.equal(edited.ok,true);let loads=0,lastModel;const load=repo.load.bind(repo);repo.load=async(...args)=>{loads++;const result=await load(...args);lastModel=result.model;return result;};
+ assert.equal(typeof repo.readVerifiedVersion,'function');
+ const first=await repo.readVerifiedVersion({projectId,sourceId:ref.sourceId,version:1});assert.equal(loads,1);assert.equal(lastModel,null,'Immutable base verification must not create an editable line index');assert.deepEqual(first.ref,ref);assert.deepEqual(first.bytes,original);
+ loads=0;const second=await repo.readVerifiedVersion({projectId,sourceId:ref.sourceId,version:edited.version});assert.equal(loads,1);assert.ok(lastModel,'Edited version must still use genuine operation replay');assert.deepEqual(second.bytes,Buffer.from('\ufeffȘ😀\r\nb\nc'));assert.equal(second.ref.sha256,sha(second.bytes));
+ for(const action of ['read','export']){let active=true;repo.canWrite=context=>active||context.action!==action;repo.load=async(...args)=>{const result=await load(...args);active=false;return result;};await assert.rejects(repo.readVerifiedVersion({projectId,sourceId:ref.sourceId,version:1}),{code:'ACCESS_REFUSED'});}
+});
 
 test('exact BOM, mixed newline and Unicode bytes survive import, durable draft, commit and fresh reopen', async t => {
   const { root, projectId, repo, SourceRepository } = await fixture(t);

@@ -109,7 +109,8 @@ export class SourceRepository {
     version(record.ref.version);
     return record;
   }
-  async load(projectId, sourceId, requestedVersion) {
+  async load(projectId, sourceId, requestedVersion, {materializeModel=true}={}) {
+    if(typeof materializeModel!=='boolean')throw error('INVALID_SOURCE_OPTIONS');
     const directory = await this.sourceDirectory(projectId, sourceId);
     const pointer = await this.readPointer(directory, sourceId);
     let descriptor = pointer.head; const records = []; const seen = new Set(); let previous = Infinity;
@@ -127,7 +128,9 @@ export class SourceRepository {
     if (base.kind !== 'import' || base.ref.version !== 1 || !hashPattern.test(base.blob)) throw error('CORRUPT_SOURCE');
     const bytes = await readOwnedBytes(join(await childDirectory(directory, 'blobs'), `${base.blob}.bin`), this.limits.sourceBytes);
     if (digest(bytes) !== base.blob || base.ref.sha256 !== base.blob) throw error('CORRUPT_SOURCE');
-    const text = decode(bytes); let model = text === null ? null : new TextModel({ text, version: 1, sourceId });
+    // Immutable version-one verification/export needs exact bytes, not a large
+    // editable line treap. Edited versions still replay through the real model.
+    const text = decode(bytes); let model = text === null || !materializeModel&&chain.length===1 ? null : new TextModel({ text, version: 1, sourceId });
     for (const { record } of chain.slice(1)) {
       if (!model || record.kind !== 'edit' || record.ref.version !== model.version + 1 || requestHash(record.edit) !== record.requestHash) throw error('CORRUPT_SOURCE');
       const applied = model.apply(record.edit);
@@ -175,8 +178,18 @@ export class SourceRepository {
   }
   async exportSource({ projectId, sourceId, version: requestedVersion }) {
     await this.access('export', projectId, sourceId);
-    const loaded = await this.load(projectId, sourceId, requestedVersion);
+    const loaded = await this.load(projectId, sourceId, requestedVersion,{materializeModel:false});
     await this.access('export', projectId, sourceId); return loaded.bytes;
+  }
+  // Main-only verification primitive, deliberately absent from renderer IPC.
+  // Recovery/manifest verification needs the reference and the bytes from the
+  // same replay. No cached receipt, skipped checksum or new read authority.
+  async readVerifiedVersion({ projectId, sourceId, version: requestedVersion }) {
+    version(requestedVersion);
+    await this.access('read', projectId, sourceId);await this.access('export', projectId, sourceId);
+    const loaded = await this.load(projectId, sourceId, requestedVersion,{materializeModel:false});
+    await this.access('read', projectId, sourceId);await this.access('export', projectId, sourceId);
+    return {ref:structuredClone(loaded.ref),bytes:loaded.bytes};
   }
   async readRange({ projectId, sourceId, version: requestedVersion, start, end }) {
     await this.access('read', projectId, sourceId);
@@ -194,7 +207,7 @@ export class SourceRepository {
   }
   async getMetrics({ projectId, sourceId, version: requestedVersion }) {
     await this.access('read', projectId, sourceId);
-    const loaded = await this.load(projectId, sourceId, requestedVersion);
+    const loaded = await this.load(projectId, sourceId, requestedVersion,{materializeModel:false});
     await this.access('read', projectId, sourceId); return loaded.ref;
   }
   async applyEdit({ projectId, edit }) {

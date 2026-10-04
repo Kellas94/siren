@@ -12,9 +12,10 @@ export async function verifySourceSnapshot({ snapshot, repository }) {
   const verified = [];
   for (const ref of snapshot.sourceRefs) {
     const request = { projectId: snapshot.project.id, sourceId: ref.sourceId, version: ref.version };
-    const actual = await repository.getMetrics(request);
+    const version=typeof repository.readVerifiedVersion==='function'?await repository.readVerifiedVersion(request):null;
+    const actual = version?version.ref:await repository.getMetrics(request);
     if (!isDeepStrictEqual(actual, ref)) throw refused('SOURCE_REF_MISMATCH');
-    const bytes = await repository.exportSource(request);
+    const bytes = version?version.bytes:await repository.exportSource(request);
     if (digest(bytes) !== ref.sha256 || bytes.length !== ref.utf8Bytes) throw refused('SOURCE_REF_MISMATCH');
     verified.push({ ref, bytes });
   }

@@ -100,9 +100,11 @@ export function verifySourceManifest(snapshot) {
 
 async function verifiedSources(repository, projectId, sourceRefs, materialize) {
   for (const ref of sourceRefs) {
-    const actual = await repository.getMetrics({ projectId, sourceId: ref.sourceId, version: ref.version });
+    const request={ projectId, sourceId: ref.sourceId, version: ref.version };
+    const verified=typeof repository.readVerifiedVersion==='function'?await repository.readVerifiedVersion(request):null;
+    const actual = verified?verified.ref:await repository.getMetrics(request);
     if (canonicalJson(actual) !== canonicalJson(ref)) throw error('SOURCE_REFERENCE_MISMATCH');
-    const bytes = await repository.exportSource({ projectId, sourceId: ref.sourceId, version: ref.version });
+    const bytes = verified?verified.bytes:await repository.exportSource(request);
     if (bytes.length !== ref.utf8Bytes || digest(bytes) !== ref.sha256) throw error('SOURCE_REFERENCE_MISMATCH');
     if (materialize) {
       const blobs = await childDirectory(await repository.sourceDirectory(projectId, ref.sourceId), 'blobs');

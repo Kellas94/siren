@@ -71,7 +71,7 @@ test('strict data-only payloads and only four methods reject before repository d
     { ...valid, projectId: f.projectId }, { ...valid, path: 'C:/private' }, { ...valid, role: 'workspace' },
     { ...valid, epoch: 1 }, { ...valid, version: undefined }, { sourceId: '../escape' }];
   for (const payload of invalid) refused(await f.call('getMetrics', payload), 'REQUEST_REFUSED');
-  for (const method of ['exportSource', 'importSource', '__proto__', 'toString', null]) refused(await f.call(method, valid), 'REQUEST_REFUSED');
+  for (const method of ['exportSource', 'readVerifiedVersion', 'importSource', '__proto__', 'toString', null]) refused(await f.call(method, valid), 'REQUEST_REFUSED');
   assert.equal(f.count(), 0);
   assert.equal((await f.call('getMetrics', Object.assign(Object.create(null), valid))).ok, true);
 });

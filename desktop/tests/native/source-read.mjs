@@ -11,7 +11,7 @@ import {launchDesktop,unlockDesktop} from './drive.mjs';
 const evidence=resolve('evidence/source-read',new Date().toISOString().replaceAll(':','-'));
 await mkdir(evidence,{recursive:true});const data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
-const paths=['src/main.mjs','src/navigation/continue.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
+const paths=['src/sources/repository.mjs','src/sources/manifest.mjs','src/sources/recovery.mjs','src/main.mjs','src/navigation/continue.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
 paths.push('src/windows/catalog.mjs','src/windows/control.mjs','src/windows/source-barrier.mjs','src/windows/readonly-seals.mjs','src/windows/primary.mjs','src/ui/code/view-lifecycle.js','src/ui/storage.js','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
 if(process.argv.includes('--owned-source-corruption'))paths.push('tests/native/view-control-rollback.mjs');
 if(process.argv.includes('--owned-home-navigation'))paths.push('tests/native/home-navigation.mjs','tests/native/home-navigation-cases.mjs','generated/home.html',...['authority','service','transition-receipts','store','catalog','resolver','ipc'].map(n=>'src/navigation/'+n+'.mjs'),'src/ui/workspace/home.js','src/ui/workspace/intro.js');
@@ -152,7 +152,7 @@ try{
  assert.deepEqual(await projects.readProject(first.project.id),selected);
  result.cases.push({name:'actual native Lock retires all satellite handles, refuses primary source bytes and preserves selected project',ok:true});
  result.status='COMPLETE';
-}catch(error){result.error={message:error.message,stack:error.stack};if(driver)await driver.screenshot(join(evidence,'failure.png')).catch(()=>{});}
+}catch(error){result.error={message:error.message,stack:error.stack};if(driver){result.runtimeLog=driver.logs().slice(-12000);await driver.screenshot(join(evidence,'failure.png')).catch(()=>{});}}
 finally{
  if(driver){await writeFile(join(evidence,'electron.log'),driver.logs());await driver.close();}
  result.afterInputs=await capture();result.inputsUnchanged=JSON.stringify(inputs)===JSON.stringify(result.afterInputs);
