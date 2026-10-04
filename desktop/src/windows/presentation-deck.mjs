@@ -7,7 +7,7 @@ import {workspaceMetadata} from './entities.mjs';
 const error=code=>Object.assign(Error(code),{code});
 const text=(value,limit)=>typeof value==='string'&&value.isWellFormed()&&value.length<=limit;
 const refuse=()=>{throw error('PRESENTATION_DECK_REFUSED');};
-const styleKeys=['diagramTitle','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','gitBranchColours','legend','numbering'];
+const styleKeys=['diagramTitle','diagramTitleTouched','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','gitBranchColours','legend','numbering'];
 function projection(snapshot,diagramId){
  const diagrams=workspaceMetadata(snapshot).diagrams??[],matches=diagrams.filter(diagram=>diagram?.id===diagramId);if(matches.length!==1)refuse();const diagram=matches[0];
  if(typeof diagram.source!=='string'||!diagram.source.isWellFormed()||Buffer.byteLength(diagram.source)>2*1024*1024)refuse();

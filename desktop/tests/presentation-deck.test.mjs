@@ -46,3 +46,8 @@ test('unsupported/malformed or duplicate authored slides and oversized notes are
   await assert.rejects(f.decks.read(f.grants[0],{isCurrent:()=>true}),{code:'PRESENTATION_DECK_REFUSED'});assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),saved);
  }
 });
+test('native deck projects the actual title visibility/font/style flags without copying private metadata',async()=>{
+ const f=await fixture(),diagram={...f.diagram,diagramTitleTouched:true,diagramTitle:'Visible title',fontFamily:'Georgia',fontSize:20,fontWeight:600,nodeStyles:{A:{fill:'#ff3366'},B:{fill:'#12ab34'}}};
+ assert.equal((await f.projects.saveProject({projectId:f.snapshot.project.id,baseRevision:f.snapshot.revision,json:JSON.stringify({...f.metadata,diagrams:[diagram]}),purpose:'workspace'})).ok,true);const snapshot=await f.projects.readProject(f.snapshot.project.id);f.setSnapshot(snapshot);const deck=await f.decks.read(f.grants[0],{isCurrent:()=>true});
+ assert.equal(deck.render.diagramTitleTouched,true);assert.equal(deck.render.diagramTitle,'Visible title');assert.equal(deck.render.fontFamily,'Georgia');assert.equal(deck.render.fontSize,20);assert.deepEqual(deck.render.nodeStyles,diagram.nodeStyles);assert.equal(JSON.stringify(deck.render).includes('PRIVATE_'),false);assert.deepEqual(await f.projects.readProject(snapshot.project.id),snapshot);
+});

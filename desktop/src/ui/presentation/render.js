@@ -16,12 +16,11 @@
  }
  function focusNode(root,id){
   const prefixes=['presentationPublic-flowchart-'+id+'-','flowchart-'+id+'-'];
-  const matches=[...root.querySelectorAll('.node')].filter(node=>node.getAttribute('data-id')===id||prefixes.some(prefix=>node.id.startsWith(prefix)&&/^\d+$/.test(node.id.slice(prefix.length))));if(matches.length!==1)fail();const node=matches[0];
+  const matches=[...root.querySelectorAll('.node')].filter(node=>node.getAttribute('data-native-node-id')===id||node.getAttribute('data-id')===id||prefixes.some(prefix=>node.id.startsWith(prefix)&&/^\d+$/.test(node.id.slice(prefix.length))));if(matches.length!==1)fail();const node=matches[0];
   const box=node.getBBox(),matrix=root.getCTM().inverse().multiply(node.getCTM()),points=[[box.x,box.y],[box.x+box.width,box.y],[box.x,box.y+box.height],[box.x+box.width,box.y+box.height]].map(([x,y])=>new DOMPoint(x,y).matrixTransform(matrix));
   const x=Math.min(...points.map(point=>point.x)),y=Math.min(...points.map(point=>point.y)),width=Math.max(...points.map(point=>point.x))-x,height=Math.max(...points.map(point=>point.y))-y,padding=Math.max(40,width*.45,height*.45);
   if(![x,y,width,height,padding].every(Number.isFinite)||width<=0||height<=0)fail();root.setAttribute('viewBox',`${x-padding} ${y-padding} ${width+padding*2} ${height+padding*2}`);
  }
- if(window.__SIREN_ELK)window.mermaid.registerLayoutLoaders(window.__SIREN_ELK);
  window.sirenRenderPublicSlide=async input=>{
   if(busy)fail();busy=true;let url;
   try{
@@ -32,8 +31,7 @@
     const title=document.createElement('h1');title.textContent=input.slide.title;host.append(title);context.fillStyle=dark?'#e9ebf3':'#20283a';context.font='600 58px system-ui';context.textAlign='center';
     const words=input.slide.title.split(/\s+/),lines=[];let line='';for(const word of words){const next=line?line+' '+word:word;if(line&&context.measureText(next).width>1300){lines.push(line);line=word;}else line=next;}if(line)lines.push(line);if(lines.length>6)fail();lines.forEach((line,index)=>context.fillText(line,800,450+(index-(lines.length-1)/2)*76));
    }else{
-    window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,theme:dark?'dark':'default',maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']});
-    const result=await window.mermaid.render('presentationPublic',input.context.source,host),root=sanitize(result.svg);host.replaceChildren(root);
+    const svg=await window.sirenRenderDiagramVector({diagram:input.context,appearance:dark?'dark':'light'}),root=sanitize(svg);host.replaceChildren(root);
     if(entry.type==='node'){if(typeof entry.nodeId!=='string')fail();focusNode(root,entry.nodeId);}
     root.setAttribute('width','1600');root.setAttribute('height','900');root.removeAttribute('style');root.setAttribute('preserveAspectRatio','xMidYMid meet');
     url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(root)],{type:'image/svg+xml'}));const image=new Image();image.src=url;await image.decode();context.drawImage(image,0,0,1600,900);

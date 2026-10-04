@@ -114,6 +114,8 @@ Integrated order: Sources 1–3 → this plan Task 1 → Sources 4–6 → this 
 
 ## Self-review and handoff
 
+4 October09:48 partial Task5 checkpoint: native Present now consumes saved style/title visibility through the isolated vector-to-PNG path, with exact imported-colour priority, font/title and source privacy. A genuine colour RED and a subsequent measured label-overflow RED remain retained; standalone SVG now keeps safe ordinary Mermaid CSS while dropping unsafe declarations/at-rules. Actual isolated style4/vector8/original render4 and actual Presenter/Audience5 (explicit300000 numbered rows) pass; all owned native handles closed/inputs unchanged. Whole frozen suite, committed package and exact private sync follow. Earlier presentation-windows runs internally used100000 numbered rows even when called with300k; the new fixture explicitly records/honors its count. Cards/rich media/export/adjacent preload/per-node typography stress/physical monitors remain open. Evidence desktop/reviews/2026-10-04-native-presentation-style-root-evidence.md is implementer only; no full Task5 checkbox is closed.
+
 Spec coverage: role/privacy = Task 1; one owner/versions = Task 2; Lock/close/crash/selection = Task 3; Docs/Code/window shelf/shortcuts/attach = Task 4; Present/versioned transport = Task 5; geometry/display/full qualification = Task 6. All five Review Focus cases map to explicit adverse tests. The user must review this written plan before implementation. Use the preserved execution choice: implementation here in batches for coupled interfaces, with scoped independent agent review/probes and final review.
 
 ## 4 October execution checkpoint — native Docs working editor

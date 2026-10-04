@@ -3,12 +3,22 @@
  const fail=()=>{throw Error('Diagram vector refused');};
  const allowed=new Set(['svg','g','path','rect','line','polyline','polygon','circle','ellipse','text','tspan','defs','marker','clipPath','mask','linearGradient','radialGradient','stop','filter','feGaussianBlur','feOffset','feColorMatrix','feBlend','feComposite','feMerge','feMergeNode','feFlood','style','title','desc','a']);
  const safeCss=value=>!/[\\]|@/u.test(value)&&[...value.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)].every(match=>/^#[A-Za-z_][\w:.-]*$/.test(match[2].trim()));
+ function sanitizedStyles(text){
+  // Keep ordinary local Mermaid rules (including label alignment). Discard
+  // imports, fonts, animation and other at-rules without losing the entire
+  // stylesheet; retain only declarations with safe local fragment URLs.
+  const sheet=new CSSStyleSheet();sheet.replaceSync(text);const rules=[];
+  for(const rule of sheet.cssRules){if(rule.type!==CSSRule.STYLE_RULE||!safeCss(rule.selectorText))continue;const declarations=[];
+   for(const property of rule.style){const value=rule.style.getPropertyValue(property);if(safeCss(value))declarations.push(property+':'+value+(rule.style.getPropertyPriority(property)?' !important':'')+';');}
+   if(declarations.length)rules.push(rule.selectorText+'{'+declarations.join('')+'}');
+  }return rules.join('\n');
+ }
  function sanitize(svg){
   const parsed=new DOMParser().parseFromString(svg,'image/svg+xml'),root=parsed.documentElement;if(root.localName!=='svg'||root.namespaceURI!==NS||parsed.querySelector('parsererror')||parsed.doctype)fail();
   for(const node of root.querySelectorAll('*'))if(node.namespaceURI!==NS||!allowed.has(node.localName))node.remove();
   for(const node of [root,...root.querySelectorAll('*')]){
    for(const attr of [...node.attributes]){const key=attr.localName.toLowerCase(),value=attr.value;if(key.startsWith('on')||key==='href'&&!/^#[A-Za-z_][\w:.-]*$/.test(value)||!safeCss(value))node.removeAttributeNode(attr);}
-   if(node.localName==='style'&&!safeCss(node.textContent))node.remove();
+   if(node.localName==='style'){node.textContent=sanitizedStyles(node.textContent);if(!node.textContent)node.remove();}
   }
   return document.importNode(root,true);
  }
