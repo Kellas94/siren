@@ -55,6 +55,17 @@ check('Docs replacement preserves linked source pointers, release provenance and
  const result=await f.repo.apply('docs',{...f.docs(),action:'replace-blocks',payload:{blocks}},f.scope);assert.equal(result.ok,true);
  const current=await f.projects.readProject(f.projectId);assert.deepEqual(workspaceMetadata(current).workpapers[0],{...before.workpapers[0],blocks});assert.equal(result.version,documentVersion(current,'doc-a'));assert.deepEqual(current.sourceRefs,f.snapshot.sourceRefs);
 });
+
+check('one Docs content transaction changes title and blocks atomically while retaining agent/releases/other entities',async()=>{
+ const f=await fixture({wrapped:true}),before=workspaceMetadata(f.snapshot),blocks=[{id:'new-heading',kind:'heading',level:2,text:'Exact 😀 heading'},...before.workpapers[0].blocks];
+ const request={...f.docs(),action:'replace-content',payload:{title:'One atomic title',blocks}};
+ const result=await f.repo.apply('docs',request,f.scope);assert.equal(result.ok,true,JSON.stringify(result));
+ const current=await f.projects.readProject(f.projectId),expected=structuredClone(before);expected.workpapers[0].title='One atomic title';expected.workpapers[0].blocks=blocks;
+ assert.deepEqual(workspaceMetadata(current),expected);assert.deepEqual(current.sourceRefs,f.snapshot.sourceRefs);assert.equal(current.revision,f.snapshot.revision+1);
+ assert.deepEqual(await f.repo.apply('docs',request,f.scope),result);
+ assert.equal((await f.repo.apply('docs',{...request,operationId:'stale-content'},f.scope)).code,'DOCUMENT_CONFLICT');
+ assert.deepEqual(await f.projects.readProject(f.projectId),current);
+});
 check('getters, prototype authority, unknown fields, oversize and sparse blocks are refused before user code executes',async()=>{
  const f=await fixture();let evaluated=false;const request=f.diagram();Object.defineProperty(request.payload,'source',{get:()=>{evaluated=true;return 'x';},enumerable:true});
  assert.equal((await f.repo.apply('diagram',request,f.scope)).code,'REQUEST_REFUSED');assert.equal(evaluated,false);

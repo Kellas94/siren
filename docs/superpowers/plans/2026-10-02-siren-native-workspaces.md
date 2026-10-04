@@ -113,3 +113,7 @@ Integrated order: Sources 1–3 → this plan Task 1 → Sources 4–6 → this 
 ## Self-review and handoff
 
 Spec coverage: role/privacy = Task 1; one owner/versions = Task 2; Lock/close/crash/selection = Task 3; Docs/Code/window shelf/shortcuts/attach = Task 4; Present/versioned transport = Task 5; geometry/display/full qualification = Task 6. All five Review Focus cases map to explicit adverse tests. The user must review this written plan before implementation. Use the preserved execution choice: implementation here in batches for coupled interfaces, with scoped independent agent review/probes and final review.
+
+## 4 October execution checkpoint — native Docs working editor
+
+Partial Tasks2/3/4: explicitly admitted schema-2 native Docs now edits title/headings/plain text with Save/Ctrl+S, Add/Remove, genuine metadata updates, conflict retention, separate review and confirmed reload. Actual300k Docs four-group probe passed Close/reopen and saving an unsaved title/new block at all-view Lock with immutable Code. Root evidence desktop/reviews/2026-10-04-native-docs-edit-root-evidence.md, implementer only. Exact recovery checkpoint proof, final readonly sequencing and Home checkpoint reuse remove measured Lock defects without larger deadlines. Full frozen713/713, unchanged captured inputs. Specialized Docs editors/new links, attach-back, Presenter/Audience, Terminal, physical-monitor and complete package qualification remain open. No task completion is inferred from this partial boundary.

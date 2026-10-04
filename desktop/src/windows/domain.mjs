@@ -29,7 +29,10 @@ function domainIntent(domain,input) {
  if(!validId(request.operationId)||!validId(request[idKey])||(domain==='docs'?!hash(request.expectedVersion):!Number.isSafeInteger(request.expectedVersion)||request.expectedVersion<1||request.expectedVersion>=Number.MAX_SAFE_INTEGER))throw error('REQUEST_REFUSED');
  let payload;
  if(domain==='docs'&&request.action==='rename'){payload=navigationFields(request.payload,['title']);if(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed())throw error('REQUEST_REFUSED');}
- else if(domain==='docs'&&request.action==='replace-blocks'){payload=navigationFields(request.payload,['blocks']);if(!Array.isArray(payload.blocks)||payload.blocks.length>300)throw error('REQUEST_REFUSED');}
+ else if(domain==='docs'&&['replace-blocks','replace-content'].includes(request.action)){
+  payload=navigationFields(request.payload,request.action==='replace-content'?['title','blocks']:['blocks']);
+  if(!Array.isArray(payload.blocks)||payload.blocks.length>300||request.action==='replace-content'&&(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed()))throw error('REQUEST_REFUSED');
+ }
  else if(domain==='diagram'&&['replace-source','update-model'].includes(request.action)){payload=navigationFields(request.payload,['source']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');}
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');

@@ -7,6 +7,7 @@ import { verifySnapshot } from '../projects/store.mjs';
 import { readOwnedBytes } from '../projects/io.mjs';
 import { MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from '../projects/budgets.mjs';
 import { verifySourceSnapshot, exportSourceSnapshot, restoreSourceSnapshot } from '../sources/recovery.mjs';
+import {isDeepStrictEqual} from 'node:util';
 
 const uuid = value => typeof value === 'string' && /^[a-f0-9-]{36}$/.test(value);
 function verifyPoint(record) {
@@ -113,6 +114,27 @@ export class RecoveryStore {
     if(record.snapshot.schema===2)await verifySourceSnapshot({snapshot:record.snapshot,repository:this.sources});
     return record;
   }
+  // A durability receipt needs one exact saved checkpoint. Historical source
+  // replay belongs to recovery inspection/pruning, not each window's flush.
+  // Catalog labels and preliminary metadata never authorize the receipt: the
+  // candidate is reopened and its actual source bytes are verified once here.
+  async findSavedSnapshot(snapshot) {
+    try {
+      verifySnapshot(snapshot);
+      const directory=await childDirectory(await this.directory(),snapshot.project.id);
+      for(const name of await readdir(directory)) {
+        if(!/^[a-f0-9-]{36}\.json$/.test(name))continue;
+        try {
+          const candidate=verifyPoint(JSON.parse(await readOwnedBytes(join(directory,name),MAX_SERIALIZED_WORKSPACE_BYTES)));
+          if(name!==candidate.id+'.json'||candidate.kind!=='saved'||!isDeepStrictEqual(candidate.snapshot,snapshot))continue;
+          const actual=await this.readProjectPoint(snapshot.project.id,candidate.id);
+          if(actual.kind==='saved'&&isDeepStrictEqual(actual.snapshot,snapshot))return publicPoint(actual);
+        } catch {/* Damaged originals remain untouched and cannot prove durability. */}
+      }
+    } catch {/* Missing or invalid saved bytes cannot establish recovery. */}
+    return null;
+  }
+  async hasSavedSnapshot(snapshot) {return (await this.findSavedSnapshot(snapshot))!==null;}
   async restoreRecovery({ pointId, destination, projects }) {
     if (destination !== 'new-project') throw new Error('Recovery must create a new project');
     const record = await this.readPoint(pointId);

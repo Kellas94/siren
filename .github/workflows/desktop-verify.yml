@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-edit', 'source-link', 'source-sync', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -77,6 +77,8 @@ jobs:
           node tests/native/source-link.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-sync.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-edit.mjs --package $preview.previewRoot
           exit $LASTEXITCODE
       - name: Retain scoped test evidence in private CI
         if: always()
@@ -144,6 +146,8 @@ jobs:
             desktop/evidence/source-link/*/*.png
             desktop/evidence/source-sync/*/result.json
             desktop/evidence/source-sync/*/*.png
+            desktop/evidence/docs-edit/*/result.json
+            desktop/evidence/docs-edit/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
             desktop/dist/*/BUILD-IDENTITY.json

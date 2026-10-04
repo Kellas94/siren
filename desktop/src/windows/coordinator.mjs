@@ -145,8 +145,8 @@ export class WorkspaceCoordinator {
         projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');
       if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt,'source',grant.windowId);
-      if(domainOperation && receipt.ok===true && !method.startsWith('read'))this.#publish(grant.projectId,receipt.entityId,receipt,kind);
-      if(kind==='docs' && !domainOperation && receipt.ok===true)this.#publish(grant.projectId,payload.documentId,receipt,'docs');
+      if(domainOperation && receipt.ok===true && !method.startsWith('read'))this.#publish(grant.projectId,receipt.entityId,receipt,kind,grant.windowId);
+      if(kind==='docs' && !domainOperation && receipt.ok===true)this.#publish(grant.projectId,payload.documentId,receipt,'docs',grant.windowId);
       return current()?receipt:fail('ACCESS_REFUSED');
     }).catch(()=>fail('OWNER_OPERATION_FAILED'));
     this.#pending.add(operation);this.#tail=operation;
@@ -163,6 +163,16 @@ export class WorkspaceCoordinator {
   }
   canReadDomain(grant,kind,entityId) {
     return !this.#paused && ['docs','diagram'].includes(kind) && this.#currentDomain(grant,kind,kind==='docs'?'readDocument':'readDiagram',{entityId});
+  }
+  // Trusted native classification controls preparation order only. It creates
+  // no read/write grant and does not substitute for a verified readonly seal.
+  isReadonlyForPreparation(grant) {
+    try {
+      if(!this.#registry.isCurrent(grant))return false;
+      if(this.#readonly?.isReadonly(grant))return true;
+      return grant.role==='workspace'&&typeof this.#primary?.sealReadonly==='function'&&
+        this.#currentWorkspace(grant,{projectId:grant.projectId,purpose:'readonly'});
+    }catch{return false;}
   }
   pause(reason) {
     if(typeof reason!=='string' || reason.length<1 || reason.length>128)throw error('REQUEST_REFUSED');

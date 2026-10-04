@@ -2,6 +2,24 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 let sourceFlushNonce=null;
+contextBridge.exposeInMainWorld('sirenDocsEdit',Object.freeze({
+ openWorkingCopy:()=>ipcRenderer.invoke('siren:docs-editors','openWorkingCopy',{}),
+ openLatest:()=>ipcRenderer.invoke('siren:docs-editors','openLatest',{}),
+ ...Object.fromEntries(['applyDocument','flushDocument'].map(method=>[method,payload=>ipcRenderer.invoke('siren:docs-editors',method,payload,sourceFlushNonce??undefined)])),
+ onReferenceChanged(callback){
+  if(typeof callback!=='function')throw TypeError('Expected callback');
+  const listener=(_event,value)=>{
+   try{
+    if(!value||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return;
+    const fields=Object.getOwnPropertyDescriptors(value),keys=Reflect.ownKeys(fields);
+    if(keys.length!==3||keys.some(key=>!['documentId','version','projectRevision'].includes(key)||!('value'in fields[key])))return;
+    const documentId=fields.documentId.value,version=fields.version.value,projectRevision=fields.projectRevision.value;
+    if(typeof documentId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(documentId)||typeof version!=='string'||!/^[a-f0-9]{64}$/.test(version)||!Number.isSafeInteger(projectRevision)||projectRevision<1)return;
+    Promise.resolve(callback(Object.freeze({documentId,version,projectRevision}))).catch(()=>{});
+   }catch{/* Metadata does not grant document access. */}
+  };ipcRenderer.on('siren:working-docs-changed',listener);return()=>ipcRenderer.removeListener('siren:working-docs-changed',listener);
+ },
+}));
 contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries([
  ...['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]),
  ...['applyEdit','commitSource'].map(method=>[method,payload=>ipcRenderer.invoke('siren:source-mutations',method,payload,sourceFlushNonce??undefined)])

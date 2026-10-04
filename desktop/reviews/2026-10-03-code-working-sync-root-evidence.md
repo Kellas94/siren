@@ -24,4 +24,14 @@ Native source diagnostics report only a bounded method and uppercase error code 
 
 ## Remaining scope
 
+Hosted results subsequently verified: DesktopCI49 (`37161648066`) and Launcher40 (`37161648063`) completed successfully for exact private head `6d903957d5536fff7a9d5cda4785577325bbb409`. This confirms the current committed run, including the new package probes; it does not identify or relabel the underlying cause of the original CI48 failure.
+
+### Committed package and exact private sync
+
+Local source `0da1fcb49d9b9f52ad357d6da8a09cb5b12340f4`, development package `dist/development-812771fb-2886-4a78-b741-1945421b7dec`: ASAR SHA256 `f2aaa67a941d9d7c6c7d0431c96e91a66e46e7af8b4b4bb3664a4838625a064a`, 31,349,764 bytes; Electron binary unchanged `49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa`.
+
+Original packaged recovery probe `evidence/packaged-2026-10-03T23-21-14.291Z` completed. Actual packaged300k Code/Docs `evidence/source-link/2026-10-03T23-22-00.661Z` completed four groups; actual packaged300k shared Code `evidence/source-sync/2026-10-03T23-23-57.417Z` completed five groups. Each runs a whole separate Unicode folder copy with an explicitly stored selection, not a packaged test-root bypass. Captured probe inputs remained unchanged. The original hostedCI48 failure is still retained and its cause is not inferred from these local successes.
+
+Exact private remote `6d903957d5536fff7a9d5cda4785577325bbb409`, tree `7bf9bde4cd1cbd0a59b258bbda061e2df744f9bc`, parent `013e45f84e43a634a17d17a54b0d878f16c36d8e`: 18 changed exact Git blobs, 1,106 unrelated blobs preserved, 1,124 total. Actual parent/tree, nonforced ref and raw PR2 head/body/draft/base were verified. Main remains `688c48528ff7bdab77908faf041806d10acc54dc`; PR remains draft/open/unmerged. The new hosted outcome is pending, not a claimed success.
+
 General editable native Docs, new unlinked-source Docs creation, native Diagram/Presenter/Terminal, attach-back, A/B analysis/diff workers, complete layout/cursor restoration, physical multi-monitor/DPI and end-to-end input-p95 qualification remain open. This batch does not establish those capabilities. No installed user application was replaced, main merged or public release published. The one-time Git graph remains frozen.

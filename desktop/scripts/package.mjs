@@ -10,11 +10,11 @@ import { hashOwnedFile } from '../src/updates/download.mjs';
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
   ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
-  ...['atomic','budgets','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
+  ...['atomic','budgets','domain-validation','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc'].map(n=>`src/sources/${n}.mjs`),
   ...['contracts','entries','authority','service','continue','transition-receipts','store','catalog','resolver','ipc'].map(n=>`src/navigation/${n}.mjs`),
-  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','working-sources','code-docs','docs-reads','catalog','home-admission','readonly-seals','control','source-barrier'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
+  ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','working-sources','code-docs','docs-reads','docs-edits','catalog','home-admission','readonly-seals','control','source-barrier'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;

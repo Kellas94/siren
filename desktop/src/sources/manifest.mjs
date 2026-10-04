@@ -150,6 +150,7 @@ async function durability(snapshot, recovery) {
   if (!snapshot.checkpointRequired) return 'committed';
   if (recovery) {
     try {
+      if(typeof recovery.hasSavedSnapshot==='function')return await recovery.hasSavedSnapshot(snapshot)?'committed':'recovery-degraded';
       const points = (await recovery.scan(snapshot.project.id)).valid;
       if (points.some(point => point.kind === 'saved' && canonicalJson(point.snapshot) === canonicalJson(snapshot))) return 'committed';
     } catch { /* Selected bytes remain committed, without recovery proof. */ }

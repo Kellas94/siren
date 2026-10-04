@@ -27,7 +27,13 @@ export class NativeSourceBarrier {
       // not disappear from the finite snapshot when a fast operation finishes.
       const draining=this.#owner.drain();
       const work=(async()=>{
-        const settled=await Promise.allSettled(roster.grants.map(grant=>this.#control.flushView(grant)));
+        // A readonly/Home proof must describe the final saved selection, not
+        // race another captured view's pending mutation. All views stay under
+        // the same roster, pause and deadline; no proof is refreshed or forged.
+        const readonly=new Set(roster.grants.filter(grant=>this.#owner.isReadonlyForPreparation?.(grant)===true));
+        const settled=await Promise.allSettled(roster.grants.filter(grant=>!readonly.has(grant)).map(grant=>this.#control.flushView(grant)));
+        if(!current())return fail('ROSTER_CHANGED');
+        settled.push(...await Promise.allSettled(roster.grants.filter(grant=>readonly.has(grant)).map(grant=>this.#control.flushView(grant))));
         const drained=await draining;
         if(!current())return fail('ROSTER_CHANGED');
         if(settled.some(item=>item.status!=='fulfilled'||item.value?.ok!==true))return fail('VIEW_FLUSH_FAILED');

@@ -97,7 +97,9 @@ export class PrimaryPersistence {
     this.#remember(scope.projectId,'readonly',null,receipt,Object.freeze({schema:selected.schema,sourceRefsSHA:digest(Buffer.from(JSON.stringify(selected.sourceRefs??[])))}));
     return receipt;
    }
-   const point=await this.#recovery.checkpointProject({snapshot:selected,kind:'saved'});if(!current())return fail('ACCESS_REFUSED');
+   const existing=typeof this.#recovery.findSavedSnapshot==='function'?await this.#recovery.findSavedSnapshot(selected):null;
+   if(!current())return fail('ACCESS_REFUSED');
+   const point=existing??await this.#recovery.checkpointProject({snapshot:selected,kind:'saved'});if(!current())return fail('ACCESS_REFUSED');
    const actual=await this.#recovery.readProjectPoint(scope.projectId,point.id);if(!current())return fail('ACCESS_REFUSED');
    if(actual.kind!=='saved'||actual.snapshot.schema!==selected.schema||actual.snapshot.project.id!==scope.projectId||actual.snapshot.revision!==selected.revision||actual.snapshot.sha256!==selected.sha256||actual.snapshot.json!==selected.json||JSON.stringify(actual.snapshot.sourceRefs)!==JSON.stringify(selected.sourceRefs))return fail('WORKSPACE_PROOF_FAILED');
    const receipt=projectWorkspaceResult({ok:true,revision:selected.revision,sha256:selected.sha256});

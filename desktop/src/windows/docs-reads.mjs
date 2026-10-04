@@ -5,10 +5,11 @@ const fingerprint=value=>value?digest(Buffer.from(JSON.stringify(value))):null;
 /** Selected single-document readonly transport. The native registry supplies
  * identity; a caller cannot select a project, document, path or writable role. */
 export class NativeDocsReads {
- #registry;#owner;#documentFor;
- constructor({registry,owner,documentFor}){
+ #registry;#owner;#documentFor;#readonly;#editing;
+ constructor({registry,owner,documentFor,readonlyFor,editingState}){
   if(!['capture','isCurrent'].every(key=>typeof registry?.[key]==='function')||!['invoke','canReadDomain'].every(key=>typeof owner?.[key]==='function')||typeof documentFor!=='function')throw TypeError('NATIVE_DOCS_READ_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#owner=owner;this.#documentFor=documentFor;
+  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function')throw TypeError('NATIVE_DOCS_READ_ADAPTERS_REQUIRED');
+  this.#registry=registry;this.#owner=owner;this.#documentFor=documentFor;this.#readonly=readonlyFor;this.#editing=editingState;
  }
  #context(event){
   const grant=this.#registry.capture({sender:event?.sender,senderFrame:event?.senderFrame});
@@ -24,7 +25,7 @@ export class NativeDocsReads {
    const current=this.#context(event);if(!current||current.grant.windowId!==context.grant.windowId||current.grant.epoch!==context.grant.epoch||current.sha256!==context.sha256)return fail('ACCESS_REFUSED');
    if(result?.ok!==true)return fail(['ACCESS_REFUSED','ENTITY_REFUSED','WORKSPACE_PAUSED','DOMAIN_OPERATION_FAILED'].includes(result?.code)?result.code:'DOCUMENT_READ_FAILED');
    if(result.sha256!==context.sha256||result.entityId!==context.entityId)return fail('DOCUMENT_VERSION_CHANGED');
-   return Object.freeze({ok:true,readonly:true,document:result.entity,version:result.version,sha256:result.sha256});
+   return Object.freeze({ok:true,readonly:this.#readonly?this.#readonly(current.grant)!==false:true,document:result.entity,version:result.version,sha256:result.sha256,projectRevision:result.projectRevision,...(this.#editing?{canEdit:this.#editing(current.grant)===true}:{})});
   }catch{return fail('DOCUMENT_READ_FAILED');}
  }
 }

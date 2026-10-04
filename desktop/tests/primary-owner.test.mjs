@@ -136,6 +136,14 @@ check('a native readonly seal verifies schema-2 source recovery without rewritin
  const scope={...f.scope,readonly:true,purpose:'readonly'},sealed=await primary.sealReadonly(scope);assert.equal(sealed.ok,true);assert.equal((await primary.verify(sealed,scope)).ok,true);
  assert.deepEqual(await f.projects.readProject(f.original.project.id),manifest);assert.equal((await primary.sealReadonly({...scope,readonly:false})).code,'ACCESS_REFUSED');
 });
+check('readonly preparation reuses an exact verified saved checkpoint without duplicating recovery histories',async f=>{
+ const point=await f.recovery.checkpointProject({snapshot:f.original,kind:'saved'});let created=0;
+ f.recovery.checkpointProject=async()=>{created++;throw Error('No duplicate saved checkpoint');};
+ const primary=new implementation.PrimaryPersistence({projects:()=>f.projects,recovery:f.recovery});
+ const scope={...f.scope,readonly:true,purpose:'readonly'},sealed=await primary.sealReadonly(scope);
+ assert.equal(sealed.ok,true,JSON.stringify(sealed));assert.equal((await primary.verify(sealed,scope)).ok,true);assert.equal(created,0);
+ assert.equal((await f.recovery.scan(f.original.project.id)).valid.length,1);assert.deepEqual((await f.recovery.readProjectPoint(f.original.project.id,point.id)).snapshot,f.original);
+});
 check('genuine primary roster preparation requires a native persisted seal before transition authority',async f=>{
  assert.equal(typeof controlModule.NativeAllViewControl,'function');assert.equal(typeof barrierModule.NativeAllWorkspaceBarrier,'function');
  const window=new EventEmitter();window.id=1;window.isDestroyed=()=>false;window.isMinimized=()=>true;
