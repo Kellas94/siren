@@ -1,5 +1,7 @@
 # SIREN Home and Native Diagrams Implementation Plan
 
+Current scoped package qualification: source10acc153/development-7bc2c9dc,101runtimefiles byte-verified/ASAR09c7a178/Electron44.5.1 binary49b61a03 unchanged. Tenactualpackagegroups recovery/search/CodeLink+create+edit+sync300k/Home300k/DiagramBuild/DocsEdit300k/structured300k plusGuideseparatedev passed all11exits0/captures/archive unchanged17:41:33.938–17:45:13.740Z. Source940/940/all48actualnative passed. Rootreport reviews/2026-10-04-process-identity-and-code-status-root-evidence.md; exactprivate sync pending, no release/installedreplacement/independent/wholeplan approval.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Open SIREN into a calm Home, resume verified work, navigate consistently and edit detached diagrams through one shared native owner.
@@ -25,6 +27,8 @@
 4 October Task8 partial: original native CI suite now assigned exactly once to three independent finite jobs18/15/15, preserving every script/deadline/25-minute job budget and artifacts; all-group gate also requires byte-identical original unit step and packaged job. Finite main-owned Continue diagnostic stages exclude IDs/labels/paths/source/errors and do not alter receipts. Genuine4testsRED→GREEN; combined14focused; actualHome300k8cases; frozenfull930/930 +all48actualnativechildren passed with unchanged full captures. Committed package/private qualification pending. OriginalCI70 packageDiagramLock timeout +seven development startup/Home adverses/CANCELLED25m13s are preserved, not repaired by declaration. Rootreport desktop/reviews/2026-10-04-native-groups-continue-diagnostics-root-evidence.md is implementer evidence only; Task8/final separate review remain open.
 
 4 October Task8 current scoped package: production32d448b builtactualdevelopment-b1f4cb79 with101runtimefilebyteproof/ASAR3dbc60fe/pinnedruntimeunchanged. Originalrecovery +actualpackagedsearch7/Home300k8finiteContinue/DiagramBuild7Lock/DocsEdit300k4/structured300k4 andoriginalGuidedev4 all7exits0/fullcaptures/archiveunchanged. Source930/930 +all48originalnativechecks passed. Private synchronization follows; originalCI70 adversecauses and fullTask8/finalseparatereview remain open. No installeduserapp/release/mainchange.
+
+4 October Task8 further partial: preceding native grouping verifiedactualCI71Desktop/Sources/Diagrams18/15/15 allSUCCESS/eachoriginalchildexit0/capturesunchanged andunitjobSUCCESS, gatecorrectFAILbecauseoriginalpackagedCodeDocsnotice vanished. Newnativecaretregression reproducesoverwrite andCode subscriber nowpreservesfeedbackonunchangedmetadata; exactnativeprocessreplyvalidationplusfinitefailureclassification preserveownershipreadonly. Currentfrozen940/940+all48actualnativechildren passed, originaladversesretained. Committedpackage/privatefollow; no wholeTask8 or independent approval. Rootreport desktop/reviews/2026-10-04-process-identity-and-code-status-root-evidence.md.
 
 ## Global Constraints
 

@@ -1,5 +1,7 @@
 # Native Workspaces Implementation Plan
 
+Current scoped package qualification: source10acc153/development-7bc2c9dc,101runtimefiles byte-verified/ASAR09c7a178/Electron44.5.1 binary49b61a03 unchanged. Tenactualpackagegroups recovery/search/CodeLink+create+edit+sync300k/Home300k/DiagramBuild/DocsEdit300k/structured300k plusGuideseparatedev passed all11exits0/captures/archive unchanged17:41:33.938–17:45:13.740Z. Source940/940/all48actualnative passed. Rootreport reviews/2026-10-04-process-identity-and-code-status-root-evidence.md; exactprivate sync pending, no release/installedreplacement/independent/wholeplan approval.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Detach multiple Docs/Code views and Presenter/Audience into coordinated native Windows windows usable across monitors.
@@ -15,6 +17,8 @@
 **Tech Stack:** Existing Electron BrowserWindow/screen/Menu and sandboxed local renderers; source contracts from the large-source plan. No new UI framework or AI dependency.
 
 **Spec:** `docs/superpowers/specs/2026-10-02-siren-native-workspaces-design.md` — user approved in this session.
+
+4 October Tasks3/4 partial: native process query now validates exact reply shape/requestedPID/fullUnicodepath/UTCcalendar, preserves explicitmissing/unknownreadonly and original10s/16KiB/no retry. Finite native diagnostics classify query/decode/reason/bytecounts without raw output. Code completion status no longer overwritten by unchanged caret/focus metrics, provenactualoriginalsourceLinkcaretADVERSE1→current300kCOMPLETE4 with all original project/source/DocCAS/readonly/Lock oracles retained. Parser/status genuineREDs retained,11focusedpassed; originalownedWindowsUnicode/deadline2passed, frozenfull940/940/all48actualnativechildren unchangedcaptures. Committedpackage/private follow; source940 is implementer evidence only. OriginalCI70querycause/CI71packagedstatusadverse remain historical; fullTask3/4/attachback/physicaldisplays/finalseparatereview open. Rootreport desktop/reviews/2026-10-04-process-identity-and-code-status-root-evidence.md.
 
 ## Global Constraints
 

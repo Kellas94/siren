@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { Script } from 'node:vm';
 import { performance } from 'node:perf_hooks';
-import { inspectWindowsProcess } from '../src/recovery/processes.mjs';
+import { inspectWindowsProcess,decodeWindowsProcessResult } from '../src/recovery/processes.mjs';
 import { SessionJournal } from '../src/recovery/sessions.mjs';
 
 const runNative = promisify(execFile);
@@ -36,7 +36,7 @@ async function delayedInspector(delayMs, observations) {
       throw error;
     } finally { observation.elapsedMs = performance.now() - began; }
   };
-  return new Script(`(${functionSource})`, { filename: 'actual-inspectWindowsProcess-with-owned-native-latency' }).runInNewContext({ run, process });
+  return new Script(`(${functionSource})`, { filename: 'actual-inspectWindowsProcess-with-owned-native-latency' }).runInNewContext({ run, process,Buffer,decodeWindowsProcessResult });
 }
 
 test('real Windows identity survives six-second native startup and remains fail-closed on bounded cancellation', { skip: process.platform !== 'win32', timeout: 60000 }, async () => {

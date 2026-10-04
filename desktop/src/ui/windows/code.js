@@ -45,10 +45,13 @@
       document.body.dataset.sourceReadonly=String(readonly);
       linkButton.hidden=readonly;
       client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
+      let sourceSummary=null;
       unsubscribeEditor=ownEditor.subscribe(value=>{
         if(token!==generation||disposed||paused||editor!==ownEditor||!value.ready||!value.sourceRef)return;
         const draft=value.dirty||value.pending;
-        status.textContent=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
+        const summary=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
+        // Focus/selection publish unchanged metadata; retain the explicit action result.
+        if(summary!==sourceSummary){sourceSummary=summary;status.textContent=summary;}
         document.body.dataset.sourceVersion=String(value.sourceRef.version);document.body.dataset.sourceSha256=value.sourceRef.sha256;
         document.body.dataset.sourceUnits=String(value.utf16Units);document.body.dataset.sourceLines=String(value.lines);
         sourceChanges.reconcile();analysis?.reconcile();

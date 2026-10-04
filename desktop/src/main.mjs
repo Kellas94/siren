@@ -96,6 +96,10 @@ const processIdentity = await inspectWindowsProcess(process.pid, { onFailure: ob
     category: ['Error', 'SyntaxError', 'TypeError'].includes(observed.name) ? observed.name : 'UNKNOWN',
     code: (Number.isSafeInteger(observed.code) || (typeof observed.code === 'string' && /^[A-Z_]{1,32}$/.test(observed.code))) ? observed.code : null,
     killed: observed.killed === true, signal: observed.signal === 'SIGTERM' ? 'SIGTERM' : null,
+    ...(['query','decode'].includes(observed.phase)?{phase:observed.phase}:{}),
+    ...(['EMPTY_RESPONSE','INVALID_JSON','INVALID_SHAPE','PID_MISMATCH','INVALID_PATH','INVALID_START_TIME','RESPONSE_LIMIT','QUERY_FAILED'].includes(observed.reason)?{reason:observed.reason}:{}),
+    ...(Number.isSafeInteger(observed.stdoutBytes)&&observed.stdoutBytes>=0&&observed.stdoutBytes<=65536?{stdoutBytes:observed.stdoutBytes}:{}),
+    ...(Number.isSafeInteger(observed.stderrBytes)&&observed.stderrBytes>=0&&observed.stderrBytes<=65536?{stderrBytes:observed.stderrBytes}:{}),
   }));
 } });
 const journal = new SessionJournal(dataRoot, { inspectProcess: inspectWindowsProcess });

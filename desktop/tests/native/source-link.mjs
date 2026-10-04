@@ -50,6 +50,9 @@ try{
  const oldTargets=await editor.evaluate('window.sirenCodeDocs.listTargets({offset:0})');assert.equal(oldTargets.total,4);
  await editor.click('#linkCodeDocs');await editor.waitFor('document.querySelector(".code-docs-dialog")?.open===true');await editor.click('.code-docs-target input');await editor.click('.code-docs-actions button:last-child');
  await editor.waitFor('document.querySelector(".code-docs-dialog")==null&&document.getElementById("viewStatus").textContent.includes("Docs now links source version 3")');
+ // Real caret transactions publish unchanged metrics; the completed link notice must survive.
+ await editor.click('.cm-content');for(const type of ['keyDown','keyUp'])await editor.send('Input.dispatchKeyEvent',{type,key:'ArrowLeft',code:'ArrowLeft',windowsVirtualKeyCode:37});
+ assert.equal(await editor.evaluate('document.getElementById("viewStatus").textContent.includes("Docs now links source version 3")'),true);
  const linked=await projects.readProject(original.project.id),metadata=JSON.parse(linked.json),latest=await sources.getMetrics({projectId:original.project.id,sourceId:ref.sourceId}),expectedDocs=structuredClone(docs);
  expectedDocs[0].blocks[0].rows[0].sourceRef={sourceId:latest.sourceId,version:3,sha256:latest.sha256};assert.deepEqual(metadata.workpapers,expectedDocs);assert.equal(linked.revision,selected.revision+1);assert.equal(linked.sourceRefs.length,2);assert.deepEqual(linked.sourceRefs.find(value=>value.version===1),ref);
  assert.equal(await reader.evaluate('document.body.dataset.sourceSha256'),ref.sha256);assert.deepEqual(await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:1}),Buffer.from(text));

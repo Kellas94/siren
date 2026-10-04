@@ -18,3 +18,15 @@ test('actual startup retains readonly identity refusal and records bounded diagn
  assert.deepEqual(JSON.parse(warnings[0].slice(warnings[0].indexOf('{'))),{category:'Error',code:'ETIMEDOUT',killed:true,signal:'SIGTERM'});
  assert.deepEqual(JSON.parse(warnings[1].slice(warnings[1].indexOf('{'))),{category:'UNKNOWN',code:null,killed:false,signal:null});
 });
+
+test('startup reports finite native query/decode reasons and byte counts without returned text',async()=>{
+ const main=await readFile(new URL('../src/main.mjs',import.meta.url),'utf8'),start=main.indexOf('const processIdentity ='),end=main.indexOf('const journal =',start),warnings=[];
+ const context=vm.createContext({process:{pid:123},console:{warn:value=>warnings.push(value)},inspectWindowsProcess:async(_pid,options)=>{
+  options.onFailure({name:'Error',code:'PROCESS_RESULT_INVALID',killed:false,signal:null,phase:'decode',reason:'EMPTY_RESPONSE',stdoutBytes:0,stderrBytes:42,stdout:'PRIVATE_NATIVE_PATH',stderr:'PRIVATE_BODY'});
+  options.onFailure({name:'Error',phase:'PRIVATE_NATIVE_PATH',reason:'PRIVATE_BODY',stdoutBytes:-1,stderrBytes:999999});return undefined;
+ }});
+ assert.equal(await vm.runInContext('(async()=>{'+main.slice(start,end)+'return processIdentity;})()',context),undefined);
+ assert.equal(warnings.length,2);assert.equal(warnings.some(line=>/PRIVATE_NATIVE_PATH|PRIVATE_BODY/.test(line)),false);
+ assert.deepEqual(JSON.parse(warnings[0].slice(warnings[0].indexOf('{'))),{category:'Error',code:'PROCESS_RESULT_INVALID',killed:false,signal:null,phase:'decode',reason:'EMPTY_RESPONSE',stdoutBytes:0,stderrBytes:42});
+ assert.deepEqual(JSON.parse(warnings[1].slice(warnings[1].indexOf('{'))),{category:'Error',code:null,killed:false,signal:null});
+});
