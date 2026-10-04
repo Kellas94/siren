@@ -1,0 +1,56 @@
+name: SIREN merge verification
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: siren-merge-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  scope:
+    name: Qualification scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      desktop: ${{ steps.scope.outputs.desktop }}
+      launcher: ${{ steps.scope.outputs.launcher }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+      - name: Verify qualification policy
+        run: node --test .github/ci/*.test.mjs
+      - name: Determine exact changes
+        id: scope
+        run: node .github/ci/qualification.mjs scope
+  desktop:
+    needs: scope
+    if: needs.scope.outputs.desktop == 'true'
+    uses: ./.github/workflows/desktop-verify.yml
+  launcher:
+    needs: scope
+    if: needs.scope.outputs.launcher == 'true'
+    uses: ./.github/workflows/launcher-verify.yml
+  qualification:
+    name: SIREN merge qualification
+    needs: [scope, desktop, launcher]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+      - name: Require actual results for the selected scope
+        env:
+          SIREN_JOB_RESULTS: '{"scope":"${{ needs.scope.result }}","desktop":"${{ needs.desktop.result }}","launcher":"${{ needs.launcher.result }}"}'
+          SIREN_SCOPE_OUTPUTS: '${{ toJSON(needs.scope.outputs) }}'
+        run: node .github/ci/qualification.mjs verify
