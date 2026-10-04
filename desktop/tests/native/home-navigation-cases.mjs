@@ -23,11 +23,15 @@ export async function runHomeNavigation({driver,attachPage,data,evidence,project
  for(const view of views){const page=await attachPage('siren://app/windows/code.html?windowId='+view.windowId);await page.waitFor('document.body.dataset.sourceReady==="true"');assert.equal(await page.evaluate('document.body.dataset.sourceSha256'),a.sha256);}
  assert.deepEqual(await projects.readProject(first.project.id),selected);assert.deepEqual(await recovery.scan(),points);
  result.cases.push({name:'actual Home metadata-only windows shelf, readonly Docs/Code libraries and Continue open exact saved native entities/version without changing content or recovery points',ok:true});
- await driver.click('#homeModule-diagrams');await driver.waitFor('location.href==="siren://app/app.html" && document.getElementById("desktopHome")!=null');
+ await driver.click('#homeModule-diagrams');await driver.waitFor('document.querySelector(".home-library")?.open===true');assert.equal(await driver.evaluate('document.querySelector(".home-library").textContent.includes("No saved items")'),true);await driver.click('.home-library .home-secondary:last-child');
+ // Desktop projects open their native diagram library from the card. Retain
+ // explicit coverage of the finite legacy-entry transport and its all-view
+ // preparation barrier; this call does not bypass its native authority.
+ await driver.evaluate('void window.sirenHome.openModule({surface:"diagrams"})');await driver.waitFor('location.href==="siren://app/app.html" && document.getElementById("desktopHome")!=null');
  await driver.waitFor('document.getElementById("confirmDialog")?.open===true');await driver.click('#cancelConfirmButton');
  await driver.click('#desktopHome');await driver.waitFor('location.href==="siren://app/home.html" && document.querySelectorAll("#homeRoot [data-window-id]").length===7');
  assert.deepEqual(await recovery.scan(),points);assert.deepEqual(await projects.readProject(first.project.id),selected);
- result.cases.push({name:'actual Home to Diagrams to Home prepares seven native views and preserves their state and exact selected project without redundant checkpoint',ok:true});
+ result.cases.push({name:'actual desktop Diagram card opens the empty native library; finite Home to legacy Diagrams to Home prepares seven native views and preserves their state and exact project without redundant checkpoint',ok:true});
  await driver.click('#homeNewProject');await driver.waitFor('document.querySelector("#homeProjectName")!=null');await driver.click('#homeProjectName');await driver.send('Input.insertText',{text:'Explicit Home navigation project Ș😀'});
  await driver.click('.home-create button[type=submit]');await driver.waitFor(`(async()=>{const r=await window.sirenHome.getHomeState();return r.ok&&r.state.selectedProjectId!==${JSON.stringify(first.project.id)}&&document.body.inert===false&&!document.getElementById('homeRoot').hidden&&document.querySelector('.home-create')==null})()`);
  state=await driver.evaluate('window.sirenHome.getHomeState()');assert.notEqual(state.state.selectedProjectId,first.project.id);assert.equal(state.state.views.length,0);const secondId=state.state.selectedProjectId,secondSnapshot=await projects.readProject(secondId);

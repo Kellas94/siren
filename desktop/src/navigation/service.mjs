@@ -36,7 +36,7 @@ export class HomeService {
     return {
       mode:state.mode,selectedProjectId:state.projectId,projects,
       continuation:entry ? {location:entry.location,availability:project.availability==='missing'?'missing':'cached',...(project.availability==='missing'?{reason:'PROJECT_UNAVAILABLE'}:{})} : null,
-      views:structuredClone(state.views),capabilities:structuredClone(state.capabilities)
+      views:structuredClone(state.views),capabilities:structuredClone(state.capabilities),...(Object.hasOwn(state,'projectFormat')?{projectFormat:state.projectFormat}:{})
     };
   }
   async recordLocation(input,scope) {

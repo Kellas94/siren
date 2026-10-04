@@ -39,3 +39,14 @@ test('copied selection metadata cannot promote an old Home request into a new pr
  const f=await fixture(),select=f.args.selectProject;f.args.selectProject=async()=>({...await select()});
  assert.equal((await continueSavedLocation(f.args)).code,'ACCESS_REFUSED');assert.equal(f.counts().opened,0);
 });
+
+test('Continue for a saved native Diagram resolves and opens the exact entity in the selected project',async()=>{
+ const f=await fixture();f.args.location={schema:1,projectId:f.original.project.id,surface:'diagrams',entityId:'saved-flow'};f.args.resolveEntity=async({location})=>({ok:true,location});let request;
+ f.args.navigateDiagrams=()=>assert.fail('A saved native Diagram must reopen its window');f.args.openView=async value=>{request=value;return {ok:true,view:{epoch:1}};};
+ assert.deepEqual(await continueSavedLocation(f.args),{ok:true,epoch:1});assert.deepEqual(request,{role:'diagram',entityId:'saved-flow'});
+});
+test('Continue validates missing/cross-project native Diagram before changing the selected project',async()=>{
+ const f=await fixture();f.args.location.surface='diagrams';f.args.location.entityId='saved-flow';let request;f.args.openView=async value=>{request=value;return {ok:true,view:{epoch:2}};};f.args.navigateDiagrams=()=>assert.fail('A native Diagram must reopen its window');
+ assert.equal(await continueSavedLocation(f.args),f.selectionReceipt);assert.deepEqual(request,{role:'diagram',entityId:'saved-flow'});
+ const denied=await fixture();denied.args.location.surface='diagrams';denied.args.location.entityId='missing-flow';denied.args.resolveEntity=async()=>({ok:false,code:'ENTITY_UNAVAILABLE'});assert.equal((await continueSavedLocation(denied.args)).code,'ENTITY_UNAVAILABLE');assert.deepEqual(denied.counts(),{opened:0,selected:0});
+});

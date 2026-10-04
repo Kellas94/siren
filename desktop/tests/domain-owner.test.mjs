@@ -90,10 +90,10 @@ check('checkpoint failure returns recovery-degraded instead of a false committed
  const saved=await f.repo.apply('diagram',f.diagram(),f.scope);assert.equal(saved.ok,true);assert.equal(saved.durability,'recovery-degraded');
  const flushed=await f.repo.flush('diagram',{entityId:'diagram-a',expectedVersion:2},f.scope);assert.equal(flushed.durability,'recovery-degraded');
 });
-async function owner(f,{domain=f.repo}={}) {
+async function owner(f,{domain=f.repo,role='docs',entities=['doc-a','doc-b']}={}) {
  const windows=[],policy={projectId:f.projectId,mode:'normal',access:'write',entityIds:['doc-a','doc-b','diagram-a','diagram-b',f.ref.sourceId]};
  const registry=new WindowRegistry({authorize:()=>policy,createWindow:async options=>{const w=new EventEmitter();w.id=windows.length+1;w.destroyed=false;w.isDestroyed=()=>w.destroyed;w.isMinimized=()=>false;w.restore=()=>{};w.focus=()=>{};w.close=()=>w.destroy();w.destroy=()=>{w.destroyed=true;w.webContents.emit('destroyed');w.emit('closed');};w.webContents=new EventEmitter();Object.assign(w.webContents,{id:w.id+100,mainFrame:{url:options.mainFrameUrl},getURL:()=>options.mainFrameUrl,isDestroyed:()=>w.destroyed});windows.push(w);return w;}});
- for(const entityId of ['doc-a','doc-b'])await registry.openView({role:'docs',entityId});
+ for(const entityId of entities)await registry.openView({role,entityId});
  const grants=windows.map(w=>registry.capture({sender:w.webContents,senderFrame:w.webContents.mainFrame}));
  const coordinator=new WorkspaceCoordinator({registry,sources:({canWrite})=>new SourceRepository(f.root,{canWrite}),domains:domain,access:(_g,scope)=>policy.mode==='normal'||scope.action.startsWith('read')});
  return {windows,registry,grants,coordinator,policy};
@@ -129,4 +129,38 @@ check('read result digest must describe the exact entity delivered to the render
  const f=await fixture(),read=await f.repo.read('diagram',{entityId:'diagram-a'},f.scope),request={entityId:'diagram-a'};
  assert.equal(module.projectDomainResult('diagram','readDiagram',read,request).ok,true);
  assert.equal(module.projectDomainResult('diagram','readDiagram',{...read,entity:{...read.entity,source:'fabricated'}},request).code,'DOMAIN_RESULT_REFUSED');
+});
+
+check('a clean preparing peer may seal one exact conflict/read/flush recapture after the other native Diagram saves',async()=>{
+ const f=await fixture(),o=await owner(f,{role:'diagram',entities:['diagram-a','diagram-a']});o.coordinator.pause('native-close');
+ const a=o.coordinator.beginViewFlush(o.grants[0]),b=o.coordinator.beginViewFlush(o.grants[1]);
+ const invoke=(i,method,payload,nonce)=>o.coordinator.invoke(o.grants[i],{kind:'diagram',method,payload},nonce);
+ const before=await invoke(1,'readDiagram',{entityId:'diagram-a'},b);assert.equal(before.version,1);
+ assert.equal((await invoke(0,'applyDiagram',f.diagram(),a)).ok,true);
+ assert.equal((await invoke(1,'flushDiagram',{entityId:'diagram-a',expectedVersion:before.version},b)).code,'REVISION_CONFLICT');
+ const latest=await invoke(1,'readDiagram',{entityId:'diagram-a'},b);assert.equal(latest.version,2);
+ const flushed=await invoke(1,'flushDiagram',{entityId:'diagram-a',expectedVersion:latest.version},b);assert.equal(flushed.ok,true);assert.equal(flushed.sha256,latest.sha256);
+ const sealed=await o.coordinator.finishViewFlush(o.grants[1],b);assert.equal(sealed.ok,true,JSON.stringify(sealed));assert.equal(sealed.receipts.every(r=>r.ok===true),true);assert.equal(sealed.receipts.at(-1).sha256,latest.sha256);
+ assert.equal((await invoke(0,'flushDiagram',{entityId:'diagram-a',expectedVersion:2},a)).ok,true);assert.equal((await o.coordinator.finishViewFlush(o.grants[0],a)).ok,true);
+ assert.equal((await o.coordinator.reconcileWorkspaceReceipts(o.grants,sealed.receipts,()=>true)).ok,true);
+});
+check('failed mutations and unverified or repeated flush conflicts cannot be hidden by a later successful native receipt',async()=>{
+ for(const scenario of ['mutation','no-read','repeated','wrong-read']){
+  const f=await fixture(),o=await owner(f,{role:'diagram',entities:['diagram-a']}),saved=await f.repo.apply('diagram',f.diagram(),f.scope);assert.equal(saved.ok,true);o.coordinator.pause('native-close');const nonce=o.coordinator.beginViewFlush(o.grants[0]);
+  const invoke=(method,payload)=>o.coordinator.invoke(o.grants[0],{kind:'diagram',method,payload},nonce);
+  const method=scenario==='mutation'?'applyDiagram':'flushDiagram',payload=scenario==='mutation'?{...f.diagram(),operationId:'stale-local',payload:{source:'DO NOT OVERWRITE'}}:{entityId:'diagram-a',expectedVersion:1};
+  assert.equal((await invoke(method,payload)).code,'REVISION_CONFLICT');
+  if(scenario==='repeated')assert.equal((await invoke('flushDiagram',payload)).code,'REVISION_CONFLICT');
+  if(scenario!=='no-read')assert.equal((await invoke('readDiagram',{entityId:scenario==='wrong-read'?'diagram-b':'diagram-a'})).ok,scenario!=='wrong-read');
+  assert.equal((await invoke('flushDiagram',{entityId:'diagram-a',expectedVersion:2})).ok,true);
+  assert.equal((await o.coordinator.finishViewFlush(o.grants[0],nonce)).code,'FLUSH_FAILED',scenario);assert.equal(workspaceMetadata(await f.projects.readProject(f.projectId)).diagrams[0].source,'flowchart TD\nA-->C');
+ }
+});
+check('the same bounded clean recapture binds Docs to the full saved document hash, not its old token',async()=>{
+ const f=await fixture(),o=await owner(f,{entities:['doc-a','doc-a']});o.coordinator.pause('native-close');const a=o.coordinator.beginViewFlush(o.grants[0]),b=o.coordinator.beginViewFlush(o.grants[1]);
+ const invoke=(i,method,payload,nonce)=>o.coordinator.invoke(o.grants[i],{kind:'docs',method,payload},nonce);
+ const before=await invoke(1,'readDocument',{entityId:'doc-a'},b);assert.equal((await invoke(0,'applyDocument',f.docs(),a)).ok,true);
+ assert.equal((await invoke(1,'flushDocument',{entityId:'doc-a',expectedVersion:before.version},b)).code,'DOCUMENT_CONFLICT');
+ const latest=await invoke(1,'readDocument',{entityId:'doc-a'},b),flushed=await invoke(1,'flushDocument',{entityId:'doc-a',expectedVersion:latest.version},b);assert.equal(flushed.sha256,latest.sha256);assert.notEqual(latest.version,before.version);
+ const sealed=await o.coordinator.finishViewFlush(o.grants[1],b);assert.equal(sealed.ok,true);assert.equal(sealed.receipts.at(-1).sha256,latest.sha256);o.coordinator.cancelViewFlush(o.grants[0],a);
 });

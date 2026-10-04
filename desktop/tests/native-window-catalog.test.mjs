@@ -54,3 +54,13 @@ test('role-filtered pages bound the chosen library without first mounting unrela
  const diagrams=await f.call({role:'diagram'});assert.equal(diagrams.ok,true);assert.deepEqual(diagrams.items,[]);
  for(const role of ['presenter',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
 });
+
+test('Code library uses selected file names and marks unlinked code without exposing source bytes or provenance paths',async()=>{
+ const f=await fixture(),ref=f.refs[0],point={sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256};
+ f.select({...f.selected,json:JSON.stringify({codeFiles:[{id:'owned-file',name:'Exact Ș😀.py',sourceRef:point,linkedRef:null}],workpapers:[]})});
+ const first=await f.call({role:'code'});assert.equal(first.items.find(item=>item.entityId===ref.sourceId).label,'Exact Ș😀.py · Unlinked');
+ f.select({...f.selected,json:JSON.stringify({codeFiles:[{id:'owned-file',name:'Exact Ș😀.py',sourceRef:point}],workpapers:[{id:'doc-a',blocks:[{kind:'knowledge',rows:[{sourceRef:point,content:'PRIVATE'}]}]}]})});
+ assert.equal((await f.call({role:'code'})).items.find(item=>item.entityId===ref.sourceId).label,'Exact Ș😀.py');
+ f.select({...f.selected,json:JSON.stringify({codeFiles:[{id:'owned-file',name:'C:/PRIVATE_PATH.py',sourceRef:point}],workpapers:[]})});
+ assert.equal(JSON.stringify(await f.call({role:'code'})).includes('PRIVATE_PATH'),false);
+});

@@ -2,7 +2,8 @@ import { validId } from '../projects/paths.mjs';
 import { navigationFields as fields, navigationArray as array, normalizeLocation } from './contracts.mjs';
 
 const fail=code=>Object.freeze({ok:false,code});
-const codes=new Set(['ACCESS_REFUSED','CANCELLED','PROJECT_UNAVAILABLE','ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE','RECOVERY_REQUIRED','NAVIGATION_LIMIT','INVALID_NAVIGATION','NAVIGATION_WRITE_FAILED','TRANSITION_FAILED','UNAVAILABLE']);
+const codes=new Set(['ACCESS_REFUSED','CANCELLED','PROJECT_UNAVAILABLE','ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE','RECOVERY_REQUIRED','NAVIGATION_LIMIT','INVALID_NAVIGATION','NAVIGATION_WRITE_FAILED','TRANSITION_FAILED','UNAVAILABLE','MIGRATION_INCOMPLETE','PROJECT_FORMAT_REFUSED']);
+for(const code of ['SOURCE_BUDGET','UNSUPPORTED_ENCODING','SOURCE_IMPORT_FAILED','REVISION_CONFLICT'])codes.add(code);
 const methods=new Set(['getHomeState','continueWork','openProject','createProject','recordLocation']);
 const stamp=value=>typeof value==='string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString()===value;
 const label=value=>typeof value==='string' && value.length<=256;
@@ -18,12 +19,13 @@ function request(method,input,projectId) {
     const value=fields(input,['projectId']);if(!validId(value.projectId))invalid();return value;
   }
   if(method==='createProject') {
-    const value=fields(input,['label']);if(!label(value.label)||value.label.length>200)invalid();return value;
+    const value=fields(input,['label','format'],['label']);if(!label(value.label)||value.label.length>200||Object.hasOwn(value,'format')&&!['classic','desktop'].includes(value.format))invalid();return value;
   }
   return fields(input,[]);
 }
 function homeState(input,grant) {
-  const value=fields(input,['mode','selectedProjectId','projects','continuation','views','capabilities']);
+  const value=fields(input,['mode','selectedProjectId','projects','continuation','views','capabilities','projectFormat'],['mode','selectedProjectId','projects','continuation','views','capabilities']);
+  if(Object.hasOwn(value,'projectFormat')&&![null,'classic','desktop'].includes(value.projectFormat))invalid();
   if(value.mode!==grant.mode || value.selectedProjectId!==grant.projectId)invalid();
   const projects=array(value.projects,12).map(input=>{
     const item=fields(input,['projectId','label','availability','lastVisited'],['projectId','label','availability']);
@@ -45,7 +47,7 @@ function homeState(input,grant) {
     const {schema,projectId,...location}=stored;
     continuation={...item,location:normalizeLocation(location,{projectId})};
   }
-  return {mode:value.mode,selectedProjectId:value.selectedProjectId,projects,continuation,views,capabilities};
+  return {mode:value.mode,selectedProjectId:value.selectedProjectId,projects,continuation,views,capabilities,...(Object.hasOwn(value,'projectFormat')?{projectFormat:value.projectFormat}:{})};
 }
 /** No main/preload channel installed. Trusted services must use scope.isCurrent
  * at every native commit boundary; checking the result alone cannot undo writes. */

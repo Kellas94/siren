@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld('sirenDesktopReady', () => ipcRenderer.send('sir
 const homeBridge=Object.fromEntries(['getHomeState','continueWork','openProject','createProject','recordLocation'].map(method=>[method,payload=>ipcRenderer.invoke('siren:home',method,payload??{})]));
 homeBridge.openModule=payload=>ipcRenderer.invoke('siren:home-route',payload);
 homeBridge.importProject=()=>ipcRenderer.invoke('siren:home-import',{});
+homeBridge.convertProject=()=>ipcRenderer.invoke('siren:home-convert',{});
+homeBridge.importSource=()=>ipcRenderer.invoke('siren:home-source-import',{});
 homeBridge.showRecovery=()=>ipcRenderer.invoke('siren:home-recovery',{});
 homeBridge.getCatalog=payload=>ipcRenderer.invoke('siren:windows','getCatalog',payload??{});
 homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',payload);

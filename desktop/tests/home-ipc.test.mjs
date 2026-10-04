@@ -70,3 +70,10 @@ test('unexpected native revalidation failure is a sanitized refusal instead of a
   f.authority.isCurrent=grant=>{if(++reads>1)throw Error('PRIVATE_NATIVE_ERROR');return original(grant);};
   const result=await call(f);assert.deepEqual(result,{ok:false,code:'ACCESS_REFUSED'});assert.equal(JSON.stringify(result).includes('PRIVATE'),false);
 });
+
+test('creation format is a finite optional choice; callers cannot supply a snapshot, path or conversion authority',async()=>{
+ const f=fixture();let received;f.services.createProject=async value=>{received=value;return {ok:true,epoch:1};};
+ for(const format of ['classic','desktop']){assert.equal((await call(f,'createProject',{label:'Chosen',format})).ok,true);assert.equal(received.format,format);}
+ for(const value of [{label:'Chosen',format:'unknown'},{label:'Chosen',snapshot:{}},{label:'Chosen',path:'C:/private'},{label:'Chosen',migrate:true}])assert.equal((await call(f,'createProject',value)).code,'REQUEST_REFUSED');
+ let ran=false;const payload={label:'Chosen'};Object.defineProperty(payload,'format',{enumerable:true,get(){ran=true;return 'desktop';}});assert.equal((await call(f,'createProject',payload)).code,'REQUEST_REFUSED');assert.equal(ran,false);
+});

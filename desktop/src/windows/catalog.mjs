@@ -32,7 +32,10 @@ export class NativeWindowCatalog {
     if(!validId(ref?.sourceId)||!Number.isSafeInteger(ref.version)||ref.version<1||typeof ref.sha256!=='string'||!/^[a-f0-9]{64}$/.test(ref.sha256))return fail('CATALOG_REFUSED');
     if(!refs.has(ref.sourceId)||refs.get(ref.sourceId).version<ref.version)refs.set(ref.sourceId,ref);
    }
-   for(const ref of refs.values())rows.push({role:'code',entityId:ref.sourceId,label:'Source '+ref.sourceId.slice(0,8),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}});
+   const key=ref=>ref&&`${ref.sourceId}:${ref.version}:${ref.sha256}`,names=new Map(),linked=new Set();
+   for(const file of metadata.codeFiles??[]){if(typeof file?.name==='string'&&file.name&&!/[\\/:\u0000-\u001f]/.test(file.name)&&file.name!=='.'&&file.name!=='..'&&file.sourceRef)names.set(key(file.sourceRef),file.name);}
+   for(const document of metadata.workpapers??[])for(const block of document.blocks??[])if(block?.kind==='knowledge')for(const row of block.rows??[])if(row?.sourceRef)linked.add(key(row.sourceRef));
+   for(const ref of refs.values()){const name=names.get(key(ref)),text=name?name+(linked.has(key(ref))?'':' · Unlinked'):'Source '+ref.sourceId.slice(0,8);rows.push({role:'code',entityId:ref.sourceId,label:label(text),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}});}
    const diagramIds=new Set();
    for(const diagram of metadata.diagrams??[]){
     if(!validId(diagram?.id))continue;if(diagramIds.has(diagram.id))return fail('CATALOG_REFUSED');diagramIds.add(diagram.id);

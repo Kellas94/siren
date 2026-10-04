@@ -76,7 +76,21 @@ export class WorkspaceCoordinator {
     const operations=[...ticket.operations],actual=await Promise.all(operations.map(item=>item.promise));
     let readonlyReceipt;
     if(!operations.length&&this.#readonly?.isReadonly(grant))readonlyReceipt=await this.#readonly.seal(grant,{isCurrent:()=>this.#flushCurrent(grant,ticket)});
-    const receipts=Object.freeze(readonlyReceipt?[readonlyReceipt]:actual.map((receipt,index)=>operations[index].domain==='workspace'?Object.freeze({...receipt,domain:'workspace',entityId:grant.projectId,purpose:operations[index].purpose}):receipt));
+    // A clean preparing editor can race one other captured editor's save.
+    // Retain that failure unless the same private ticket subsequently obtained
+    // an exact native read and matching durable flush. Never forgive mutations,
+    // unknown failures, a second conflict or a renderer-provided acknowledgement.
+    let recaptured=false;const superseded=new Set();
+    for(let index=0;index<actual.length;index++)if(actual[index]?.ok!==true){
+      const operation=operations[index],reading=operations[index+1],flushing=operations[index+2],read=actual[index+1],flush=actual[index+2],domain=operation.domain;
+      if(recaptured||!['docs','diagram'].includes(domain)||operation.method!==(domain==='docs'?'flushDocument':'flushDiagram')||actual[index]?.code!==(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT')||
+        reading?.domain!==domain||reading.method!==(domain==='docs'?'readDocument':'readDiagram')||reading.entityId!==operation.entityId||flushing?.domain!==domain||flushing.method!==operation.method||flushing.entityId!==operation.entityId||
+        read?.ok!==true||flush?.ok!==true||read.entityId!==operation.entityId||flush.entityId!==operation.entityId||read.version!==flushing.payload?.expectedVersion||read.version!==flush.version||read.sha256!==flush.sha256||read.projectRevision>flush.projectRevision||
+        (domain==='diagram'?read.version<=operation.payload.expectedVersion:read.version===operation.payload.expectedVersion)||!['committed','recovery-degraded'].includes(flush.durability))continue;
+      recaptured=true;superseded.add(index);
+    }
+    const projected=actual.map((receipt,index)=>operations[index].domain==='workspace'?Object.freeze({...receipt,domain:'workspace',entityId:grant.projectId,purpose:operations[index].purpose}):receipt);
+    const receipts=Object.freeze(readonlyReceipt?[readonlyReceipt]:projected.filter((_receipt,index)=>!superseded.has(index)));
     const current=this.#flushCurrent(grant,ticket);
     this.#flushes.delete(nonce);
     if(!current)return fail('ACCESS_REFUSED');
@@ -85,7 +99,7 @@ export class WorkspaceCoordinator {
       const verified=await this.#readonly.verify(grant,readonlyReceipt,{isCurrent:()=>this.#flushCurrent(grant,ticket)});
       return verified&&this.#flushCurrent(grant,ticket)?Object.freeze({ok:true,receipts}):fail('READONLY_PROOF_FAILED');
     }
-    const final=new Map();operations.forEach((operation,index)=>final.set(`${operation.domain}:${operation.entityId}:${operation.purpose??''}`,{method:operation.method,receipt:receipts[index],payload:operation.payload}));
+    const final=new Map();operations.forEach((operation,index)=>{if(!superseded.has(index))final.set(`${operation.domain}:${operation.entityId}:${operation.purpose??''}`,{method:operation.method,receipt:projected[index],payload:operation.payload});});
     if(!final.size)return fail('FLUSH_NOT_COMMITTED');
     for(const item of final.values()) {
       if(item.receipt.domain==='workspace') {
@@ -151,7 +165,7 @@ export class WorkspaceCoordinator {
       return current()?receipt:fail('ACCESS_REFUSED');
     }).catch(()=>fail('OWNER_OPERATION_FAILED'));
     this.#pending.add(operation);this.#tail=operation;
-    if(ticket)ticket.operations.push({method,domain:kind==='source'?'source':kind,entityId:primaryOperation?payload.projectId:payload.sourceId??payload.entityId??payload.documentId??payload.diagramId,...(primaryOperation?{purpose:payload.purpose}:{}),promise:operation});
+    if(ticket)ticket.operations.push({method,domain:kind==='source'?'source':kind,entityId:primaryOperation?payload.projectId:payload.sourceId??payload.entityId??payload.documentId??payload.diagramId,payload,...(primaryOperation?{purpose:payload.purpose}:{}),promise:operation});
     operation.then(()=>{this.#pending.delete(operation);if(primaryOperation)this.#workspaceBytes-=bytes;else this.#bytes-=bytes;});
     return operation;
   }

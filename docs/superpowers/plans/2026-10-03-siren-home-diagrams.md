@@ -12,6 +12,8 @@
 
 **Execution approval:** User reviewed this written plan and answered “Da, continuă după acest plan” on 3 October 2026. Implement here in coordinated batches with separately authored qualification; no additional approval between routine tasks.
 
+4 October continuation: source-aware Desktop New, explicit separate classic conversion and native chooser UTF-8 source import are implemented with exact readback, guards and unlinked names. Native Diagram Continue resolves the actual entity and opens its registered window. Actual Home300k02-45 completed6; navigation02-49 completed11. A real Home handoff race and native clean-peer Close sealing defect were reproduced and corrected with retained adverse evidence; no fresh-base mutation retry or larger deadline. Full frozen/current package qualification is pending. Native Build/Guided/style/export, Present, attach-back and final independent qualification remain open; these partial boundaries do not mark complete tasks. Root report: desktop/reviews/2026-10-04-home-source-projects-root-evidence.md.
+
 ## Global Constraints
 
 - Startup: Intro → PIN → Home; manual Lock: separate vault animation → PIN → Home. Returning Home never replays Intro. Reduced motion avoids mandatory animation waits.

@@ -17,7 +17,7 @@
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
     const clear=()=>{for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
     const cover=()=>{blocked=true;serial++;clear();container.hidden=true;};
-    const message=result=>errors[result?.code]||'The action could not complete. Your work was retained.';
+    const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',REVISION_CONFLICT:'Your project changed during import. Refresh Home before trying again.'}[result?.code]||errors[result?.code]||'The action could not complete. Your work was retained.');
     const button=(parent,text,fn,{disabled=false,className='',id}={})=>{
       const node=make('button',parent,text,className);node.type='button';node.disabled=disabled;if(id)node.id=id;
       listen(node,'click',fn);return node;
@@ -44,7 +44,11 @@
       const form=make('form',dialog);make('h2',form,'Create a project').id='homeCreateTitle';
       const label=make('label',form,'Project name');label.htmlFor='homeProjectName';
       const input=make('input',form);input.id='homeProjectName';input.maxLength=200;input.required=true;input.autocomplete='off';
+      const formatLabel=make('label',form,'Workspace');formatLabel.htmlFor='homeProjectFormat';
+      const format=make('select',form);format.id='homeProjectFormat';
+      for(const [value,text] of [['classic','Diagram studio'],['desktop','Desktop workspace']]){const option=make('option',format,text);option.value=value;}
       const note=make('p',form,'Stored on this computer.');note.id='homeCreateStatus';note.setAttribute('role','status');
+      listen(format,'change',()=>{note.textContent=format.value==='desktop'?'Separate windows across your displays. Start with a document and a Mermaid diagram. Build and Guided are available in Diagram studio.':'Build, Guided and diagram export. You can create a desktop copy later.';});
       const actions=make('div',form,undefined,'home-create-actions');const cancel=button(actions,'Cancel',()=>dialog.close());
       const submit=make('button',actions,'Create','home-primary');submit.type='submit';
       let creating=false;
@@ -52,14 +56,14 @@
       listen(dialog,'close',()=>dialog.remove());
       listen(form,'submit',async event=>{
         event.preventDefault();if(creating||busy||blocked||disposed||!input.value.trim())return;
-        const turn=serial;creating=true;busy=true;controls();submit.disabled=cancel.disabled=true;input.disabled=true;
+        const turn=serial;creating=true;busy=true;controls();submit.disabled=cancel.disabled=true;input.disabled=format.disabled=true;
         try{
-          const result=await bridge.createProject({label:input.value.trim()});
+          const result=await bridge.createProject({label:input.value.trim(),format:format.value});
           if(disposed||blocked||turn!==serial)return;
           if(result?.ok===true){dialog.close();await refresh();return;}
           note.textContent=message(result);
         }catch{if(!disposed&&!blocked&&turn===serial)note.textContent='Creation failed. Your existing projects were retained.';}
-        finally{if(!disposed&&!blocked&&turn===serial){creating=false;busy=false;controls();submit.disabled=cancel.disabled=false;input.disabled=false;input.focus();}}
+        finally{if(!disposed&&!blocked&&turn===serial){creating=false;busy=false;controls();submit.disabled=cancel.disabled=false;input.disabled=format.disabled=false;input.focus();}}
       });dialog.showModal();input.focus();
     };
     const lockWorkspace=async()=>{
@@ -77,9 +81,16 @@
       listen(dialog,'close',()=>dialog.remove());return dialog;
     };
     const done=dialog=>button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});
+    const convert=()=>{
+      if(blocked||busy||disposed)return;const dialog=infoDialog('Create a desktop copy','homeConvert');if(!dialog)return;
+      make('p',dialog,'Your original project stays available in Diagram studio. The new copy opens documents, code and Mermaid diagrams in separate windows across your displays.');
+      make('p',dialog,'Code, agent details and historical versions are preserved. Build and Guided remain in the original project.');
+      button(dialog,'Cancel',()=>dialog.close(),{className:'home-secondary'});
+      button(dialog,'Create desktop copy',()=>{dialog.close();void perform('convertProject',{});},{id:'homeConfirmConvert',className:'home-primary'});dialog.showModal();
+    };
     const showGuide=()=>{
       if(blocked||disposed)return;const dialog=infoDialog('Your SIREN workspace','homeGuide');if(!dialog)return;
-      for(const [title,text] of [['Diagrams','Open your project in Diagrams for Build, Mermaid and Guided editing, vector export and the existing inline tools.'],['Docs','Open Docs in its own native window. Edit working copy supports title, headings and plain text; Save document or Ctrl+S saves explicitly. Advanced agent sections and source links are retained. Other windows keep unsaved changes when a conflict occurs.'],['⌘ Code','Inspect the exact selected source version with Python colours, Find, Wrap and native window controls. This selected native view is read only. In Code, Edit working copy opens a separate editable source; Save source stores it without changing the linked Docs version. Link to Docs lets you choose exactly which document row should use the saved version; other rows and historical versions stay available. Working copies signal changes from other windows: clean views refresh, local edits stay visible. Open latest separately preserves local text; Replace with latest asks before discarding it. Close, Lock and Quit wait for the working copy to be saved. Existing inline Code retains its private edit workflow.'],['Continue work','Reopen the last recorded Docs or Code item, including its project. Home keeps the open-window list available across your displays.'],['Keyboard','Ctrl+, opens Settings. Ctrl+Alt+L locks SIREN. Ctrl+Alt+O opens a project. Ctrl+Alt+U checks for updates. Ctrl+Q quits after preparing your work.']]){make('h3',dialog,title);make('p',dialog,text);}
+      for(const [title,text] of [['Projects','Choose Diagram studio for Build and Guided, or Desktop workspace for separate Docs, Code and diagram windows. Create desktop copy preserves your original and moves code into separate sources.'],['Diagrams','Diagram studio includes Build, Guided and vector export. Desktop diagram windows let you edit Mermaid source, preview imported colours, zoom and save with Ctrl+S. Continue work reopens a saved diagram window.'],['Docs','Edit working copy supports title, headings and plain text. Save document or Ctrl+S saves explicitly. Agent sections, historical versions and source links are retained.'],['⌘ Code','Import UTF-8 code from the Code library; each source can contain up to 32 MiB. Unlinked marks code without a current Docs link. Open an exact version with Python colours, Find and Wrap. Edit working copy saves a new source version; Link to Docs chooses which document row should use it. Clean working views refresh when another window saves. Local edits stay visible; Open latest separately preserves them, and Replace with latest asks before discarding them.'],['Across your displays','Home lists open windows, including minimized ones. Continue work reopens the last saved item and its project. Close, Lock and Quit wait for working copies to be saved.'],['Keyboard','Ctrl+, opens Settings. Ctrl+Alt+L locks SIREN. Ctrl+Alt+O opens a project. Ctrl+Alt+U checks for updates. Ctrl+Q quits after preparing your work.']]){make('h3',dialog,title);make('p',dialog,text);}
       done(dialog);dialog.showModal();
     };
     const showUpdates=async()=>{
@@ -116,11 +127,12 @@
       else{make('span',hero,'A FRESH START','home-eyebrow');make('h2',hero,'Make room for your next idea.');make('p',hero,'Create a local project or open your existing work.','home-subtitle');}
       const start=make('div',hero,undefined,'home-start-actions');const newProject=button(start,'New project',create,{id:'homeNewProject',className:previous?'home-secondary':'home-primary'});unavailable(newProject,value.mode!=='normal'||typeof bridge?.createProject!=='function');
       const open=button(start,'Open project…',()=>perform('importProject',{}),{id:'homeImportProject',className:'home-secondary'});unavailable(open,value.mode!=='normal'||typeof bridge?.importProject!=='function');
+      if(value.projectFormat==='classic'){const upgrade=button(start,'Create desktop copy…',convert,{id:'homeConvertProject',className:'home-secondary'});unavailable(upgrade,value.mode!=='normal'||typeof bridge?.convertProject!=='function');}
       const moduleHeading=make('div',content,undefined,'home-section-heading');make('h2',moduleHeading,'Explore your project');make('span',moduleHeading,'One context. Four perspectives.');
       const diagramWindow=button(moduleHeading,'Open diagram window…',()=>library('diagram'),{id:'homeDiagramWindows'});unavailable(diagramWindow,value.selectedProjectId===null||typeof bridge?.getCatalog!=='function');
       const grid=make('div',content,undefined,'home-module-grid');
       for(const [surface,title,description,icon] of modules){const enabled=value.selectedProjectId!==null&&value.capabilities[surface]===true&&typeof bridge?.openModule==='function';
-        const card=button(grid,'',()=>['code','docs'].includes(surface)?library(surface):perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
+        const card=button(grid,'',()=>['code','docs'].includes(surface)?library(surface):surface==='diagrams'&&value.projectFormat==='desktop'?library('diagram'):perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
         make('span',card,icon,'home-module-icon');make('strong',card,title);make('span',card,description,'home-module-description');
         // A visible limitation does not advertise an unconnected editor.
         const available=enabled===true;unavailable(card,!available);if(!available)make('small',card,value.selectedProjectId===null?'Open a project first':'Not available in this build');
@@ -144,23 +156,32 @@
     const library=async surface=>{
       if(disposed||blocked||busy)return;const turn=serial;busy=true;controls();
       const dialog=make('dialog',container,undefined,'home-create home-library');dialog.setAttribute('aria-labelledby','homeLibraryTitle');
-      make('h2',dialog,surface==='code'?'⌘ Code':surface==='diagram'?'Diagrams':'Docs').id='homeLibraryTitle';make('p',dialog,surface==='code'?'Open a selected source version for inspection. In Code, Edit working copy opens a separate editable source.':surface==='diagram'?'Open a saved diagram on another display. This preview is read only; Build and Guided remain in the main Diagrams editor.':'Open a saved document for read-only inspection in its own window.');
+      make('h2',dialog,surface==='code'?'⌘ Code':surface==='diagram'?'Diagrams':'Docs').id='homeLibraryTitle';make('p',dialog,surface==='code'?'Open a saved source. Edit working copy opens a separate editor.':surface==='diagram'?'Open a saved diagram on another display. Edit working copy lets you change its Mermaid source.':'Open a saved document. Edit working copy lets you update its title and text.');
       const rows=make('div',dialog,undefined,'home-library-items'),note=make('p',dialog,'Loading…');note.setAttribute('role','status');
-      let cursor=0,found=0,loading=false;
+      let cursor=0,found=0,loading=false,opening=false,handingOff=false,active=true;
       const more=button(dialog,'Load more',()=>{void loadPage();},{id:'homeLibraryMore',className:'home-secondary'});more.hidden=true;
-      const finish=()=>{if(turn===serial){busy=false;controls();}dialog.remove();};button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});listen(dialog,'close',finish);dialog.showModal();
+      const finish=()=>{active=false;if(!handingOff&&turn===serial){busy=false;controls();}dialog.remove();};
+      if(surface==='code'&&state?.projectFormat==='desktop'&&state.mode==='normal'&&typeof bridge?.importSource==='function')button(dialog,'Import code…',()=>{finish();void perform('importSource',{});},{id:'homeLibraryImportSource',className:'home-primary'});
+      button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});listen(dialog,'close',finish);dialog.showModal();
       const loadPage=async()=>{
       if(loading||blocked||disposed||turn!==serial||!dialog.open)return;loading=true;more.disabled=true;
       try{
         const result=await bridge.getCatalog({cursor,role:surface});if(disposed||blocked||turn!==serial||!dialog.open)return;
         if(!result?.ok){note.textContent=message(result);return;}
         for(const item of result.items.filter(item=>item.role===surface)){found++;const row=button(rows,item.label,async()=>{
-          if(blocked||disposed||turn!==serial)return;row.disabled=true;note.textContent='Opening…';
+          if(blocked||disposed||turn!==serial||opening||!active)return;opening=true;row.disabled=true;note.textContent='Opening…';
           try{const opened=await bridge.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});
-            if(blocked||disposed||turn!==serial)return;
-            if(opened?.ok){dialog.close();await bridge.recordLocation({surface:surface==='diagram'?'diagrams':surface,entityId:item.entityId,...(item.sourceRef?{sourceRef:item.sourceRef}:{})});await refresh();}
+            if(blocked||disposed||turn!==serial||!active)return;
+            if(opened?.ok){
+              // Closing the dialog must not enable a second Home action before
+              // this callback finishes recording and refreshing its location.
+              handingOff=true;dialog.close();
+              const recorded=await bridge.recordLocation({surface:surface==='diagram'?'diagrams':surface,entityId:item.entityId,...(item.sourceRef?{sourceRef:item.sourceRef}:{})});
+              if(blocked||disposed||turn!==serial)return;await refresh();if(recorded?.ok!==true)say('The window opened, but Continue work could not be updated.');
+            }
             else{note.textContent=message(opened);row.disabled=false;}
-          }catch{if(!blocked&&turn===serial){note.textContent='The window could not open. Your work was retained.';row.disabled=false;}}
+          }catch{if(!blocked&&!disposed&&turn===serial){if(handingOff){await refresh();say('The window opened, but Continue work could not be updated.');}else if(active){note.textContent='The window could not open. Your work was retained.';row.disabled=false;}}}
+          finally{opening=false;}
         },{className:'home-project-row'});row.dataset.entityId=item.entityId;}
         cursor=result.nextCursor;more.hidden=result.hasMore!==true;
         note.textContent=found?`${found.toLocaleString()} of ${Math.min(result.total,4096).toLocaleString()} items · Select an item.${result.truncated?' The first 4,096 items are available here.':''}`:'No saved items in this project yet.';

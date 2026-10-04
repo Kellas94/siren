@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import assert from 'node:assert/strict';
+import {waitForNativeCondition} from './condition.mjs';
 
 // Target discovery identifies the page, not completion of its native preload.
 // Keep authentication separate from this bounded, read-only startup qualification.
@@ -92,7 +93,7 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
     let serial = 0; const pending = new Map(); const events = [];
     ws.addEventListener('message', e => {
       const m = JSON.parse(e.data);
-      if (m.id) { const p = pending.get(m.id); if (p) { clearTimeout(p.timer); pending.delete(m.id); m.error ? p.reject(new Error(JSON.stringify(m.error))) : p.resolve(m.result); } }
+      if (m.id) { const p = pending.get(m.id); if (p) { clearTimeout(p.timer); pending.delete(m.id); m.error ? p.reject(Object.assign(new Error(JSON.stringify(m.error)),{cdpCode:m.error.code,cdpMessage:m.error.message})) : p.resolve(m.result); } }
       else events.push(m);
     });
     const send = (method, params = {}) => new Promise((resolve, reject) => {
@@ -106,11 +107,7 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
       if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails));
       return r.result.value;
     };
-    const waitFor = async expression => {
-      const until = Date.now() + 30000;
-      while (Date.now() < until) { if (await evaluate(expression)) return; await delay(100); }
-      throw new Error('UI condition not met: ' + expression);
-    };
+    const waitFor = expression => waitForNativeCondition(evaluate,expression,{onNavigationGap:()=>{events.push({method:'OwnedProbe.navigationObservationInterrupted',params:{cdpCode:-32000}});}});
     const screenshot = async path => { const r = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(path, Buffer.from(r.data, 'base64')); };
       const click = async selector => {
         // Hosted displays can be shorter than the owned local window. Bring the
