@@ -15,8 +15,27 @@ export const domainHelper = `
           if(domain==='diagram'&&['replace-source','update-model'].includes(action))return typeof payload.source==='string';
           if(domain==='docs'&&action==='replace-blocks') {
             const existing=new Set((before?.blocks||[]).map(block=>JSON.stringify(canonical(block))));
+            // Native linked rows carry immutable references that the frozen web
+            // sanitizer predates. Admit only name/notes changes; everything else
+            // must match the actual saved block, including every source pointer.
+            const labelsOnly=block=>{
+              const prior=(before?.blocks||[]).filter(item=>item?.id===block?.id);
+              if(prior.length!==1||block?.kind!=='knowledge'||prior[0].kind!=='knowledge'||!Array.isArray(block.rows)||!Array.isArray(prior[0].rows)||block.rows.length!==prior[0].rows.length)return false;
+              const without=(value,keys)=>Object.fromEntries(Object.entries(value).filter(([key])=>!keys.includes(key)));
+              if(!same(without(block,['rows']),without(prior[0],['rows'])))return false;
+              return block.rows.every((row,index)=>{
+                const old=prior[0].rows[index];if(same(row,old))return true;
+                if(!row||!old||typeof row.id!=='string'||!row.id||!same(without(row,['name','notes']),without(old,['name','notes'])))return false;
+                const ref=old.sourceRef;
+                if(!ref||Object.keys(ref).length!==3||typeof ref.sourceId!=='string'||!ref.sourceId||!Number.isSafeInteger(ref.version)||ref.version<1||typeof ref.sha256!=='string'||!/^[a-f0-9]{64}$/.test(ref.sha256))return false;
+                for(const key of ['name','notes'])if(Object.hasOwn(old,key)&&!Object.hasOwn(row,key)||Object.hasOwn(row,key)&&typeof row[key]!=='string')return false;
+                const projected={id:block.id,kind:'knowledge',reasoningEffort:'',rows:[{name:row.name??'',fileType:'txt',role:'',notes:row.notes??'',content:'',sourceOrigin:'',confirmedAt:'',sourceId:''}]},report=[];
+                return same(sanitizeWorkpaperBlock(projected,report),projected)&&report.length===0;
+              });
+            };
             return payload.blocks.length<=MAX_WP_BLOCKS&&payload.blocks.every(block=>{
               if(existing.has(JSON.stringify(canonical(block))))return true;
+              if(labelsOnly(block))return true;
               const report=[];return same(sanitizeWorkpaperBlock(block,report),block)&&report.length===0;
             });
           }

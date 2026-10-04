@@ -28,7 +28,7 @@
  }
  function paint(value,focusBlock=null){
   clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
-  make('p',content,readonly?'Document · Read only':'Working document · Edit title, headings and plain text. Advanced sections are retained.').className='document-caption';
+  make('p',content,readonly?'Document · Read only':'Working document · Edit text and linked-code context. Save when ready.').className='document-caption';
   if(!readonly)paintEditor(focusBlock);
   paintSources(value);
   const entries=Object.entries(value).filter(([key])=>!(readonly?['id','title']:['id','title','blocks']).includes(key));let end=0,section=0;
@@ -113,7 +113,19 @@
      const label=make('label',card,editableHeading?'Heading':'Text'),input=make('textarea',label);input.className='document-edit';input.dataset.blockIndex=String(index);input.dataset.blockId=block.id;input.rows=editableHeading?2:5;input.value=editableHeading?block.text??'':plain;
      input.addEventListener('input',()=>{const next=draft.getContent();next.blocks[index]={...next.blocks[index],...(editableHeading?{text:input.value}:{html:'<p>'+escapeText(input.value)+'</p>'})};draft.setContent(next);});
      const remove=make('button',card,'Remove block…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>{if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=draft.getContent();next.blocks.splice(index,1);draft.setContent(next);paint(draft.getDocument());updateState();});
-    }else{make('h3',card,label(block?.kind??'Preserved block')+' · Preserved');make('p',card,'This section remains exact. This editor currently supports headings and plain text.');field(card,'content',block,0);}
+    }else if(block?.kind==='knowledge'&&Array.isArray(block.rows)&&block.rows.some(row=>typeof row?.id==='string'&&row.id&&typeof row.sourceRef?.sourceId==='string')){
+     make('h3',card,'Linked-code context');make('p',card,'Names and notes explain the saved code. Source versions and other fields stay intact.').className='document-caption';
+     const rows=make('div',card),moreRows=make('button',card,'More sources');moreRows.type='button';let at=0;
+     const extendRows=()=>{const end=Math.min(at+40,block.rows.length);for(let rowIndex=at;rowIndex<end;rowIndex++){
+      const row=block.rows[rowIndex];if(typeof row?.id!=='string'||!row.id||typeof row.sourceRef?.sourceId!=='string')continue;
+      const group=make('fieldset',rows);group.className='document-knowledge';make('legend',group,String(row.name??row.title??'Linked source').slice(0,160)+' · Saved version '+row.sourceRef.version);
+      for(const [key,title,max]of [['name','Source name',160],['notes','Context and notes',2000]]){
+       if(Object.hasOwn(row,key)&&typeof row[key]!=='string')continue;
+       const name=make('label',group,title),input=make(key==='name'?'input':'textarea',name);input.className='document-edit';input.dataset.knowledgeRow=row.id;input.dataset.knowledgeField=key;input.maxLength=max;input.value=row[key]??(key==='name'?row.title??'':'');if(key==='notes')input.rows=4;
+       input.addEventListener('input',()=>{const next=draft.getContent(),target=next.blocks[index]?.rows?.[rowIndex];if(!target||target.id!==row.id)return;target[key]=input.value;draft.setContent(next);});
+      }
+     }at=end;moreRows.hidden=at===block.rows.length;};moreRows.addEventListener('click',extendRows);extendRows();field(card,'Preserved fields',block,0);
+    }else{make('h3',card,label(block?.kind??'Preserved block')+' · Preserved');make('p',card,'This section remains exact. This editor supports text and linked-code context.');field(card,'content',block,0);}
    }rendered=end;more.hidden=rendered===current.blocks.length;
   };more.addEventListener('click',renderBlocks);renderBlocks();
   const actions=make('div',section);actions.className='document-block-actions';

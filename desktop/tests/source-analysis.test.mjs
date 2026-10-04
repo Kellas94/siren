@@ -43,6 +43,16 @@ test('cancel during genuine load retains job until I/O drains and rejects its la
  let release;const gate=new Promise(resolve=>{release=resolve;});const f=fixture(t,'def ok():\n pass\n',{loadSource:async()=>{await gate;return Buffer.from('def ok():\n pass\n');}});
  const pending=f.submit();assert.equal(f.service.isIdle(),false);const cancelled=f.service.cancel('job-a');await delay(10);assert.equal(f.service.isIdle(),false);release();await cancelled;assert.equal((await pending).status,'cancelled');assert.equal(f.service.isIdle(),true);
 });
+
+test('finite job evidence records pre-worker cancellation only after genuine held source I/O drains',async t=>{
+ let release;const gate=new Promise(resolve=>{release=resolve;}),events=[];
+ const f=fixture(t,'def ok():\n pass\n',{onActivity:event=>events.push(structuredClone(event)),loadSource:async()=>{await gate;return Buffer.from('def ok():\n pass\n');}}),pending=f.submit();
+ try{
+  assert.deepEqual(events,[{phase:'job-admitted'}]);const cancelled=f.service.cancel('job-a');await delay(10);
+  assert.equal(f.service.isIdle(),false);assert.deepEqual(events,[{phase:'job-admitted'}]);release();await cancelled;
+  assert.equal((await pending).status,'cancelled');assert.deepEqual(events,[{phase:'job-admitted'},{phase:'job-finished',status:'cancelled'}]);assert.equal(f.service.isIdle(),true);
+ }finally{release();await pending;}
+});
 test('stale results and corruption after a successful immutable read are refused, never cached',async t=>{
  const text='def ok():\n pass\n',bytes=Buffer.from(text);let loaded=bytes,current=true;
  const f=fixture(t,text,{loadSource:async()=>loaded});assert.equal((await f.submit()).status,'complete');loaded=Buffer.from(text+'# changed');assert.equal((await f.submit({jobId:'changed'})).reason,'SOURCE_HASH_MISMATCH');
@@ -69,5 +79,5 @@ test('actual worker crash is joined and deadline-expired worker can be replaced 
 });
 test('oversized worker artifact is refused by bounded owned-file read before worker creation',async t=>{
  const path=join(built.root,'oversized-worker.cjs');await writeFile(path,Buffer.alloc(2*1024*1024+1));let started=false;
- const f=fixture(t,'def ok():\n    pass\n',{workerPath:path,workerSha256:'0'.repeat(64),onActivity:()=>{started=true;}});assert.equal((await f.submit()).reason,'WORKER_IDENTITY_REFUSED');assert.equal(started,false);assert.equal(f.service.isIdle(),true);
+ const f=fixture(t,'def ok():\n    pass\n',{workerPath:path,workerSha256:'0'.repeat(64),onActivity:({phase})=>{if(phase==='worker-started')started=true;}});assert.equal((await f.submit()).reason,'WORKER_IDENTITY_REFUSED');assert.equal(started,false);assert.equal(f.service.isIdle(),true);
 });

@@ -48,12 +48,13 @@ export class AnalysisService {
  async cancel(jobId){const job=this.#jobs.get(jobId);if(!job)return false;this.#stop(job,'cancelled','CANCELLED');await job.done;return true;}
  async submit(input,{isCurrent=()=>true}={}){
   const request=normalizeAnalysisRequest(input),base={sourceId:request?.sourceId??null,version:request?.version??null,jobId:request?.jobId??null,...(request?.kind==='diff'?{rightRef:request.rightRef}:{})};
-  const result=(status,reason)=>({...base,status,coverage:null,reason});
+  let terminalStatus=null;const result=(status,reason)=>{terminalStatus=status;return {...base,status,coverage:null,reason};};
   if(!request)return result('unsupported','REQUEST_REFUSED');
   if(this.#paused||this.#disposed||!isCurrent())return result('cancelled','CANCELLED');
   if(this.#jobs.has(request.jobId))return result('unsupported','DUPLICATE_JOB');
   if(this.#jobs.size>=2)return result('budget-exceeded','WORKER_CAPACITY');
   let complete;const job={done:new Promise(resolve=>{complete=resolve;}),worker:null,stop:null};this.#jobs.set(request.jobId,job);
+  try{this.#activity({phase:'job-admitted'});}catch{/* Diagnostics cannot grant authority. */}
   const current=()=>!job.stop&&!this.#paused&&!this.#disposed&&isCurrent();
   try{
    const bytes=await this.#load({sourceId:request.sourceId,version:request.version,sha256:request.sha256},{jobId:request.jobId,side:'left'});
@@ -81,8 +82,8 @@ export class AnalysisService {
    }finally{clearTimeout(timer);await worker.terminate();job.worker=null;try{this.#activity({phase:'worker-exited',status:job.stop?.status??message?.status??'error'});}catch{/* Diagnostics only. */}}
    if(!current())return result(job.stop?.status??'cancelled',job.stop?.reason??'CANCELLED');
    if(!message||!['complete','partial','unsupported','budget-exceeded','cancelled','error'].includes(message.status))return result('error','WORKER_RESULT_REFUSED');
-   return {...base,...message};
+   terminalStatus=message.status;return {...base,...message};
   }catch{return result(job.stop?.status??'error',job.stop?.reason??'ANALYSIS_FAILED');}
-  finally{this.#jobs.delete(request.jobId);complete();}
+  finally{this.#jobs.delete(request.jobId);try{this.#activity({phase:'job-finished',status:terminalStatus??'error'});}catch{/* Metadata only, after load/worker exit. */}complete();}
  }
 }
