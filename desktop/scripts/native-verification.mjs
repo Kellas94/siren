@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 export const nativeGroups=Object.freeze({
- desktop:Object.freeze(['shell','protected-storage','account-transition','code-windows','desktop-ui','code-recovery','recovery-zoom','code-diagram-interaction','guided-intro','dev-first-run','access-screen','local-pin','headless-import','readonly-roster','home-entry','home-navigation','home-recovery','home-library']),
+ desktop:Object.freeze(['shell','protected-storage','account-transition','code-windows','desktop-ui','code-recovery','recovery-zoom','code-diagram-interaction','guided-intro','dev-first-run','access-screen','local-pin','headless-import','readonly-roster','home-entry','home-navigation','home-recovery','home-library','window-focus','toast-transition']),
  sources:Object.freeze(['source-owner','source-read','source-analysis','source-diff','source-map','source-edit','source-link','source-link-create','docs-sources','source-sync','docs-edit','view-control-rollback','large-source-docs','code-view-flush','domain-workspaces']),
  diagrams:Object.freeze(['diagram-preview','diagram-edit','diagram-guided','diagram-style','diagram-build','diagram-vector','diagram-export','home-library-search','home-documents','docs-structured','home-source-projects','presentation-render','presentation-style','presentation-cards','presentation-windows'])
 });
@@ -36,4 +36,3 @@ if(resolve(process.argv[1]??'')===fileURLToPath(import.meta.url)){
  const verdict=await runNativeGroup(group,{onResult:async item=>{progress.results.push(item);await save();console.log(JSON.stringify({nativeGroup:group,...item}));}});
  const afterInputs=await capture(),changedInputs=names.filter(name=>inputs[name]!==afterInputs[name]);Object.assign(progress,{...verdict,finished:new Date().toISOString(),afterInputs,changedInputs,status:verdict.ok&&changedInputs.length===0?'COMPLETE':'ADVERSE'});await save();console.log(JSON.stringify({group,status:progress.status,failed:verdict.failed,changedInputs}));process.exitCode=progress.status==='COMPLETE'?0:1;
 }
-

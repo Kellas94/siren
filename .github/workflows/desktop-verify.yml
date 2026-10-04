@@ -148,6 +148,10 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log
@@ -319,6 +323,10 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log
@@ -528,6 +536,10 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log

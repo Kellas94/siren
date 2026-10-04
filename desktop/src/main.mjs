@@ -11,6 +11,7 @@ import { ProjectStore } from './projects/store.mjs';
 import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
+import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead,invokeSourceMutation} from './windows/source-bridge.mjs';
@@ -337,6 +338,7 @@ const windowRegistry = new WindowRegistry({
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
   }, preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record) => {
     nativeShells.set(record.windowId, view);
+    bindNativeWindowFocusKeys(view,nativeWindowFocus);
     if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
     view.on('closed', () => nativeShells.delete(record.windowId));
     view.on('close',event=>{
@@ -676,6 +678,11 @@ ipcMain.handle('siren:home-import',(event,input)=>{
   }}});
 });
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
+const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindow:window,
+ windowFor:id=>nativeShells.get(id),focusedWindow:()=>BrowserWindow.getFocusedWindow(),
+ canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
+});
+bindNativeWindowFocusKeys(window,nativeWindowFocus);
 Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'File', submenu: [
     { label: 'Settings…', accelerator: 'Ctrl+,', click: () => desktopCommand('desktopPinSettings') },
@@ -686,6 +693,12 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
   ] },
   { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
   { label: 'View', submenu: [{ role: 'togglefullscreen' }] },
+  { label: 'Window', submenu: [
+    {label:'Main window',accelerator:'Ctrl+Alt+1',click:()=>nativeWindowFocus.showMain()},
+    {type:'separator'},
+    {label:'Next window',accelerator:'Ctrl+Alt+Right',click:()=>nativeWindowFocus.cycle(1)},
+    {label:'Previous window',accelerator:'Ctrl+Alt+Left',click:()=>nativeWindowFocus.cycle(-1)},
+  ]},
   { label: 'Help', submenu: [
     { label: 'Settings…', click: () => desktopCommand('desktopPinSettings') },
     { label: 'Check for Updates…', accelerator: 'Ctrl+Alt+U', click: () => desktopCommand('desktopCheckUpdates') },
