@@ -1,0 +1,108 @@
+{
+  "author": "/root",
+  "independentExecution": false,
+  "status": "COMPLETE",
+  "releaseAdmitted": false,
+  "started": "2026-10-04T22:37:47.960Z",
+  "finished": "2026-10-04T22:39:35.040Z",
+  "sourceCommit": "8bd87ac8165214e14def04bf8c1f9153f0218ce0",
+  "scope": "Four actual package probes: unchanged original recovery/PIN/Unicode copy, native Window input restoration, Presenter/Audience with300k sources, source-link300k; original Access-screen, controlled toast characterization and Guide are separate development.",
+  "archive": {
+    "bytes": 53512979,
+    "sha256": "9cb473b2ee25ab9e8c84b6416ae36dba37d79c16a5ca427a422bd6f811706ea9"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "exactRuntimeInputs": 104,
+  "originalPackagedOracleSha256": "eaf8e3bab4c7267c57eb24a2a250901b05ac4494ce2ac736461dfeeada96ae24",
+  "receipt": {
+    "path": "evidence/window-layout-package-probes-result.json",
+    "sha256": "5c304bb46cc6d4f9f836d3c421d8e025c02e1d159cddb072813d3c4339d4d443"
+  },
+  "results": [
+    {
+      "script": "packaged",
+      "args": [
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e11da3be-6850-404d-9bfe-455ca4f58f74"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "3175b2cb0b95ffc6e4b7520d460aba946bdac59124382f6baf358120112999e7"
+    },
+    {
+      "script": "window-focus",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e11da3be-6850-404d-9bfe-455ca4f58f74"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "eaecc1e4b07c760eb397257ce9e22724dbd17601d634e4fee71f954eaf35311c"
+    },
+    {
+      "script": "presentation-windows",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e11da3be-6850-404d-9bfe-455ca4f58f74",
+        "--lines",
+        "300000"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "41a1aee84043047356ff0b6168bf7310fc1079333ec963dd1f9f88cd92c2acc3"
+    },
+    {
+      "script": "source-link",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e11da3be-6850-404d-9bfe-455ca4f58f74",
+        "--300k"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "ad8ab5426ef0188163bedb7e55159a693b59cc20d3049efd8b3f5ab6f6f9a6cd"
+    },
+    {
+      "script": "access-screen",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "cb457348c8318a7a73daf41183fe54d8767461feb7359448fc7a7d1e53877ac2"
+    },
+    {
+      "script": "toast-transition",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "d0202f4357a9404f940cd3cf2c9527b4b11702d2b7d2f5481daa16dd6b22868a"
+    },
+    {
+      "script": "home-library",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "7b0387f87aba7457bd5eeead8700ba330f7b012b596258c0c98d7ac73997c251"
+    }
+  ],
+  "changedInputs": [],
+  "archiveBefore": "9cb473b2ee25ab9e8c84b6416ae36dba37d79c16a5ca427a422bd6f811706ea9",
+  "archiveAfter": "9cb473b2ee25ab9e8c84b6416ae36dba37d79c16a5ca427a422bd6f811706ea9",
+  "physicalMonitorRemovalQualified": false,
+  "physicalMixedDPIQualified": false
+}

@@ -12,6 +12,7 @@ import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
+import {NativeWindowLayout,bindNativeDisplayRecovery} from './windows/layout.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead,invokeSourceMutation} from './windows/source-bridge.mjs';
@@ -338,7 +339,7 @@ const windowRegistry = new WindowRegistry({
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
   }, preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record) => {
     nativeShells.set(record.windowId, view);
-    bindNativeWindowFocusKeys(view,nativeWindowFocus);
+    bindNativeWindowFocusKeys(view,nativeWindowFocus,nativeWindowLayout);
     if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
     view.on('closed', () => nativeShells.delete(record.windowId));
     view.on('close',event=>{
@@ -682,7 +683,12 @@ const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindo
  windowFor:id=>nativeShells.get(id),focusedWindow:()=>BrowserWindow.getFocusedWindow(),
  canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
 });
-bindNativeWindowFocusKeys(window,nativeWindowFocus);
+const nativeWindowLayout=new NativeWindowLayout({registry:windowRegistry,mainWindow:window,
+ windowFor:id=>nativeShells.get(id),displays:()=>{const primary=screen.getPrimaryDisplay().id;return screen.getAllDisplays().map(d=>({id:d.id,workArea:d.workArea,primary:d.id===primary}));},
+ canRecoverViews:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
+});
+const unbindDisplayRecovery=bindNativeDisplayRecovery(screen,nativeWindowLayout);window.once('closed',()=>{unbindDisplayRecovery();nativeWindowLayout.dispose();});
+bindNativeWindowFocusKeys(window,nativeWindowFocus,nativeWindowLayout);
 Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'File', submenu: [
     { label: 'Settings…', accelerator: 'Ctrl+,', click: () => desktopCommand('desktopPinSettings') },
@@ -698,6 +704,8 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
     {type:'separator'},
     {label:'Next window',accelerator:'Ctrl+Alt+Right',click:()=>nativeWindowFocus.cycle(1)},
     {label:'Previous window',accelerator:'Ctrl+Alt+Left',click:()=>nativeWindowFocus.cycle(-1)},
+    {type:'separator'},
+    {label:'Bring all windows back',accelerator:'Ctrl+Alt+B',click:(_item,origin)=>nativeWindowLayout.bringAllBack(origin??window)},
   ]},
   { label: 'Help', submenu: [
     { label: 'Settings…', click: () => desktopCommand('desktopPinSettings') },

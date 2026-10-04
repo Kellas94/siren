@@ -32,12 +32,12 @@ export class NativeWindowFocus{
 
 /** Actual Electron input route. preventDefault suppresses both the page event
  * and its menu accelerator, so a physical key press cannot cycle twice. */
-export function bindNativeWindowFocusKeys(nativeWindow,focus){
+export function bindNativeWindowFocusKeys(nativeWindow,focus,layout){
  nativeWindow.webContents.on('before-input-event',(event,input)=>{
   if(input.type!=='keyDown'||!input.control||!input.alt||input.shift||input.meta||input.isComposing)return;
-  const action=input.key==='1'?'main':input.key==='ArrowRight'?1:input.key==='ArrowLeft'?-1:null;
+  const action=input.key==='1'?'main':input.key==='ArrowRight'?1:input.key==='ArrowLeft'?-1:layout&&['b','B'].includes(input.key)?'bring-back':null;
   if(action===null)return;
   event.preventDefault();if(input.isAutoRepeat)return;
-  if(action==='main')focus.showMain();else focus.cycle(action,nativeWindow);
+  if(action==='main')focus.showMain();else if(action==='bring-back')layout.bringAllBack(nativeWindow);else focus.cycle(action,nativeWindow);
  });
 }
