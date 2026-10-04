@@ -501,6 +501,7 @@ const retireNativeViews = () => {
 };
 const navigation=new NavigationStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced});
 const homeService=new HomeService({navigation,catalog:new ProjectCatalog(dataRoot),projects,
+  onDiagnostic:event=>console.info('SIREN_HOME_STAGE',JSON.stringify(event)),
   selection:{state:()=>({projectId:selectedId,label:snapshot?.project.label,projectFormat:snapshot?.schema===2?'desktop':snapshot?'classic':null,mode,readonly:nativeReadonly||mode!=='normal',
     views:windowRegistry.listViews().filter(view=>['code','docs','diagram','presenter','audience'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:({code:'⌘ Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[view.role]),state:view.state==='minimized'?'minimized':'open'})),
     capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:Boolean(snapshot)}})},

@@ -11,14 +11,14 @@ import { HomeService } from '../src/navigation/service.mjs';
 import { invokeHome } from '../src/navigation/ipc.mjs';
 import { HomeAuthority } from '../src/navigation/authority.mjs';
 
-async function fixture(){
+async function fixture(onDiagnostic){
   const root=await mkdtemp(join(tmpdir(),'siren-home-service-'));let current=true;
   const projects=new ProjectStore(root),navigation=new NavigationStore(root,{canWrite:()=>current}),catalog=new ProjectCatalog(root);
   const snapshot=await projects.createProject({label:'Owned project',json:'{"docs":"PLANTED_PRIVATE_CONTENT","diagrams":[]}'});
   const state={projectId:snapshot.project.id,mode:'normal',readonly:false,views:[],capabilities:{diagrams:false,docs:false,code:false,present:false}};
   const scope={projectId:state.projectId,mode:state.mode,isCurrent:()=>current};
   const resolveEntity=async({location})=>location.entityId==='source-a'?{ok:true,location}:{ok:false,code:'ENTITY_UNAVAILABLE'};
-  const service=new HomeService({navigation,catalog,projects,resolveEntity,selection:{state:()=>state},clock:()=> '2026-10-03T08:00:00.000Z'});
+  const service=new HomeService({navigation,catalog,projects,resolveEntity,selection:{state:()=>state},clock:()=> '2026-10-03T08:00:00.000Z',onDiagnostic});
   return {root,projects,navigation,catalog,snapshot,state,scope,service,setCurrent:value=>{current=value;}};
 }
 test('Home state lists only cached metadata without reading project or source contents',async()=>{
@@ -79,4 +79,49 @@ test('resolver cannot silently substitute an immutable version by mutating its r
   f.service.resolveEntity=async({location})=>{location.sourceRef.version=8;return {ok:true,location};};
   const result=await f.service.recordLocation({surface:'code',entityId:'source-a',sourceRef:{sourceId:'source-a',version:7,sha256:'a'.repeat(64)}},f.scope);
   assert.equal(result.code,'SOURCE_VERSION_UNAVAILABLE');assert.deepEqual(await f.navigation.read(),before);
+});
+
+test('Continue diagnostics follow genuine durable navigation stages without private metadata',async()=>{
+  const events=[],f=await fixture(event=>events.push(event));
+  assert.deepEqual(await f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope),{ok:true});
+  assert.deepEqual(events.map(event=>event.stage),['started','admitted','project-read-start','project-read','resolve-start','resolved','persist-start','verified']);
+  for(const event of events){
+    assert.deepEqual(Object.keys(event).sort(),['elapsedMs','operation','stage']);
+    assert.equal(event.operation,1);assert.ok(Number.isSafeInteger(event.elapsedMs)&&event.elapsedMs>=0);
+  }
+  assert.equal((await f.navigation.read()).entries[0].location.entityId,'source-a');
+  for(const privateValue of ['Owned project','PLANTED_PRIVATE_CONTENT',f.snapshot.project.id,'source-a'])assert.equal(JSON.stringify(events).includes(privateValue),false);
+  await f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope);
+  assert.equal(events.at(-1).operation,2);
+});
+
+test('Continue diagnostics expose the held read boundary and refuse Lock before persistence',async()=>{
+  const events=[],f=await fixture(event=>events.push(event));const before=await f.navigation.read();
+  const original=f.projects.readProject.bind(f.projects);let entered,release;
+  const ready=new Promise(resolve=>{entered=resolve;});
+  f.projects.readProject=async id=>{entered();await new Promise(resolve=>{release=resolve;});return original(id);};
+  const operation=f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope);await ready;
+  assert.deepEqual(events.map(event=>event.stage),['started','admitted','project-read-start']);
+  f.setCurrent(false);release();assert.equal((await operation).code,'ACCESS_REFUSED');
+  assert.equal(events.at(-1).stage,'refused');assert.equal(events.at(-1).code,'ACCESS_REFUSED');
+  assert.equal(events.some(event=>event.stage==='persist-start'),false);assert.deepEqual(await f.navigation.read(),before);
+});
+
+test('Continue diagnostics retain refusals and sanitize unexpected storage errors',async()=>{
+  const events=[],f=await fixture(event=>events.push(event));const before=await f.navigation.read();
+  f.state.readonly=true;assert.equal((await f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope)).code,'ACCESS_REFUSED');
+  assert.deepEqual(events.map(event=>event.stage),['started','refused']);
+  f.state.readonly=false;events.length=0;
+  f.navigation.record=async()=>({ok:false,code:'PRIVATE_STORAGE_PATH_AND_SECRET'});
+  const receipt=await f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope);
+  assert.equal(receipt.code,'PRIVATE_STORAGE_PATH_AND_SECRET');
+  assert.equal(events.at(-1).code,'NAVIGATION_WRITE_FAILED');assert.equal(events.at(-1).stage,'refused');
+  assert.equal(JSON.stringify(events).includes('PRIVATE_STORAGE_PATH_AND_SECRET'),false);
+  assert.equal(events.some(event=>event.stage==='verified'),false);assert.deepEqual(await f.navigation.read(),before);
+});
+
+test('a failed diagnostic sink cannot change a real navigation receipt or persistence',async()=>{
+  let calls=0;const f=await fixture(()=>{calls++;throw Error('diagnostic sink unavailable');});
+  assert.deepEqual(await f.service.recordLocation({surface:'code',entityId:'source-a'},f.scope),{ok:true});
+  assert.equal(calls,8);assert.equal((await f.navigation.read()).entries[0].location.entityId,'source-a');
 });

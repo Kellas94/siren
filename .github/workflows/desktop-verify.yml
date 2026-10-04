@@ -57,21 +57,183 @@ jobs:
           exit 0
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
-      - name: Actual development renderer and protected storage
-        run: |
-          $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-link-create', 'docs-sources', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'diagram-vector', 'diagram-export', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-library-search', 'home-documents', 'docs-structured', 'home-source-projects', 'presentation-render', 'presentation-style', 'presentation-cards', 'presentation-windows')) {
-            Write-Output "Native behavior: $nativeScript"
-            node "tests/native/$nativeScript.mjs"
-            if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
-          }
-          if ($nativeFailures.Count -gt 0) { throw "Native checks failed: $($nativeFailures -join ', ')" }
       - name: Retain scoped test evidence in private CI
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-development-evidence
           path: |
+            desktop/evidence/ci-units.log
+            desktop/evidence/ci-native-identity.log
+            desktop/evidence/*/result.json
+            desktop/evidence/*/failure-state.json
+            desktop/evidence/*/failure.json
+            desktop/evidence/*/diagnostic.json
+            desktop/evidence/*/failure-events.json
+            desktop/evidence/*/save-diagnostic.json
+            desktop/evidence/*/restore-boundary.json
+            desktop/evidence/*/recovered-at-restore.json
+            desktop/evidence/*/recovered-initial-revision.json
+            desktop/evidence/*/folder-copy.json
+            desktop/evidence/*/*.png
+            desktop/evidence/*/*.log
+            desktop/evidence/headless-import/*/result.json
+            desktop/evidence/headless-import/*/native-result.json
+            desktop/evidence/headless-import/*/prepared.json
+            desktop/evidence/headless-import/*/electron.log
+            desktop/evidence/source-owner/*/result.json
+            desktop/evidence/source-owner/*/native-result.json
+            desktop/evidence/source-owner/*/native-progress.json
+            desktop/evidence/source-owner/*/prepared.json
+            desktop/evidence/source-owner/*/electron.log
+            desktop/evidence/source-read/*/result.json
+            desktop/evidence/source-read/*/electron.log
+            desktop/evidence/source-read/*/*.png
+            desktop/evidence/large-source-docs/*/result.json
+            desktop/evidence/large-source-docs/*/native-result.json
+            desktop/evidence/large-source-docs/*/native-progress.json
+            desktop/evidence/large-source-docs/*/prepared.json
+            desktop/evidence/large-source-docs/*/electron.log
+            desktop/evidence/code-view-flush/*/result.json
+            desktop/evidence/code-view-flush/*/native-result.json
+            desktop/evidence/code-view-flush/*/native-progress.json
+            desktop/evidence/code-view-flush/*/prepared.json
+            desktop/evidence/code-view-flush/*/electron.log
+            desktop/evidence/domain-workspaces/*/result.json
+            desktop/evidence/domain-workspaces/*/native-result.json
+            desktop/evidence/domain-workspaces/*/native-progress.json
+            desktop/evidence/domain-workspaces/*/prepared.json
+            desktop/evidence/domain-workspaces/*/electron.log
+            desktop/evidence/readonly-roster/*/result.json
+            desktop/evidence/readonly-roster/*/native-result.json
+            desktop/evidence/readonly-roster/*/prepared.json
+            desktop/evidence/readonly-roster/*/electron.log
+            desktop/evidence/home-entry/*/result.json
+            desktop/evidence/home-entry/*/native-result.json
+            desktop/evidence/home-entry/*/native-progress.json
+            desktop/evidence/home-entry/*/prepared.json
+            desktop/evidence/home-entry/*/electron.log
+            desktop/evidence/home-entry/*/*.png
+            desktop/evidence/home-library/*/result.json
+            desktop/evidence/home-library/*/electron.log
+            desktop/evidence/home-library/*/*.png
+            desktop/evidence/home-library-search/*/result.json
+            desktop/evidence/home-library-search/*/electron.log
+            desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/source-edit/*/result.json
+            desktop/evidence/source-edit/*/*.png
+            desktop/evidence/source-link/*/result.json
+            desktop/evidence/source-link/*/*.png
+            desktop/evidence/source-link-create/*/result.json
+            desktop/evidence/source-link-create/*/*.png
+            desktop/evidence/docs-sources/*/result.json
+            desktop/evidence/docs-sources/*/*.png
+            desktop/evidence/source-sync/*/result.json
+            desktop/evidence/source-sync/*/*.png
+            desktop/evidence/docs-edit/*/result.json
+            desktop/evidence/docs-edit/*/*.png
+            desktop/evidence/docs-edit/*/*.log
+            desktop/evidence/diagram-preview/*/result.json
+            desktop/evidence/diagram-preview/*/*.png
+            desktop/evidence/diagram-edit/*/result.json
+            desktop/evidence/diagram-edit/*/*.png
+            desktop/evidence/diagram-edit/*/*.log
+            desktop/evidence/home-documents/*/result.json
+            desktop/evidence/home-documents/*/*.png
+            desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-structured/*/result.json
+            desktop/evidence/docs-structured/*/*.png
+            desktop/evidence/docs-structured/*/*.log
+            desktop/evidence/home-source-projects/*/result.json
+            desktop/evidence/home-source-projects/*/diagnostic.json
+            desktop/evidence/home-source-projects/*/*.png
+            desktop/evidence/home-recovery/*/result.json
+            desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/presentation-render/*/result.json
+            desktop/evidence/presentation-render/*/native-result.json
+            desktop/evidence/presentation-render/*/*.log
+            desktop/evidence/presentation-render/*/*.png
+            desktop/evidence/presentation-cards/*/result.json
+            desktop/evidence/presentation-cards/*/driver-result.json
+            desktop/evidence/presentation-cards/*/*.log
+            desktop/evidence/presentation-cards/*/*.png
+            desktop/evidence/presentation-style/*/result.json
+            desktop/evidence/presentation-style/*/driver-result.json
+            desktop/evidence/presentation-style/*/*.log
+            desktop/evidence/presentation-style/*/*.png
+            desktop/evidence/presentation-windows/*/result.json
+            desktop/evidence/presentation-windows/*/*.log
+            desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-style/*/result.json
+            desktop/evidence/diagram-style/*/*.log
+            desktop/evidence/diagram-style/*/*.png
+            desktop/evidence/diagram-style/*/*diagnostics.json
+            desktop/evidence/diagram-build/*/result.json
+            desktop/evidence/diagram-build/*/*.log
+            desktop/evidence/diagram-build/*/*.png
+            desktop/evidence/diagram-build/*/*diagnostics.json
+            desktop/evidence/diagram-guided/*/result.json
+            desktop/evidence/diagram-guided/*/*.log
+            desktop/evidence/diagram-guided/*/*.png
+            desktop/evidence/source-analysis/*/*.log
+            desktop/evidence/source-analysis/*/result.json
+            desktop/evidence/source-analysis/*/*.png
+            desktop/evidence/source-diff/*/*.log
+            desktop/evidence/source-diff/*/result.json
+            desktop/evidence/source-diff/*/*.png
+            desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-map/*/result.json
+            desktop/evidence/source-map/*/*.png
+            desktop/evidence/protected-storage-*/launch.json
+            desktop/evidence/protected-storage-*/electron.log
+            desktop/dist/*/BUILD-IDENTITY.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  native_windows:
+    name: Windows native (${{ matrix.group }})
+    needs: windows
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [desktop, sources, diagrams]
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Locked dependencies
+        run: npm ci --no-fund --no-update-notifier
+      - name: Install pinned Electron runtime explicitly
+        timeout-minutes: 5
+        run: npm run runtime:install
+      - name: Diagnose owned temporary fixture paths
+        timeout-minutes: 1
+        run: |
+          node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
+          node --test --test-reporter=tap tests/io.test.mjs
+          exit $LASTEXITCODE
+      - name: Guarded renderer
+        run: node build/renderer.mjs baseline/R78.html generated
+      - name: Actual development renderer and protected storage
+        run: node scripts/native-verification.mjs --group ${{ matrix.group }}
+      - name: Retain scoped test evidence in private CI
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-native-${{ matrix.group }}-evidence
+          path: |
+            desktop/evidence/native-verification/*.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
@@ -410,7 +572,7 @@ jobs:
 
   qualification:
     name: Desktop qualification
-    needs: [windows, packaged_windows]
+    needs: [windows, native_windows, packaged_windows]
     if: always()
     runs-on: windows-latest
     timeout-minutes: 5
@@ -419,8 +581,9 @@ jobs:
         shell: pwsh
         env:
           SIREN_DEVELOPMENT_RESULT: ${{ needs.windows.result }}
+          SIREN_NATIVE_RESULT: ${{ needs.native_windows.result }}
           SIREN_PACKAGED_RESULT: ${{ needs.packaged_windows.result }}
         run: |
-          if ($env:SIREN_DEVELOPMENT_RESULT -ne 'success' -or $env:SIREN_PACKAGED_RESULT -ne 'success') {
-            throw "Desktop qualification incomplete: development=$env:SIREN_DEVELOPMENT_RESULT; packaged=$env:SIREN_PACKAGED_RESULT"
+          if ($env:SIREN_DEVELOPMENT_RESULT -ne 'success' -or $env:SIREN_NATIVE_RESULT -ne 'success' -or $env:SIREN_PACKAGED_RESULT -ne 'success') {
+            throw "Desktop qualification incomplete: development=$env:SIREN_DEVELOPMENT_RESULT; native=$env:SIREN_NATIVE_RESULT; packaged=$env:SIREN_PACKAGED_RESULT"
           }

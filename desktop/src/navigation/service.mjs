@@ -1,6 +1,7 @@
 import { normalizeLocation } from './contracts.mjs';
 
 const refused = code => ({ok:false,code});
+const diagnosticCodes=new Set(['ACCESS_REFUSED','INVALID_NAVIGATION','NAVIGATION_LIMIT','PROJECT_UNAVAILABLE','ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE','NAVIGATION_WRITE_FAILED']);
 const accessError = () => Object.assign(new Error('Home access changed'), {code:'ACCESS_REFUSED'});
 function relative(location) {
   const {schema,projectId,...input}=location;
@@ -14,8 +15,9 @@ function sameSource(first,second) {
 /** Native service boundary. Catalog metadata does not verify content or grant
  * source access. Domain resolution is required before recording an entity. */
 export class HomeService {
-  constructor({navigation,catalog,projects,resolveEntity,selection,clock=()=>new Date().toISOString()}) {
-    Object.assign(this,{navigation,catalog,projects,resolveEntity,selection,clock});
+  constructor({navigation,catalog,projects,resolveEntity,selection,clock=()=>new Date().toISOString(),onDiagnostic=()=>{}}) {
+    Object.assign(this,{navigation,catalog,projects,resolveEntity,selection,clock,onDiagnostic});
+    this.diagnosticOperation=0;
   }
   current(scope,{write=false}={}) {
     try {
@@ -40,20 +42,29 @@ export class HomeService {
     };
   }
   async recordLocation(input,scope) {
+    const started=performance.now(),operation=this.diagnosticOperation=this.diagnosticOperation===Number.MAX_SAFE_INTEGER?1:this.diagnosticOperation+1;
+    // Trusted native sink: finite stages only; no request, entity, path, or error text.
+    const emit=(stage,code)=>{try{this.onDiagnostic({operation,stage,elapsedMs:Math.max(0,Math.trunc(performance.now()-started)),...(code?{code:diagnosticCodes.has(code)?code:'NAVIGATION_WRITE_FAILED'}:{})});}catch{}};
+    const reject=code=>{emit('refused',code);return refused(code);};
+    emit('started');
     try {
       this.guard(scope,{write:true});
       const location=normalizeLocation(input,{projectId:scope.projectId});
+      emit('admitted');
       let snapshot;
-      try {snapshot=await this.projects.readProject(scope.projectId);}catch {this.guard(scope,{write:true});return refused('PROJECT_UNAVAILABLE');}
+      emit('project-read-start');
+      try {snapshot=await this.projects.readProject(scope.projectId);}catch {this.guard(scope,{write:true});return reject('PROJECT_UNAVAILABLE');}
       this.guard(scope,{write:true});
+      emit('project-read');emit('resolve-start');
       const result=await this.resolveEntity({projectId:scope.projectId,snapshot,location:structuredClone(relative(location)),purpose:'record',isCurrent:()=>this.current(scope,{write:true})});
       this.guard(scope,{write:true});
-      if(result?.ok!==true)return refused(['ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE'].includes(result?.code)?result.code:'ENTITY_UNAVAILABLE');
+      if(result?.ok!==true)return reject(['ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE'].includes(result?.code)?result.code:'ENTITY_UNAVAILABLE');
       const resolved=normalizeLocation(result.location,{projectId:scope.projectId});
-      if(!sameSource(location.sourceRef,resolved.sourceRef))return refused('SOURCE_VERSION_UNAVAILABLE');
-      if(location.surface!==resolved.surface || location.entityId!==resolved.entityId)return refused('ENTITY_UNAVAILABLE');
+      if(!sameSource(location.sourceRef,resolved.sourceRef))return reject('SOURCE_VERSION_UNAVAILABLE');
+      if(location.surface!==resolved.surface || location.entityId!==resolved.entityId)return reject('ENTITY_UNAVAILABLE');
+      emit('resolved');emit('persist-start');
       const receipt=await this.navigation.record({projectId:scope.projectId,label:snapshot.project.label,location:relative(resolved),visitedAt:this.clock()}, {isCurrent:()=>this.current(scope,{write:true})});
-      this.guard(scope,{write:true});return receipt;
-    } catch(cause) {return refused(['ACCESS_REFUSED','INVALID_NAVIGATION','NAVIGATION_LIMIT'].includes(cause.code)?cause.code:'NAVIGATION_WRITE_FAILED');}
+      this.guard(scope,{write:true});emit(receipt?.ok===true?'verified':'refused',receipt?.ok===true?undefined:receipt?.code??'NAVIGATION_WRITE_FAILED');return receipt;
+    } catch(cause) {return reject(['ACCESS_REFUSED','INVALID_NAVIGATION','NAVIGATION_LIMIT'].includes(cause?.code)?cause.code:'NAVIGATION_WRITE_FAILED');}
   }
 }
