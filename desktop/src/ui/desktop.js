@@ -25,7 +25,7 @@
       open.replaceChildren();if(!result?.ok){note.textContent='Window list unavailable. Your work was retained.';return;}
       const rows=result.views.filter(item=>item.role!=='workspace');
       if(!rows.length){const empty=document.createElement('p');empty.textContent='No other windows are open.';open.append(empty);}
-      for(const row of rows){const control=button(open,'','',async()=>{try{const result=await window.sirenWindow.focusView({windowId:row.windowId});if(alive(token)){note.textContent=result?.ok?'Window restored.':'That window is no longer available.';await refreshViews();}}catch{if(alive(token))note.textContent='Window could not be restored. Your work was retained.';}});control.removeAttribute('id');control.dataset.windowId=row.windowId;control.textContent=`${row.role==='code'?'⌘ Code':'Docs'} · ${row.entityId.slice(0,16)} · ${row.state==='minimized'?'Restore':'Show'}`;}
+      for(const row of rows){const control=button(open,'','',async()=>{try{const result=await window.sirenWindow.focusView({windowId:row.windowId});if(alive(token)){note.textContent=result?.ok?'Window restored.':'That window is no longer available.';await refreshViews();}}catch{if(alive(token))note.textContent='Window could not be restored. Your work was retained.';}});control.removeAttribute('id');control.dataset.windowId=row.windowId;control.textContent=`${row.role==='code'?'⌘ Code':row.role==='diagram'?'Diagrams':'Docs'} · ${row.entityId.slice(0,16)} · ${row.state==='minimized'?'Restore':'Show'}`;}
     };
     const more=button(footer,'desktopWindowsMore','More items',async()=>{await loadPage(false);});more.hidden=true;
     const loadPage=async(reset)=>{
@@ -35,9 +35,9 @@
         if(!result?.ok){note.textContent='Documents and sources are unavailable. Existing work was retained.';return;}
         if(reset)library.replaceChildren();cursor=result.nextCursor;more.hidden=!result.hasMore;
         note.textContent=result.truncated?'Showing the first 4,096 items. Open another project to narrow the list.':'Open saved documents and sources in separate windows · Read only';
-        if(!result.items.length&&reset){const empty=document.createElement('p');empty.textContent='Saved Docs and source-backed Code appear here.';library.append(empty);}
+        if(!result.items.length&&reset){const empty=document.createElement('p');empty.textContent='Saved Diagrams, Docs and source-backed Code appear here.';library.append(empty);}
         for(const item of result.items){
-          const control=button(library,'',`${item.role==='code'?'⌘ Code':'Docs'} · ${item.label}${item.sourceRef?' · v'+item.sourceRef.version:''}`,async()=>{
+          const control=button(library,'',`${item.role==='code'?'⌘ Code':item.role==='diagram'?'Diagrams':'Docs'} · ${item.label}${item.sourceRef?' · v'+item.sourceRef.version:''}`,async()=>{
             if(!alive(token))return;control.disabled=true;note.textContent='Opening window…';
             try{const result=await window.sirenWindow.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});if(alive(token)){note.textContent=result?.ok?'Window opened. You can continue working here.':'The selected item could not open. Its data was retained.';await refreshViews();}}
             catch{if(alive(token))note.textContent='Window could not open. Your work was retained.';}finally{if(alive(token))control.disabled=false;}

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { Script } from 'node:vm';
 import {fileURLToPath} from 'node:url';
 import {buildCodeEditor} from './code-editor.mjs';
+import {buildDiagramWindow} from './diagram-window.mjs';
 
 export async function buildWindowEntrypoints(outputDir) {
   const editorBuild=await buildCodeEditor({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.code-build')});
@@ -35,5 +36,6 @@ export async function buildWindowEntrypoints(outputDir) {
     await writeFile(join(directory, `${role}.html`), html);
     identities[role] = createHash('sha256').update(html).digest('hex');
   }
+  identities.diagram=(await buildDiagramWindow({outputDir})).sha256;
   return identities;
 }

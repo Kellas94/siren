@@ -117,6 +117,7 @@
       const start=make('div',hero,undefined,'home-start-actions');const newProject=button(start,'New project',create,{id:'homeNewProject',className:previous?'home-secondary':'home-primary'});unavailable(newProject,value.mode!=='normal'||typeof bridge?.createProject!=='function');
       const open=button(start,'Open project…',()=>perform('importProject',{}),{id:'homeImportProject',className:'home-secondary'});unavailable(open,value.mode!=='normal'||typeof bridge?.importProject!=='function');
       const moduleHeading=make('div',content,undefined,'home-section-heading');make('h2',moduleHeading,'Explore your project');make('span',moduleHeading,'One context. Four perspectives.');
+      const diagramWindow=button(moduleHeading,'Open diagram window…',()=>library('diagram'),{id:'homeDiagramWindows'});unavailable(diagramWindow,value.selectedProjectId===null||typeof bridge?.getCatalog!=='function');
       const grid=make('div',content,undefined,'home-module-grid');
       for(const [surface,title,description,icon] of modules){const enabled=value.selectedProjectId!==null&&value.capabilities[surface]===true&&typeof bridge?.openModule==='function';
         const card=button(grid,'',()=>['code','docs'].includes(surface)?library(surface):perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
@@ -143,7 +144,7 @@
     const library=async surface=>{
       if(disposed||blocked||busy)return;const turn=serial;busy=true;controls();
       const dialog=make('dialog',container,undefined,'home-create home-library');dialog.setAttribute('aria-labelledby','homeLibraryTitle');
-      make('h2',dialog,surface==='code'?'⌘ Code':'Docs').id='homeLibraryTitle';make('p',dialog,surface==='code'?'Open a selected source version for inspection. In Code, Edit working copy opens a separate editable source.':'Open a saved document for read-only inspection in its own window.');
+      make('h2',dialog,surface==='code'?'⌘ Code':surface==='diagram'?'Diagrams':'Docs').id='homeLibraryTitle';make('p',dialog,surface==='code'?'Open a selected source version for inspection. In Code, Edit working copy opens a separate editable source.':surface==='diagram'?'Open a saved diagram on another display. This preview is read only; Build and Guided remain in the main Diagrams editor.':'Open a saved document for read-only inspection in its own window.');
       const rows=make('div',dialog,undefined,'home-library-items'),note=make('p',dialog,'Loading…');note.setAttribute('role','status');
       let cursor=0,found=0,loading=false;
       const more=button(dialog,'Load more',()=>{void loadPage();},{id:'homeLibraryMore',className:'home-secondary'});more.hidden=true;
@@ -157,7 +158,7 @@
           if(blocked||disposed||turn!==serial)return;row.disabled=true;note.textContent='Opening…';
           try{const opened=await bridge.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});
             if(blocked||disposed||turn!==serial)return;
-            if(opened?.ok){dialog.close();await bridge.recordLocation({surface,entityId:item.entityId,...(item.sourceRef?{sourceRef:item.sourceRef}:{})});await refresh();}
+            if(opened?.ok){dialog.close();await bridge.recordLocation({surface:surface==='diagram'?'diagrams':surface,entityId:item.entityId,...(item.sourceRef?{sourceRef:item.sourceRef}:{})});await refresh();}
             else{note.textContent=message(opened);row.disabled=false;}
           }catch{if(!blocked&&turn===serial){note.textContent='The window could not open. Your work was retained.';row.disabled=false;}}
         },{className:'home-project-row'});row.dataset.entityId=item.entityId;}

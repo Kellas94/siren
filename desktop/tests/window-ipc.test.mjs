@@ -67,12 +67,14 @@ feature('exact payloads reject unknown keys, symbols, prototypes, accessors and 
 feature('empty requests accept omitted, null and empty-object payloads only',async()=>{
   const s=await setup();for(const payload of [undefined,null,{}]) assert.equal((await call(s,'getView',payload)).ok,true);
 });
-feature('workspace opens only Code and Docs with exact nonnegative version',async()=>{
+feature('workspace opens scoped Code/Docs and finite Diagram with exact nonnegative source version',async()=>{
   const s=await setup();const docs=await call(s,'openView',{role:'docs',entityId:'doc_a',version:0});const code=await call(s,'openView',{role:'code',entityId:'code_a',version:7});
   assert.equal(docs.ok,true);assert.equal(docs.view.role,'docs');assert.equal(code.ok,true);assert.equal(s.options[2].version,7);
+  const diagram=await call(s,'openView',{role:'diagram',entityId:'deck_a'});assert.equal(diagram.ok,true);assert.equal(diagram.view.role,'diagram');
+  assert.equal((await call(s,'openView',{role:'diagram',entityId:'deck_a',version:1})).code,'REQUEST_REFUSED');
   for(const role of ['workspace','presenter','audience']) assert.equal((await call(s,'openView',{role,entityId:'deck_a'})).code,'ACCESS_REFUSED');
   for(const version of [-1,1.5,'7',NaN,Infinity,Number.MAX_SAFE_INTEGER+1,null]) assert.equal((await call(s,'openView',{role:'docs',entityId:'doc_a',version})).code,'REQUEST_REFUSED');
-  assert.equal(s.windows.length,3);
+  assert.equal(s.windows.length,4);
 });
 feature('foreign entity requests and every satellite opening or global listing are refused',async()=>{
   const s=await setup();assert.equal((await call(s,'openView',{role:'docs',entityId:'doc_foreign'})).code,'ACCESS_REFUSED');

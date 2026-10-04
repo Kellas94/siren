@@ -20,6 +20,7 @@ import {NativeCodeDocs} from './windows/code-docs.mjs';
 import {DocsLinkService} from './windows/docs.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
+import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
@@ -308,7 +309,7 @@ const windowRegistry = new WindowRegistry({
   authorize: request => {
     if (!localPin.state().unlocked || !selectedId || !snapshot || accountQuiesced || writes.selectionQuiesced || nativeShellFailure) return null;
     const roster = workspaceEntities(snapshot);
-    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs])] : roster[request.role];
+    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs, ...roster.diagram])] : roster[request.role];
     if (!entityIds) return null;
     if (request.role === 'code' && Object.hasOwn(request, 'version') && !snapshot.sourceRefs?.some(ref => ref.sourceId === request.entityId && ref.version === request.version)) return null;
     const nativeMode = mode === 'normal' && !nativeReadonly ? 'normal' : mode === 'recovery' ? 'recovery' : 'readonly';
@@ -349,7 +350,7 @@ const codeDocsLinkService=new DocsLinkService({
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
 });
 const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
-  isReadonly:grant=>['code','docs'].includes(grant.role)&&!workingSources?.isWorking(grant)&&!workingDocs?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
+  isReadonly:grant=>['code','docs','diagram'].includes(grant.role)&&!workingSources?.isWorking(grant)&&!workingDocs?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
@@ -359,7 +360,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
     (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
       ? (!pinTransition||workspaceBarrier&&workingSources?.isWorking(grant)) && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
       : scope.action==='read-domain'
-        ? (!pinTransition||workspaceBarrier&&workingDocs?.isWorking(grant)) && !nativeShellFailure && scope.domain==='docs' && workspaceEntities(snapshot).docs.includes(scope.entityId)
+        ? (!pinTransition||workspaceBarrier&&workingDocs?.isWorking(grant)) && !nativeShellFailure && ['docs','diagram'].includes(scope.domain) && workspaceEntities(snapshot)[scope.domain].includes(scope.entityId)
         : ['edit','commit'].includes(scope.action)?workingSources?.isWorking(grant)===true
         : scope.action==='docs-link'?canLinkCodeDocs(grant)&&windowRegistry.sourceScope(grant)?.sourceId===scope.sourceId
         : ['edit-domain','flush-domain'].includes(scope.action)?scope.domain==='docs'&&workingDocs?.isWorking(grant)===true:scope.action==='readonly'?bootstrap.readonly===true:scope.action==='recovery' || !nativeReadonly && mode==='normal' && snapshot?.schema===1),
@@ -394,6 +395,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
 });
 let sourceReads=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
+const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId)});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
 const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket)});
@@ -454,7 +456,7 @@ const retireNativeViews = () => {
 const navigation=new NavigationStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced});
 const homeService=new HomeService({navigation,catalog:new ProjectCatalog(dataRoot),projects,
   selection:{state:()=>({projectId:selectedId,label:snapshot?.project.label,mode,readonly:nativeReadonly||mode!=='normal',
-    views:windowRegistry.listViews().filter(view=>['code','docs'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:view.role==='code'?'⌘ Code':'Docs',state:view.state==='minimized'?'minimized':'open'})),
+    views:windowRegistry.listViews().filter(view=>['code','docs','diagram'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:view.role==='code'?'⌘ Code':view.role==='diagram'?'Diagrams':'Docs',state:view.state==='minimized'?'minimized':'open'})),
     capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:false}})},
   resolveEntity:createLocationResolver({sources,displays:()=>screen.getAllDisplays().map(display=>({id:display.id,workArea:display.workArea,primary:display.id===screen.getPrimaryDisplay().id}))}),
 });
@@ -690,6 +692,10 @@ ipcMain.handle('siren:docs-editors',async(event,method,payload,flushNonce)=>{
 });
 ipcMain.handle('siren:docs-read', async (event, method, payload) => {
   const operation=docsReads.invoke({event,method,payload});writes.add(operation);
+  try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:diagram-read',async(event,method,payload)=>{
+  const operation=diagramReads.invoke({event,method,payload});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
 });
 const invokeNativeWindow=async (event, method, payload) => {

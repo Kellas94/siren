@@ -244,7 +244,7 @@ export class WorkspaceCoordinator {
     const immutable=grants.filter(grant=>this.#readonly?.isReadonly(grant)),immutableIds=new Set(immutable.map(grant=>grant.windowId));
     const immutableRefs=[];
     for(const grant of immutable){
-      const candidates=receipts.filter(receipt=>receipt.purpose==='readonly'&&receipt.domain===(grant.role==='code'?'source':'docs')&&receipt.entityId===grant.entityIds[0]);
+      const candidates=receipts.filter(receipt=>receipt.purpose==='readonly'&&receipt.domain===(grant.role==='code'?'source':grant.role==='diagram'?'diagram':'docs')&&receipt.entityId===grant.entityIds[0]);
       let verified;
       for(const receipt of candidates)if(await this.#readonly.verify(grant,receipt,{isCurrent:current})){verified=receipt;break;}
       if(!current())return fail('ACCESS_REFUSED');if(!verified)return fail('READONLY_PROOF_FAILED');immutableRefs.push(verified);

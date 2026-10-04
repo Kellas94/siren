@@ -32,7 +32,7 @@ app.whenReady().then(async()=>{
   assert.equal(hash(await readFile(join(root,'owned-preload.cjs'))),prepared.preloadSHA256);
   protocol.handle('siren',async request=>{const url=new URL(request.url);if(url.hostname!=='app'||!['/app.html','/home.html','/windows/docs.html','/windows/diagram.html'].includes(url.pathname))return new Response('Refused',{status:403});return net.fetch(pathToFileURL(join(root,'generated',url.pathname.slice(1))).href);});
   // This finite owned factory qualifies the registry/domain protocol only. The
-  // production factory does not yet admit Diagram and is not represented here.
+  // production Diagram preview/editor UI is not represented by these fixtures.
   registry=new WindowRegistry({authorize:()=>({projectId,mode:'normal',access:'write',entityIds:['doc-a','doc-b','diagram-a','diagram-b']}),createWindow:async record=>{const window=new BrowserWindow({show:false,width:900,height:600,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,preload:join(root,'owned-preload.cjs')}});window.webContents.setWindowOpenHandler(()=>({action:'deny'}));await window.loadURL(record.mainFrameUrl);windows.push(window);return window;}});
   validator=await createImportValidator({BrowserWindow,entryPath:join(root,'validator/import-validation.html'),entrySha256:prepared.build.entrySha256});
   let fault=async()=>{};
@@ -102,9 +102,17 @@ app.whenReady().then(async()=>{
     assert.equal(barrier.release(preparedRoute.proof),true);await evaluate(4,'owned.start()');for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);barrier.dispose();barrier=null;
   }
   result.cases.push({name:'real prepared App/Home/App primary replacement retains all four minimized domain windows and exact selected data, and refuses every old primary capture',status:'COMPLETE'});await progress();
-  recoveryFault=async phase=>{if(phase==='checkpoint-verified')throw Object.assign(Error('Owned primary checkpoint failure'),{code:'ENOSPC'});};
+  // The current exact saved checkpoint is reusable. Force a genuinely new
+  // selected revision first; otherwise this injection is never exercised.
+  const priorSelected=selected,expectedNew=JSON.parse(priorSelected.json);expectedNew.workpapers[0].title='Exact Docs A · new checkpoint';
+  const freshIntent={documentId:'doc-a',expectedVersion:await evaluate(0,'owned.current.version'),operationId:'fresh-checkpoint-revision',action:'rename',payload:{title:expectedNew.workpapers[0].title}};
+  expectedNew.sirenNativeEntityOperation={schema:1,projectId,domain:'docs',entityId:'doc-a',requestHash:hash(Buffer.from(JSON.stringify(freshIntent))),sha256:hash(Buffer.from(JSON.stringify(expectedNew.workpapers[0])))};
+  assert.equal((await edit(0,'rename',{title:expectedNew.workpapers[0].title},'fresh-checkpoint-revision')).ok,true);
+  selected=await new ProjectStore(data).readProject(projectId);assert.equal(selected.revision,priorSelected.revision+1);assert.deepEqual(JSON.parse(selected.json),expectedNew);assert.deepEqual(selected.sourceRefs,priorSelected.sourceRefs);
+  let checkpointFailures=0;
+  recoveryFault=async phase=>{if(phase==='checkpoint-verified'){checkpointFailures++;throw Object.assign(Error('Owned primary checkpoint failure'),{code:'ENOSPC'});}};
   barrier=new NativeAllWorkspaceBarrier({registry,owner,control,cover:grant=>registry.eventFor(grant).sender.send('owned:cover')});
-  const refused=await barrier.prepare('owned-primary-recovery-refusal');assert.equal(refused.ok,false);assert.equal(Object.hasOwn(refused,'proof'),false);assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
+  const refused=await barrier.prepare('owned-primary-recovery-refusal');assert.equal(refused.ok,false);assert.equal(checkpointFailures,1,'The genuine new-checkpoint fault must be exercised');assert.equal(Object.hasOwn(refused,'proof'),false);assert.deepEqual(await new ProjectStore(data).readProject(projectId),selected);
   barrier.dispose();barrier=null;owner.resume();recoveryFault=async()=>{};for(let i=0;i<5;i++)assert.equal(await evaluate(i,'owned.resume()'),true);primaryWindow.destroy();
   result.cases.push({name:'genuine pinned primary plus four native domain frames require exact source-aware readonly recovery and refuse a failed primary checkpoint',status:'COMPLETE',refs:all.proof.refs});await progress();
   let enter,release;const entered=new Promise(resolve=>enter=resolve),gate=new Promise(resolve=>release=resolve);fault=async phase=>{if(phase==='before-select'){enter();await gate;throw Object.assign(Error('Owned durable refusal'),{code:'MANIFEST_WRITE_FAILED'});}};

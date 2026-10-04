@@ -51,5 +51,6 @@ test('role-filtered pages bound the chosen library without first mounting unrela
  const f=await fixture();f.select({...f.selected,json:JSON.stringify({workpapers:Array.from({length:130},(_,n)=>({id:'doc-'+n,title:'Doc '+n,content:'PRIVATE'}))})});
  const code=await f.call({role:'code',cursor:0});assert.equal(code.ok,true);assert.equal(code.items.length,2);assert.equal(code.total,2);assert.equal(code.hasMore,false);assert.ok(code.items.every(item=>item.role==='code'));
  const docs=await f.call({role:'docs',cursor:0}),next=await f.call({role:'docs',cursor:docs.nextCursor});assert.equal(docs.items.length,64);assert.equal(next.items.length,64);assert.equal(docs.total,130);assert.equal(docs.hasMore,true);assert.ok(next.items.every(item=>item.role==='docs'));assert.equal(JSON.stringify(docs).includes('PRIVATE'),false);
- for(const role of ['diagram','presenter',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
+ const diagrams=await f.call({role:'diagram'});assert.equal(diagrams.ok,true);assert.deepEqual(diagrams.items,[]);
+ for(const role of ['presenter',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
 });

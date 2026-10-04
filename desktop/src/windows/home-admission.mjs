@@ -14,9 +14,9 @@ export async function invokeHomeWindow({event,payload,registry,snapshot}){
   if(!grant||grant.mainFrameUrl!=='siren://app/home.html'||!WindowRegistry.prototype.isCurrent.call(registry,grant))return fail('ACCESS_REFUSED');
   let request;try{
    request=navigationFields(payload,['role','entityId','version'],['role','entityId']);
-   if(!['code','docs'].includes(request.role)||!validId(request.entityId)||
+   if(!['code','docs','diagram'].includes(request.role)||!validId(request.entityId)||
      request.role==='code'&&(!Number.isSafeInteger(request.version)||request.version<1)||
-     request.role==='docs'&&Object.hasOwn(request,'version'))return fail('REQUEST_REFUSED');
+     request.role!=='code'&&Object.hasOwn(request,'version'))return fail('REQUEST_REFUSED');
   }catch{return fail('REQUEST_REFUSED');}
   verifySnapshot(snapshot);
   if(snapshot.project.id!==grant.projectId||!workspaceEntities(snapshot)[request.role].includes(request.entityId))return fail('ACCESS_REFUSED');

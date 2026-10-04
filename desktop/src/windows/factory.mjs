@@ -4,11 +4,11 @@ import { restoreBounds } from './geometry.mjs';
 export function nativeViewFactory({ BrowserWindow, displays, preload, onCreated = () => {} }) {
   return async options => {
     const expected = `siren://app/windows/${options.role}.html?windowId=${options.windowId}`;
-    if (!['code', 'docs'].includes(options.role) || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
+    if (!['code', 'docs', 'diagram'].includes(options.role) || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
       throw Object.assign(new Error('Native entrypoint refused'), { code: 'REQUEST_REFUSED' });
     }
     const { normalBounds } = restoreBounds({}, displays());
-    const window = new BrowserWindow({ ...normalBounds, show: false, title: options.role === 'code' ? 'SIREN — Code' : 'SIREN — Docs',
+    const window = new BrowserWindow({ ...normalBounds, show: false, title: options.role === 'code' ? 'SIREN — Code' : options.role === 'diagram' ? 'SIREN — Diagrams' : 'SIREN — Docs',
       minWidth: Math.min(480, normalBounds.width), minHeight: Math.min(320, normalBounds.height), backgroundColor: '#171719',
       webPreferences: { preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true },
     });

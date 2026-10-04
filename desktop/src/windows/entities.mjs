@@ -3,7 +3,7 @@ import { validId as sourceId } from '../projects/paths.mjs';
 
 const workspaceKey = 't-industries-siren-v23-state';
 const docId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
-const empty = () => ({ code: [], docs: [] });
+const empty = () => ({ code: [], docs: [], diagram: [] });
 
 function object(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -80,7 +80,15 @@ export function workspaceEntities(snapshot) {
         if (docId(id)) docs.add(id);
       }
     }
-    return { code: [...code], docs: [...docs] };
+    const diagram = new Set();
+    const diagrams = own(workspace, 'diagrams');
+    if (Array.isArray(diagrams)) {
+      for (let index = 0; index < own(diagrams, 'length'); index++) {
+        const item = own(diagrams, String(index));
+        if (object(item) && docId(own(item, 'id'))) diagram.add(own(item, 'id'));
+      }
+    }
+    return { code: [...code], docs: [...docs], diagram: [...diagram] };
   } catch {
     return empty();
   }

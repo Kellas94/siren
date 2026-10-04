@@ -1,4 +1,4 @@
-const roles = new Set(['workspace', 'docs', 'code', 'presenter', 'audience']);
+const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
 const methods = new Set(['getView', 'listViews', 'openView', 'focusView', 'closeView']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const messages = Object.freeze({
@@ -29,6 +29,7 @@ function request(method, payload) {
   const data = Object.fromEntries(keys.map(key => [key, descriptors[key].value]));
   if (method === 'openView') {
     if (!roles.has(data.role) || !validId(data.entityId)
+      || data.role === 'diagram' && Object.hasOwn(data, 'version')
       || Object.hasOwn(data, 'version') && (!Number.isSafeInteger(data.version) || data.version < 0)) reject('REQUEST_REFUSED');
   } else if ((method === 'focusView' || method === 'closeView') && !validId(data.windowId)) reject('REQUEST_REFUSED');
   return Object.freeze(data);
@@ -76,7 +77,7 @@ export async function invokeWindow({ event, method, payload, registry }) {
     const data = request(method, payload);
     if (method === 'getView') return { ok: true, view: initial };
     if (method === 'openView') {
-      if (initial.role !== 'workspace' || !['code', 'docs'].includes(data.role)
+      if (initial.role !== 'workspace' || !['code', 'docs', 'diagram'].includes(data.role)
         || !initial.entityIds.includes(data.entityId)) return failure('ACCESS_REFUSED');
       const opened = await registry.openView(data);
       const live = current();
