@@ -5,7 +5,7 @@ import {WindowRegistry} from '../src/windows/registry.mjs';
 const module=await import('../src/windows/control.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
 test('native Code view control exists',()=>assert.equal(typeof module.NativeCodeControl,'function'));
 const check=(name,fn)=>test(name,{skip:!module.NativeCodeControl},fn);
-async function fixture(t,{deadline=50,seal}={}) {
+async function fixture(t,{deadline=50,seal,onProgress}={}) {
   const windows=[];const registry=new WindowRegistry({authorize:()=>({projectId:'owned',mode:'normal',access:'write',entityIds:['a','b']}),createWindow:async options=>{
     const window=new EventEmitter();window.destroyed=false;window.webContents=new EventEmitter();
     Object.assign(window.webContents,{id:windows.length+100,mainFrame:{url:options.mainFrameUrl},getURL:()=>options.mainFrameUrl,isDestroyed:()=>window.destroyed});
@@ -14,7 +14,7 @@ async function fixture(t,{deadline=50,seal}={}) {
   const events=windows.map(w=>({sender:w.webContents,senderFrame:w.webContents.mainFrame})),grants=events.map(e=>registry.capture(e));
   let serial=0;const sent=[],cancelled=[],issued=[],sealed=[];
   const owner={beginViewFlush:g=>{issued.push(g);return 'nonce-'+(++serial);},cancelViewFlush:(g,nonce)=>{cancelled.push({g,nonce});return {ok:true};},finishViewFlush:async(g,nonce)=>{sealed.push({g,nonce});return seal?seal():{ok:true,receipts:[{ok:true,durability:'committed'}]};}};
-  const control=new module.NativeCodeControl({registry,owner,timeoutMs:deadline,send:(event,request)=>sent.push({event,request})});t.after(()=>control.dispose());
+  const control=new module.NativeCodeControl({registry,owner,timeoutMs:deadline,onProgress,send:(event,request)=>sent.push({event,request})});t.after(()=>control.dispose());
   return {control,registry,windows,events,grants,sent,cancelled,issued,sealed};
 }
 check('native seal rather than a renderer supplied receipt establishes flush success',async t=>{
@@ -53,4 +53,20 @@ check('disposing control refuses every outstanding request and never records a c
   const f=await fixture(t);const a=f.control.flushView(f.grants[0]),b=f.control.flushView(f.grants[1]);f.control.dispose();
   assert.equal((await a).code,'CONTROL_DISPOSED');assert.equal((await b).code,'CONTROL_DISPOSED');assert.equal(f.cancelled.length,2);
   assert.equal((await f.control.flushView(f.grants[0])).code,'CONTROL_DISPOSED');assert.equal(f.sealed.length,0);
+});
+check('bounded native preparation diagnostics distinguish delayed renderer from delayed seal without granting authority',async t=>{
+ const progress=[];let release;const gate=new Promise(resolve=>{release=resolve;});
+ const f=await fixture(t,{deadline:15,seal:()=>gate,onProgress:value=>{progress.push(value);throw Error('diagnostic observer failure');}});
+ const pending=f.control.flushView(f.grants[0]),request=f.sent[0].request;
+ assert.deepEqual(progress.map(value=>value.stage),['sent']);
+ assert.equal((await f.control.acknowledge(f.events[1],{requestId:request.requestId,ok:true})).code,'ACCESS_REFUSED');
+ assert.deepEqual(progress.map(value=>value.stage),['sent']);
+ const ack=f.control.acknowledge(f.events[0],{requestId:request.requestId,ok:true});
+ assert.deepEqual(progress.map(value=>value.stage),['sent','acknowledged','sealing']);
+ assert.equal((await pending).code,'VIEW_TIMEOUT');release({ok:true,receipts:[]});assert.equal((await ack).code,'CONTROL_STALE');
+ assert.deepEqual(progress.map(value=>value.stage),['sent','acknowledged','sealing','refused']);
+ for(const value of progress){assert.deepEqual(Object.keys(value).sort(),['elapsedMs','role','stage']);assert.equal(value.role,'code');assert.ok(Number.isSafeInteger(value.elapsedMs)&&value.elapsedMs>=0);assert.equal(Object.isFrozen(value),true);}
+ const success=[];const live=await fixture(t,{onProgress:value=>success.push(value)}),done=live.control.flushView(live.grants[0]);
+ assert.equal((await live.control.acknowledge(live.events[0],{requestId:live.sent[0].request.requestId,ok:true})).ok,true);assert.equal((await done).ok,true);
+ assert.deepEqual(success.map(value=>value.stage),['sent','acknowledged','sealing','prepared']);
 });

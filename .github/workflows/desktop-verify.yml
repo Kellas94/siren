@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-link-create', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'diagram-vector', 'diagram-export', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-style', 'presentation-cards', 'presentation-windows')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-link-create', 'docs-sources', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'diagram-vector', 'diagram-export', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-style', 'presentation-cards', 'presentation-windows')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -132,6 +132,8 @@ jobs:
             desktop/evidence/source-link/*/*.png
             desktop/evidence/source-link-create/*/result.json
             desktop/evidence/source-link-create/*/*.png
+            desktop/evidence/docs-sources/*/result.json
+            desktop/evidence/docs-sources/*/*.png
             desktop/evidence/source-sync/*/result.json
             desktop/evidence/source-sync/*/*.png
             desktop/evidence/docs-edit/*/result.json
@@ -252,6 +254,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged Home source projects failed" }
           node tests/native/source-link-create.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-sources.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs source opening failed" }
           node tests/native/presentation-windows.mjs --lines 300000 --package $preview.previewRoot
           exit $LASTEXITCODE
       - name: Retain scoped test evidence in private CI
@@ -320,6 +324,8 @@ jobs:
             desktop/evidence/source-link/*/*.png
             desktop/evidence/source-link-create/*/result.json
             desktop/evidence/source-link-create/*/*.png
+            desktop/evidence/docs-sources/*/result.json
+            desktop/evidence/docs-sources/*/*.png
             desktop/evidence/source-sync/*/result.json
             desktop/evidence/source-sync/*/*.png
             desktop/evidence/docs-edit/*/result.json

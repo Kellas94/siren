@@ -1,3 +1,27 @@
+# 4 October — Resumed after PC restart; Docs linked Code qualification
+
+Current actual committed-source development package aa7518b68d2190068d959d14c93f1c81717e6a52 in development-0aed3b75:100 packaged files byte-verified; ASAR53459530bytes/cbb022f52d350051d70cdd4717396be240255a8ed2c930489e07d76c70ce39aa. Original packaged/recovery + explicit300k DocsSources4/newlink4/largeDocs4/Home7 passed, separate development Guide4 passed. Runner9371 CLOSED exit0; full captures/archive unchanged. releaseAdmitted:false; installed app unchanged. Package/root report and source receipts retained. Private sync follows, then approved development continues inline.
+
+Human resumed. Final current frozen full892/892, zero failures/skips/cancel/todo/changed inputs, log4c4e00894ddffe69b6df3cc752bfe265d0337f1f4418c3b868277698f0aae375; runner69297 closed. Native Home7/DocsSources300k4/code-recovery/readonly-roster completed with exact captures. Guarded renderer passed. New development package/private synchronization follows. Original adverse883/891 retained separately, not rewritten.
+
+Actual CI63 artifact inspected: original failurePhase conversion-confirm, not conversion-readback. Third Home readonly preparation times out before reconcile/migration. Local original scenario passes, so no causal fix claimed. Added bounded native send/ACK/sealing/result timings and primary admission/result timings, no private values, no changed deadline or retry. New observer-failure/late-native-seal test RED then focused52GREEN and full892GREEN. Report reviews/2026-10-04-ci63-preparation-follow-through.md. Hosted prior Desktop remains FAILURE; package success alone cannot qualify it.
+
+--- Prior checkpoint retained ---
+
+# PAUSED AT USER REQUEST — PC restart checkpoint (4 October11:52 UTC)
+
+Docs→Code local implementation saved: actual native300k4 / Guide4 / Light-Dark passed; historical source version, dirty Docs, stale token and common Lock preserved. Full suite11446 CLOSED:891 total/883passed/8failed/zero changed inputs. Seven fixture missing-import failures and one real package-allowlist omission corrected; focused23/23 now passes. FINAL full rerun/new actual development package/private sync intentionally pending after restart. No independent PASS, installed-app replacement or new background work. Report reviews/2026-10-04-docs-linked-code-root-evidence.md.
+
+Prior privatec96f4f5d/tree6db70f4d/1252blobs remains unchanged. Hosted CI63 Desktop37198676525 FAILURE: Home conversion-readback ADVERSE4; packaged111425676927SUCCESS; finalgate111429508211 correctlyFAILURE; LauncherSUCCESS. Rawlog424803bytes/SHA194c56b4... retained, originalartifact11302022591 await inspection after restart. See reviews/2026-10-04-ci63-restart-checkpoint.md. Preserve adverse artifacts; no blind retry/larger deadline/false overall PASS.
+
+--- Prior checkpoint retained ---
+# 4 October — Docs→Code actual native qualification; final full suite active
+
+Docs shows saved code versions and opens their exact immutable sources in separate native Code windows without saving dirty Docs. Focused10/10 and native300k11-40-50 COMPLETE4 / Light-Dark / Guide4 passed. Genuine current Docs tokens, manifest pointer, source hash, owner/epoch and transition checks; no general window IPC expansion, private nonce or new dependency. Original new fixture adverse results retained. Full frozen suite11446 active; no edits to captured src/build/tests/scripts/workflow until closure. Committed package/private sync pending. Report reviews/2026-10-04-docs-linked-code-root-evidence.md. Remaining specialized Docs/new documents/manuals/Terminal/incremental analysis/stress/physical displays open.
+
+Prior lot private c96f4f5d4f85318cc1ef2b459d812613983705d0/tree6db70f4d350c301cc3ca0499da08f091efd1e05a exact24blobs/1252total/1228unrelated preserved, PR2 draft/open/unmerged, main unchanged. Hosted37198676525 split accepted: packaged111425676927 success, development111425676649 still in progress at11:44; Launcher37198676529 success. Final gate pending, no overall hosted PASS.
+
+--- Prior checkpoint retained ---
 # 4 October — Code→Docs qualified package and separate CI jobs
 
 Local production9a1fa387148d72c14b43fa7dc4f3498caacc1175 qualified frozen881/881(originallimits/zero changed inputs, log33d13c449f278368ca1cb11de63247699e1ba92d930e5f5564a589c48ae11957). Actual development-b93dc29f package ASAR53446909/5de3d157093177b5a42066a8f39bac88ea376713e6ec4530dfcabceae4ea0019,99 source/generated files exact, unchanged runtime/releaseAdmitted:false. Original packaged completed; new link300k4/original link300k4/Docs300k4/Home300k7/Present300k6 passed, allclosed/unchanged inputs. Wrong-type operation ID is checked before hashing; actual adverse test and original fixture error retained. No independent approval claimed.

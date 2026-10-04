@@ -21,6 +21,7 @@ import {DocsLinkService} from './windows/docs.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeSourceAnalysis} from './windows/source-analysis.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
+import {NativeDocsSources} from './windows/docs-sources.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from './windows/diagram-edits.mjs';
 import {NativeDiagramExports} from './windows/diagram-export.mjs';
@@ -414,6 +415,11 @@ let presentationSession=createPresentation();
 let sourceReads=null;
 let sourceAnalysis=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
+const docsSources=new NativeDocsSources({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,snapshotFor:()=>snapshot,
+ canOpen:grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure&&grant.projectId===selectedId,
+ sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
+ show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Linked source window unavailable');view.webContents.send('siren:view-ready');view.show();},
+});
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
 const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:workspaceOwner,reads:diagramReads,projects,
  render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input,scope});},
@@ -421,7 +427,7 @@ const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:wor
 });
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
-const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket)});
+const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket),onProgress:progress=>console.info('SIREN_VIEW_PREPARE_STAGE',JSON.stringify(progress))});
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
@@ -470,8 +476,9 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
   if(grant.mainFrameUrl==='siren://app/home.html'&&method!=='sealReadonly')return failure('ACCESS_REFUSED','Home has no workspace edit authority');
   let payload;try{payload=navigationFields(input,method==='saveProject'?['nonce','request']:['nonce']);}catch{return failure('REQUEST_REFUSED','Invalid preparation request');}
   if(!['saveProject','sealReadonly'].includes(method)||typeof payload.nonce!=='string')return failure('REQUEST_REFUSED','Invalid preparation request');
+  const started=performance.now();console.info('SIREN_PRIMARY_PREPARE_STAGE',JSON.stringify({stage:'admitted',method,elapsedMs:0}));
   const operation=workspaceOwner.invoke(grant,{kind:'workspace',method,payload:method==='saveProject'?payload.request:{}},payload.nonce);
-  writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
+  writes.add(operation);try{const result=await operation;console.info('SIREN_PRIMARY_PREPARE_STAGE',JSON.stringify({stage:result.ok===true?'sealed':'refused',method,elapsedMs:Math.round(performance.now()-started)}));return result;}finally{writes.delete(operation);}
 });
 const retireNativeViews = () => {
   diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
@@ -778,6 +785,10 @@ ipcMain.handle('siren:docs-editors',async(event,method,payload,flushNonce)=>{
 ipcMain.handle('siren:docs-read', async (event, method, payload,flushNonce) => {
   const operation=docsReads.invoke({event,method,payload,flushNonce});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:docs-sources',async(event,method,payload,flushNonce)=>{
+ const operation=docsSources.invoke({event,method,payload,flushNonce});writes.add(operation);
+ try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
   if(['openWorkingCopy','openLatest'].includes(method)){

@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
- let generation=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null;const media=matchMedia('(prefers-color-scheme: dark)');
+ let generation=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null,sourceOpening=null;const media=matchMedia('(prefers-color-scheme: dark)');
  const working=document.getElementById('openWorkingDocument'),save=document.getElementById('saveDocument'),notice=document.getElementById('documentChangesNotice'),noticeMessage=document.getElementById('documentChangesMessage');
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
@@ -30,6 +30,7 @@
   clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
   make('p',content,readonly?'Document · Read only':'Working document · Edit title, headings and plain text. Advanced sections are retained.').className='document-caption';
   if(!readonly)paintEditor(focusBlock);
+  paintSources(value);
   const entries=Object.entries(value).filter(([key])=>!(readonly?['id','title']:['id','title','blocks']).includes(key));let end=0,section=0;
   const more=make('button',outline,'More sections');more.type='button';
   const extend=()=>{const next=Math.min(end+40,entries.length);for(const [name,item] of entries.slice(end,next)){
@@ -38,6 +39,34 @@
    field(node,name,item,0);
   }end=next;more.hidden=end===entries.length;};more.addEventListener('click',extend);extend();
   if(!entries.length&&readonly)make('p',content,'This document has no additional sections.');
+ }
+ function paintSources(value){
+  if(!Array.isArray(value.blocks)||value.blocks.length>4096)return;
+  const links=[];let scanned=0;
+  for(const block of value.blocks){
+   if(block?.kind!=='knowledge'||typeof block.id!=='string'||!Array.isArray(block.rows))continue;
+   scanned+=block.rows.length;if(scanned>65536)return;
+   for(const row of block.rows){const ref=row?.sourceRef;
+    if(typeof row?.id==='string'&&typeof ref?.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256))links.push({blockId:block.id,rowId:row.id,name:typeof(row.name??row.title)==='string'?(row.name??row.title).slice(0,200):'Linked source',version:ref.version});
+   }
+  }
+  if(!links.length)return;
+  const section=make('section',content);section.className='document-section document-sources';section.id='document-linked-sources';make('h2',section,'Linked code');make('p',section,'Open the exact saved version in a separate Code window. Local document edits stay here.').className='document-caption';
+  const nav=make('button',outline,'Linked code');nav.type='button';nav.addEventListener('click',()=>section.scrollIntoView({block:'start'}));
+  const holder=make('div',section),more=make('button',section,'More linked sources');more.type='button';let end=0;
+  const extend=()=>{const next=Math.min(end+40,links.length);for(const link of links.slice(end,next)){
+   const card=make('div',holder);card.className='document-source';const text=make('div',card);make('strong',text,link.name);make('span',text,'Saved version '+link.version);
+   const button=make('button',card,'Open in Code');button.type='button';button.className='document-source-open';button.dataset.blockId=link.blockId;button.dataset.rowId=link.rowId;
+   button.addEventListener('click',()=>{
+    if(paused||disposed||pending||sourceOpening||draft?.getStatus().pending)return;
+    const token=generation,expectedDocumentVersion=draft?.getStatus().version;button.disabled=true;status.textContent='Opening saved code version '+link.version+'…';
+    const own=Promise.resolve().then(async()=>{try{
+     const result=await window.sirenDocsSources.openLinkedSource({blockId:link.blockId,rowId:link.rowId,expectedDocumentVersion});
+     if(disposed||paused||token!==generation)return;
+     status.textContent=result?.ok?'Saved code version '+link.version+' opened · Your document changes are retained':result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Refresh or open the saved document separately; your local changes are retained.':'Linked code could not be opened. Your document and source are unchanged.';
+    }catch{if(!disposed&&!paused&&token===generation)status.textContent='Linked code could not be opened. Your document changes are retained.';}finally{if(sourceOpening===own)sourceOpening=null;if(!disposed&&!paused&&token===generation)button.disabled=false;}});sourceOpening=own;
+   });
+  }end=next;more.hidden=end===links.length;};more.addEventListener('click',extend);extend();
  }
  const escapeText=value=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
  const plainText=block=>{
@@ -90,6 +119,7 @@
  window.sirenViewControl.onPrepare(async()=>{
   paused=true;document.body.inert=true;document.documentElement.style.visibility='hidden';
   if(pending)await pending;
+  if(sourceOpening)await sourceOpening;
   if(draft&&!readonly){const result=await draft.flushView();return {ok:result.ok===true,...(result.ok!==true?{code:result.code}:{})};}
   return {ok:!disposed&&document.body.dataset.documentReady==='true'};
  });
