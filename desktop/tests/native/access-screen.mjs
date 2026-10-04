@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
+import {observeAccessToast} from './toast-observation.mjs';
 
 const evidence = resolve('evidence', `access-screen-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
@@ -58,17 +59,11 @@ try {
     await driver.waitFor(`document.body.dataset.theme==='${theme}'`);
     await openChange();
     result.phase = `${theme}:toast-isolation`;
-    // A persistent opaque synthetic toast is the isolation precondition. A
-    // prior workspace timer may remove is-visible; it must not make this probe
-    // wait for a transient opacity that is unrelated to visibility suppression.
-    // Preserve/restore only the owned fixture's inline opacity. Product CSS and
-    // the original visibility/top-layer assertions remain unchanged.
-    const originalOpacity=await driver.evaluate(`(()=>{const t=document.getElementById('toast'),before=t.style.opacity;t.textContent='Synthetic workspace notification';t.classList.add('is-visible');t.style.opacity='1';t.showPopover();return before;})()`);
-    await driver.waitFor('Number(getComputedStyle(document.getElementById("toast")).opacity)>.99');
-    assert.equal(await driver.evaluate('document.getElementById("toast").matches(":popover-open")'),true,'Isolation must be tested against the actual top-layer toast');
-    assert.equal(await driver.evaluate('document.getElementById("toast").checkVisibility({checkOpacity:true,checkVisibilityCSS:true})'), false, 'Workspace notifications must not cover the access preview');
-    result[theme+'ToastIsolation']=await driver.evaluate('(()=>{const t=document.getElementById("toast"),s=getComputedStyle(t);return {opacity:Number(s.opacity),visibility:s.visibility,topLayer:t.matches(":popover-open"),visible:t.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})};})()');
-    await driver.evaluate(`(()=>{const t=document.getElementById('toast');t.hidePopover();t.style.opacity=${JSON.stringify(originalOpacity)};t.classList.remove('is-visible');})()`);
+    const observed=await observeAccessToast(driver);
+    assert.ok(observed.opacity>.99,'Actual synthetic toast must be opaque during isolation observation');
+    assert.equal(observed.topLayer,true,'Isolation must be tested against the actual top-layer toast');
+    assert.equal(observed.visible,false,'Workspace notifications must not cover the access preview');
+    result[theme+'ToastIsolation']=observed;
     result.phase = `${theme}:layout-and-motion`;
     const state = await driver.evaluate(`(()=>{const e=document.getElementById('desktopAccessScreen'),r=e.getBoundingClientRect();return {rect:r.toJSON(),w:innerWidth,h:innerHeight,fields:[...e.querySelectorAll('input')].map(i=>({id:i.id,type:i.type})),decorative:e.querySelector('.desktop-access-scene')?.getAttribute('aria-hidden'),focused:document.activeElement?.id,background:getComputedStyle(e).backgroundColor,animated:e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length};})()`);
     assert.equal(state.rect.x, 0); assert.equal(state.rect.y, 0);
