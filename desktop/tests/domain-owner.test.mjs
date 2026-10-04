@@ -50,6 +50,15 @@ check('native validation refuses rather than silently normalizing or replacing i
  const result=await f.repo.apply('diagram',{...f.diagram(),action:'update-style',payload:{nodeStyles:{A:{fill:'url(https://unsafe.example)'}}}},f.scope);
  assert.equal(result.code,'DOMAIN_VALIDATION_FAILED');assert.deepEqual(await f.projects.readProject(f.projectId),f.snapshot);
 });
+check('one Diagram source/style transaction commits once, preserves all other metadata and refuses stale/unknown fields',async()=>{
+ const f=await fixture({wrapped:true}),before=workspaceMetadata(f.snapshot),payload={source:'flowchart TD\r\nA-->C\r\nstyle A fill:#ff3366',fontFamily:'Georgia',fontSize:18,nodeStyles:{...before.diagrams[0].nodeStyles,C:{fill:'#2277cc'}}};
+ const request={...f.diagram(),action:'replace-content',payload};
+ assert.throws(()=>module.normalizeDomainIntent('diagram',{...request,payload:{...payload,path:'C:/outside'}}),/REQUEST_REFUSED/);
+ const result=await f.repo.apply('diagram',request,f.scope);assert.equal(result.ok,true,JSON.stringify(result));
+ const saved=await f.projects.readProject(f.projectId),expected=structuredClone(before);Object.assign(expected.diagrams[0],payload,{sirenNativeVersion:2});
+ assert.deepEqual(workspaceMetadata(saved),expected);assert.deepEqual(saved.sourceRefs,f.snapshot.sourceRefs);assert.equal(saved.revision,f.snapshot.revision+1);assert.deepEqual(await f.repo.apply('diagram',request,f.scope),result);
+ assert.equal((await f.repo.apply('diagram',{...request,operationId:'stale-combined'},f.scope)).code,'REVISION_CONFLICT');assert.deepEqual(await f.projects.readProject(f.projectId),saved);
+});
 check('Docs replacement preserves linked source pointers, release provenance and exact independently expected content',async()=>{
  const f=await fixture(),before=workspaceMetadata(f.snapshot),blocks=[{kind:'text',text:'Exact 😀 documentation\r\n'},...before.workpapers[0].blocks];
  const result=await f.repo.apply('docs',{...f.docs(),action:'replace-blocks',payload:{blocks}},f.scope);assert.equal(result.ok,true);

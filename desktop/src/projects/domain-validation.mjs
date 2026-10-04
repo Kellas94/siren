@@ -8,7 +8,8 @@ export async function validateDomainPatch(input,{isCurrent,createValidator}){
  try{
   validator=await createValidator();if(!live(isCurrent)||typeof validator?.validatePatch!=='function'||typeof validator?.dispose!=='function')return false;
   const patches=input?.domain==='docs'&&input.action==='replace-content'?
-   [{...input,action:'rename',payload:{title:input.payload.title}},{...input,action:'replace-blocks',payload:{blocks:input.payload.blocks}}]:[input];
+   [{...input,action:'rename',payload:{title:input.payload.title}},{...input,action:'replace-blocks',payload:{blocks:input.payload.blocks}}]:input?.domain==='diagram'&&input.action==='replace-content'?
+   [{...input,action:'replace-source',payload:{source:input.payload.source}},{...input,action:'update-style',payload:Object.fromEntries(Object.entries(input.payload).filter(([key])=>key!=='source'))}]:[input];
   accepted=true;
   for(const patch of patches)if(!live(isCurrent)||await validator.validatePatch(patch)!==true||!live(isCurrent)){accepted=false;break;}
  }catch{accepted=false;}

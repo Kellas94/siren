@@ -39,3 +39,9 @@ test('genuine Diagram draining nonce permits its typed flush while paused and is
  assert.equal((await f.call(0,'flushDiagram',{entityId:'diagram-a',expectedVersion:1})).code,'WORKSPACE_PAUSED');
  assert.equal((await f.call(0,'flushDiagram',{entityId:'diagram-a',expectedVersion:1},nonce)).ok,true);f.owner.cancelViewFlush(f.grant(0),nonce);f.owner.resume();f.service.dispose();assert.equal(f.service.isWorking(f.grant(0)),false);assert.equal((await f.call(0,'flushDiagram',{entityId:'diagram-a',expectedVersion:1})).ok,false);
 });
+test('atomic native source/style admission is still bound to one genuine working Diagram and exact saved version',async()=>{
+ const f=await fixture(),request={...f.request('flowchart TD\nA-->B\nstyle A fill:#ff3366'),action:'replace-content',payload:{source:'flowchart TD\nA-->B\nstyle A fill:#ff3366',fontSize:18,nodeStyles:{B:{fill:'#2277cc'}}}};
+ const before=await f.projects.readProject(f.selected.project.id);for(const index of [0,1,2])assert.equal((await f.call(index,'applyDiagram',request)).ok,false);assert.deepEqual(await f.projects.readProject(f.selected.project.id),before);
+ assert.equal((await f.service.admit(f.grant(0))).ok,true);assert.equal((await f.call(0,'applyDiagram',{...request,payload:{...request.payload,path:'C:/outside'}})).code,'REQUEST_REFUSED');
+ const result=await f.call(0,'applyDiagram',request);assert.equal(result.ok,true);const saved=await f.projects.readProject(f.selected.project.id),expected=structuredClone(f.workspace);Object.assign(expected.diagrams[0],request.payload,{sirenNativeVersion:2});assert.deepEqual(workspaceMetadata(saved),expected);assert.deepEqual(saved.sourceRefs,before.sourceRefs);assert.equal(saved.revision,before.revision+1);f.service.dispose();
+});

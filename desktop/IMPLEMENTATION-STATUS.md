@@ -1,4 +1,13 @@
-# 4 October 2026 — native selected syntax map qualified locally
+# 4 October 2026 — native Diagram Build/style batch qualified locally
+
+Native Diagram now paints saved block/class colours and title/font metadata while respecting imported Mermaid declarations. Optional Style and bounded flowchart Build panels share the exact working draft: labels/shapes/add/connect/direction, real canvas selection and right-click inspector. Source/style Save is one typed CAS/revision with both original frozen validators; pending/invalid fields remain visible on refused Save/Lock and Esc cancels. Other grammars retain exact Text/Guided, with no unsupported mouse-editing claim. Vector export/free positioning/attach-back remain open.
+
+Actual native300k Build08-26-28 COMPLETE7/Style08-26-51 COMPLETE6/Guided08-27-10 COMPLETE4/Diagram-edit08-27-24 COMPLETE4; all owned processes closed/unchanged captured inputs, inspected Light/Dark. Full frozen859/859(identity2+857), no fail/skip/cancel/todo or changed inputs; logf7d27102f826b6510f47a88976326f09eb90c049ef1d935704b4c1d1dfc7f464. Root implementer report retains the initial actual SVG-ID/preview-state defects and fixture rect-hit failure. This batch's committed package/private sync follow; no independent verdict or release admission.
+
+Preceding selected-map local71d13/private31a1 has actual ASAR1ba3a2e877 package/original packaged and300k map/index/diff/Docs proof. HostedCI58 actual31a1 passed845 units and all other native cases, but protected-storage original15s timed out after encrypted-file-written/before fresh decrypt confirmation; package skipped. Original6.2Mi artifact99bc3ae2 retained, phase cause still requires investigation; Launcher49 succeeded. No CI failure is relabelled. See `reviews/2026-10-04-ci58-adverse.md`. Main remains unchanged, Gitgraph frozen.
+
+--- Prior checkpoint retained ---
+# Previous 4 October 2026 — native selected syntax map qualified locally
 
 Code Structure now includes Selected code map: the actual patched Python tree yields finite class/function/loop/condition/call/assignment/exit blocks,120-node120-edge cap, explicit partial coverage and exact selected-range UTF16 navigation. Edges describe syntax containment; no execution/call-resolution claim. Coloured nested blocks fold/reopen, navigate real code and explain constructs on hover. Full source/version/SHA/range details expand on demand. Actual300kEOF native07-34-33 COMPLETE4 with eight exact blocks,13-unit call navigation,8→3→8 fold/reopen, inspected Light/Dark, actual joined Lock and entire project/source preservation. Structure07-34-44 COMPLETE4/A-B07-34-55 COMPLETE5 regressions; all closed/unchanged captured inputs.
 

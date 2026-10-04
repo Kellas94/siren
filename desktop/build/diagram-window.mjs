@@ -5,10 +5,12 @@ import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
 import {buildDiagramEngine} from './diagram.mjs';
 import {buildDiagramGuided} from './diagram-guided.mjs';
+import {buildDiagramStyle} from './diagram-style.mjs';
 export async function buildDiagramWindow({outputDir}){
  const engine=await buildDiagramEngine({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.diagram-build')});
  const guided=await buildDiagramGuided({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
- const scripts=[await readFile(engine.bundlePath,'utf8'),guided.script+'\n'+(await readFile(new URL('../src/ui/diagram/guided-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
+ const styling=await buildDiagramStyle({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
+ const scripts=[await readFile(engine.bundlePath,'utf8'),guided.script+'\n'+styling.script+'\n'+(await readFile(new URL('../src/ui/diagram/guided-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/style-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/build-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
  for(const code of scripts){if(/<\/script/i.test(code))throw Error('Diagram script tag refused');new Script(code);}
  const hashes=scripts.map(code=>"'sha256-"+createHash('sha256').update(code).digest('base64')+"'");
  let template=await readFile(new URL('../src/ui/diagram/window.html',import.meta.url),'utf8');

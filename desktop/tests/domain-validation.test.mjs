@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const module=await import('../src/projects/domain-validation.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
+test('one Diagram content mutation requires both original source/style validators and disposal before admission',async()=>{
+ const input={domain:'diagram',action:'replace-content',payload:{source:'flowchart TD\nA-->B',fontSize:18,nodeStyles:{B:{fill:'#2277cc'}}},before:{id:'diagram-a',source:'saved'}};
+ const calls=[];let disposed=0;
+ assert.equal(await module.validateDomainPatch(input,{isCurrent:()=>true,createValidator:async()=>({validatePatch:async value=>{calls.push(value);return true;},dispose:async()=>disposed++})}),true);
+ assert.deepEqual(calls.map(v=>v.action),['replace-source','update-style']);assert.deepEqual(calls[0].payload,{source:input.payload.source});assert.deepEqual(calls[1].payload,{fontSize:18,nodeStyles:input.payload.nodeStyles});assert.equal(disposed,1);
+ assert.equal(await module.validateDomainPatch(input,{isCurrent:()=>true,createValidator:async()=>({validatePatch:async value=>value.action==='replace-source',dispose:async()=>disposed++})}),false);assert.equal(disposed,2);
+});
 test('owned content validation uses both frozen validators and disposes on every result without accepting normalization',async()=>{
  assert.equal(typeof module.validateDomainPatch,'function');const calls=[];let disposals=0;
  const input={domain:'docs',action:'replace-content',payload:{title:'Exact title',blocks:[{id:'block-a',kind:'text',html:'<p>Exact 😀</p>'}]},before:{id:'doc-a',blocks:[]}};

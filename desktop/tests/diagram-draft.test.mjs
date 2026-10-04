@@ -7,6 +7,18 @@ const code=await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function create(bridge,extra={},runtimeCrypto=webcrypto){const window={};runInNewContext(code,{window,crypto:runtimeCrypto,structuredClone,TextEncoder});assert.equal(typeof window.SirenNativeDiagramDraft?.create,'function');const diagram={id:'diagram-a',name:'Exact source',source:'flowchart TD\nA-->B',nodeStyles:{A:{fill:'#ff3366'}},sirenNativeVersion:1};return window.SirenNativeDiagramDraft.create({context:{ok:true,readonly:false,diagram,version:1,sha256:hash(diagram),projectRevision:2},bridge,operationId:()=> 'exact-op',...extra});}
 const receipt=(draft,request)=>{const entity={...draft.getDiagram(),source:request.payload.source,sirenNativeVersion:2};return {ok:true,domain:'diagram',entityId:'diagram-a',version:2,sha256:hash(entity),projectRevision:3,durability:'committed',operationId:request.operationId};};
+test('source and style changes save as one exact typed transaction; no style edit can escape readonly/pending/conflict fences',async()=>{
+ let draft,request;draft=create({applyDiagram:async value=>{request=value;const expected={...draft.getDiagram(),sirenNativeVersion:2};return {...receipt(draft,value),sha256:hash(expected)};}});
+ const original=draft.getDiagram();assert.equal(typeof draft.setStyle,'function');
+ assert.equal(draft.setSource('flowchart TD\r\nA-->C\r\nstyle A fill:#ff3366').ok,true);
+ assert.equal(draft.setStyle({fontFamily:'Georgia',fontSize:18,nodeStyles:{...original.nodeStyles,C:{fill:'#2277cc',text:'#ffffff'}}}).ok,true);
+ assert.equal((await draft.save()).ok,true);assert.equal(request.action,'replace-content');assert.equal(request.expectedVersion,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(request.payload)),{source:'flowchart TD\r\nA-->C\r\nstyle A fill:#ff3366',fontFamily:'Georgia',fontSize:18,nodeStyles:{A:{fill:'#ff3366'},C:{fill:'#2277cc',text:'#ffffff'}}});
+ assert.equal(draft.getStatus().version,2);assert.equal(draft.getStatus().dirty,false);assert.equal(draft.getDiagram().name,original.name);
+ assert.equal(draft.setStyle({source:'FORGED'}).ok,false);assert.equal(draft.setStyle({fontSize:200}).ok,false);
+ const readonly=create({}, {context:{ok:true,readonly:true,diagram:original,version:1,sha256:hash(original)}});assert.equal(readonly.setStyle({fontSize:18}).ok,false);
+ const stale=create({applyDiagram:async()=>({ok:false,code:'REVISION_CONFLICT'})});stale.setStyle({fontSize:20});assert.equal((await stale.save()).ok,false);assert.equal(stale.getDiagram().fontSize,20);assert.equal(stale.setStyle({fontSize:21}).ok,false);
+});
 test('working Diagram sends source-only typed CAS and accepts only exact source/entity/version/hash receipts',async()=>{
  let draft,request;draft=create({async applyDiagram(value){request=value;return receipt(draft,value);},async flushDiagram(value){assert.equal(value.expectedVersion,2);return {...receipt(draft,request),sha256:hash(draft.getDiagram())};}});
  assert.equal(draft.setSource('flowchart TD\nA-->C\nstyle A fill:#ff3366').ok,true);assert.equal((await draft.save()).ok,true);

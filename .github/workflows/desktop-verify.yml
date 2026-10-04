@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-windows')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-windows')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -91,6 +91,10 @@ jobs:
           node tests/native/diagram-edit.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-guided.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/diagram-style.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/diagram-build.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/home-source-projects.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -181,6 +185,14 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-style/*/result.json
+            desktop/evidence/diagram-style/*/*.log
+            desktop/evidence/diagram-style/*/*.png
+            desktop/evidence/diagram-style/*/*diagnostics.json
+            desktop/evidence/diagram-build/*/result.json
+            desktop/evidence/diagram-build/*/*.log
+            desktop/evidence/diagram-build/*/*.png
+            desktop/evidence/diagram-build/*/*diagnostics.json
             desktop/evidence/diagram-guided/*/result.json
             desktop/evidence/diagram-guided/*/*.log
             desktop/evidence/diagram-guided/*/*.png

@@ -5,6 +5,11 @@ import {runInNewContext} from 'node:vm';
 const implementation=await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8').catch(error=>{if(error.code!=='ENOENT')throw error;return '';});
 function create(options){const window={};runInNewContext(implementation,{window});assert.equal(typeof window.SirenNativeDiagramSession?.create,'function');return window.SirenNativeDiagramSession.create(options);}
 const context=source=>({ok:true,readonly:true,diagram:{id:'diagram-a',name:'Exact colour',source},version:1,sha256:'a'.repeat(64),projectRevision:2});
+test('fresh/local preview receives exact corresponding metadata without changing the saved context',async()=>{
+ const actual={...context('saved'),diagram:{...context('saved').diagram,nodeStyles:{A:{fill:'#ff3366'}}}},renders=[];
+ const session=create({read:async()=>actual,render:async value=>{renders.push(value);return value.source;},onSource(){},onPreview(){},onError(){}});
+ await session.refresh();assert.deepEqual(renders[0].diagram,actual.diagram);const local={...actual.diagram,source:'local',fontSize:18};await session.renderLocal('local',local);assert.deepEqual(renders[1].diagram,local);assert.deepEqual(session.context.diagram,actual.diagram);
+});
 test('working Diagram previews local source without rereading or changing its saved context, and Lock fences late local SVG',async()=>{
  let reads=0,release;const painted=[],source=[];
  const session=create({read:async()=>{reads++;return {...context('saved'),readonly:false};},render:async value=>{if(value.source==='delayed')await new Promise(done=>release=done);return value.source;},onSource:value=>source.push(value.diagram.source),onPreview:value=>painted.push(value),onError:()=>{}});

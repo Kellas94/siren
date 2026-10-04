@@ -34,6 +34,7 @@ function domainIntent(domain,input) {
   if(!Array.isArray(payload.blocks)||payload.blocks.length>300||request.action==='replace-content'&&(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed()))throw error('REQUEST_REFUSED');
  }
  else if(domain==='diagram'&&['replace-source','update-model'].includes(request.action)){payload=navigationFields(request.payload,['source']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');}
+ else if(domain==='diagram'&&request.action==='replace-content'){payload=navigationFields(request.payload,['source',...styleFields],['source']);if(typeof payload.source!=='string'||Object.keys(payload).length<2)throw error('REQUEST_REFUSED');}
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');
  const copied=dataCopy(payload);if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
