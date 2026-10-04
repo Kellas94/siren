@@ -1,8 +1,27 @@
 import {SourceReadService,normalizeSourceReadRequest} from '../sources/read-ipc.mjs';
+import {workspaceMetadata} from './entities.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 const ref=value=>value&&typeof value.sourceId==='string'&&/^[a-z0-9][a-z0-9_-]{0,127}$/.test(value.sourceId)&&Number.isSafeInteger(value.version)&&value.version>=1&&typeof value.sha256==='string'&&/^[a-f0-9]{64}$/.test(value.sha256)
   ?Object.freeze({sourceId:value.sourceId,version:value.version,sha256:value.sha256}):null;
 const same=(a,b)=>a&&b&&a.sourceId===b.sourceId&&a.version===b.version&&a.sha256===b.sha256;
+const own=(value,key)=>{const d=value&&typeof value==='object'?Object.getOwnPropertyDescriptor(value,key):null;return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+const safeName=value=>typeof value==='string'&&value.length>0&&value.length<=200&&value.isWellFormed()&&!/[\\/:\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(value)&&value!=='.'&&value!=='..'?value:null;
+
+/** Bounded name metadata only. The caller must have already admitted this exact
+ * reference; names confer no read/write grant and never include Docs content. */
+export function selectedSourceDisplayName(snapshot,reference){
+ try{
+  if(own(snapshot,'schema')!==2)return null;
+  const refs=own(snapshot,'sourceRefs');if(!Array.isArray(refs)||refs.length>65536)return null;
+  const selected=refs.find(value=>same(value,reference));if(!selected)return null;
+  const provenance=own(selected,'provenance'),standalone=own(provenance,'kind')==='standalone',fileId=standalone?own(provenance,'fileId'):undefined;
+  const files=workspaceMetadata(snapshot).codeFiles;
+  if(Array.isArray(files))for(const file of files.slice(0,4096)){
+   if(same(own(file,'sourceRef'),reference)||typeof fileId==='string'&&own(file,'id')===fileId){const name=safeName(own(file,'name'));if(name)return name;}
+  }
+  return standalone?safeName(own(provenance,'fileName')):null;
+ }catch{return null;}
+}
 
 /** Selected native references only. Never consult repository latest/drafts or
  * permit a projected renderer grant to reconstruct admitted Code versions. */
@@ -21,12 +40,12 @@ export function selectedSourceReference(snapshot,registry,grant,request){
 /** Immutable native read leases only; no editor write admission. All callers
  * retain genuine frame/owner/selected-reference checks during actual I/O. */
 export class NativeSourceReads {
- #registry;#owner;#referenceFor;#service;#disposed=false;#readonlyFor;#editingState;
- constructor({registry,owner,referenceFor,repositoryFactory,readonlyFor,editingState}){
+ #registry;#owner;#referenceFor;#service;#disposed=false;#readonlyFor;#editingState;#displayNameFor;
+ constructor({registry,owner,referenceFor,repositoryFactory,readonlyFor,editingState,displayNameFor}){
   if(!['capture','isCurrent','sourceScope'].every(key=>typeof registry?.[key]==='function')||typeof owner?.canRead!=='function'||typeof referenceFor!=='function'||typeof repositoryFactory!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
   this.#registry=registry;this.#owner=owner;this.#referenceFor=referenceFor;
-  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
-  this.#readonlyFor=readonlyFor;this.#editingState=editingState;
+  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function'||displayNameFor!==undefined&&typeof displayNameFor!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
+  this.#readonlyFor=readonlyFor;this.#editingState=editingState;this.#displayNameFor=displayNameFor;
   this.#service=new SourceReadService({registry,repositoryFactory,access:(_grant,scope,event)=>Boolean(this.#context(event,scope))});
  }
  #context(event,request){
@@ -43,7 +62,10 @@ export class NativeSourceReads {
   try{
    if(method==='getReference'){
     if(payload!=null&&(![Object.prototype,null].includes(Object.getPrototypeOf(payload))||Reflect.ownKeys(payload).length))return fail('REQUEST_REFUSED');
-    const context=this.#context(event);return context?Object.freeze({ok:true,readonly:this.#readonlyFor?this.#readonlyFor(context.grant)!==false:true,sourceRef:context.reference,...(this.#editingState?{canEdit:this.#editingState(context.grant)===true}:{})}):fail('ACCESS_REFUSED');
+    const context=this.#context(event);if(!context)return fail('ACCESS_REFUSED');
+    let displayName;try{displayName=safeName(this.#displayNameFor?.(context.grant,context.reference));}catch{displayName=null;}
+    const result={ok:true,readonly:this.#readonlyFor?this.#readonlyFor(context.grant)!==false:true,sourceRef:context.reference,...(this.#editingState?{canEdit:this.#editingState(context.grant)===true}:{}),...(displayName?{displayName}:{})};
+    const current=this.#context(event);return current&&same(current.reference,context.reference)?Object.freeze(result):fail('ACCESS_REFUSED');
    }
    const request=normalizeSourceReadRequest(method,payload);if(!request)return fail('REQUEST_REFUSED');
    const context=this.#context(event,request);

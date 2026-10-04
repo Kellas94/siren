@@ -17,11 +17,11 @@ if(packageRoot){
  const archive=await readFile(join(packageCopy,'App','versions','0.1.0','resources','app.asar'));assert.equal(createHash('sha256').update(archive).digest('hex'),packageReceipt.appArchive.sha256);
 }
 const data=packageCopy?join(packageCopy,'Data'):join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const paths=['src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs'];
+const paths=['src/ui/windows/identity.js','src/windows/source-reads.mjs','src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs'];
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async path=>[path,hash(await readFile(path))]))),inputs=await capture();
 const projects=new ProjectStore(data),sources=new SourceRepository(data),original=await projects.createProject({label:'Explicit native Docs links',json:'{}'}),lineCount=process.argv.includes('--300k')?300000:100000;
 const text=Array.from({length:lineCount},(_,i)=>`value_${i} = ${i} # Python Ș😀`).join('\n')+'\n';
-const ref=await sources.importSource({projectId:original.project.id,bytes:Buffer.from(text)}),point={sourceId:ref.sourceId,version:1,sha256:ref.sha256};
+const ref=await sources.importSource({projectId:original.project.id,bytes:Buffer.from(text),provenance:{kind:'standalone',fileName:'Agent Ș😀.py'}}),point={sourceId:ref.sourceId,version:1,sha256:ref.sha256};
 const docs=['doc-a','doc-b'].map(id=>({id,title:id==='doc-a'?'Agent <b>literal</b>':'Unchanged agent',agent:{name:id},releases:[{id:'historic',sourceRef:point}],blocks:[{id:'knowledge-a',kind:'knowledge',rows:[{id:'row-a',title:'Python agent',sourceRef:point},{id:'row-b',title:'Keep other row',sourceRef:point}]}]}));
 assert.equal((await commitManifest({projects,repository:sources,projectId:original.project.id,baseRevision:1,sourceRefs:[ref],metadata:{workpapers:docs},operationId:'initial-link-source'})).ok,true);
 const selected=await projects.readProject(original.project.id),result={status:'ADVERSE',inputs,lineCount,utf8Bytes:Buffer.byteLength(text),cases:[],scope:'Actual production native Code edit and explicit chosen-row Docs link, cancellation, stale CAS, refresh, native close/reopen and Lock with exact unchanged historical source/other Docs. No physical monitor qualification.'};let driver;
@@ -34,15 +34,24 @@ try{
  await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.some(v=>v.role==="code")})()');
  let views=(await driver.evaluate('window.sirenWindow.listViews()')).views;const immutable=views.find(view=>view.role==='code');
  const reader=await attachNativePage(driver,'siren://app/windows/code.html?windowId='+immutable.windowId);await reader.waitFor('document.body.dataset.sourceReady==="true"');
+ assert.equal(await reader.evaluate('document.title'),'SIREN — ⌘ Code — Agent Ș😀.py · v1 · Read only');
  await driver.click('#homeModule-docs');await driver.waitFor('document.querySelector(".home-library [data-entity-id=doc-a]")!=null');await driver.click('.home-library [data-entity-id=doc-a]');
  await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.some(v=>v.role==="docs")})()');
  views=(await driver.evaluate('window.sirenWindow.listViews()')).views;const docsView=views.find(view=>view.role==='docs'),docReader=await attachNativePage(driver,'siren://app/windows/docs.html?windowId='+docsView.windowId);
  await docReader.waitFor('document.body.dataset.documentReady==="true"');const beforeDoc=await docReader.evaluate('window.sirenDocsRead.getDocument()');assert.equal(beforeDoc.ok,true);assert.deepEqual(beforeDoc.document,docs[0]);
+ assert.equal(await docReader.evaluate('document.title'),'SIREN — Docs — Agent <b>literal</b> · r'+beforeDoc.projectRevision+' · Read only');
  await reader.click('#openWorkingCopy');await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.filter(v=>v.role==="code").length===2})()');
  views=(await driver.evaluate('window.sirenWindow.listViews()')).views;let editView=views.find(view=>view.role==='code'&&view.windowId!==immutable.windowId),editor=await attachNativePage(driver,'siren://app/windows/code.html?windowId='+editView.windowId);
  await editor.waitFor('document.body.dataset.sourceReady==="true"');const insertion='\ndef documented_agent(context: dict[str, int]) -> int:\n    return sum(context.values())\n';
  await editor.click('.cm-content');await keys(editor,'End','End',35,2);await keys(editor,'Enter','Enter',13);await editor.send('Input.insertText',{text:insertion.slice(1)});await editor.waitFor('Number(document.body.dataset.sourceVersion)===3');
+ assert.equal(await editor.evaluate('document.title'),'SIREN — ⌘ Code — Agent Ș😀.py · v3 · Working copy · Unsaved');
+ assert.equal(await reader.evaluate('document.title'),'SIREN — ⌘ Code — Agent Ș😀.py · v1 · Read only');
  assert.deepEqual(await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:3}),Buffer.from(text+insertion));assert.deepEqual(await projects.readProject(original.project.id),selected);
+ const extraDocs=await driver.evaluate('window.sirenWindow.openView({role:"docs",entityId:"doc-b"})');assert.equal(extraDocs.ok,true);
+ const otherDoc=await attachNativePage(driver,'siren://app/windows/docs.html?windowId='+extraDocs.view.windowId);await otherDoc.waitFor('document.body.dataset.documentReady==="true"');
+ assert.equal(await otherDoc.evaluate('document.title'),'SIREN — Docs — Unchanged agent · r'+selected.revision+' · Read only');
+ const fourViews=(await driver.evaluate('window.sirenWindow.listViews()')).views;assert.equal(fourViews.filter(view=>view.role==='code').length,2);assert.equal(fourViews.filter(view=>view.role==='docs').length,2);
+ await editor.screenshot(join(evidence,'named-code-window.png'));await otherDoc.screenshot(join(evidence,'named-docs-window.png'));
  await editor.click('#linkCodeDocs');await editor.waitFor('document.querySelector(".code-docs-dialog")?.open===true');
  assert.equal(await editor.evaluate('document.querySelector(".code-docs-dialog").textContent.includes("Agent <b>literal</b>")'),true);assert.equal(await editor.evaluate('document.querySelector(".code-docs-dialog b")'),null);
  await editor.screenshot(join(evidence,'link-selector.png'));await editor.click('.code-docs-actions button:nth-child(2)');await editor.waitFor('document.querySelector(".code-docs-dialog")==null');assert.deepEqual(await projects.readProject(original.project.id),selected);
@@ -50,6 +59,7 @@ try{
  const oldTargets=await editor.evaluate('window.sirenCodeDocs.listTargets({offset:0})');assert.equal(oldTargets.total,4);
  await editor.click('#linkCodeDocs');await editor.waitFor('document.querySelector(".code-docs-dialog")?.open===true');await editor.click('.code-docs-target input');await editor.click('.code-docs-actions button:last-child');
  await editor.waitFor('document.querySelector(".code-docs-dialog")==null&&document.getElementById("viewStatus").textContent.includes("Docs now links source version 3")');
+ assert.equal(await editor.evaluate('document.title'),'SIREN — ⌘ Code — Agent Ș😀.py · v3 · Working copy');
  // Real caret transactions publish unchanged metrics; the completed link notice must survive.
  await editor.click('.cm-content');for(const type of ['keyDown','keyUp'])await editor.send('Input.dispatchKeyEvent',{type,key:'ArrowLeft',code:'ArrowLeft',windowsVirtualKeyCode:37});
  assert.equal(await editor.evaluate('document.getElementById("viewStatus").textContent.includes("Docs now links source version 3")'),true);

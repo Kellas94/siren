@@ -6,7 +6,7 @@
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
  const appearance=()=>{document.documentElement.style.colorScheme=theme.value==='system'?(media.matches?'dark':'light'):theme.value;};
- const clear=()=>{content.replaceChildren();outline.replaceChildren();document.body.dataset.documentReady='false';for(const key of ['documentId','documentVersion','documentSha256'])delete document.body.dataset[key];};
+ const clear=()=>{window.SirenNativeViewIdentity.clear('docs');content.replaceChildren();outline.replaceChildren();document.body.dataset.documentReady='false';for(const key of ['documentId','documentVersion','documentSha256'])delete document.body.dataset[key];};
  function text(parent,value){
   const block=make('div',parent);block.className='document-text';let end=0;const span=make('span',block),more=make('button',block,'Show more');more.type='button';
   const extend=()=>{const next=Math.min(end+24576,value.length);span.append(document.createTextNode(value.slice(end,next)));end=next;more.hidden=end===value.length;};
@@ -96,6 +96,7 @@
  };
  function updateState(){
   if(!draft||disposed)return;const state=draft.getStatus();
+  if(!paused)window.SirenNativeViewIdentity.set({role:'docs',name:draft.getDocument().title,revision:state.projectRevision,readonly,dirty:state.dirty});
   save.hidden=readonly;save.disabled=state.pending||state.paused||state.fenced||!state.dirty;
   for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced||element.dataset.documentAtLimit==='true';
   document.body.dataset.documentDirty=String(state.dirty);document.body.dataset.documentVersion=state.version;document.body.dataset.documentSha256=state.sha256;
@@ -148,7 +149,7 @@
    status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':'Document saved · Edit this working copy and save explicitly';
    working.hidden=!readonly||result.canEdit!==true;save.hidden=readonly;notice.hidden=true;latest=null;
    document.body.dataset.documentReady='true';document.body.dataset.documentId=result.document.id;document.body.dataset.documentVersion=result.version;document.body.dataset.documentSha256=result.sha256;
-   document.body.dataset.documentReadonly=String(readonly);document.body.dataset.documentDirty='false';if(!readonly)updateState();
+   document.body.dataset.documentReadonly=String(readonly);document.body.dataset.documentDirty='false';updateState();
    retry.hidden=false;retry.textContent='Refresh';return true;
   }catch{if(!disposed&&token===generation){if(!draft){clear();heading.textContent='Docs';}status.textContent='Document could not be opened. Existing project data and local changes were retained.';retry.hidden=false;retry.textContent='Retry';}return false;}
  }
@@ -158,6 +159,7 @@
  }
  window.sirenViewControl.onPrepare(async()=>{
   paused=true;document.body.inert=true;document.documentElement.style.visibility='hidden';
+  window.SirenNativeViewIdentity.clear('docs');
   if(pending)await pending;
   if(sourceOpening)await sourceOpening;
   if(draft&&!readonly){const result=await draft.flushView();return {ok:result.ok===true,...(result.ok!==true?{code:result.code}:{})};}
@@ -165,7 +167,7 @@
  });
  window.sirenViewControl.onResume(()=>{
   if(disposed||!paused)return;
-  paused=false;draft?.resumeView();if(draft&&!readonly){paint(draft.getDocument());updateState();}document.body.inert=false;document.documentElement.style.visibility='';
+  paused=false;draft?.resumeView();if(draft&&!readonly)paint(draft.getDocument());updateState();document.body.inert=false;document.documentElement.style.visibility='';
  });
  const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
  const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const result=await draft.save();if(!result.ok)status.textContent='Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';updateState();};

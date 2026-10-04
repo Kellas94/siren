@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import{read
 const code=await readFile(new URL('../src/ui/windows/code.js',import.meta.url),'utf8');
 function fixture(){
  const marker='unsubscribeEditor=ownEditor.subscribe(',start=code.indexOf(marker),end=code.indexOf('});sourceChanges.reconcile();analysis?.reconcile();',start);assert.ok(start>=0&&end>start,'Execute the actual Code subscriber');
- const ownEditor={},status={textContent:''},document={body:{dataset:{}}},context={status,document,ownEditor,editor:ownEditor,token:1,generation:1,disposed:false,paused:false,readonly:false,sourceSummary:null,sourceChanges:{reconcile(){}},analysis:{reconcile(){}}};
+ const ownEditor={},status={textContent:''},document={body:{dataset:{}}},context={status,document,window:{SirenNativeViewIdentity:{set(){}}},nativeSourceName:'Owned.py',ownEditor,editor:ownEditor,token:1,generation:1,disposed:false,paused:false,readonly:false,sourceSummary:null,sourceChanges:{reconcile(){}},analysis:{reconcile(){}}};
  const notify=runInNewContext('('+code.slice(start+marker.length,end+1)+')',context);
  const state={ready:true,sourceRef:{sourceId:'owned-source',version:3,sha256:'a'.repeat(64)},dirty:false,pending:false,utf8Bytes:100,utf16Units:90,lines:4};return {notify,state,status,document,context};
 }

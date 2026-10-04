@@ -3,9 +3,9 @@
   const surface=document.getElementById('codeSurface'),status=document.getElementById('viewStatus'),retry=document.getElementById('retrySource'),theme=document.getElementById('codeTheme'),working=document.getElementById('openWorkingCopy');
   const media=matchMedia('(prefers-color-scheme: dark)');let generation=0,editor=null,client=null,disposed=false,paused=false;
   const linkButton=document.getElementById('linkCodeDocs');let links=null,analysis=null;
-  const changeNotice=document.getElementById('sourceChangesNotice'),changeMessage=document.getElementById('sourceChangesMessage'),reviewLatest=document.getElementById('reviewLatestSource');let sourceChanges=null,unsubscribeEditor=null,nativeSourceId=null;
+  const changeNotice=document.getElementById('sourceChangesNotice'),changeMessage=document.getElementById('sourceChangesMessage'),reviewLatest=document.getElementById('reviewLatestSource');let sourceChanges=null,unsubscribeEditor=null,nativeSourceId=null,nativeSourceName=null;
   const appearance=()=>theme.value==='system'?(media.matches?'dark':'light'):theme.value;
-  const clear=()=>{analysis?.reset();links?.pause();sourceChanges?.reset();unsubscribeEditor?.();unsubscribeEditor=null;linkButton.hidden=true;editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines'])delete document.body.dataset[key];analysis?.reconcile();};
+  const clear=()=>{window.SirenNativeViewIdentity.clear('code');nativeSourceName=null;analysis?.reset();links?.pause();sourceChanges?.reset();unsubscribeEditor?.();unsubscribeEditor=null;linkButton.hidden=true;editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines'])delete document.body.dataset[key];analysis?.reconcile();};
   const paint=()=>{const value=appearance();document.documentElement.style.colorScheme=value;editor?.setTheme(value);};
   async function connect({preserveCurrent=false}={}){
     if(disposed||paused)return false;
@@ -38,6 +38,8 @@
         links.pause();unsubscribeEditor?.();previousEditor.dispose();previousClient.dispose();surface.replaceChildren(...staging.childNodes);
       }
       editor=candidateEditor;client=candidateClient;candidateEditor=null;candidateClient=null;
+      nativeSourceName=context.displayName||'Source '+context.sourceRef.sourceId.slice(0,8);
+      window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:context.sourceRef.version,readonly});
       const state=ownEditor.getState();
       status.textContent=`${readonly?'Read only':'Working copy'} · Version ${context.sourceRef.version} · ${metrics.utf8Bytes.toLocaleString()} bytes · ${metrics.lines.toLocaleString()} lines`;
       document.body.dataset.sourceReady='true';document.body.dataset.sourceId=context.sourceRef.sourceId;document.body.dataset.sourceVersion=String(context.sourceRef.version);document.body.dataset.sourceSha256=context.sourceRef.sha256;
@@ -49,6 +51,7 @@
       unsubscribeEditor=ownEditor.subscribe(value=>{
         if(token!==generation||disposed||paused||editor!==ownEditor||!value.ready||!value.sourceRef)return;
         const draft=value.dirty||value.pending;
+        window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:value.sourceRef.version,readonly,dirty:draft});
         const summary=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
         // Focus/selection publish unchanged metadata; retain the explicit action result.
         if(summary!==sourceSummary){sourceSummary=summary;status.textContent=summary;}
@@ -89,6 +92,7 @@
   document.getElementById('replaceLatestSource').addEventListener('click',replaceLatest);
   window.sirenViewControl.onPrepare(async()=>{
     paused=true;analysis.pause();links.pause();sourceChanges.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
+    window.SirenNativeViewIdentity.clear('code');
     const current=editor;
     if(!current||document.body.dataset.sourceReady!=='true')return {ok:false};
     const result=await current.flushView();
@@ -102,6 +106,7 @@
       retry.hidden=false;
     }
     paused=false;sourceChanges.resume();analysis.resume();document.body.inert=false;document.documentElement.style.visibility='';
+    const state=editor?.getStatus();if(state?.ready&&state.sourceRef)window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:state.sourceRef.version,readonly:document.body.dataset.sourceReadonly==='true',dirty:state.dirty||state.pending});
   });
   window.addEventListener('beforeunload',()=>{disposed=true;generation++;analysis.dispose();links.dispose();sourceChanges.dispose();clear();media.removeEventListener('change',changed);},{once:true});
   window.sirenNativeCodeView=Object.freeze({connect});

@@ -18,7 +18,7 @@ import {NativeWorkingSources} from './windows/working-sources.mjs';
 import {NativeDocsEdits} from './windows/docs-edits.mjs';
 import {NativeCodeDocs} from './windows/code-docs.mjs';
 import {DocsLinkService} from './windows/docs.mjs';
-import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
+import {NativeSourceReads,selectedSourceReference,selectedSourceDisplayName} from './windows/source-reads.mjs';
 import {NativeSourceAnalysis} from './windows/source-analysis.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeDocsSources} from './windows/docs-sources.mjs';
@@ -733,6 +733,7 @@ ipcMain.handle('siren:sources', async (event, method, payload) => {
 ipcMain.handle('siren:source-readers', async (event, method, payload) => {
   sourceReads??=new NativeSourceReads({registry:windowRegistry,owner:workspaceOwner,
     referenceFor:sourceReferenceFor,readonlyFor:grant=>!workingSources?.isWorking(grant),editingState:canOpenWorking,
+    displayNameFor:(_grant,reference)=>selectedSourceDisplayName(snapshot,reference),
     repositoryFactory:({canWrite,readers})=>new SourceRepository(dataRoot,{...writerOptions,canWrite,readers}),
   });
   const operation=sourceReads.invoke({event,method,payload});writes.add(operation);
