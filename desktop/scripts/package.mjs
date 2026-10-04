@@ -13,7 +13,7 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['atomic','budgets','domain-validation','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc','analysis','diff-worker'].map(n=>`src/sources/${n}.mjs`),
-  ...['contracts','entries','authority','service','project-copies','source-import','document-create','continue','transition-receipts','store','catalog','resolver','ipc'].map(n=>`src/navigation/${n}.mjs`),
+  ...['contracts','entries','authority','service','project-copies','source-import','document-create','continue','transition-receipts','store','catalog','resolver','ipc','window-labels'].map(n=>`src/navigation/${n}.mjs`),
   ...['readiness','registry','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','source-analysis','working-sources','code-docs','docs-reads','docs-sources','docs-edits','diagram-reads','diagram-edits','diagram-export','diagram-vector-render','catalog','home-admission','readonly-seals','control','source-barrier','presentation','presentation-deck','presentation-render','presentation-ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs','src/windows/presentation-preload.cjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {

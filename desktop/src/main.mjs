@@ -38,6 +38,7 @@ import {renderPresentationPreview} from './windows/presentation-render.mjs';
 import {navigationFields} from './navigation/contracts.mjs';
 import {HomeAuthority} from './navigation/authority.mjs';
 import {HomeService} from './navigation/service.mjs';
+import {homeWindowSummaries} from './navigation/window-labels.mjs';
 import {createHomeProjectCopy} from './navigation/project-copies.mjs';
 import {importHomeSource} from './navigation/source-import.mjs';
 import {createHomeDocument,normalizeHomeDocument} from './navigation/document-create.mjs';
@@ -507,7 +508,12 @@ const navigation=new NavigationStore(dataRoot,{canWrite:()=>localPin.state().unl
 const homeService=new HomeService({navigation,catalog:new ProjectCatalog(dataRoot),projects,
   onDiagnostic:event=>console.info('SIREN_HOME_STAGE',JSON.stringify(event)),
   selection:{state:()=>({projectId:selectedId,label:snapshot?.project.label,projectFormat:snapshot?.schema===2?'desktop':snapshot?'classic':null,mode,readonly:nativeReadonly||mode!=='normal',
-    views:windowRegistry.listViews().filter(view=>['code','docs','diagram','presenter','audience'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:({code:'⌘ Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[view.role]),state:view.state==='minimized'?'minimized':'open'})),
+    views:homeWindowSummaries(snapshot,windowRegistry.listViews(),view=>{
+      const native=nativeShells.get(view.windowId);if(!native||native.isDestroyed())return null;
+      const grant=windowRegistry.capture({sender:native.webContents,senderFrame:native.webContents.mainFrame});
+      if(grant?.windowId!==view.windowId||grant.projectId!==selectedId)return null;
+      return workingSources?.isWorking(grant)===true?{reference:workingSources.referenceFor(grant),working:true}:sourceReferenceFor(grant);
+    }),
     capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:Boolean(snapshot)}})},
   resolveEntity:createLocationResolver({sources,displays:()=>screen.getAllDisplays().map(display=>({id:display.id,workArea:display.workArea,primary:display.id===screen.getPrimaryDisplay().id}))}),
 });

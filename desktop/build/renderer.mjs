@@ -87,6 +87,20 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
       if (body.split('if (readOnlyMode)').length !== 2) throw new Error('Desktop paused autosave guard mismatch');
       html = html.slice(0, start) + body.replace('if (readOnlyMode)', 'if (readOnlyMode || window.sirenDesktopStorageLocked)') + html.slice(stop);
     }
+    const previousDraft = '          const previous = draftShrinkAllowedUntil > Date.now() ? null : sirenStore.get(DRAFT_KEY);';
+    if (html.split(previousDraft).length !== 2) throw new Error('Desktop unchanged draft marker mismatch');
+    html = html.replace(previousDraft, `          const retainedDraft = sirenStore.get(DRAFT_KEY);
+          // Preserve the edit timestamp for equal bodies, including after an
+          // intentional deletion. Unequal bodies retain the original shrink guard.
+          try {
+            const older = JSON.parse(retainedDraft);
+            if (typeof older?.savedAt === 'string' && Number.isFinite(Date.parse(older.savedAt))) {
+              const {savedAt: priorTime, ...priorBody} = older;
+              const {savedAt: nextTime, ...nextBody} = JSON.parse(payload);
+              if (JSON.stringify(priorBody) === JSON.stringify(nextBody)) return;
+            }
+          } catch { /* The original replacement path handles an unreadable draft. */ }
+          const previous = draftShrinkAllowedUntil > Date.now() ? null : retainedDraft;`);
     const readonly = 'let readOnlyMode = false;';
     if (html.split(readonly).length !== 2) throw new Error('Desktop access patch marker mismatch');
     html = html.replace(readonly, 'let readOnlyMode = !!window.sirenDesktopBootstrap?.readonly || !!window.sirenDesktopSafetyReadonly;');
@@ -111,11 +125,19 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
         // The web save serial otherwise supersedes a pending native receipt.
         let desktopSaveQueue = Promise.resolve({status:'read-only'});
         const desktopSaveOperation = saveState;
-        saveState = () => {
-          const receipt = desktopSaveQueue.then(desktopSaveOperation, desktopSaveOperation);
+        const enqueueDesktopSave = operation => {
+          const receipt = desktopSaveQueue.then(operation, operation);
           desktopSaveQueue = receipt;
           return receipt;
         };
+        saveState = () => enqueueDesktopSave(desktopSaveOperation);
+        const finalizeDesktopSave = () => enqueueDesktopSave(() => {
+          // Synchronize controls and draft in the same synchronous operation as
+          // serialization. Recovery-only ACKs do not select the workspace bag.
+          syncStateFromControls();
+          markCleanExit();
+          return desktopSaveOperation();
+        });
         const drainDesktopSaves = async () => {
           let pending, receipt;
           do { pending = desktopSaveQueue; receipt = await pending; }
@@ -127,13 +149,21 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           if (window.sirenDesktopBootstrap?.snapshot && window.sirenDesktopBootstrap?.mode === 'normal') {
             await saveState();
           }
-          let result, flushed, pendingSave, pendingFlush;
+          let result, flushed, pendingSave, pendingFlush, finalSave;
           do {
             result = await drainDesktopSaves();
+            if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged: ' + (result?.status || 'unknown'));
+            // The native barrier fences storage before beforeunload can run.
+            // Synchronize the recoverable draft and clean flag while writes are
+            // still admitted, then await their real whole-bag acknowledgement.
+            if (result?.status === 'confirmed') {
+              finalSave = finalizeDesktopSave();
+              result = await finalSave;
+            } else finalSave = desktopSaveQueue;
             pendingSave = desktopSaveQueue;
             pendingFlush = window.sirenDesktopFlush();
             flushed = await pendingFlush;
-          } while (pendingSave !== desktopSaveQueue || pendingFlush !== window.sirenDesktopFlush());
+          } while (pendingSave !== desktopSaveQueue || pendingSave !== finalSave || pendingFlush !== window.sirenDesktopFlush());
           if (!['confirmed','read-only'].includes(result?.status)) throw new Error('Save not acknowledged: ' + (result?.status || 'unknown'));
           if (flushed?.ok === false) throw new Error('Recovery not acknowledged');
         };
@@ -150,7 +180,13 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
         };
         window.sirenDesktopEndAccountTransition = () => {
           window.sirenDesktopStorageLocked = false;
-          if (accountTransitionBodyState !== null) document.body.inert = accountTransitionBodyState;
+          if (accountTransitionBodyState !== null) {
+            document.body.inert = accountTransitionBodyState;
+            if (window.sirenDesktopBootstrap?.mode === 'normal') {
+              markSessionRunning();
+              void saveState().catch(() => {});
+            }
+          }
           accountTransitionBodyState = null;
           document.body.classList.remove('desktop-account-transition');
         };

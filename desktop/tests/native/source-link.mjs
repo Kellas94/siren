@@ -17,7 +17,7 @@ if(packageRoot){
  const archive=await readFile(join(packageCopy,'App','versions','0.1.0','resources','app.asar'));assert.equal(createHash('sha256').update(archive).digest('hex'),packageReceipt.appArchive.sha256);
 }
 const data=packageCopy?join(packageCopy,'Data'):join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const paths=['src/ui/windows/identity.js','src/windows/source-reads.mjs','src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs'];
+const paths=['src/navigation/window-labels.mjs','src/ui/workspace/home.js','build/workspace.mjs','generated/home.html','src/ui/windows/identity.js','src/windows/source-reads.mjs','src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs'];
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async path=>[path,hash(await readFile(path))]))),inputs=await capture();
 const projects=new ProjectStore(data),sources=new SourceRepository(data),original=await projects.createProject({label:'Explicit native Docs links',json:'{}'}),lineCount=process.argv.includes('--300k')?300000:100000;
 const text=Array.from({length:lineCount},(_,i)=>`value_${i} = ${i} # Python Ș😀`).join('\n')+'\n';
@@ -27,6 +27,12 @@ assert.equal((await commitManifest({projects,repository:sources,projectId:origin
 const selected=await projects.readProject(original.project.id),result={status:'ADVERSE',inputs,lineCount,utf8Bytes:Buffer.byteLength(text),cases:[],scope:'Actual production native Code edit and explicit chosen-row Docs link, cancellation, stale CAS, refresh, native close/reopen and Lock with exact unchanged historical source/other Docs. No physical monitor qualification.'};let driver;
 if(packageReceipt){await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:original.project.id}));result.package={sourceCommit:packageReceipt.sourceCommit,archive:packageReceipt.appArchive,runtime:packageReceipt.runtimeBinary};}
 const keys=async(page,key,code,windowsVirtualKeyCode,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await page.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode,modifiers});};
+const refreshShelf=async()=>{
+ await driver.evaluate('window.__ownedShelfRefreshPrior=document.getElementById("homeRefreshWindows");true');
+ await driver.click('#homeRefreshWindows');
+ await driver.waitFor('window.__ownedShelfRefreshPrior?.isConnected===false&&document.getElementById("homeRoot").getAttribute("aria-busy")==="false"&&document.querySelectorAll("#homeRoot [data-window-id]").length===4');
+ await driver.evaluate('delete window.__ownedShelfRefreshPrior');
+};
 try{
  driver=await launchDesktop(packageCopy?{executable:join(packageCopy,packageReceipt.appRelativePath),packaged:true}:{extraArgs:[`--siren-test-root=${data}`,`--siren-test-project=${original.project.id}`]});result.ownedPid=driver.pid;
  await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});await driver.waitFor('document.getElementById("homeModule-code")!=null');
@@ -51,6 +57,13 @@ try{
  const otherDoc=await attachNativePage(driver,'siren://app/windows/docs.html?windowId='+extraDocs.view.windowId);await otherDoc.waitFor('document.body.dataset.documentReady==="true"');
  assert.equal(await otherDoc.evaluate('document.title'),'SIREN — Docs — Unchanged agent · r'+selected.revision+' · Read only');
  const fourViews=(await driver.evaluate('window.sirenWindow.listViews()')).views;assert.equal(fourViews.filter(view=>view.role==='code').length,2);assert.equal(fourViews.filter(view=>view.role==='docs').length,2);
+ // A dirty working reference is genuinely admitted but is not yet in the selected manifest.
+ await refreshShelf();
+ const dirtyShelf=await driver.evaluate('Array.from(document.querySelectorAll("#homeRoot [data-window-id]"),row=>({id:row.dataset.windowId,text:row.textContent}))');
+ assert.equal(dirtyShelf.find(row=>row.id===editView.windowId)?.text.startsWith('⌘ Code · Agent Ș😀.py · v3 · Open'),true,'Unsaved admitted working Code must retain its name and version on Home');
+ assert.equal(dirtyShelf.find(row=>row.id===immutable.windowId)?.text.startsWith('⌘ Code · Agent Ș😀.py · v1 · Open'),true);
+ assert.deepEqual(await projects.readProject(original.project.id),selected);result.dirtyShelf=dirtyShelf;
+ await driver.screenshot(join(evidence,'home-unsaved-windows.png'));
  await editor.screenshot(join(evidence,'named-code-window.png'));await otherDoc.screenshot(join(evidence,'named-docs-window.png'));
  await editor.click('#linkCodeDocs');await editor.waitFor('document.querySelector(".code-docs-dialog")?.open===true');
  assert.equal(await editor.evaluate('document.querySelector(".code-docs-dialog").textContent.includes("Agent <b>literal</b>")'),true);assert.equal(await editor.evaluate('document.querySelector(".code-docs-dialog b")'),null);
@@ -67,6 +80,18 @@ try{
  expectedDocs[0].blocks[0].rows[0].sourceRef={sourceId:latest.sourceId,version:3,sha256:latest.sha256};assert.deepEqual(metadata.workpapers,expectedDocs);assert.equal(linked.revision,selected.revision+1);assert.equal(linked.sourceRefs.length,2);assert.deepEqual(linked.sourceRefs.find(value=>value.version===1),ref);
  assert.equal(await reader.evaluate('document.body.dataset.sourceSha256'),ref.sha256);assert.deepEqual(await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:1}),Buffer.from(text));
  await docReader.click('#retryDocument');await docReader.waitFor('document.body.dataset.documentReady==="true"');const refreshed=await docReader.evaluate('window.sirenDocsRead.getDocument()');assert.equal(refreshed.ok,true);assert.deepEqual(refreshed.document,expectedDocs[0]);
+ // Refresh real Home without navigation, source reads or changing the saved manifest.
+ await refreshShelf();
+ const shelf=await driver.evaluate('Array.from(document.querySelectorAll("#homeRoot [data-window-id]"),row=>({id:row.dataset.windowId,text:row.textContent}))');
+ assert.equal(shelf.filter(row=>row.text.startsWith('⌘ Code · Agent Ș😀.py · v')).length,2);
+ assert.equal(shelf.some(row=>row.text.startsWith('⌘ Code · Agent Ș😀.py · v1 · Open')),true);
+ assert.equal(shelf.some(row=>row.text.startsWith('⌘ Code · Agent Ș😀.py · v3 · Open')),true);
+ assert.equal(shelf.some(row=>row.text.includes('Docs · Agent <b>literal</b> · project r'+linked.revision)),true);
+ assert.equal(shelf.some(row=>row.text.includes('Docs · Unchanged agent · project r'+linked.revision)),true);
+ assert.equal(await driver.evaluate('document.querySelector("#homeRoot [data-window-id] b")'),null);
+ assert.deepEqual(await projects.readProject(original.project.id),linked);await driver.screenshot(join(evidence,'home-named-windows.png'));
+ await driver.click('#homeRoot [data-window-id="'+immutable.windowId+'"]');
+ assert.deepEqual(await projects.readProject(original.project.id),linked);
  result.cases.push({name:'actual explicit pointer selection changes exactly one Docs row, retains agent/releases/other Docs and old source, and native Docs refresh reads the new selected manifest',ok:true});
  const committed=await editor.evaluate(`window.sirenSource.commitSource({sourceId:${JSON.stringify(ref.sourceId)},expectedVersion:3,operationId:"native-stale-proof"})`);assert.equal(committed.ok,true);
  const oldTarget=oldTargets.targets[0],stale={documentId:oldTarget.documentId,rowId:oldTarget.rowId,expectedDocumentVersion:oldTarget.documentVersion,operationId:'native-stale-link',sourceReceipt:committed};

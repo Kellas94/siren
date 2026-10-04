@@ -80,9 +80,26 @@ try{
  const old=await driver.evaluate(`window.sirenDesktop.unlockPin(${JSON.stringify({pin})})`);assert.equal(old.ok,false,'Changed PIN must refuse previous PIN');result.oldPinRefused=old;
  await keys('000000');await driver.waitFor('/incorrect|wrong/i.test(document.getElementById("desktopAccessStatus")?.textContent||"") && !document.getElementById("desktopAccessPin")?.disabled');assert.equal((await pinState()).unlocked,false,'Wrong UI PIN must not unlock');
  await keys(changedPin);await workspaceReady();assert.equal((await pinState()).unlocked,true);
- await driver.send('Input.dispatchKeyEvent',{type:'keyDown',key:'q',code:'KeyQ',modifiers:2,windowsVirtualKeyCode:81});await driver.waitForExit();await driver.close();
- driver=await launchDesktop({extraArgs});await lockedProof('restart-locked');assert.equal((await pinState()).unlocked,false);
+ result.beforeQuit=await projects.readProject(first.project.id);
+ await driver.send('Input.dispatchKeyEvent',{type:'keyDown',key:'q',code:'KeyQ',modifiers:2,windowsVirtualKeyCode:81});await driver.waitForExit();
+ result.afterCleanQuit=await projects.readProject(first.project.id);
+ const cleanStorage=JSON.parse(result.afterCleanQuit.json).storage;
+ assert.equal(cleanStorage['t-industries-siren-v23-state-clean-exit'],'yes','Native acknowledged quit must mark the retired renderer as clean before fencing writes');
+ const cleanState=JSON.parse(cleanStorage['t-industries-siren-v23-state']),cleanDraft=JSON.parse(cleanStorage['t-industries-siren-v23-state-draft']);
+ const withoutCache=value=>JSON.stringify(value,(key,value)=>key.startsWith('__')?undefined:value);
+ assert.equal(withoutCache(cleanDraft.diagrams),withoutCache(cleanState.diagrams),'Actual clean quit must retain matching diagram content and view settings');
+ await writeFile(join(evidence,'first-session-electron.log'),driver.logs());await driver.close();
+ driver=await launchDesktop({extraArgs});
+ const comparisonLine=(await readFile('generated/app.html','utf8')).split('\n').findIndex(line=>line.includes('if (current === drafted) return;'));
+ assert.ok(comparisonLine>0,'Real recovery comparison must remain available');
+ await driver.send('Debugger.enable');
+ // Observe the real comparison without pausing, changing state or dismissing recovery.
+ await driver.send('Debugger.setBreakpointByUrl',{url:'siren://app/app.html',lineNumber:comparisonLine,condition:'window.__pinRecoveryProof={current:JSON.parse(current),drafted:JSON.parse(drafted),equal:current===drafted}; false'});
+ await lockedProof('restart-locked');assert.equal((await pinState()).unlocked,false);
  await stage('unlock');await keys(changedPin,false);await workspaceReady();
+ result.restartedRecovery=await driver.evaluate('({comparison:window.__pinRecoveryProof,open:document.getElementById("confirmDialog")?.open,text:document.getElementById("confirmDialog")?.textContent})');
+ assert.equal(result.restartedRecovery.comparison?.equal,true,'The real recovery comparison must execute and confirm selected/draft equality');
+ assert.equal(result.restartedRecovery.open,false,'Confirmed native quit must not announce an unsaved draft on restart');
  const restarted=await projects.readProject(first.project.id),restartedBag=JSON.parse(restarted.json);
  assert.equal(JSON.parse(restartedBag.storage['t-industries-siren-v23-state']).diagrams[0].source,state.source);
  assert.equal(JSON.parse(restartedBag.storage['siren-code-drafts-v1'])[0].text,python);

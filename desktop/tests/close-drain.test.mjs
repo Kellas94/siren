@@ -23,7 +23,7 @@ function fixture({ failSecond = false, receiptHook = null } = {}) {
     sirenDesktop: { saveProject: async request => {
       requests.push(request); const index = requests.length;
       if (index === 1) { entered.resolve(); await first.promise; }
-      const injected = await receiptHook?.(index);
+      const injected = await receiptHook?.(index,request);
       if (injected) return injected;
       return index === 2 && failSecond ? { ok: false, message: 'Late write failed' } : { ok: true, revision: index + 1, sha256: String(index).repeat(64) };
     } },
@@ -33,6 +33,8 @@ function fixture({ failSecond = false, receiptHook = null } = {}) {
     remoteWorkspaceRecoveryKey: '', remoteWorkspaceRecoveryWriteWarned: false, remoteWorkspaceConflictWarned: false,
     remoteWorkspaceConflictOfferShown: false, storageFullWarned: false, STORAGE_KEY: 'workspace', STORAGE_BACKUP_KEY: 'backup',
     parseableWorkspaceRaw: () => false, syncStateFromControls: () => {}, setSaveState: () => {}, showToast: () => {}, offerStorageConflictRecovery: () => {},
+    // Recovery finalization has its real-function coverage in close-draft.test.mjs.
+    markCleanExit: () => {},
   });
   vm.runInContext(storage, context); context.sirenStore = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
   vm.runInContext(saveSource + '\n' + closeSource, context);
@@ -50,7 +52,7 @@ test('close drains a newer queued save and acknowledges its exact bytes instead 
   await new Promise(r => setImmediate(r)); f.first.resolve();
   assert.equal((await newer).status, 'confirmed');
   assert.deepEqual(await settled, { ok: true });
-  assert.equal(f.requests.length, 2);
+  assert.equal(f.requests.length, 3, 'The final selected bag follows the newest concurrent save');
   assert.equal(JSON.parse(JSON.parse(f.requests.at(-1).json).storage.workspace).source, f.context.state.source);
   assert.equal((await f.window.sirenDesktopFlush()).ok, true);
 });
@@ -58,9 +60,12 @@ test('close drains a newer queued save and acknowledges its exact bytes instead 
 for (const failLast of [false, true]) {
   test(`close waits for a newer workspace receipt queued during private recovery flush (${failLast ? 'failed' : 'confirmed'})`, async () => {
     const privateReceipt = deferred(), privateEntered = deferred(), lastReceipt = deferred(), lastEntered = deferred();
-    const f = fixture({ receiptHook: async index => {
+    const f = fixture({ receiptHook: async (index,request) => {
       if (index === 2) { privateEntered.resolve(); await privateReceipt.promise; }
-      if (index === 3) { lastEntered.resolve(); await lastReceipt.promise; if (failLast) return { ok: false, message: 'Late workspace failure' }; }
+      if (index === 3) { lastEntered.resolve(); await lastReceipt.promise; }
+      // Finalization adds a selected-bag write. Refuse every actual newer
+      // workspace payload, rather than assuming its old ordinal position.
+      if (failLast && JSON.parse(JSON.parse(request.json).storage.workspace).source === 'workspace edit while private recovery is pending') return { ok: false, message: 'Late workspace failure' };
     } });
     let finished = false;
     const closing = f.window.sirenDesktopRequestClose().then(() => { finished = true; return { ok: true }; }, error => { finished = true; return { ok: false, message: error.message }; });

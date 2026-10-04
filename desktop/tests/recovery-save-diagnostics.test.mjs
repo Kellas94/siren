@@ -73,7 +73,10 @@ function renderer(snapshot, saveProject, value = 'canonicalized') {
   const context = vm.createContext({ window, crypto: webcrypto, TextEncoder, saveAttemptSerial: 0, readOnlyMode: false, state: { source: value },
     STORAGE_KEY: workspaceKey, STORAGE_BACKUP_KEY: `${workspaceKey}-backup`, remoteWorkspaceValue: null,
     storageFullWarned: false, syncStateFromControls() {}, parseableWorkspaceRaw: raw => { try { JSON.parse(raw); return true; } catch { return false; } },
-    setSaveState: (...args) => saveStates.push(args), showToast() {}, saveTimer: null, draftTimer: null, clearTimeout });
+    setSaveState: (...args) => saveStates.push(args), showToast() {}, saveTimer: null, draftTimer: null, clearTimeout,
+    // This fixture isolates commit/checkpoint CAS. Real draft and clean-exit
+    // functions are exercised separately by close-draft and native local-pin.
+    markCleanExit() {} });
   vm.runInContext(storage, context);
   const store = window.createSirenDesktopStore({ workspaceKey });
   store.onWriteError((error, metadata) => failures.push({ message: error.message, ...plain(metadata) }));
@@ -119,12 +122,13 @@ test('verified partial workspace commit stays failed but next production save us
   assert.deepEqual(retried, committed, 'Acknowledging an unchanged retry repairs recovery without rotating the last-good backup or advancing content CAS');
   assert.equal(retried.json, r.requests[1].json);
   assert.ok((await f.recovery.scan(retried.project.id)).valid.some(point => point.kind === 'saved' && point.snapshot.revision === 2 && point.snapshot.json === retried.json && point.snapshot.sha256 === retried.sha256));
+  const editStart = r.requests.length;
   r.context.state.source = 'edited after recovery acknowledgement';
   await r.window.sirenDesktopRequestClose();
-  assert.equal(r.requests[2].baseRevision, 2, 'A subsequent real edit uses the exact repaired workspace CAS');
-  assert.equal(r.nativeReceipts[2].ok, true);
+  assert.equal(r.requests[editStart].baseRevision, 2, 'A subsequent real edit uses the exact repaired workspace CAS');
+  assert.equal(r.nativeReceipts.slice(editStart).every(receipt => receipt.ok === true), true);
   const edited = await f.projects.readProject(committed.project.id);
-  assert.equal(edited.revision, 3); assert.equal(edited.json, r.requests[2].json);
+  assert.equal(edited.revision, 3); assert.equal(edited.json, r.requests.at(-1).json);
   assert.equal(JSON.parse(JSON.parse(edited.json).storage[workspaceKey]).source, 'edited after recovery acknowledgement');
   assert.equal((await f.projects.listPending(committed.project.id)).length, 1, 'Original degraded pending attempt remains recoverable');
   assert.deepEqual(await f.projects.readProject(f.original.project.id), f.original);

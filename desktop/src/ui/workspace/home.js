@@ -154,7 +154,7 @@
         // A visible limitation does not advertise an unconnected editor.
         const available=enabled===true;unavailable(card,!available);if(!available)make('small',card,value.selectedProjectId===null?'Open a project first':'Not available in this build');
       }
-      if(value.views.length){const views=make('section',content,undefined,'home-projects');const heading=make('div',views,undefined,'home-section-heading');make('h2',heading,'Open windows');make('span',heading,'Across your displays');
+      if(value.views.length){const views=make('section',content,undefined,'home-projects');const heading=make('div',views,undefined,'home-section-heading');make('h2',heading,'Open windows');make('span',heading,'Across your displays');button(heading,'Refresh',()=>{void refresh();},{id:'homeRefreshWindows',className:'home-secondary'});
         for(const view of value.views){const row=button(views,`${view.label} · ${view.state==='minimized'?'Minimized':'Open'} ↗`,()=>perform('focusView',{windowId:view.windowId}),{className:'home-project-row'});row.dataset.windowId=view.windowId;unavailable(row,typeof bridge?.focusView!=='function');}}
       const projects=make('section',content,undefined,'home-projects');const heading=make('div',projects,undefined,'home-section-heading');make('h2',heading,'Recent projects');make('span',heading,'On this computer');
       if(!value.projects.length)make('p',projects,'Your projects will appear here after you open them.','home-empty');

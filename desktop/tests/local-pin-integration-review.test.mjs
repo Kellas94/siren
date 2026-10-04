@@ -91,6 +91,10 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   }, mode: 'normal', nativeReadonly: false, accountQuiesced: false, accountTransition: false, pinTransition: false,
     grants: new Set([original.project.id]), selectedId: original.project.id, snapshot: original, bootstrap: { mode: 'normal', snapshot: original, readonly: false },
     writes: new Set(), recovery: new RecoveryStore(root), document: { body }, window: {}, retireNativeViews: () => {},
+    // This older integration fixture exercises the storage queue and PIN gate;
+    // real clean/running flags are covered in close-draft and native local-pin.
+    markSessionRunning: () => {},
+    saveState: async () => ({status:'confirmed'}),
   });
   const window = context.window;
   window.webContents = { executeJavaScript: async text => vm.runInContext(text, context) };

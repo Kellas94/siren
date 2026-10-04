@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-04T20:57:05.521Z",
+  "report": "reviews/2026-10-04-home-close-shrink-reviewer.md",
+  "sha256": "dd06d2ebb0bb701f147e69fb146086a00f6202e53a9c1a0fd02eae11f264db62",
+  "bytes": 1777,
+  "author": "/root/review_home_clean_close",
+  "transport": "collaboration FINAL_ANSWER",
+  "transcriptionBy": "/root",
+  "verbatimBody": true,
+  "reviewerExecutedTests": false,
+  "scope": "Read-only relocation of exact unchanged-draft comparison before intentional shrink allowance; no execution/package/whole-branch approval",
+  "originalReportsPreserved": true,
+  "assessment": "Code correction accepted within scope; active qualification, replacement package and branch readiness remain unjudged."
+}
