@@ -18,7 +18,7 @@ export class NativeReadonlyViewSeals {
   this.#registry=registry;this.#readonly=isReadonly;this.#snapshot=snapshotFor;this.#sources=sources;
  }
  isReadonly(grant){
-  try{return ['code','docs','diagram'].includes(grant?.role)&&grant.entityIds.length===1&&this.#registry.isCurrent(grant)&&this.#readonly(grant)===true;}
+  try{return ['code','docs','diagram','presenter','audience'].includes(grant?.role)&&grant.entityIds.length===(grant.role==='audience'?0:1)&&this.#registry.isCurrent(grant)&&this.#readonly(grant)===true&&(!['presenter','audience'].includes(grant.role)||this.#registry.presentationScope(grant)!==null);}
   catch{return false;}
  }
  async #read(grant,scope){
@@ -37,6 +37,10 @@ export class NativeReadonlyViewSeals {
     const metrics=await repository.getMetrics({projectId:grant.projectId,sourceId:reference.sourceId,version:reference.version});
     if(!current())return fail('ACCESS_REFUSED');if(!sameRef(metrics,reference))return fail('SOURCE_PROOF_FAILED');
     receipt={ok:true,domain:'source',purpose:'readonly',entityId:reference.sourceId,...reference,durability:'readonly'};
+   }else if(['presenter','audience'].includes(grant.role)){
+    const entityId=this.#registry.presentationScope(grant)?.deckId,matches=(workspaceMetadata(before).diagrams??[]).filter(diagram=>diagram?.id===entityId);
+    if(matches.length!==1)return fail('PRESENTATION_VERSION_CHANGED');const version=fingerprint(matches[0]);
+    receipt={ok:true,domain:'presentation',purpose:'readonly',entityId,version,sha256:version,projectRevision:before.revision,durability:'readonly'};
    }else if(grant.role==='diagram'){
     const entityId=grant.entityIds[0],matches=(workspaceMetadata(before).diagrams??[]).filter(diagram=>diagram?.id===entityId),version=matches[0]?.sirenNativeVersion??1;
     if(matches.length!==1||!Number.isSafeInteger(version)||version<1)return fail('DIAGRAM_VERSION_CHANGED');

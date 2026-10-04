@@ -4,13 +4,13 @@ const fail=code=>Object.freeze({ok:false,code});
  * general Docs/Diagram/legacy workspace saving is not established by sources.
  * No PIN, project selection, destruction or clean-close journal is changed. */
 export class NativeSourceBarrier {
-  #registry;#owner;#control;#cover;#timeout;#roles;#active=null;#disposed=false;
-  constructor({registry,owner,control,cover,timeoutMs=10000},roles=['code']) {
+  #registry;#owner;#control;#cover;#timeout;#roles;#active=null;#disposed=false;#progress;
+  constructor({registry,owner,control,cover,timeoutMs=10000,onProgress=()=>{}},roles=['code']) {
     for(const [adapter,methods] of [[registry,['freezeRoster','isRosterCurrent','releaseRoster']],[owner,['pause','resume','drain','reconcileSourceReceipts','captureQuiescence','isQuiescent']],[control,['flushView','cancelView']]])
       if(!adapter || !methods.every(key=>typeof adapter[key]==='function'))throw TypeError('Native source barrier adapters required');
-    if(typeof cover!=='function'||!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native source barrier deadline required');
-    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['workspace','code','docs','diagram'].includes(role))||(roles.length>1||roles.includes('workspace'))&&typeof owner.reconcileWorkspaceReceipts!=='function')throw TypeError('Native domain barrier adapters required');
-    this.#registry=registry;this.#owner=owner;this.#control=control;this.#cover=cover;this.#timeout=timeoutMs;this.#roles=new Set(roles);
+    if(typeof cover!=='function'||typeof onProgress!=='function'||!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native source barrier deadline required');
+    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['workspace','code','docs','diagram','presenter','audience'].includes(role))||(roles.length>1||roles.includes('workspace'))&&typeof owner.reconcileWorkspaceReceipts!=='function')throw TypeError('Native domain barrier adapters required');
+    this.#registry=registry;this.#owner=owner;this.#control=control;this.#cover=cover;this.#timeout=timeoutMs;this.#roles=new Set(roles);this.#progress=onProgress;
   }
   async prepare(reason) {
     if(this.#disposed)return fail('BARRIER_DISPOSED');if(this.#active)return fail('BARRIER_BUSY');
@@ -19,7 +19,7 @@ export class NativeSourceBarrier {
     if(!roster.grants.length || roster.grants.some(grant=>!this.#roles.has(grant.role))){this.#registry.releaseRoster(roster);return fail('VIEW_ROLE_UNSUPPORTED');}
     const ticket={roster,prepared:false,cancelled:false};this.#active=ticket;
     const current=()=>this.#active===ticket && !ticket.cancelled && !this.#disposed && this.#registry.isRosterCurrent(roster);
-    let timer;
+    let timer;const started=performance.now(),progress=stage=>{try{this.#progress(Object.freeze({stage,elapsedMs:Math.round(performance.now()-started),views:roster.grants.length}));}catch{/* Diagnostics cannot change preparation authority. */}};
     try {
       this.#owner.pause(reason);
       for(const grant of roster.grants)this.#cover(grant);
@@ -31,14 +31,14 @@ export class NativeSourceBarrier {
         // race another captured view's pending mutation. All views stay under
         // the same roster, pause and deadline; no proof is refreshed or forged.
         const readonly=new Set(roster.grants.filter(grant=>this.#owner.isReadonlyForPreparation?.(grant)===true));
-        const settled=await Promise.allSettled(roster.grants.filter(grant=>!readonly.has(grant)).map(grant=>this.#control.flushView(grant)));
+        progress('working');const settled=await Promise.allSettled(roster.grants.filter(grant=>!readonly.has(grant)).map(grant=>this.#control.flushView(grant)));
         if(!current())return fail('ROSTER_CHANGED');
-        settled.push(...await Promise.allSettled(roster.grants.filter(grant=>readonly.has(grant)).map(grant=>this.#control.flushView(grant))));
+        progress('readonly');settled.push(...await Promise.allSettled(roster.grants.filter(grant=>readonly.has(grant)).map(grant=>this.#control.flushView(grant))));
         const drained=await draining;
         if(!current())return fail('ROSTER_CHANGED');
         if(settled.some(item=>item.status!=='fulfilled'||item.value?.ok!==true))return fail('VIEW_FLUSH_FAILED');
         const receipts=[...drained,...settled.flatMap(item=>item.value.receipts??[])];
-        const reconciled=await this.#owner[this.#roles.size===1&&!this.#roles.has('workspace')?'reconcileSourceReceipts':'reconcileWorkspaceReceipts'](roster.grants,receipts,current);
+        progress('reconcile');const reconciled=await this.#owner[this.#roles.size===1&&!this.#roles.has('workspace')?'reconcileSourceReceipts':'reconcileWorkspaceReceipts'](roster.grants,receipts,current);
         if(!current())return fail('ROSTER_CHANGED');
         if(reconciled.ok!==true)return reconciled;
         ticket.quiescence=this.#owner.captureQuiescence();
@@ -46,7 +46,7 @@ export class NativeSourceBarrier {
         return Object.freeze({ok:true,proof});
       })();
       const result=await Promise.race([work,new Promise(resolve=>{timer=setTimeout(()=>resolve(fail('BARRIER_TIMEOUT')),this.#timeout);})]);
-      if(result.ok!==true){ticket.cancelled=true;for(const grant of roster.grants)this.#control.cancelView(grant);}
+      progress(result.ok===true?'prepared':result.code==='BARRIER_TIMEOUT'?'timeout':'refused');if(result.ok!==true){ticket.cancelled=true;for(const grant of roster.grants)this.#control.cancelView(grant);}
       return result;
     } catch {ticket.cancelled=true;for(const grant of roster.grants)this.#control.cancelView(grant);return fail('BARRIER_FAILED');}
     finally {clearTimeout(timer);}
@@ -107,4 +107,4 @@ export class NativeSourceBarrier {
 // General domain roster still refuses the legacy primary workspace and
 // presentation until their distinct adapters are installed and qualified.
 export class NativeWorkspaceBarrier extends NativeSourceBarrier {constructor(options){super(options,['code','docs','diagram']);}}
-export class NativeAllWorkspaceBarrier extends NativeSourceBarrier {constructor(options){super(options,['workspace','code','docs','diagram']);}}
+export class NativeAllWorkspaceBarrier extends NativeSourceBarrier {constructor(options){super(options,['workspace','code','docs','diagram','presenter','audience']);}}

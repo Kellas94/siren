@@ -1,0 +1,48 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {EventEmitter} from 'node:events';
+import {mkdtemp} from './fixtures/temporary.mjs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {ProjectStore} from '../src/projects/store.mjs';
+import {WindowRegistry} from '../src/windows/registry.mjs';
+const module=await import('../src/windows/presentation-deck.mjs').catch(error=>{if(error.code!=='ERR_MODULE_NOT_FOUND')throw error;return {};});
+async function fixture(){
+ const root=await mkdtemp(join(tmpdir(),'siren-presentation-deck-')),projects=new ProjectStore(root);
+ const diagram={id:'diagram-a',name:'Exact deck',source:'flowchart TD\nA[Public label]-->B',nodeStyles:{A:{fill:'#ff3366'}},nodeMetadata:{A:{privateAgent:'PRIVATE_AGENT'}},presentation:{sequence:[{id:'step-a',type:'node',nodeId:'A'},{id:'section-b',type:'section',title:'Context'}],notes:{'node:A':{text:'PRIVATE_NOTES_A',owner:'Actual owner'},'section:section-b':{text:'PRIVATE_NOTES_B'}}}};
+ const metadata={diagrams:[diagram],workpapers:[{id:'doc-a',title:'PRIVATE_DOCUMENT'}],unrelated:'PRIVATE_UNRELATED'},snapshot=await projects.createProject({label:'Private project',json:JSON.stringify(metadata)});let current=snapshot;
+ const windows=[],registry=new WindowRegistry({authorize:request=>({projectId:snapshot.project.id,mode:'normal',access:request.role==='audience'?'presentation':'read',entityIds:['diagram-a','doc-a']}),createWindow:async options=>{
+  const w=new EventEmitter();w.id=windows.length+1;w.isDestroyed=()=>Boolean(w.destroyed);w.isMinimized=()=>false;w.restore=()=>{};w.focus=()=>{};w.destroy=()=>{w.destroyed=true;w.webContents.emit('destroyed');w.emit('closed');};w.close=w.destroy;w.webContents=new EventEmitter();Object.assign(w.webContents,{id:w.id+100,mainFrame:{url:options.mainFrameUrl},getURL:()=>options.mainFrameUrl,isDestroyed:w.isDestroyed});windows.push(w);return w;
+ }});
+ for(const role of ['presenter','audience','docs'])await registry.openView({role,entityId:role==='docs'?'doc-a':'diagram-a'});
+ const grants=windows.map(w=>registry.capture({sender:w.webContents,senderFrame:w.webContents.mainFrame}));assert.equal(typeof module.NativePresentationDecks,'function');
+ const decks=new module.NativePresentationDecks({registry,snapshotFor:async()=>current});
+ return {root,projects,snapshot,diagram,metadata,registry,windows,grants,decks,setSnapshot:value=>current=value};
+}
+test('native deck reads the exact selected diagram and genuine notes while excluding other project/private node metadata',async()=>{
+ const f=await fixture(),deck=await f.decks.read(f.grants[0],{isCurrent:()=>true});assert.equal(deck.projectId,f.snapshot.project.id);assert.equal(deck.deckId,'diagram-a');assert.equal(deck.version,createHash('sha256').update(JSON.stringify(f.diagram)).digest('hex'));
+ assert.deepEqual(deck.slides.map(s=>[s.id,s.title,s.notes]),[['step-a','A','PRIVATE_NOTES_A'],['section-b','Context','PRIVATE_NOTES_B']]);assert.equal(deck.render.source,f.diagram.source);assert.deepEqual(deck.render.nodeStyles,f.diagram.nodeStyles);assert.equal('source' in deck.slides[0].render,false);
+ for(const forbidden of ['PRIVATE_AGENT','PRIVATE_DOCUMENT','PRIVATE_UNRELATED','Actual owner'])assert.equal(JSON.stringify(deck).includes(forbidden),false,forbidden);
+ assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),f.snapshot);assert.deepEqual(f.registry.presentationScope(f.grants[1]),{deckId:'diagram-a'});assert.deepEqual(f.grants[1].entityIds,[]);assert.equal(f.registry.presentationScope({...f.grants[1]}),null);
+});
+test('Audience/Docs/copied and revoked frames cannot load a deck or inherit source authority',async()=>{
+ const f=await fixture();for(const grant of [f.grants[1],f.grants[2],{...f.grants[0]}])await assert.rejects(f.decks.read(grant,{isCurrent:()=>true}),{code:'ACCESS_REFUSED'});
+ await assert.rejects(f.decks.read(f.grants[0],{isCurrent:()=>false}),{code:'ACCESS_REFUSED'});f.windows[0].webContents.mainFrame={url:f.windows[0].webContents.mainFrame.url};await assert.rejects(f.decks.read(f.grants[0],{isCurrent:()=>true}),{code:'ACCESS_REFUSED'});
+});
+test('exact readback refusal detects corrupted snapshots and a selection change during load',async()=>{
+ const f=await fixture();f.setSnapshot({...f.snapshot,json:f.snapshot.json+' '});await assert.rejects(f.decks.read(f.grants[0],{isCurrent:()=>true}),{code:'PRESENTATION_DECK_REFUSED'});
+ let calls=0;const decks=new module.NativePresentationDecks({registry:f.registry,snapshotFor:async()=>{if(++calls===1)return f.snapshot;assert.equal((await f.projects.saveProject({projectId:f.snapshot.project.id,baseRevision:f.snapshot.revision,json:JSON.stringify({...f.metadata,unrelated:'changed'}),purpose:'workspace'})).ok,true);return f.projects.readProject(f.snapshot.project.id);}});
+ await assert.rejects(decks.read(f.grants[0],{isCurrent:()=>true}),{code:'PRESENTATION_DECK_CHANGED'});
+});
+test('empty authored sequence produces a deterministic overview without changing the stored diagram',async()=>{
+ const f=await fixture(),diagram={...f.diagram,presentation:{sequence:[],notes:{overview:{text:'PRIVATE_OVERVIEW'}}}};
+ const selected=await f.projects.saveProject({projectId:f.snapshot.project.id,baseRevision:f.snapshot.revision,json:JSON.stringify({...f.metadata,diagrams:[diagram]}),purpose:'workspace'});assert.equal(selected.ok,true);const snapshot=await f.projects.readProject(f.snapshot.project.id);f.setSnapshot(snapshot);
+ const deck=await f.decks.read(f.grants[0],{isCurrent:()=>true});assert.equal(deck.slides.length,1);assert.deepEqual(deck.slides[0].render.entry,{id:'overview',type:'overview',title:'Exact deck'});assert.equal(deck.slides[0].notes,'PRIVATE_OVERVIEW');assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),snapshot);
+});
+test('unsupported/malformed or duplicate authored slides and oversized notes are refused without replacement',async()=>{
+ for(const sequence of [[{id:'x',type:'unknown'}],[{id:'x',type:'node'}],[{id:'x',type:'section'},{id:'x',type:'overview'}],null]){
+  const f=await fixture(),diagram={...f.diagram,presentation:sequence===null?{...f.diagram.presentation,notes:{'node:A':{text:'x'.repeat(65537)}}}:{...f.diagram.presentation,sequence}};assert.equal((await f.projects.saveProject({projectId:f.snapshot.project.id,baseRevision:f.snapshot.revision,json:JSON.stringify({...f.metadata,diagrams:[diagram]}),purpose:'workspace'})).ok,true);const saved=await f.projects.readProject(f.snapshot.project.id);f.setSnapshot(saved);
+  await assert.rejects(f.decks.read(f.grants[0],{isCurrent:()=>true}),{code:'PRESENTATION_DECK_REFUSED'});assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),saved);
+ }
+});

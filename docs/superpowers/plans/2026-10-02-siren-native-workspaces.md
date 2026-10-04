@@ -88,6 +88,8 @@ Integrated order: Sources 1–3 → this plan Task 1 → Sources 4–6 → this 
 
 ### Task 5: Presenter/Audience roles and bounded presentation transport
 
+4 October partial execution: actual native role-scoped session, saved deck adapter, public-only PNG/text transport, minimal Presentation preload, exact Home/Continue and all-view readonly seals are mounted. Source-native04-26-53.693Z COMPLETE5 checks two actual Audiences, explicit deck refresh, native fullscreen/Escape/minimize/restore, Light/Dark/reduced motion, exact project/original100k source and common Lock. Screenshot inspection caught zero-height fullscreen despite native state success; strengthened04-26-15 ADVERSE1 retained before correction. Real UI async Lock/transport tests and bounded renderer destruction tests cover refusal. Root report desktop/reviews/2026-10-04-native-presentation-root-evidence.md is implementer evidence only. Full frozen suite/current committed package/private sync pending. Cards/rich media/metadata styles/export/adjacent preload/physical monitors remain open; complete-task boxes stay unchecked.
+
 **Files:** Create `desktop/src/windows/presentation.mjs`, `desktop/tests/presentation-transport.test.mjs`, `desktop/tests/native/presentation-windows.mjs`; extend role entry/client and builder presentation adapter.
 
 **Interfaces:** `PresentationSession({deckRef,registry}).open({presenterDisplayId,audienceDisplayId})`, `.navigate({epoch,sequence,slideId})`, `.refreshDeck(deckRef)`, `.close()`; `AudienceFrame={epoch,sequence,deckVersion,slideId,publicSlide}`. No full workspace or notes fields.

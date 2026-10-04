@@ -19,7 +19,7 @@ export function createLocationResolver({sources,displays}) {
       const normalized=normalizeLocation(input,{projectId});
       const location=relative(normalized),metadata=workspaceMetadata(snapshot),roster=workspaceEntities(snapshot);
       const diagrams=Array.isArray(metadata.diagrams)?metadata.diagrams.filter(item=>item && validId(item.id)):[];
-      const ids={diagrams:diagrams.map(item=>item.id),docs:roster.docs,code:roster.code,present:diagrams.filter(item=>item.presentation && Array.isArray(item.presentation.slides)).map(item=>item.id)};
+      const ids={diagrams:diagrams.map(item=>item.id),docs:roster.docs,code:roster.code,present:diagrams.map(item=>item.id)};
       const hasEntity=(surface,id)=>ids[surface].includes(id);
       if(location.entityId!==undefined && !hasEntity(location.surface,location.entityId))return refused('ENTITY_UNAVAILABLE');
       if(location.surface!=='code' && (location.sourceRef!==undefined || location.cursor!==undefined))return refused('INVALID_NAVIGATION');

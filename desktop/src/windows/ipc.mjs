@@ -77,7 +77,7 @@ export async function invokeWindow({ event, method, payload, registry }) {
     const data = request(method, payload);
     if (method === 'getView') return { ok: true, view: initial };
     if (method === 'openView') {
-      if (initial.role !== 'workspace' || !['code', 'docs', 'diagram'].includes(data.role)
+      if (initial.role !== 'workspace' || !['code', 'docs', 'diagram','presenter'].includes(data.role)
         || !initial.entityIds.includes(data.entityId)) return failure('ACCESS_REFUSED');
       const opened = await registry.openView(data);
       const live = current();

@@ -1,4 +1,22 @@
 import assert from 'node:assert/strict';
+/** Delay a real metadata read, retaining all native grants and replies. */
+export async function verifyHomeRefresh({driver,result}){
+ await driver.evaluate(`(async()=>{
+  document.getElementById('homeRoot').hidden=true;
+  const host=document.createElement('main');host.id='refreshHome';document.body.append(host);
+  let release,hold=false;const gate=new Promise(resolve=>{release=resolve;});window.__ownedHomeRefresh={entered:false,release};
+  const bridge={...window.sirenHome,getHomeState:async payload=>{if(hold){window.__ownedHomeRefresh.entered=true;await gate;}return window.sirenHome.getHomeState(payload);}};
+  const home=window.renderSirenHome({container:host,bridge,desktop:window.sirenDesktop,bootstrap:window.sirenDesktopBootstrap});window.__ownedHomeRefresh.home=home;
+  await home.refresh();hold=true;window.__ownedHomeRefresh.pending=home.refresh();
+ })()`);
+ await driver.waitFor('window.__ownedHomeRefresh.entered===true');
+ assert.equal(await driver.evaluate('document.querySelector("#refreshHome #homeModule-docs").disabled'),true,'Home refresh must cover navigation until its genuine metadata read finishes');
+ await driver.click('#refreshHome #homeModule-docs');assert.equal(await driver.evaluate('document.querySelector("#refreshHome .home-library")!=null'),false);
+ await driver.evaluate('(async()=>{window.__ownedHomeRefresh.release();await window.__ownedHomeRefresh.pending;})()');
+ assert.equal(await driver.evaluate('document.querySelector("#refreshHome #homeModule-docs").disabled'),false);
+ await driver.evaluate('(async()=>{window.__ownedHomeRefresh.home.dispose();document.getElementById("refreshHome").remove();delete window.__ownedHomeRefresh;await window.sirenHomeView.refresh();})()');
+ result.cases.push({name:'actual Home keeps controls disabled throughout a held real metadata refresh and restores admission only after the read completes',ok:true});
+}
 /** Owned UI fixture holds only the metadata record promise. The native open,
  * grants and saved document are real; no authority or save receipt is mocked. */
 export async function verifyLibraryHandoff({driver,documentId,result}){

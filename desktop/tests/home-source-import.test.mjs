@@ -15,7 +15,13 @@ test('owned Python import adds one unlinked source and preserves every prior Doc
  const f=await fixture(),bytes=Buffer.from('\uFEFFdef test():\r\n    return "Ș😀"\r\n'),result=await perform({...f,bytes,fileName:'script.py',isCurrent:()=>true});assert.equal(result.ok,true);
  const saved=await f.projects.readProject(f.snapshot.project.id),before=workspaceMetadata(f.snapshot),after=workspaceMetadata(saved);assert.equal(saved.revision,f.snapshot.revision+1);assert.equal(saved.schema,2);assert.deepEqual(after.diagrams,before.diagrams);assert.deepEqual(after.workpapers,before.workpapers);assert.equal(after.codeFiles.length,1);assert.equal(after.codeFiles[0].name,'script.py');assert.equal(after.codeFiles[0].language,'python');assert.equal(after.codeFiles[0].linkedRef,null);assert.equal(Object.hasOwn(after.codeFiles[0],'content'),false);
  const ref=saved.sourceRefs[0];assert.deepEqual(await f.repository.exportSource({projectId:saved.project.id,...ref}),bytes);assert.deepEqual(ref.provenance,{kind:'standalone',fileId:after.codeFiles[0].id,fileName:'script.py'});assert.equal(ref.bom,true);assert.equal(ref.newline,'crlf');assert.equal(await f.recovery.hasSavedSnapshot(saved),true);
- const second=await perform({...f,snapshot:saved,bytes:Buffer.from('another'),fileName:'second.txt',isCurrent:()=>true});assert.equal(second.ok,true);assert.deepEqual(second.snapshot.sourceRefs[0],ref);assert.deepEqual(workspaceMetadata(second.snapshot).codeFiles[0],after.codeFiles[0]);assert.equal(workspaceMetadata(second.snapshot).codeFiles[1].language,'text');
+ const second=await perform({...f,snapshot:saved,bytes:Buffer.from('another'),fileName:'second.txt',isCurrent:()=>true});assert.equal(second.ok,true);
+ // Manifest refs have canonical source-ID order, not import order. Preserve the
+ // exact original record by identity, regardless of the newly generated UUID.
+ assert.equal(second.snapshot.sourceRefs.length,2);assert.deepEqual(second.snapshot.sourceRefs.find(item=>item.sourceId===ref.sourceId),ref);
+ assert.deepEqual(workspaceMetadata(second.snapshot).codeFiles[0],after.codeFiles[0]);const next=workspaceMetadata(second.snapshot).codeFiles[1];assert.equal(next.language,'text');
+ assert.deepEqual(await f.repository.exportSource({projectId:saved.project.id,...next.sourceRef}),Buffer.from('another'));
+ assert.deepEqual(await f.repository.exportSource({projectId:saved.project.id,...ref}),bytes);
 });
 test('invalid encoding, oversized source and path-like filename cannot modify the project',async()=>{
  const f=await fixture();for(const [bytes,fileName] of [[Buffer.from([255,254]),'invalid.py'],[Buffer.alloc(32*1024*1024+1),'too-large.py'],[Buffer.from('code'),'C:/private.py'],[Buffer.from('code'),'../private.py']]){assert.equal((await perform({...f,bytes,fileName,isCurrent:()=>true})).ok,false);assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),f.snapshot);}

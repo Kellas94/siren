@@ -27,6 +27,10 @@ import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
 import {NativeAllViewControl} from './windows/control.mjs';
 import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
+import {PresentationSession} from './windows/presentation.mjs';
+import {NativePresentationDecks} from './windows/presentation-deck.mjs';
+import {NativePresentationIPC} from './windows/presentation-ipc.mjs';
+import {renderPresentationPreview} from './windows/presentation-render.mjs';
 import {navigationFields} from './navigation/contracts.mjs';
 import {HomeAuthority} from './navigation/authority.mjs';
 import {HomeService} from './navigation/service.mjs';
@@ -312,17 +316,18 @@ const windowRegistry = new WindowRegistry({
   authorize: request => {
     if (!localPin.state().unlocked || !selectedId || !snapshot || accountQuiesced || writes.selectionQuiesced || nativeShellFailure) return null;
     const roster = workspaceEntities(snapshot);
-    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs, ...roster.diagram])] : roster[request.role];
+    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs, ...roster.diagram])] : ['presenter','audience'].includes(request.role)?roster.diagram:roster[request.role];
     if (!entityIds) return null;
     if (request.role === 'code' && Object.hasOwn(request, 'version') && !snapshot.sourceRefs?.some(ref => ref.sourceId === request.entityId && ref.version === request.version)) return null;
     const nativeMode = mode === 'normal' && !nativeReadonly ? 'normal' : mode === 'recovery' ? 'recovery' : 'readonly';
-    return { projectId: selectedId, mode: nativeMode, access: nativeMode === 'normal' ? 'write' : 'read', entityIds };
+    return { projectId: selectedId, mode: nativeMode, access: request.role==='audience'?'presentation':request.role==='presenter'?'read':nativeMode === 'normal' ? 'write' : 'read', entityIds };
   },
   createWindow: nativeViewFactory({ BrowserWindow, displays: () => {
     const primaryId = screen.getPrimaryDisplay().id;
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
-  }, preload: resolve(here, 'windows/preload.cjs'), onCreated: (view, record) => {
+  }, preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record) => {
     nativeShells.set(record.windowId, view);
+    if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
     view.on('closed', () => nativeShells.delete(record.windowId));
     view.on('close',event=>{
       const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});
@@ -354,7 +359,7 @@ const codeDocsLinkService=new DocsLinkService({
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
 });
 const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
-  isReadonly:grant=>['code','docs','diagram'].includes(grant.role)&&!workingSources?.isWorking(grant)&&!workingDocs?.isWorking(grant)&&!workingDiagrams?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
+  isReadonly:grant=>['code','docs','diagram','presenter','audience'].includes(grant.role)&&!workingSources?.isWorking(grant)&&!workingDocs?.isWorking(grant)&&!workingDiagrams?.isWorking(grant)&&localPin.state().unlocked&&!accountQuiesced&&!writes.selectionQuiesced&&grant.projectId===selectedId,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
@@ -397,6 +402,12 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
     recovery,onSelected:current=>{snapshot=current;bootstrap={...bootstrap,snapshot:current};},
   }),
 });
+const presentationDecks=new NativePresentationDecks({registry:windowRegistry,snapshotFor:grant=>projects.readProject(grant.projectId)});
+const createPresentation=()=>new PresentationSession({registry:windowRegistry,loadDeck:(grant,scope)=>presentationDecks.read(grant,scope),
+ renderPublicSlide:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Presentation retired');return renderPresentationPreview({BrowserWindow,entryPath:join(rendererRoot,'presentation-render.html'),entrySha256:build.presentationRender?.entrySha256,input,scope});},
+ sendFrame:(grant,frame)=>{const event=windowRegistry.eventFor(grant);if(!event)return false;event.sender.send('siren:presentation-frame',frame);return true;},
+});
+let presentationSession=createPresentation();
 let sourceReads=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
@@ -406,7 +417,7 @@ const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:worksp
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
@@ -419,10 +430,20 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
     await window.webContents.executeJavaScript('window.sirenDesktopBeginAccountTransition()');return;
   }
   if(workspaceBarrier)throw Object.assign(Error('Preparation pending'),{code:'PROJECT_BUSY'});
-  workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:workspaceOwner,control:{
+  const capturedPresentation=presentationSession;
+  const barrierOwner={
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();return sourceDrain;},
+   reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
+   reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle())throw Error('Presentation not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&capturedPresentation.isIdle()&&workspaceOwner.isQuiescent(proof),
+   isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
+  };
+  workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
     flushView:async grant=>{const receipt=await viewControl.flushView(grant);if(!receipt.ok)console.warn('SIREN_NATIVE_VIEW_FLUSH_FAILURE',JSON.stringify({role:grant.role,code:receipt.code}));return receipt;},
     cancelView:grant=>viewControl.cancelView(grant),
-  },cover:()=>{}});
+  },cover:()=>{},onProgress:progress=>console.info('SIREN_BARRIER_STAGE',JSON.stringify(progress))});
   const result=await workspaceBarrier.prepare(reason);
   if(!result.ok){console.warn('SIREN_WORKSPACE_PREPARE_FAILURE',JSON.stringify({code:result.code}));await rollbackNativePreparation();throw Object.assign(Error('Native preparation refused'),{code:result.code});}
   await Promise.all([...writes]);
@@ -444,6 +465,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
   writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 const retireNativeViews = () => {
+  presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
   workingSources?.dispose();workingSources=null;
   workingDocs?.dispose();workingDocs=null;
@@ -461,8 +483,8 @@ const retireNativeViews = () => {
 const navigation=new NavigationStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced});
 const homeService=new HomeService({navigation,catalog:new ProjectCatalog(dataRoot),projects,
   selection:{state:()=>({projectId:selectedId,label:snapshot?.project.label,projectFormat:snapshot?.schema===2?'desktop':snapshot?'classic':null,mode,readonly:nativeReadonly||mode!=='normal',
-    views:windowRegistry.listViews().filter(view=>['code','docs','diagram'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:view.role==='code'?'⌘ Code':view.role==='diagram'?'Diagrams':'Docs',state:view.state==='minimized'?'minimized':'open'})),
-    capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:false}})},
+    views:windowRegistry.listViews().filter(view=>['code','docs','diagram','presenter','audience'].includes(view.role)).slice(0,16).map(view=>({windowId:view.windowId,role:view.role,entityId:view.entityId,label:({code:'⌘ Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[view.role]),state:view.state==='minimized'?'minimized':'open'})),
+    capabilities:{diagrams:Boolean(snapshot),docs:Boolean(snapshot),code:snapshot?.schema===2,present:Boolean(snapshot)}})},
   resolveEntity:createLocationResolver({sources,displays:()=>screen.getAllDisplays().map(display=>({id:display.id,workArea:display.workArea,primary:display.id===screen.getPrimaryDisplay().id}))}),
 });
 let nativeNavigationTarget=null;
@@ -786,6 +808,26 @@ const invokeNativeWindow=async (event, method, payload) => {
   return result;
 };
 ipcMain.handle('siren:windows',invokeNativeWindow);
+const presentationIPC=new NativePresentationIPC({registry:windowRegistry,sessionFor:()=>presentationSession,
+ displays:()=>screen.getAllDisplays().slice(0,32).map((display,index)=>({id:String(display.id),label:typeof display.label==='string'&&display.label?display.label.slice(0,160):`Display ${index+1} · ${display.size.width} × ${display.size.height}`})),
+ setFullscreen:(grant,enabled,scope)=>{const view=nativeShells.get(grant.windowId);if(!scope.isCurrent()||!view||view.isDestroyed())return {ok:false,code:'ACCESS_REFUSED'};view.setFullScreen(enabled);return scope.isCurrent()?{ok:true}:{ok:false,code:'ACCESS_REFUSED'};},
+ openAudience:async(_grant,request,scope)=>{
+  let opened;try{
+   if(!scope.isCurrent()||workspaceBarrier||pinTransition||writes.selectionTransition||writes.viewClosing)throw Error('Audience access refused');
+   const display=request.displayId===undefined?null:screen.getAllDisplays().find(display=>String(display.id)===request.displayId);if(request.displayId!==undefined&&!display)throw Error('Display unavailable');
+   opened=await windowRegistry.openView({role:'audience',entityId:request.deckId});if(!scope.isCurrent())throw Error('Audience access retired');
+   const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Audience unavailable');if(display)view.setBounds(display.workArea);
+   const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(!grant)throw Error('Audience registration unavailable');return {view:opened,grant};
+  }catch{if(opened&&windowRegistry.discardView(opened.windowId)!==true){nativeShellFailure=true;throw Error('Audience destruction incomplete');}throw Error('Audience unavailable');}
+ },
+});
+ipcMain.handle('siren:presentation',async(event,method,payload)=>{
+ const operation=presentationIPC.invoke({event,method,payload});writes.add(operation);
+ try{const result=await operation;
+  if(method==='openAudience'&&result?.ok){const view=nativeShells.get(result.view.windowId);try{if(!view||view.isDestroyed())throw Error('Audience unavailable');view.webContents.send('siren:view-ready');view.show();}catch{const discarded=windowRegistry.discardView(result.view.windowId);if(!discarded)nativeShellFailure=true;return {ok:false,code:discarded?'AUDIENCE_OPEN_FAILED':'WINDOW_DESTROY_FAILED'};}}
+  return result;
+ }finally{writes.delete(operation);}
+});
 window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 window.webContents.on('will-navigate', event => { if (event.url !== window.webContents.getURL() && event.url!==nativeNavigationTarget) event.preventDefault(); });
 window.webContents.on('will-attach-webview', event => event.preventDefault());

@@ -1,16 +1,17 @@
 import { restoreBounds } from './geometry.mjs';
 
 /** Data-free native shells. Main supplies the native registry's exact role URL. */
-export function nativeViewFactory({ BrowserWindow, displays, preload, onCreated = () => {} }) {
+export function nativeViewFactory({ BrowserWindow, displays, preload, presentationPreload, onCreated = () => {} }) {
   return async options => {
     const expected = `siren://app/windows/${options.role}.html?windowId=${options.windowId}`;
-    if (!['code', 'docs', 'diagram'].includes(options.role) || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
+    const presenting=['presenter','audience'].includes(options.role);
+    if (!['code', 'docs', 'diagram','presenter','audience'].includes(options.role) || presenting&&typeof presentationPreload!=='string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
       throw Object.assign(new Error('Native entrypoint refused'), { code: 'REQUEST_REFUSED' });
     }
     const { normalBounds } = restoreBounds({}, displays());
-    const window = new BrowserWindow({ ...normalBounds, show: false, title: options.role === 'code' ? 'SIREN — Code' : options.role === 'diagram' ? 'SIREN — Diagrams' : 'SIREN — Docs',
+    const window = new BrowserWindow({ ...normalBounds, show: false, title: 'SIREN — '+({code:'Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[options.role]),
       minWidth: Math.min(480, normalBounds.width), minHeight: Math.min(320, normalBounds.height), backgroundColor: '#171719',
-      webPreferences: { preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true },
+      webPreferences: { preload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true },
     });
     try {
       const wc = window.webContents;

@@ -1,0 +1,35 @@
+# Native Presenter/Audience — implementer evidence, 4 October 2026
+
+Written by the implementing coordinator. This is not an independent evaluator approval, release admission or a claim that the whole presentation plan is complete.
+
+Native Home now lists saved diagram presentations and opens registered Presenter windows. Audience has an empty content grant and a separate minimal preload. Genuine selected deck reads stay in main; only public PNG/text frames reach Audience. Private notes remain in Presenter. Explicit saved-deck refresh preserves a retained slide ID. Native display selection, fullscreen/Escape, minimize/Home restore and common Code/Docs/Presenter/Audience Lock are mounted.
+
+The session bounds deck size, render concurrency, public PNG bytes/geometry and one in-flight plus one latest frame per Audience. Lock cancels jobs and awaits actual hidden renderer completion/destruction before quiescence. No renderer-labelled hash or empty acknowledgement substitutes for genuine native readonly proofs. Copied grants, stale frames/decks, private payload fields and unclassified zero-entity Audience proofs are refused.
+
+## Actual source-native observations
+
+- Isolated renderer `evidence/presentation-render/2026-10-04T03-42-30.536Z`: COMPLETE4, native Mermaid PNG, imported colour, exact node focus, literal section, unsupported node refusal and actual window/webContents destruction. Earlier adverse probes remain retained.
+- `presentation-windows/2026-10-04T04-11-13.769Z`: ADVERSE0 reproduced an oversized Presenter preview. Aspect-fit correction and Audience waiting-status correction produced COMPLETE4 at04-13-09.384Z.
+- Expanded04-25-37.312Z completed5 with two actual Audience windows, native fullscreen/minimize/restore, themes, exact Continue, refresh and common Lock, but its fullscreen screenshot was blank. The original weaker result remains unchanged; it does not qualify visible fullscreen output.
+- New actual viewport oracle at04-26-15.614Z: ADVERSE1 reproduced fullscreen slide height zero. Hiding the header/status removed grid items while the public slide still occupied a zero-height grid row. A single remaining fullscreen row fixes this.
+- Corrected `presentation-windows/2026-10-04T04-26-53.693Z`: COMPLETE5, captured listed inputs unchanged and owned process closed. Actual full viewport geometry and inspected screenshot show the section title. Presenter Light/Dark, public Audience screenshots, two independent owners/Continue, genuine saved-deck refresh, all-view Lock and original 100k-line source bytes are checked. Physical monitors/DPI/disconnection remain unqualified.
+
+Meaningful UI regressions execute the real window script: thrown refresh/open-Audience transport retains notes/public slide and releases controls; a follow-up saved-deck read resolving after Lock cannot repopulate private notes or render a late slide. Generated entrypoint tests check hashed CSP, exact protocol/package closure, minimal role-specific preload and no generic source bridge. Whole-suite and committed-package results will be recorded only after execution.
+
+First whole frozen suite04-29-48.773Z: identity2/2 plus789/801, **791/803**, twelve failures, no changed captured inputs, log SHA256c2a0f93ce9e912b79f8e332d94cffe0a6285649037f848217d6d6fe16f1e2e07 retained at evidence/native-presentation-qualified-suite-result.json. Ten failures shared a VM fixture that omitted the actual new Presentation classes. The fixture now imports those real classes. One generic window test retained the obsolete Presenter refusal; it now checks actual admitted Presenter and still denies generic Audience. One source import test assumed canonical refs kept random UUID import order; it now finds the exact unchanged original by source identity and exports both original/new bytes. Focused affected46/46 passed. The original full-suite failure is retained; a final whole rerun is still required.
+
+Subsequent source-native regression sequence completed and all owned processes closed: Home Guide04-35-13.875Z COMPLETE4; Home/source-aware300k04-35-20.608Z COMPLETE7; source sync300k04-35-41.269Z COMPLETE5; Docs edit300k04-36-04.060Z COMPLETE4; Diagram edit300k04-36-36.339Z COMPLETE4; Guided/intro04-37-09.691Z completed with `guided:true` and `flashConfirmed:false`; PIN/access-screen04-37-21.163Z completed. Each source-aware result retains unchanged listed inputs and original byte assertions. This successful local PIN probe does not establish the cause of the earlier hosted CDP timeout. Actual Diagram measured dirty Close6394ms/final Lock6941ms against the unchanged10s barrier.
+
+Final whole frozen suite04-38-45.166Z–04-42-21Z: **803/803** (identity2 plus801), exit0, no failed/cancelled/skipped/todo and zero changed captured inputs. Exact before/after source/build/test/script/workflow/package/baseline identities are retained in `evidence/native-presentation-final-suite-result.json`; log SHA256 `e4210058c2163aa984140127acf8b1b3db999b3e91d4081b2c815c6c5ff0151b`. The original791/803 remains intact. Committed package and hosted qualification still require execution and are not inferred from this result.
+
+## Related defects and retained hosted failures
+
+Home refresh now keeps controls busy throughout its actual metadata read. Native03-44-06.486Z ADVERSE2 reproduced enabled controls; expanded300k03-45-26.633Z COMPLETE7 verifies the correction and retained project/source bytes. Home Guide no longer describes editable native windows as read only;03-46-32.553Z COMPLETE4 checks existing features. Current Guide also describes delivered Present and explicit remaining limits.
+
+The preceding private c3fb1903 Desktop CI53 run37173301715 failed access-screen, Diagram, Home library and Home source projects; package was skipped. Launcher44 succeeded. Authenticated original artifact11292802082 is retained under `evidence/ci53`, ZIP SHA256 `8d363366b9b4a3cb08c80d2fec63910f713bfcd0c7641c1e9f3f47e3cfb751a9`. An obsolete Guide expectation is corrected. Home's independently reproduced busy race is corrected, but correspondence to the older hosted Continue timeout is not conclusively proved. Hosted Diagram timed out sealing Home at the unchanged ten-second barrier; access-screen timed out observing correct-current PIN while its final screenshot had reached Create your PIN. Neither underlying hosted cause is declared fixed.
+
+Bounded barrier stage timings retain no paths/source/PIN. Local Diagram300k03-47-34.934Z COMPLETE4 measured dirty Close preparation6447ms and final Lock6853ms. These are local timings, not hosted qualification or grounds to raise the deadline.
+
+## Still open
+
+This batch supports saved overview/node/section/plain chapter rendering. Cards/rich media, metadata-specific style painting, adjacent preload, deck export, editor parity, physical monitor scenarios, stress/pool behaviour and the remaining native/large-source/Terminal plans stay open. Render limits remain the bundled Mermaid12 defaults (50k characters/500 edges); large source storage is a separate capability. No source deck is altered on render refusal. The one-time Git graph remains frozen.

@@ -45,6 +45,12 @@ test('Continue for a saved native Diagram resolves and opens the exact entity in
  f.args.navigateDiagrams=()=>assert.fail('A saved native Diagram must reopen its window');f.args.openView=async value=>{request=value;return {ok:true,view:{epoch:1}};};
  assert.deepEqual(await continueSavedLocation(f.args),{ok:true,epoch:1});assert.deepEqual(request,{role:'diagram',entityId:'saved-flow'});
 });
+
+test('Continue for a saved presentation resolves the exact deck and opens a Presenter, never Audience or raw source',async()=>{
+ const f=await fixture();f.args.location={schema:1,projectId:f.original.project.id,surface:'present',entityId:'saved-deck'};f.args.resolveEntity=async({location})=>({ok:true,location});let request;
+ f.args.navigateDiagrams=()=>assert.fail('Presentation must reopen its Presenter');f.args.openView=async value=>{request=value;return {ok:true,view:{epoch:1}};};
+ assert.deepEqual(await continueSavedLocation(f.args),{ok:true,epoch:1});assert.deepEqual(request,{role:'presenter',entityId:'saved-deck'});
+});
 test('Continue validates missing/cross-project native Diagram before changing the selected project',async()=>{
  const f=await fixture();f.args.location.surface='diagrams';f.args.location.entityId='saved-flow';let request;f.args.openView=async value=>{request=value;return {ok:true,view:{epoch:2}};};f.args.navigateDiagrams=()=>assert.fail('A native Diagram must reopen its window');
  assert.equal(await continueSavedLocation(f.args),f.selectionReceipt);assert.deepEqual(request,{role:'diagram',entityId:'saved-flow'});

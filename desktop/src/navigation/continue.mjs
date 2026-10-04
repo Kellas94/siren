@@ -8,7 +8,7 @@ export async function continueSavedLocation({scope,location,projects,resolveEnti
   if(!location)return refused('ENTITY_UNAVAILABLE');
   if(!scope.isCurrent())return refused('ACCESS_REFUSED');
   if(location.surface==='diagrams'&&!location.entityId)return location.projectId===selectedProjectId()?navigateDiagrams(scope):selectProject({projectId:location.projectId},scope);
-  if(!['code','docs','diagrams'].includes(location.surface))return refused('UNAVAILABLE');
+  if(!['code','docs','diagrams','present'].includes(location.surface))return refused('UNAVAILABLE');
   let snapshot;try{snapshot=await projects.readProject(location.projectId);}catch{return refused(scope.isCurrent()?'PROJECT_UNAVAILABLE':'ACCESS_REFUSED');}
   if(!scope.isCurrent())return refused('ACCESS_REFUSED');
   const {schema,projectId,...relative}=location;
@@ -25,7 +25,7 @@ export async function continueSavedLocation({scope,location,projects,resolveEnti
   }
   const current=()=>crossProject?selectionIsCurrent(scope.transition,receipt)&&selectedProjectId()===projectId:scope.isCurrent();
   if(!current())return refused('ACCESS_REFUSED');
-  const result=await openView({role:location.surface==='diagrams'?'diagram':location.surface,entityId:resolved.location.entityId,...(resolved.location.sourceRef?{version:resolved.location.sourceRef.version}:{})});
+  const result=await openView({role:location.surface==='diagrams'?'diagram':location.surface==='present'?'presenter':location.surface,entityId:resolved.location.entityId,...(resolved.location.sourceRef?{version:resolved.location.sourceRef.version}:{})});
   if(!current())return refused('ACCESS_REFUSED');
   if(!result?.ok)return result??refused('ENTITY_UNAVAILABLE');
   return crossProject?receipt:{ok:true,epoch:result.view.epoch};

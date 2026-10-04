@@ -6,6 +6,8 @@ Preceding local517a22a4 qualified committed preview with exact ASARa005dc823e3ed
 
 Current frozen full suite now completed766/766 with zero changed inputs and zero failed/skipped/cancelled/todo, log2bbd4f2d848112064e5e09efed97e179b060e49da58be3ea9b138b05ea134b25. Final source-native300k regressions Docs03-03-44 completed4, sync03-04-16 completed5, links03-04-39 completed4, Home03-05-03 completed6; actual Diagram02-58-30 completed4. Original adverse results remain retained. Committed package/current hosted qualification pending; development continues.
 
+Committed locald08a7c9a development-dc4038d5 passed actual original packaged03-07-22 and packaged300kHome6/Docs4/Diagram4. ASAR63252842bf2931aac9911be5a0b39dee2d35eb081b39d58c35311991548016bc, runtime unchanged49b61. Exact privatec3fb1903/tree890fe8a7 matches31 changed blobs/1166total,1135 unrelated unchanged; PR2 draft/open/unmerged, main unchanged. Current hosted qualification pending. Next approved development: bounded versioned Presenter/Audience transport, keeping notes out of Audience. No independent approval or production release is implied.
+
 --- Earlier status retained below ---
 # 4 October 2026 — working native Diagram and related Docs fixes under final qualification
 
@@ -675,3 +677,10 @@ Root source/unit batch: version-pinned repository readers, hard two pending/acti
 Measured initial Node snapshot path loaded the same300k Python source in130.717ms+28.797ms transfer wall versus17342.15ms original range wall, with exact full hashes for six fixtures. This is not a live IPC/EditorView/RSS/native-window qualification. No new large-source UI/editor satellite is enabled; coordinated dirty-window barriers, source-aware Docs/linking, presentation and native Terminal ownership remain open. Source/client/build work still needs product transport/editor/package integration.
 
 Private sync throughlocal3d7d035: PR2 draft/unmerged, head d1a65f52a86f98084fd09da66b76a833dde9537a, main688c unchanged;118 changed blobs/813 unrelated preserved. HostedCI27FAILEDunits; renderer/native/packageSKIPPED. Authenticated2-entry ZIP797582dc... retained; explicit shortTEMP/canonical difference and six-minute outer unit interruption are being diagnosed separately. LauncherCI18SUCCESS. No historical failure is relabeled and no release/main merge occurred.
+# 4 October 2026 — native Present mounted, qualification continues
+
+Presenter/Audience now open from Home with genuine saved-deck reads, private Presenter notes, public-only frames and a minimal separate preload. Exact Continue, two Audiences, refresh preserving slide ID, native fullscreen/Escape/minimize/restore and all-view Lock passed source-native04-26-53 COMPLETE5 with unchanged listed inputs and original100k source bytes. Screenshot inspection caught a blank fullscreen grid; strengthened ADVERSE04-26 reproduced it before the correction. Real UI late-refresh-after-Lock and transport refusal tests preserve work/private-note boundaries. Whole-suite/current package/private sync are pending; cards/media/export/metadata styles/physical monitors and remaining plans stay open. Root report reviews/2026-10-04-native-presentation-root-evidence.md is implementer evidence only.
+
+Previous private c3fb Desktop CI53 FAILED four native probes and skipped package; Launcher44 succeeded. Original artifact is retained. Local Home busy refresh is reproduced/fixed and obsolete Guide fixture corrected. Diagram barrier timeout and PIN/CDP observation causes remain unconfirmed. No failure is relabelled or deadline relaxed.
+
+--- Earlier status retained below ---

@@ -18,7 +18,7 @@ export class NativeWindowCatalog {
  }
  async invoke({event,payload}){
   try{
-   let cursor,role;try{const request=navigationFields(payload??{},['cursor','role'],[]);cursor=request.cursor??0;role=request.role;if(!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs','diagram'].includes(role))return fail('REQUEST_REFUSED');}catch{return fail('REQUEST_REFUSED');}
+   let cursor,role;try{const request=navigationFields(payload??{},['cursor','role'],[]);cursor=request.cursor??0;role=request.role;if(!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs','diagram','presenter'].includes(role))return fail('REQUEST_REFUSED');}catch{return fail('REQUEST_REFUSED');}
    const grant=this.#capture(event);if(!grant)return fail('ACCESS_REFUSED');
    const snapshot=await this.#snapshotFor(grant),live=this.#capture(event);
    if(!live||live.windowId!==grant.windowId||live.epoch!==grant.epoch||snapshot?.project?.id!==grant.projectId)return fail('ACCESS_REFUSED');
@@ -39,7 +39,7 @@ export class NativeWindowCatalog {
    const diagramIds=new Set();
    for(const diagram of metadata.diagrams??[]){
     if(!validId(diagram?.id))continue;if(diagramIds.has(diagram.id))return fail('CATALOG_REFUSED');diagramIds.add(diagram.id);
-    rows.push({role:'diagram',entityId:diagram.id,label:typeof diagram.name==='string'&&diagram.name?label(diagram.name):'Untitled diagram',readonly:true});
+    rows.push({role:role==='presenter'?'presenter':'diagram',entityId:diagram.id,label:typeof diagram.name==='string'&&diagram.name?label(diagram.name):'Untitled diagram',readonly:true});
    }
    const selected=role?rows.filter(item=>item.role===role):rows;
    const total=selected.length,limit=Math.min(total,4096),items=selected.slice(cursor,Math.min(cursor+64,limit)),nextCursor=cursor+items.length;

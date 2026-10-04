@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-windows')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -85,6 +85,8 @@ jobs:
           node tests/native/diagram-edit.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/home-source-projects.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/presentation-windows.mjs --package $preview.previewRoot
           exit $LASTEXITCODE
       - name: Retain scoped test evidence in private CI
         if: always()
@@ -162,6 +164,13 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/presentation-render/*/result.json
+            desktop/evidence/presentation-render/*/native-result.json
+            desktop/evidence/presentation-render/*/*.log
+            desktop/evidence/presentation-render/*/*.png
+            desktop/evidence/presentation-windows/*/result.json
+            desktop/evidence/presentation-windows/*/*.log
+            desktop/evidence/presentation-windows/*/*.png
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14

@@ -447,6 +447,14 @@ export class WindowRegistry {
     return request?Object.freeze({sourceId:request.entityId,...(Object.hasOwn(request,'version')?{version:request.version}:{})}):null;
   }
 
+  // Main-only requested deck identity. Audience deliberately retains zero
+  // entity read grants; its public frame binding cannot become source access.
+  presentationScope(grant) {
+    if(!this.isCurrent(grant)||!['presenter','audience'].includes(grant.role))return null;
+    const request=this.#views.get(grant.windowId)?.request;
+    return request?Object.freeze({deckId:request.entityId}):null;
+  }
+
   caller(event) {
     try {
       for (const entry of this.#views.values()) {

@@ -72,9 +72,10 @@ feature('workspace opens scoped Code/Docs and finite Diagram with exact nonnegat
   assert.equal(docs.ok,true);assert.equal(docs.view.role,'docs');assert.equal(code.ok,true);assert.equal(s.options[2].version,7);
   const diagram=await call(s,'openView',{role:'diagram',entityId:'deck_a'});assert.equal(diagram.ok,true);assert.equal(diagram.view.role,'diagram');
   assert.equal((await call(s,'openView',{role:'diagram',entityId:'deck_a',version:1})).code,'REQUEST_REFUSED');
-  for(const role of ['workspace','presenter','audience']) assert.equal((await call(s,'openView',{role,entityId:'deck_a'})).code,'ACCESS_REFUSED');
+  const presenter=await call(s,'openView',{role:'presenter',entityId:'deck_a'});assert.equal(presenter.ok,true);assert.equal(presenter.view.role,'presenter');
+  for(const role of ['workspace','audience']) assert.equal((await call(s,'openView',{role,entityId:'deck_a'})).code,'ACCESS_REFUSED');
   for(const version of [-1,1.5,'7',NaN,Infinity,Number.MAX_SAFE_INTEGER+1,null]) assert.equal((await call(s,'openView',{role:'docs',entityId:'doc_a',version})).code,'REQUEST_REFUSED');
-  assert.equal(s.windows.length,4);
+  assert.equal(s.windows.length,5);
 });
 feature('foreign entity requests and every satellite opening or global listing are refused',async()=>{
   const s=await setup();assert.equal((await call(s,'openView',{role:'docs',entityId:'doc_foreign'})).code,'ACCESS_REFUSED');

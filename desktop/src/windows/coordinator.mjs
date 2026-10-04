@@ -56,7 +56,7 @@ export class WorkspaceCoordinator {
   // never another entity, role, frame, epoch or general Docs operation. Diagram
   // Docs/Diagram preparation may reread its own saved entity before its flush.
   beginViewFlush(grant,options={}) {
-    if(!this.#registry.isCurrent(grant) || !['workspace','code',...(this.#domains?['docs','diagram']:[])].includes(grant?.role))throw error('ACCESS_REFUSED');
+    if(!this.#registry.isCurrent(grant) || !['workspace','code',...(this.#domains?['docs','diagram']:[]),...(this.#readonly?.isReadonly(grant)?['presenter','audience']:[])].includes(grant?.role))throw error('ACCESS_REFUSED');
     if(!this.#paused)throw error('WORKSPACE_NOT_PAUSED');
     let values;try{values=navigationFields(options,['maxOperations','maxBytes'],[]);}catch{throw error('FLUSH_BUDGET');}
     const byteLimit=grant.role==='workspace'&&this.#primary?MAX_WORKSPACE_BYTES:17*1024*1024;
@@ -256,12 +256,14 @@ export class WorkspaceCoordinator {
     if(!this.#paused||this.#pending.size||this.#flushes.size)return fail('OWNER_NOT_QUIESCENT');
     if(!Array.isArray(grants)||!grants.length||grants.length>64||!Array.isArray(receipts)||receipts.length>4224||typeof isCurrent!=='function')return fail('REQUEST_REFUSED');
     const proof=this.captureQuiescence(),projectId=grants[0]?.projectId;
-    const current=()=>{try{return this.isQuiescent(proof)&&isCurrent()===true&&grants.every(grant=>grant.projectId===projectId&&this.#registry.isCurrent(grant)&&['workspace','code','docs','diagram'].includes(grant.role));}catch{return false;}};
+    const current=()=>{try{return this.isQuiescent(proof)&&isCurrent()===true&&grants.every(grant=>grant.projectId===projectId&&this.#registry.isCurrent(grant)&&['workspace','code','docs','diagram','presenter','audience'].includes(grant.role));}catch{return false;}};
     if(!current())return fail('ACCESS_REFUSED');if(receipts.some(receipt=>receipt?.ok!==true))return fail('WORKSPACE_FLUSH_FAILED');
     const immutable=grants.filter(grant=>this.#readonly?.isReadonly(grant)),immutableIds=new Set(immutable.map(grant=>grant.windowId));
+    if(grants.some(grant=>['presenter','audience'].includes(grant.role)&&!immutableIds.has(grant.windowId)))return fail('READONLY_PROOF_FAILED');
     const immutableRefs=[];
     for(const grant of immutable){
-      const candidates=receipts.filter(receipt=>receipt.purpose==='readonly'&&receipt.domain===(grant.role==='code'?'source':grant.role==='diagram'?'diagram':'docs')&&receipt.entityId===grant.entityIds[0]);
+      const presenting=['presenter','audience'].includes(grant.role),entityId=presenting?this.#registry.presentationScope(grant)?.deckId:grant.entityIds[0];
+      const candidates=receipts.filter(receipt=>receipt.purpose==='readonly'&&receipt.domain===(presenting?'presentation':grant.role==='code'?'source':grant.role==='diagram'?'diagram':'docs')&&receipt.entityId===entityId);
       let verified;
       for(const receipt of candidates)if(await this.#readonly.verify(grant,receipt,{isCurrent:current})){verified=receipt;break;}
       if(!current())return fail('ACCESS_REFUSED');if(!verified)return fail('READONLY_PROOF_FAILED');immutableRefs.push(verified);

@@ -52,7 +52,13 @@ test('role-filtered pages bound the chosen library without first mounting unrela
  const code=await f.call({role:'code',cursor:0});assert.equal(code.ok,true);assert.equal(code.items.length,2);assert.equal(code.total,2);assert.equal(code.hasMore,false);assert.ok(code.items.every(item=>item.role==='code'));
  const docs=await f.call({role:'docs',cursor:0}),next=await f.call({role:'docs',cursor:docs.nextCursor});assert.equal(docs.items.length,64);assert.equal(next.items.length,64);assert.equal(docs.total,130);assert.equal(docs.hasMore,true);assert.ok(next.items.every(item=>item.role==='docs'));assert.equal(JSON.stringify(docs).includes('PRIVATE'),false);
  const diagrams=await f.call({role:'diagram'});assert.equal(diagrams.ok,true);assert.deepEqual(diagrams.items,[]);
- for(const role of ['presenter',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
+ const presenter=await f.call({role:'presenter'});assert.equal(presenter.ok,true);assert.deepEqual(presenter.items,[]);
+ for(const role of ['audience',null,{}])assert.equal((await f.call({role})).code,'REQUEST_REFUSED');
+});
+
+test('Present library discovers only verified diagram IDs and labels, never authored notes or source',async()=>{
+ const f=await fixture();f.select({...f.selected,json:JSON.stringify({diagrams:[{id:'deck-a',name:'Presentation Ș😀',source:'PRIVATE_SOURCE',presentation:{notes:{overview:{text:'PRIVATE_NOTES'}}}}],workpapers:[]})});
+ const result=await f.call({role:'presenter'});assert.equal(result.ok,true);assert.deepEqual(result.items,[{role:'presenter',entityId:'deck-a',label:'Presentation Ș😀',readonly:true}]);assert.equal(JSON.stringify(result).includes('PRIVATE'),false);
 });
 
 test('Code library uses selected file names and marks unlinked code without exposing source bytes or provenance paths',async()=>{

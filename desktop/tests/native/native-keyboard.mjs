@@ -15,7 +15,11 @@ export async function attachNativeKeyboard({port,pid}){
  ws.addEventListener('message',event=>{const data=JSON.parse(event.data),request=pending.get(data.id);if(request){pending.delete(data.id);data.error?request.reject(Error(JSON.stringify(data.error))):request.resolve(data.result);}});
  const evaluate=expression=>new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{pending.delete(id);reject(Error('Owned native input inspector deadline'));},10000);pending.set(id,{resolve:result=>{clearTimeout(timer);if(result.exceptionDetails)reject(Error(JSON.stringify(result.exceptionDetails)));else resolve(result.result.value);},reject:error=>{clearTimeout(timer);reject(error);}});ws.send(JSON.stringify({id,method:'Runtime.evaluate',params:{expression,returnByValue:true,awaitPromise:true}}));});
  assert.equal(await evaluate('process.pid'),pid,'Inspector must belong to the launched fixture main process');
- return {close:()=>ws.close(),shortcut:async(keyCode,modifiers)=>{
+ const ownedViewURL=url=>assert.match(url,/^siren:\/\/app\/windows\/(?:presenter|audience)\.html\?windowId=[a-f0-9-]{36}$/);
+ const windowExpression=url=>`process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron').BrowserWindow.getAllWindows().find(w=>!w.isDestroyed()&&w.webContents.getURL()===${JSON.stringify(url)})`;
+ return {close:()=>ws.close(),windowState:async url=>{ownedViewURL(url);return evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned presentation window unavailable');return {fullScreen:w.isFullScreen(),minimized:w.isMinimized(),visible:w.isVisible(),bounds:w.getBounds()};})()`);},
+ minimizeView:async url=>{ownedViewURL(url);return evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned presentation window unavailable');w.minimize();return true;})()`);},
+ shortcut:async(keyCode,modifiers)=>{
   assert.ok([',','U','L'].includes(keyCode));assert.ok(Array.isArray(modifiers)&&modifiers.every(m=>['control','alt'].includes(m)));
   for(const type of ['keyDown','keyUp'])await evaluate(`(()=>{const e=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');const w=e.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL()==='siren://app/home.html');if(!w||w.isDestroyed())throw Error('Owned Home input target unavailable');w.webContents.focus();w.webContents.sendInputEvent(${JSON.stringify({type,keyCode,modifiers})});return true;})()`);
  }};
