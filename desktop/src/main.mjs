@@ -23,6 +23,8 @@ import {NativeSourceAnalysis} from './windows/source-analysis.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from './windows/diagram-edits.mjs';
+import {NativeDiagramExports} from './windows/diagram-export.mjs';
+import {renderDiagramVector} from './windows/diagram-vector-render.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
@@ -413,13 +415,17 @@ let sourceReads=null;
 let sourceAnalysis=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
+const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:workspaceOwner,reads:diagramReads,projects,
+ render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input,scope});},
+ reveal:path=>shell.showItemInFolder(path),
+});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
 const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket)});
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
@@ -435,12 +441,12 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   const capturedPresentation=presentationSession;
   const capturedAnalysis=sourceAnalysis;
   const barrierOwner={
-   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();},
-   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();return sourceDrain;},
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();return sourceDrain;},
    reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
    reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
-   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
-   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&workspaceOwner.isQuiescent(proof),
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&workspaceOwner.isQuiescent(proof),
    isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
   };
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
@@ -468,6 +474,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
   writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 const retireNativeViews = () => {
+  diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
   sourceAnalysis?.dispose();sourceAnalysis=null;
@@ -795,6 +802,10 @@ ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
 ipcMain.handle('siren:diagram-read',async(event,method,payload,flushNonce)=>{
   const operation=diagramReads.invoke({event,method,payload,flushNonce});writes.add(operation);
   try{const result=await operation;if(!result.ok&&workspaceBarrier){const grant=windowRegistry.capture(event);console.warn('SIREN_DIAGRAM_READ_FAILURE',JSON.stringify({code:result.code,privateTicket:typeof flushNonce==='string',working:workingDiagrams?.isWorking(grant)===true,readable:grant?workspaceOwner.canReadDomain(grant,'diagram',grant.entityIds[0],flushNonce):false}));}return result;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:diagram-export',async(event,method,payload)=>{
+ if(pinTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)return {ok:false,code:'ACCESS_REFUSED'};
+ const operation=diagramExports.invoke({event,method,payload});writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 const invokeNativeWindow=async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || writes.viewClosing || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');

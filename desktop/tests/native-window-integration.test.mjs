@@ -15,6 +15,8 @@ import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {NativeDiagramReads} from '../src/windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from '../src/windows/diagram-edits.mjs';
+import {NativeDiagramExports} from '../src/windows/diagram-export.mjs';
+import {renderDiagramVector} from '../src/windows/diagram-vector-render.mjs';
 import {NativePresentationDecks} from '../src/windows/presentation-deck.mjs';
 import {PresentationSession} from '../src/windows/presentation.mjs';
 import {NativePresentationIPC} from '../src/windows/presentation-ipc.mjs';
@@ -54,7 +56,7 @@ function fixture() {
   const owner = new NativeWindow(); owner.webContents.mainFrame.url='siren://app/app.html'; const handlers=new Map();
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
-  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({ WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     screen:{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]},
     localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,accountTransition:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},

@@ -7,6 +7,7 @@ test('actual Diagram preload has finite editor commands, private draining nonce 
  const electron={contextBridge:{exposeInMainWorld:(key,value)=>exposed[key]=value},ipcRenderer:{on:(key,fn)=>callbacks.set(key,fn),removeListener:(key,fn)=>{if(callbacks.get(key)===fn)callbacks.delete(key);},invoke:async(...args)=>{calls.push(args);return {ok:true};}}};
  const realm=vm.createContext({require:()=>electron});vm.runInContext(await readFile(new URL('../src/windows/preload.cjs',import.meta.url),'utf8'),realm);
  assert.ok(exposed.sirenDiagramEdit);assert.equal(exposed.sirenDiagramEdit.nonce,undefined);assert.equal(exposed.sirenDiagramEdit.invoke,undefined);
+ assert.equal(Object.keys(exposed.sirenDiagramExport).sort().join(','),'exportSvg,revealExport');await exposed.sirenDiagramExport.exportSvg({expectedVersion:1,expectedSha256:'a'.repeat(64),appearance:'light'});assert.deepEqual(calls.at(-1).slice(0,2),['siren:diagram-export','exportSvg']);assert.equal(calls.at(-1).length,3);await exposed.sirenDiagramExport.revealExport({exportId:'12345678-1234-4234-8234-123456789abc'});assert.deepEqual(calls.at(-1).slice(0,2),['siren:diagram-export','revealExport']);
  await exposed.sirenDiagramEdit.openWorkingCopy();assert.deepEqual(calls.at(-1).slice(0,2),['siren:diagram-editors','openWorkingCopy']);
  const notices=[],off=exposed.sirenDiagramEdit.onReferenceChanged(value=>notices.push(value)),changed=callbacks.get('siren:working-diagram-changed');
  const cloned=value=>vm.runInContext('('+JSON.stringify(value)+')',realm);

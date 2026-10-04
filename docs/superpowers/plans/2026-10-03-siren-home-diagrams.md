@@ -16,6 +16,8 @@
 
 ## Global Constraints
 
+4 October09:13 partial Task7 checkpoint: native Text/Guided, bounded flowchart Build and source-aware Style are committed/packaged in6993/private462c; root frozen859 checks and actual package proved them. Native saved SVG now implemented with selected-entity expected SHA/version, isolated exact-hash renderer, metadata styles/source colours, owned project export copies and Lock abort/drain/cleanup. Actual utility7cases and UI300k5cases passed with unchanged captured inputs; regressions Build7/Style6/Present5 passed. New full frozen suite is running. Committed SVG package/private synchronization and final independent qualification remain pending. Free positions, advanced edges, attach-back and physical mixed-DPI/monitor removal remain open. Root evidence: desktop/reviews/2026-10-04-native-diagram-svg-root-evidence.md.
+
 - Startup: Intro → PIN → Home; manual Lock: separate vault animation → PIN → Home. Returning Home never replays Intro. Reduced motion avoids mandatory animation waits.
 - Navigation: at most 64 project locations, 16 view/layout references per location, 12 recent-project summaries per Home response, 64 KiB for the complete navigation file, labels at most 256 characters. Existing project labels retain their tighter 200-character constraint.
 - Own data fields only; finite scroll/geometry and nonnegative safe-integer cursor offsets validated against the actual source. Reject malformed/oversized records without replacing prior valid state.

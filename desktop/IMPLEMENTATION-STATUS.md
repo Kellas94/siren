@@ -1,4 +1,15 @@
-# 4 October 2026 — native Diagram Build/style batch qualified locally
+# 4 October 2026 — native saved SVG implemented; full qualification next
+
+Final frozen871/871(identity2+869), exit0/zero failed-skipped-cancelled-todo/unchanged inputs, logf3e6f701ff3cef8c44e9acdf3e70626eda7265a953b8345fb48ae6b92e07501e. Retained first854/871 failure came from missing real SVG classes in two VM mounts; all23 affected checks passed after genuine imports. Hosted precedingBuildCI59 failed only obsolete guide phrase; fresh nativeHome-library09-18-59 COMPLETE4 now verifies actualText/Guided/Build/Style/SVG,64→128→130/privacy/Lock. Package/currentprivate sync proceed next; CI59 is not relabelled.
+
+Native Diagram Export SVG now renders the exact saved selected entity in an owned isolated no-preload utility with original source colour precedence and saved title/fonts/node styles. Unique standalone SVG copies go to the project's exports folder, with fsync/readback and exact version/hash receipts; Show file is receipt-bound. Dirty/pending fields require Save; readonly export allowed, stale/spoofed/foreign source/path requests refused. Shared Lock aborts/joins work, cleans incomplete files and clears reveal receipts. Native utility08-59-34 COMPLETE7; final native UI300k09-08-25 COMPLETE5; Build09-10-11 COMPLETE7/Style09-10-35 COMPLETE6/Present09-10-54 COMPLETE5 regressions, all closed/unchanged captured inputs. Root report retains original fixture failures. Full frozen/current committed package/private sync follow; no Task7 closure or release admission.
+
+Protected-storage diagnostic wrappers preserve actual native calls and original15s deadline/oracles. Actual local08-47-33 completed173ms with fresh decrypt/logout; hosted CI58 remains unresolved, no causal fix inferred.
+
+--- Prior checkpoint retained ---
+# Previous 4 October 2026 — native Diagram Build/style batch qualified locally
+
+Follow-through: committed6993 development-398fad09 package qualified with original lifecycle/recovery and300k Build7/Style6/Docs4/Home7 cases, unchanged captured inputs. ASARb96f847dea3c1a06653f95442a02665dde502ea00c221621731a23b84dfe9085; releaseAdmitted:false. Exact private462c035/treeb4b310 synchronized32blobs/1228total, PR2 remains draft/open/unmerged and main unchanged. Vector and protected-storage diagnosis now continue; no new hosted verdict inferred.
 
 Native Diagram now paints saved block/class colours and title/font metadata while respecting imported Mermaid declarations. Optional Style and bounded flowchart Build panels share the exact working draft: labels/shapes/add/connect/direction, real canvas selection and right-click inspector. Source/style Save is one typed CAS/revision with both original frozen validators; pending/invalid fields remain visible on refused Save/Lock and Esc cancels. Other grammars retain exact Text/Guided, with no unsupported mouse-editing claim. Vector export/free positioning/attach-back remain open.
 
