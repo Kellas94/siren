@@ -28,7 +28,7 @@
  }
  function paint(value,focusBlock=null){
   clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
-  make('p',content,readonly?'Document · Read only':'Working document · Edit text and linked-code context. Save when ready.').className='document-caption';
+  make('p',content,readonly?'Document · Read only':'Working document · Edit sections and linked-code context. Save when ready.').className='document-caption';
   if(!readonly)paintEditor(focusBlock);
   paintSources(value);
   const entries=Object.entries(value).filter(([key,item])=>!(readonly?['id','title']:['id','title','blocks']).includes(key)&&
@@ -97,7 +97,7 @@
  function updateState(){
   if(!draft||disposed)return;const state=draft.getStatus();
   save.hidden=readonly;save.disabled=state.pending||state.paused||state.fenced||!state.dirty;
-  for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced;
+  for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced||element.dataset.documentAtLimit==='true';
   document.body.dataset.documentDirty=String(state.dirty);document.body.dataset.documentVersion=state.version;document.body.dataset.documentSha256=state.sha256;
   status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':state.pending?'Saving document…':state.fenced?'Save was refused. Your local changes are retained.':state.dirty?'Unsaved changes · Save document or close to save':'Document saved · Other agent sections and source links retained';
  }
@@ -106,14 +106,19 @@
   const titleLabel=make('label',section,'Document title'),title=make('input',titleLabel);title.className='document-edit';title.id='documentTitleInput';title.value=value.title;
   const change=(key,newValue)=>{const current=draft.getContent();current[key]=newValue;draft.setContent(current);};title.addEventListener('input',()=>change('title',title.value));
   const holder=make('div',section);let rendered=0;const more=make('button',section,'More blocks');more.type='button';
+  const owner=draft,canEdit=()=>!readonly&&!disposed&&!paused&&!pending&&draft===owner;
+  const removeBlock=(index,id)=>{const state=owner.getStatus();if(!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=owner.getContent();if(next.blocks[index]?.id!==id)return;next.blocks.splice(index,1);owner.setContent(next);paint(owner.getDocument());updateState();};
+  const openStructured=details=>{for(const other of holder.querySelectorAll('.document-structured'))if(other!==details){other.open=false;other.querySelector(':scope > div')?.replaceChildren();}};
   const renderBlocks=()=>{
-   const current=draft.getContent(),end=Math.min(Math.max(rendered+40,focusBlock===null?0:focusBlock+1),current.blocks.length);focusBlock=null;
+   const current=draft.getContent(),requestedFocus=focusBlock,end=Math.min(Math.max(rendered+40,focusBlock===null?0:focusBlock+1),current.blocks.length);focusBlock=null;
    for(let index=rendered;index<end;index++){
     const block=current.blocks[index],card=make('div',holder);card.className='document-block';const editableHeading=block?.kind==='heading'&&Object.keys(block).every(key=>['id','kind','level','text'].includes(key));const plain=plainText(block);
     if(editableHeading||plain!==null){
      const label=make('label',card,editableHeading?'Heading':'Text'),input=make('textarea',label);input.className='document-edit';input.dataset.blockIndex=String(index);input.dataset.blockId=block.id;input.rows=editableHeading?2:5;input.value=editableHeading?block.text??'':plain;
      input.addEventListener('input',()=>{const next=draft.getContent();next.blocks[index]={...next.blocks[index],...(editableHeading?{text:input.value}:{html:'<p>'+escapeText(input.value)+'</p>'})};draft.setContent(next);});
      const remove=make('button',card,'Remove block…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>{if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=draft.getContent();next.blocks.splice(index,1);draft.setContent(next);paint(draft.getDocument());updateState();});
+    }else if(window.SirenStructuredDocs.isEditableBlock(block)){
+     window.SirenStructuredDocs.renderEditor({parent:card,draft:owner,index,canEdit,onOpen:openStructured,onRemove:()=>removeBlock(index,block.id),preserved:field,focus:requestedFocus===index});
     }else if(block?.kind==='knowledge'&&Array.isArray(block.rows)&&block.rows.some(row=>typeof row?.id==='string'&&row.id&&typeof row.sourceRef?.sourceId==='string')){
      make('h3',card,'Linked-code context');make('p',card,'Names and notes explain the saved code. Source versions and other fields stay intact.').className='document-caption';
      const rows=make('div',card),moreRows=make('button',card,'More sources');moreRows.type='button';let at=0;
@@ -126,11 +131,13 @@
        input.addEventListener('input',()=>{const next=draft.getContent(),target=next.blocks[index]?.rows?.[rowIndex];if(!target||target.id!==row.id)return;target[key]=input.value;draft.setContent(next);});
       }
      }at=end;moreRows.hidden=at===block.rows.length;};moreRows.addEventListener('click',extendRows);extendRows();field(card,'Preserved fields',block,0);
-    }else{make('h3',card,label(block?.kind??'Preserved block')+' · Preserved');make('p',card,'This section remains exact. This editor supports text and linked-code context.');field(card,'content',block,0);}
+    }else{make('h3',card,label(block?.kind??'Preserved block')+' · Preserved');make('p',card,'This section remains exact. Advanced or unrecognized fields are available for review.');field(card,'content',block,0);}
    }rendered=end;more.hidden=rendered===current.blocks.length;
   };more.addEventListener('click',renderBlocks);renderBlocks();
   const actions=make('div',section);actions.className='document-block-actions';
   for(const [kind,title]of [['heading','Add heading'],['text','Add text']]){const button=make('button',actions,title);button.type='button';button.className='document-edit';button.addEventListener('click',()=>{const next=draft.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,kind==='heading'?{id:crypto.randomUUID(),kind,level:2,text:''}:{id:crypto.randomUUID(),kind,html:'<p></p>'});draft.setContent(next);paint(draft.getDocument(),at);updateState();content.querySelector('textarea[data-block-index="'+at+'"]')?.focus();});}
+  const add=make('details',actions);add.className='document-add-section';make('summary',add,'Add section…');
+  for(const [kind,title]of Object.entries(window.SirenStructuredDocs.names)){const button=make('button',add,title);button.type='button';button.className='document-edit';button.dataset.addStructured=kind;button.addEventListener('click',()=>{const state=owner.getStatus();if(!button.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;const next=owner.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,window.SirenStructuredDocs.createBlock(kind));owner.setContent(next);paint(owner.getDocument(),at);updateState();});}
  }
  async function readDocument(){
   if(disposed)return false;const token=++generation;retry.hidden=true;status.textContent='Opening selected document…';appearance();

@@ -23,6 +23,7 @@ test('renderer emits only data-free hashed role entrypoints and exact packaged m
     for(const script of scripts)assert.ok(html.includes(`'sha256-${createHash('sha256').update(script).digest('base64')}'`));
     assert.equal(html.includes('SirenCodeEditor'),role==='code');
     assert.equal(html.includes('sirenNativeDocsView=Object.freeze'),role==='docs');
+    assert.equal(html.includes('window.SirenStructuredDocs=Object.freeze'),role==='docs');
     if(role==='docs')assert.ok(html.includes('id="documentContent"')&&html.includes('id="documentOutline"'));
     if(['presenter','audience'].includes(role)){
       assert.equal(html.includes('sirenPresentation'),true);

@@ -1,4 +1,10 @@
-# 4 October — New native documents and current Code metrics; qualification active
+# 4 October — Native structured Docs source and development package qualified
+
+Actual package50391 CLOSEDexit0: original package/recovery plus structuredDocs300k4/newDocs300k4/DocsEdit300k4/DocsSources300k5 allpassed; Guidedev4separate. Sixexits0/fullcaptures/ASARbeforeafterunchanged. Clean c4eb7e8 package64c59612,101includedbuildfilesbyteverified,ASAR53493608bytes/1a56813a1cf997fd291be78b104ce616617689b3da32f03b8822a0cc886f4852, runtime44.5.1/49b61a03 unchanged, releaseAdmitted:false. Private draft sync follows; original hosted CI67 remainsFAILURE, no causal repair claimed. Installedappunchanged.
+
+Structured Docs: source-qualified918/918 plus five actual native groups (300k structured4/NewDocs4/DocsEdit4/DocsSources5, Guide4), inputs unchanged. Table/checklist/agent instructions/settings use existing exact draft/CAS/save/Lock; lazy one editor with20-row pages, opaque provenance and prompt history retained. New package/private checks pending. Root report reviews/2026-10-04-native-structured-docs-root-evidence.md. Original privateCI67 development/gateFAILED, package/launcherSUCCESS; original artifacts/hash receipts and three causal boundaries retained in reviews/2026-10-04-ci67-original-native-adverses.md. No independent approval/release/full native-task completion.
+
+Previous lot and capacity records below are historical scope boundaries.
 
 Package qualification CLOSED49307 exit0: ten actual package groups passed (original recovery/newDocs300k4/CodeEdit300k4/sync300k5/analysis300k4/DocsEdit300k4/DocsSources300k5/newlink300k4/largeDocs300k4/Home300k7), separate development Guide4. All11exits0, captures/archive unchanged. Development0284b793 source7ddebd252d1871b654599c3bc6787b7f1556c7d4/101exactincludedfiles, ASAR33064148786217642ff232c810414bb43ecc111309aebe659ac7cac8247acbc8, runtime44.5.1 unchanged, releaseAdmitted:false. Current package root report updated; private synchronization follows. Original adverse records remain. No installed application replacement/main merge/public release/independent approval.
 
