@@ -30,6 +30,15 @@ test('native target catalog returns only bounded matching row metadata and conte
  assert.deepEqual(await f.projects.readProject(before.project.id),before);
 });
 
+test('unlinked Code lists selected-project documents as metadata only and creates through real native owner proof',async t=>{
+ const f=await fixture(t),before=f.getSelected(),result=await f.invoke('listDocuments',{});assert.equal(result.ok,true);assert.equal(result.total,1);
+ assert.deepEqual(result.documents,[{documentId:'doc-a',documentTitle:'Agent <b>literal</b>',documentVersion:documentVersion(before,'doc-a')}]);assert.equal(JSON.stringify(result).includes('PLANTED_PRIVATE_BODY'),false);assert.equal(JSON.stringify(result).includes('foreign'),false);
+ const sourceId=f.refs[0].sourceId,grant=f.registry.capture(f.event(0)),sourceReceipt=await f.owner.invoke(grant,{kind:'source',method:'commitSource',payload:{sourceId,expectedVersion:1,operationId:'first-unlinked-source-save'}});assert.equal(sourceReceipt.ok,true);
+ const linked=await f.invoke('createCodeToDocs',{operationId:'explicit-new-row',documentId:'doc-a',expectedDocumentVersion:result.documents[0].documentVersion,rowTitle:'Code source',sourceReceipt});assert.equal(linked.ok,true,JSON.stringify(linked));
+ const saved=await f.projects.readProject(before.project.id);assert.equal(saved.revision,before.revision+1);assert.equal(JSON.parse(saved.json).workpapers[0].blocks.at(-1).rows[0].id,linked.rowId);
+ assert.equal((await f.invoke('listDocuments',{},f.event(1))).code,'ACCESS_REFUSED');f.owner.pause('lock');assert.equal((await f.invoke('listDocuments')).code,'ACCESS_REFUSED');
+});
+
 test('explicit native link proves the real source commit, preserves historical bytes and refuses stale Docs CAS',async t=>{
  const f=await fixture(t),before=f.getSelected(),grant=f.registry.capture(f.event(0)),sourceId=f.refs[0].sourceId;
  const draft=await f.owner.invoke(grant,{kind:'source',method:'applyEdit',payload:{sourceId,expectedVersion:1,operationId:'edit-link',start:0,end:1,insertedText:'X'}});assert.equal(draft.ok,true);
@@ -76,4 +85,13 @@ test('pagination is bounded to 64 metadata targets and oversized catalog refuses
  metadata.workpapers[0].blocks[0].rows=Array.from({length:4097},(_,i)=>({id:`row-${i}`,sourceRef:point}));
  const current=f.getSelected();assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId:current.project.id,baseRevision:current.revision,sourceRefs:current.sourceRefs,metadata,operationId:'too-many-targets'})).ok,true);f.setSelected(await f.projects.readProject(current.project.id));
  assert.equal((await f.invoke('listTargets')).code,'CATALOG_BUDGET');
+});
+
+test('new document catalog pages130 choices without private content and refuses forged new-row authority',async t=>{
+ const f=await fixture(t),snapshot=f.getSelected(),metadata=JSON.parse(snapshot.json),original=metadata.workpapers[0];metadata.workpapers=Array.from({length:130},(_,i)=>({...original,id:'doc-'+i,title:'Document '+i,private:'PRIVATE_CATALOG'}));
+ assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId:snapshot.project.id,baseRevision:snapshot.revision,sourceRefs:snapshot.sourceRefs,metadata,operationId:'many-documents'})).ok,true);const before=await f.projects.readProject(snapshot.project.id);f.setSelected(before);
+ const a=await f.invoke('listDocuments'),b=await f.invoke('listDocuments',{offset:a.nextOffset}),c=await f.invoke('listDocuments',{offset:b.nextOffset});assert.deepEqual([a.documents.length,b.documents.length,c.documents.length],[64,64,2]);assert.equal(c.nextOffset,null);assert.equal(new Set([...a.documents,...b.documents,...c.documents].map(x=>x.documentId)).size,130);assert.equal(JSON.stringify([a,b,c]).includes('PRIVATE_CATALOG'),false);
+ let touched=false;const getter={};Object.defineProperty(getter,'offset',{enumerable:true,get(){touched=true;return 0;}});assert.equal((await f.invoke('listDocuments',getter)).code,'REQUEST_REFUSED');assert.equal(touched,false);
+ const request={operationId:'forged-new-row',documentId:'doc-0',expectedDocumentVersion:a.documents[0].documentVersion,rowTitle:'agent.py',sourceReceipt:{ok:true,operationId:'foreign-proof',sourceId:f.refs[1].sourceId,version:1,sha256:f.refs[1].sha256,durability:'committed'}};
+ assert.equal((await f.invoke('createCodeToDocs',request)).code,'ACCESS_REFUSED');assert.deepEqual(await f.projects.readProject(snapshot.project.id),before);
 });

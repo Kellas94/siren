@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
+import {traceNativeCommands} from './command-trace.mjs';
 
 const evidence = resolve('evidence', `code-recovery-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-')); const projects = new ProjectStore(root); const recovery = new RecoveryStore(root);
@@ -12,24 +13,8 @@ const first = await projects.createProject({ label: 'Private Code proof', json: 
 await recovery.checkpointProject({ snapshot: first, kind: 'saved' });
 const python = 'from dataclasses import dataclass\n\n@dataclass\nclass Agent:\n    name: str\n    def review(self, values):\n        for value in values:\n            if value > 0:\n                yield value * 2\n\nPRIVATE_DRAFT_MARKER = "exact-uncommitted-α"\n';
 const extraArgs = [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`]; let driver;
-const diagnostic={phase:'startup',commands:[]};let sequence=0;
-const trace=owned=>{
-  diagnostic.ownedPid=owned.pid;
-  // Stage/method metadata only: retain the first failed command without PIN,
-  // Python, expressions or returned private workspace data. Deadlines and
-  // persistence/clean-close assertions stay unchanged.
-  for(const method of ['evaluate','waitFor','click','send','screenshot','waitForExit']){
-    const execute=owned[method].bind(owned);
-    owned[method]=async(...args)=>{
-      const command={sequence:++sequence,phase:diagnostic.phase,method,started:new Date().toISOString()};
-      diagnostic.commands.push(command);if(diagnostic.commands.length>32)diagnostic.commands.shift();
-      await writeFile(join(evidence,'diagnostic.json'),JSON.stringify(diagnostic,null,2));
-      try{const value=await execute(...args);command.finished=new Date().toISOString();return value;}
-      catch(cause){command.error=String(cause.message).startsWith('CDP timeout:')?cause.message:'COMMAND_FAILED';diagnostic.failedCommand??={...command};throw cause;}
-    };
-  }
-  return owned;
-};
+const diagnostic={phase:'startup',commands:[]};
+const trace=owned=>traceNativeCommands(owned,{diagnostic,path:join(evidence,'diagnostic.json')});
 try {
   driver = trace(await launchDesktop({ extraArgs }));
   diagnostic.phase='initial-unlock';
@@ -60,12 +45,18 @@ try {
   diagnostic.phase='clean-close-journal';
   let clean = false; const closeUntil = Date.now() + 12000;
   while (Date.now() < closeUntil) { const events = JSON.parse(await readFile(join(root, 'Recovery', 'sessions.json'))).events; clean = events.some(e => e.event === 'clean-close'); if (clean) break; await delay(100); }
-  if (!clean) {diagnostic.phase='close-diagnosis';await writeFile(join(evidence, 'close-diagnosis.json'), JSON.stringify(await driver.evaluate('window.sirenDesktopRequestClose().then(()=>({ok:true})).catch(e=>({error:e.message}))')));}
+  // Failure observation must not initiate a second save/close transaction.
+  if (!clean) {
+    diagnostic.phase='close-diagnosis';
+    const journal=await readFile(join(root,'Recovery','sessions.json'),'utf8').then(text=>JSON.parse(text)).catch(()=>null);
+    await writeFile(join(evidence,'close-diagnosis.json'),JSON.stringify({journalPresent:journal!==null,eventCount:Array.isArray(journal?.events)?journal.events.length:null,lastEvents:Array.isArray(journal?.events)?journal.events.slice(-8).map(event=>event.event):[],runtimeLog:driver.logs().slice(-6000)},null,2));
+  }
   assert.equal(clean, true, 'Native Quit must await save/recovery and record a clean close');
   // The journal event precedes window destruction. Do not force-kill the owned
   // process while its normal unload/exit is still pending before a restart.
   diagnostic.phase='native-exit';
   await driver.waitForExit();
+  await writeFile(join(evidence,'electron-before-restart.log'),driver.logs());
   await driver.close(); diagnostic.phase='restart';driver = trace(await launchDesktop({ extraArgs }));
   diagnostic.phase='restart-unlock';
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });

@@ -116,6 +116,8 @@ Integrated execution order: Sources 1–3 → Native Workspaces 1 (registry) →
 
 ## Self-review and handoff
 
+4 October partial Task6 checkpoint: native working-Code now explicitly creates one knowledge pointer row in a chosen existing Docs document, as well as updating an existing link. Genuine owner/source-commit proof/document CAS/durable manifest/no code duplication are retained. Actual300k new-link4 and original-update4 groups passed cancellation, concurrent native Docs conflict, exact source/other agent/history preservation and common Lock. Bounded130-document catalog and restart/idempotency/revocation/budget tests passed. Guide updated; implementer report desktop/reviews/2026-10-04-code-docs-create-root-evidence.md. Frozen suite/package/private qualification follows. New document creation, specialized previews/manuals, incremental analysis, full stress matrix and physical displays remain open; no full Task6 completion or independent approval claimed.
+
 Spec coverage: metrics/repository/model = Task 2; transactions/migration/recovery = Task 3; editor/find/Python themes = Tasks 1/4; cancellation/index/diff/maps = Task 5; explicit Docs/provenance and full matrix = Task 6. All five Review Focus cases have named owning tests. No implementation starts until the user reviews this plan. Preserve the previously chosen method: implementation here in coordinated batches, independent review of completed boundaries and final package; agents may handle isolated reviews/probes within explicit scope.
 
 ## 3 October native production checkpoint

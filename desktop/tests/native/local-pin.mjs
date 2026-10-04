@@ -4,7 +4,7 @@ import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
 import {ProjectStore} from '../../src/projects/store.mjs';
-import {launchDesktop} from './drive.mjs';
+import {launchDesktop,waitForDesktopStartup} from './drive.mjs';
 
 const evidence=resolve('evidence',`local-pin-${new Date().toISOString().replaceAll(':','-')}`);await mkdir(evidence,{recursive:true});
 const root=await mkdtemp(join(evidence,'data-')),projects=new ProjectStore(root);
@@ -46,6 +46,7 @@ const workspaceReady=async()=>{
 };
 try{
  driver=await launchDesktop({extraArgs});
+ await waitForDesktopStartup(driver);
  assert.equal(await driver.evaluate('typeof window.sirenDesktop?.getPinState'),'function','Local PIN must use a real native bridge');
  await lockedProof('first-locked');
  assert.equal((await pinState()).configured,false);

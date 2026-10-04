@@ -42,6 +42,16 @@ export function normalizeDocsLink(input) {
     receipt.ok!==true || !validId(receipt.operationId)||!validId(receipt.sourceId)||!Number.isSafeInteger(receipt.version)||receipt.version<1||!hash(receipt.sha256)||!['committed','recovery-degraded'].includes(receipt.durability))throw error('REQUEST_REFUSED');
   return {...data,sourceReceipt:receipt};
 }
+const createdRowId=operationId=>'code-'+fingerprint(operationId).slice(0,32);
+export function normalizeDocsCreation(input){
+ try{
+ const {rowTitle,...data}=navigationFields(input,['operationId','documentId','expectedDocumentVersion','rowTitle','sourceReceipt']);
+ if(!validId(data.operationId))throw error('REQUEST_REFUSED');
+ if(typeof rowTitle!=='string'||!rowTitle.trim()||rowTitle.length>160||!rowTitle.isWellFormed()||/[\x00-\x1f\x7f]/.test(rowTitle))throw error('REQUEST_REFUSED');
+ const {rowId,...normalized}=normalizeDocsLink({...data,rowId:createdRowId(data.operationId)});
+ return {...normalized,rowTitle};
+ }catch{throw error('REQUEST_REFUSED');}
+}
 function envelope(snapshot,workspace) {
   const metadata=JSON.parse(snapshot.json);
   if(metadata.storage && Object.hasOwn(metadata.storage,workspaceKey)) metadata.storage[workspaceKey]=JSON.stringify(workspace);
@@ -53,7 +63,7 @@ const receipt=(snapshot,marker,durability)=>({ok:true,operationId:marker.operati
   rowId:marker.rowId,documentVersion:marker.documentVersion,projectRevision:snapshot.revision,sourceRef:marker.sourceRef,durability});
 
 const resultCodes=new Set(['REQUEST_REFUSED','ACCESS_REFUSED','DOCUMENT_REFUSED','DOCUMENT_CONFLICT','LINK_TARGET_REFUSED','UNKNOWN_COMMIT',
-  'COMMIT_RECEIPT_MISMATCH','CORRUPT_SOURCE','OPERATION_CONFLICT','REVISION_CONFLICT','WRITER_BUSY','OWNED_PATH_REFUSED','PROJECT_BUDGET','SOURCE_BUDGET','DOCS_LINK_FAILED']);
+  'COMMIT_RECEIPT_MISMATCH','CORRUPT_SOURCE','OPERATION_CONFLICT','REVISION_CONFLICT','WRITER_BUSY','OWNED_PATH_REFUSED','PROJECT_BUDGET','SOURCE_BUDGET','CATALOG_BUDGET','DOCS_LINK_FAILED']);
 export function projectDocsReceipt(result,request) {
   try {
     if(result?.ok!==true)return Object.freeze({ok:false,code:resultCodes.has(result?.code)?result.code:'DOCS_LINK_FAILED'});
@@ -66,6 +76,8 @@ export function projectDocsReceipt(result,request) {
   } catch {return Object.freeze({ok:false,code:'DOCS_RESULT_REFUSED'});}
 }
 
+export function projectDocsCreationReceipt(result,request){return projectDocsReceipt(result,{...request,rowId:createdRowId(request.operationId)});}
+
 /** Native-only explicit link service. Factories bind every durable write to the
  * invocation's actual native grant; no renderer supplies a snapshot/path. */
 export class DocsLinkService {
@@ -74,9 +86,12 @@ export class DocsLinkService {
     if(typeof projects!=='function'||typeof sources!=='function')throw TypeError('Native scoped factories required');
     this.#projects=projects;this.#sources=sources;this.#recovery=recovery;
   }
-  async commitCodeToDocs(input,scope) {
+  commitCodeToDocs(input,scope){return this.#commit(input,scope,false);}
+  createCodeToDocs(input,scope){return this.#commit(input,scope,true);}
+  async #commit(input,scope,creating) {
     try {
-      const request=normalizeDocsLink(input),requestHash=fingerprint(request);
+      const normalized=creating?normalizeDocsCreation(input):normalizeDocsLink(input);
+      const request=creating?{...normalized,rowId:createdRowId(normalized.operationId)}:normalized,requestHash=fingerprint(request);
       guard(scope);
       const canWrite=()=>scope.isCurrent()===true;
       const projects=this.#projects({canWrite,scope}),repository=this.#sources({canWrite,scope});
@@ -87,7 +102,7 @@ export class DocsLinkService {
       const previous=history.find(value=>value.operationId===request.operationId);
       if(previous) {
         const marker=JSON.parse(previous.json).sirenNativeDocsLink;
-        if(marker?.schema!==1 || marker.projectId!==scope.projectId || marker.operationId!==previous.operationId || marker.requestHash!==requestHash)throw error('OPERATION_CONFLICT');
+        if(marker?.schema!==1 || marker.projectId!==scope.projectId || marker.operationId!==previous.operationId || marker.requestHash!==requestHash || creating&&marker.action!=='create')throw error('OPERATION_CONFLICT');
         const actualRow=linkedRow(document(workspaceMetadata(previous),request.documentId),request.rowId);
         if(marker.documentId!==request.documentId || marker.rowId!==request.rowId || marker.documentVersion!==documentVersion(previous,request.documentId) ||
           !marker.sourceRef || fingerprint(marker.sourceRef)!==fingerprint(pointer(request.sourceReceipt)) ||
@@ -101,14 +116,24 @@ export class DocsLinkService {
       }
       if(documentVersion(current,request.documentId)!==request.expectedDocumentVersion)throw error('DOCUMENT_CONFLICT');
       const workspace=workspaceMetadata(current),doc=document(workspace,request.documentId);
-      const row=linkedRow(doc,request.rowId);
-      if(row.sourceRef?.sourceId!==request.sourceReceipt.sourceId)throw error('LINK_TARGET_REFUSED');
+      let row;
+      if(creating){
+        if(doc.blocks!==undefined&&!Array.isArray(doc.blocks))throw error('LINK_TARGET_REFUSED');
+        const blocks=doc.blocks??[],blockId='knowledge-'+fingerprint(request.operationId).slice(0,32);
+        if(blocks.length>=300)throw error('CATALOG_BUDGET');
+        if(blocks.some(block=>block?.id===blockId||Array.isArray(block?.rows)&&block.rows.some(value=>value?.id===request.rowId)))throw error('LINK_TARGET_REFUSED');
+        row={id:request.rowId,name:request.rowTitle};
+        doc.blocks=[...blocks,{id:blockId,kind:'knowledge',rows:[row]}];
+      }else{
+        row=linkedRow(doc,request.rowId);
+        if(row.sourceRef?.sourceId!==request.sourceReceipt.sourceId)throw error('LINK_TARGET_REFUSED');
+      }
       const proof=await repository.getCommitReceipt({projectId:scope.projectId,sourceId:request.sourceReceipt.sourceId,expectedVersion:request.sourceReceipt.version,sha256:request.sourceReceipt.sha256,operationId:request.sourceReceipt.operationId});guard(scope);
       if(!proof.ok)throw error(proof.code);
       const ref=await repository.getMetrics({projectId:scope.projectId,sourceId:proof.sourceId,version:proof.version});guard(scope);
       row.sourceRef=pointer(ref);
       const metadata=envelope(current,workspace);
-      const marker={schema:1,projectId:scope.projectId,operationId:request.operationId,requestHash,documentId:request.documentId,rowId:request.rowId,
+      const marker={schema:1,...(creating?{action:'create'}:{}),projectId:scope.projectId,operationId:request.operationId,requestHash,documentId:request.documentId,rowId:request.rowId,
         documentVersion:fingerprint({projectId:scope.projectId,documentId:request.documentId,document:doc}),sourceRef:pointer(ref)};
       metadata.sirenNativeDocsLink=marker;
       const refs=[...(current.sourceRefs??[])];

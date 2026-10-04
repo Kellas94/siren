@@ -18,6 +18,7 @@ test('actual main mounts explicit Code/Docs channel, refuses readonly, refreshes
  vm.runInContext('workingSources=new NativeWorkingSources({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot});globalThis.working=workingSources;',f.context);
  assert.equal((await f.context.working.admit(f.registry.capture(f.event(0)))).ok,true);
  const targets=await handler(f.event(0),'listTargets',{});assert.equal(targets.ok,true);assert.equal(targets.targets.length,1);assert.equal(JSON.stringify(targets).includes('PRIVATE_BODY'),false);
+ const documents=await handler(f.event(0),'listDocuments',{});assert.equal(documents.documents[0].documentId,'doc-a');assert.equal(JSON.stringify(documents).includes('PRIVATE_BODY'),false);
  const mutate=f.handlers.get('siren:source-mutations');assert.equal((await mutate(f.event(0),'applyEdit',{sourceId:ref.sourceId,expectedVersion:1,operationId:'native-docs-edit',start:0,end:1,insertedText:'X'})).ok,true);
  const sourceReceipt=await mutate(f.event(0),'commitSource',{sourceId:ref.sourceId,expectedVersion:2,operationId:'native-docs-save'});assert.equal(sourceReceipt.ok,true);assert.deepEqual(await f.projects.readProject(before.project.id),before);
  const request={operationId:'native-docs-link',documentId:'doc-a',rowId:'row-a',expectedDocumentVersion:documentVersion(before,'doc-a'),sourceReceipt};
@@ -25,15 +26,19 @@ test('actual main mounts explicit Code/Docs channel, refuses readonly, refreshes
  const current=await f.projects.readProject(before.project.id);assert.deepEqual(f.context.snapshot,current);assert.deepEqual(f.context.bootstrap.snapshot,current);assert.equal(current.revision,before.revision+1);
  assert.equal(JSON.parse(current.json).workpapers[0].blocks[0].rows[0].sourceRef.version,2);
  assert.equal((await handler(f.event(1),'listTargets',{})).code,'ACCESS_REFUSED');
+ const creation=await handler(f.event(0),'createCodeToDocs',{operationId:'actual-main-new-row',documentId:'doc-a',expectedDocumentVersion:documentVersion(current,'doc-a'),rowTitle:'New native code',sourceReceipt});assert.equal(creation.ok,true,JSON.stringify(creation));
+ const created=await f.projects.readProject(before.project.id);assert.deepEqual(f.context.snapshot,created);assert.deepEqual(f.context.bootstrap.snapshot,created);assert.equal(JSON.parse(created.json).workpapers[0].blocks.at(-1).rows[0].id,creation.rowId);
  f.context.pinTransition=true;assert.equal((await handler(f.event(0),'listTargets',{})).code,'ACCESS_REFUSED');
- assert.deepEqual(await f.projects.readProject(before.project.id),current);
+ assert.deepEqual(await f.projects.readProject(before.project.id),created);
 });
 
 test('satellite preload exposes only finite explicit link methods and never a Docs snapshot or transition nonce',async()=>{
  const source=await readFile(new URL('../src/windows/preload.cjs',import.meta.url),'utf8'),exposed={},calls=[];
  vm.runInNewContext(source,{require:()=>({contextBridge:{exposeInMainWorld:(name,api)=>{exposed[name]=api;}},ipcRenderer:{on(){},removeListener(){},invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
- assert.deepEqual(Object.keys(exposed.sirenCodeDocs).sort(),['commitCodeToDocs','listTargets']);
+ assert.deepEqual(Object.keys(exposed.sirenCodeDocs).sort(),['commitCodeToDocs','createCodeToDocs','listDocuments','listTargets']);
  await exposed.sirenCodeDocs.listTargets({offset:64});assert.deepEqual(calls.at(-1),['siren:code-docs','listTargets',{offset:64}]);
+ await exposed.sirenCodeDocs.listDocuments({offset:64});assert.deepEqual(calls.at(-1),['siren:code-docs','listDocuments',{offset:64}]);
  const request={operationId:'native-explicit'};await exposed.sirenCodeDocs.commitCodeToDocs(request);assert.deepEqual(calls.at(-1),['siren:code-docs','commitCodeToDocs',request]);
+ await exposed.sirenCodeDocs.createCodeToDocs(request);assert.deepEqual(calls.at(-1),['siren:code-docs','createCodeToDocs',request]);
  assert.equal(exposed.sirenCodeDocs.nonce,undefined);assert.equal(exposed.sirenCodeDocs.saveProject,undefined);
 });

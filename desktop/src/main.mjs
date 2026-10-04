@@ -391,15 +391,15 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
     },
     async flush(...args){const result=await new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,validatePatch:()=>false}).flush(...args);if(!result.ok)console.warn('SIREN_DOMAIN_NATIVE_FAILURE',JSON.stringify({method:args[0]==='diagram'?'flushDiagram':'flushDocument',code:result.code}));return result;},
   },
-  docs:{async commitCodeToDocs(input,scope){
-    const result=await codeDocsLinkService.commitCodeToDocs(input,scope);
+  docs:Object.fromEntries(['commitCodeToDocs','createCodeToDocs'].map(method=>[method,async(input,scope)=>{
+    const result=await codeDocsLinkService[method](input,scope);
     if(!result.ok||!scope.isCurrent())return scope.isCurrent()?result:{ok:false,code:'ACCESS_REFUSED'};
     try{
       const current=await projects.readProject(scope.projectId);
       if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
       snapshot=current;bootstrap={...bootstrap,snapshot:current};return result;
     }catch{nativeShellFailure=true;return {ok:false,code:'DOCS_LINK_FAILED'};}
-  }},
+  }])),
   primary:new PrimaryPersistence({
     projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context) && canWrite(context)}),
     recovery,onSelected:current=>{snapshot=current;bootstrap={...bootstrap,snapshot:current};},
@@ -877,14 +877,22 @@ window.on('close', event => {
   if(writes.selectionTransition||writes.viewClosing||accountTransition||pinTransition){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
   if (closeRequested) return;
   closeRequested = true;
+  const closeStarted=Date.now();let closeStage='prepare';
+  const closeProgress=stage=>{closeStage=stage;console.info('SIREN_CLOSE_STAGE',JSON.stringify({stage,elapsedMs:Date.now()-closeStarted,pendingWrites:writes.size,hasProcessIdentity:!!processIdentity}));};
   (async () => {
+    closeProgress('prepare');
     if(localPin.state().unlocked)await prepareNativeWorkspace();
     else await window.webContents.executeJavaScript('window.sirenDesktopRequestClose?.()');
+    closeProgress('write-join');
     await Promise.all([...writes]);
+    closeProgress('retire-views');
     retireNativeViews();
+    closeProgress('journal');
     if (processIdentity) await journal.recordSession({ event: 'clean-close', sessionId, version: app.getVersion(), processIdentity });
+    closeProgress('window-close');
     closing = true; window.close();
-  })().catch(() => {
+  })().catch(cause => {
+    console.warn('SIREN_CLOSE_FAILURE',JSON.stringify({stage:closeStage,elapsedMs:Date.now()-closeStarted,code:typeof cause?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(cause.code)?cause.code:'CLOSE_FAILED'}));
     closeRequested = false;
     void rollbackNativePreparation();
     try { windowRegistry.activateWorkspace(); } catch { /* Failed native destruction remains fenced. */ }

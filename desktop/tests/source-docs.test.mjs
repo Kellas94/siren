@@ -32,6 +32,27 @@ async function fixture(t,{wrapped=false,checkpoint}={}) {
 }
 const active=snapshot=>{const json=JSON.parse(snapshot.json);return json.storage?JSON.parse(json.storage['t-industries-siren-v23-state']):json;};
 
+test('unlinked Code explicitly creates one exact source-pointer block in chosen Docs and duplicate never adds a second',async t=>{
+ const f=await fixture(t,{wrapped:true}),before=active(f.snapshot),request={operationId:'create-code-row',documentId:'doc-b',expectedDocumentVersion:documentVersion(f.snapshot,'doc-b'),rowTitle:'review.py Ș😀 <literal>',sourceReceipt:f.sourceReceipt};
+ const result=await f.service.createCodeToDocs(request,f.scope);assert.equal(result.ok,true,JSON.stringify(result));
+ const saved=await f.projects.readProject(f.projectId),after=active(saved),blocks=after.workpapers[1].blocks;
+ assert.equal(saved.revision,f.snapshot.revision+1);assert.deepEqual(after.workpapers[0],before.workpapers[0]);
+ assert.deepEqual(blocks.slice(0,-1),before.workpapers[1].blocks);assert.deepEqual(after.workpapers[1].agent,before.workpapers[1].agent);assert.deepEqual(after.workpapers[1].releases,before.workpapers[1].releases);
+ assert.equal(blocks.at(-1).kind,'knowledge');assert.equal(blocks.at(-1).rows.length,1);assert.equal(blocks.at(-1).rows[0].id,result.rowId);assert.equal(blocks.at(-1).rows[0].name,request.rowTitle);assert.deepEqual(blocks.at(-1).rows[0].sourceRef,result.sourceRef);assert.equal(Object.hasOwn(blocks.at(-1).rows[0],'content'),false);
+ assert.equal(JSON.parse(saved.json).storage['opaque-backup'],'EXACT unrelated storage');assert.equal(result.documentVersion,documentVersion(saved,'doc-b'));
+ assert.deepEqual(await new DocsLinkService({projects:({canWrite})=>new ProjectStore(f.root,{canSave:canWrite}),sources:({canWrite})=>new SourceRepository(f.root,{canWrite})}).createCodeToDocs(request,f.scope),result);assert.deepEqual(await f.projects.readProject(f.projectId),saved);
+ assert.deepEqual(await f.repository.exportSource({projectId:f.projectId,sourceId:f.ref.sourceId,version:1}),Buffer.from('print("😀")\r\n'));
+ assert.equal((await f.service.createCodeToDocs({...request,rowTitle:'changed'},f.scope)).code,'OPERATION_CONFLICT');
+});
+
+ test('new Code Docs target refuses stale CAS, forged source proof, malformed fields and late revocation without changing existing Docs',async t=>{
+ const f=await fixture(t),request={operationId:'new-source-row',documentId:'doc-a',expectedDocumentVersion:documentVersion(f.snapshot,'doc-a'),rowTitle:'agent.py',sourceReceipt:f.sourceReceipt};
+ for(const bad of [{...request,expectedDocumentVersion:'f'.repeat(64)},{...request,sourceReceipt:{...request.sourceReceipt,operationId:'edit-source'}},{...request,documentId:'absent'},{...request,rowTitle:''},{...request,rowTitle:'A'.repeat(161)},{...request,rowTitle:'bad\ud800'},{...request,path:'outside'},{...request,rowId:'caller-selected'}]){
+  assert.equal((await f.service.createCodeToDocs(bad,f.scope)).ok,false);assert.deepEqual(await f.projects.readProject(f.projectId),f.snapshot);
+ }
+ f.setFault(async phase=>{if(phase==='before-select')f.setCurrent(false);});assert.equal((await f.service.createCodeToDocs(request,f.scope)).code,'ACCESS_REFUSED');assert.deepEqual(await f.projects.readProject(f.projectId),f.snapshot);
+});
+
 test('explicit Docs save links exact committed source while preserving other Docs, agent, release and source bytes',async t=>{
   const f=await fixture(t),before=active(f.snapshot);
   const result=await f.service.commitCodeToDocs(f.request('doc-a'),f.scope);
@@ -45,6 +66,16 @@ test('explicit Docs save links exact committed source while preserving other Doc
   assert.equal(result.documentVersion,documentVersion(reopened,'doc-a'));
   assert.deepEqual(await f.repository.exportSource({projectId:f.projectId,sourceId:f.ref.sourceId,version:2}),Buffer.from('hello("😀")\r\n'));
   assert.equal(reopened.sourceRefs.length,2);assert.deepEqual(reopened.sourceRefs.find(ref=>ref.version===1),f.ref);
+});
+
+test('new Code row refuses the native 300-block budget and never manufactures room by removing existing blocks',async t=>{
+ const f=await fixture(t),metadata=active(f.snapshot);metadata.workpapers[0].blocks=Array.from({length:300},(_,i)=>({id:'preserved-'+i,kind:'text',html:'<p>Exact '+i+'</p>'}));
+ assert.equal((await commitManifest({projects:f.projects,repository:f.repository,projectId:f.projectId,baseRevision:f.snapshot.revision,sourceRefs:f.snapshot.sourceRefs,metadata,operationId:'full-document'})).ok,true);
+ const before=await f.projects.readProject(f.projectId),request={operationId:'over-budget-row',documentId:'doc-a',expectedDocumentVersion:documentVersion(before,'doc-a'),rowTitle:'agent.py',sourceReceipt:f.sourceReceipt};
+ assert.equal((await f.service.createCodeToDocs(request,f.scope)).code,'CATALOG_BUDGET');assert.deepEqual(await f.projects.readProject(f.projectId),before);
+ let evaluated=false;Object.defineProperty(request,'rowTitle',{enumerable:true,get(){evaluated=true;return 'executed';}});assert.equal((await f.service.createCodeToDocs(request,f.scope)).code,'REQUEST_REFUSED');assert.equal(evaluated,false);
+ let serialized=false;const wrongType={documentId:'doc-a',expectedDocumentVersion:request.expectedDocumentVersion,sourceReceipt:f.sourceReceipt,rowTitle:'agent.py',operationId:{toJSON(){serialized=true;return 'caller-code';}}};
+ assert.equal((await f.service.createCodeToDocs(wrongType,f.scope)).code,'REQUEST_REFUSED');assert.equal(serialized,false,'A wrong-type operation ID must be rejected before hashing or executing its toJSON');
 });
 
 test('distinct document content tokens permit sequential owner saves without refreshing stale envelopes',async t=>{

@@ -1,6 +1,6 @@
 import {WindowRegistry} from './registry.mjs';
 import {WorkspaceCoordinator} from './coordinator.mjs';
-import {documentContentVersion,normalizeDocsLink} from './docs.mjs';
+import {documentContentVersion,normalizeDocsLink,normalizeDocsCreation} from './docs.mjs';
 import {verifySnapshot} from '../projects/store.mjs';
 import {workspaceMetadata} from './entities.mjs';
 import {navigationFields} from '../navigation/contracts.mjs';
@@ -27,7 +27,7 @@ export class NativeCodeDocs{
     source&&!Object.hasOwn(source,'version')&&this.#canLink(grant)===true&&this.#owner.canRead(grant,source.sourceId);
   }catch{return false;}
  }
- #targets(grant,offset){
+ #targets(grant,offset,documentsOnly=false){
   const snapshot=this.#snapshotFor(grant),source=this.#registry.sourceScope(grant);
   if(snapshot?.schema!==2||snapshot.project.id!==grant.projectId||!snapshot.sourceRefs.some(ref=>ref.sourceId===source.sourceId))throw error('ACCESS_REFUSED');
   verifySnapshot(snapshot);
@@ -36,6 +36,7 @@ export class NativeCodeDocs{
   const targets=[],documentIds=new Set();let scanned=0;
   for(const doc of documents){
    if(!entity(doc?.id)||documentIds.has(doc.id))throw error('LINK_TARGET_REFUSED');documentIds.add(doc.id);
+   if(documentsOnly){targets.push(Object.freeze({documentId:doc.id,documentTitle:title(doc.title??doc.name,'Untitled document'),documentVersion:documentContentVersion(snapshot.project.id,doc)}));continue;}
    const ids=new Set();let token;
    for(const block of doc.blocks??[]){
     if(block?.kind!=='knowledge')continue;
@@ -49,21 +50,22 @@ export class NativeCodeDocs{
     }
    }
   }
-  return Object.freeze({ok:true,targets:Object.freeze(targets.slice(offset,offset+64)),total:targets.length,nextOffset:offset+64<targets.length?offset+64:null});
+  return Object.freeze({ok:true,[documentsOnly?'documents':'targets']:Object.freeze(targets.slice(offset,offset+64)),total:targets.length,nextOffset:offset+64<targets.length?offset+64:null});
  }
  async invoke({event,method,payload={}}){
   let input;
   try{
-   if(method==='listTargets'){
+   if(['listTargets','listDocuments'].includes(method)){
     input=navigationFields(payload,['offset'],[]);input.offset??=0;
     if(!Number.isSafeInteger(input.offset)||input.offset<0||input.offset>4096)return fail('REQUEST_REFUSED');
    }else if(method==='commitCodeToDocs')input=normalizeDocsLink(payload);
+   else if(method==='createCodeToDocs')input=normalizeDocsCreation(payload);
    else return fail('REQUEST_REFUSED');
   }catch{return fail('REQUEST_REFUSED');}
   try{
    const grant=this.#registry.capture({sender:event?.sender,senderFrame:event?.senderFrame});
    if(!this.#current(event,grant))return fail('ACCESS_REFUSED');
-   if(method==='listTargets')return this.#targets(grant,input.offset);
+   if(['listTargets','listDocuments'].includes(method))return this.#targets(grant,input.offset,method==='listDocuments');
    if(this.#registry.sourceScope(grant).sourceId!==input.sourceReceipt.sourceId)return fail('ACCESS_REFUSED');
    const result=await this.#owner.invoke(grant,{kind:'docs',method,payload:input});
    return this.#current(event,grant)?result:fail('ACCESS_REFUSED');

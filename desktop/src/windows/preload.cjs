@@ -61,7 +61,7 @@ contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({
   ipcRenderer.on('siren:working-source-changed',listener);return()=>ipcRenderer.removeListener('siren:working-source-changed',listener);
  },
 }));
-contextBridge.exposeInMainWorld('sirenCodeDocs',Object.freeze(Object.fromEntries(['listTargets','commitCodeToDocs'].map(method=>[method,payload=>ipcRenderer.invoke('siren:code-docs',method,payload)]))));
+contextBridge.exposeInMainWorld('sirenCodeDocs',Object.freeze(Object.fromEntries(['listTargets','listDocuments','commitCodeToDocs','createCodeToDocs'].map(method=>[method,payload=>ipcRenderer.invoke('siren:code-docs',method,payload)]))));
 const methods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
 contextBridge.exposeInMainWorld('sirenDiagramExport',Object.freeze({
  exportSvg:payload=>ipcRenderer.invoke('siren:diagram-export','exportSvg',payload),

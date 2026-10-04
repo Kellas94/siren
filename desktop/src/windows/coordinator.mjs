@@ -1,6 +1,6 @@
 import { invokeSource, normalizeSourceRequest } from '../sources/ipc.mjs';
 import { navigationFields } from '../navigation/contracts.mjs';
-import { normalizeDocsLink, projectDocsReceipt } from './docs.mjs';
+import { normalizeDocsLink, normalizeDocsCreation, projectDocsReceipt, projectDocsCreationReceipt } from './docs.mjs';
 import { randomUUID } from 'node:crypto';
 import {normalizeDomainRequest,projectDomainResult} from './domain.mjs';
 import {normalizeWorkspaceSave,projectWorkspaceResult,MAX_WORKSPACE_BYTES} from './primary.mjs';
@@ -124,6 +124,7 @@ export class WorkspaceCoordinator {
       kind=input.kind;method=input.method;
       if(kind==='source')payload=normalizeSourceRequest(method,input.payload);
       else if(kind==='docs' && method==='commitCodeToDocs' && this.#docs)payload=normalizeDocsLink(input.payload);
+      else if(kind==='docs' && method==='createCodeToDocs' && typeof this.#docs?.createCodeToDocs==='function')payload=normalizeDocsCreation(input.payload);
       else if(['docs','diagram'].includes(kind) && this.#domains)payload=normalizeDomainRequest(kind,method,input.payload);
       else if(kind==='workspace' && method==='saveProject' && this.#primary)payload=normalizeWorkspaceSave(input.payload);
       else if(kind==='workspace' && method==='sealReadonly' && typeof this.#primary?.sealReadonly==='function')payload={...navigationFields(input.payload,[]),projectId:grant?.projectId,purpose:'readonly'};
@@ -137,7 +138,7 @@ export class WorkspaceCoordinator {
     if(this.#readonly?.isReadonly(grant)&&!(kind==='source'?['getMetrics','readRange'].includes(method):['docs','diagram'].includes(kind)&&method.startsWith('read')))return Promise.resolve(fail('ACCESS_REFUSED'));
     let ticket;
     const primaryOperation=kind==='workspace';
-    const domainOperation=!primaryOperation && kind!=='source' && method!=='commitCodeToDocs';
+    const domainOperation=!primaryOperation && kind!=='source' && !['commitCodeToDocs','createCodeToDocs'].includes(method);
     const current=()=> (primaryOperation?this.#currentWorkspace(grant,payload):kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload)) &&
       (!ticket || this.#flushCurrent(grant,ticket));
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
@@ -157,7 +158,7 @@ export class WorkspaceCoordinator {
       const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
         access:(_caller,scope)=>current() && this.#access(grant,scope)===true,onNativeFailure:this.#onNativeFailure}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
-        projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
+        method==='createCodeToDocs'?projectDocsCreationReceipt(await this.#docs.createCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload):projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');
       if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt,'source',grant.windowId);
       if(domainOperation && receipt.ok===true && !method.startsWith('read'))this.#publish(grant.projectId,receipt.entityId,receipt,kind,grant.windowId);
