@@ -8,6 +8,18 @@ const error=code=>Object.assign(Error(code),{code});
 const text=(value,limit)=>typeof value==='string'&&value.isWellFormed()&&value.length<=limit;
 const refuse=()=>{throw error('PRESENTATION_DECK_REFUSED');};
 const styleKeys=['diagramTitle','diagramTitleTouched','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','gitBranchColours','legend','numbering'];
+function publicCard(card){
+ const kind=card.kind??'title',value={kind:['title','text','table','image','embed','doc','facts'].includes(kind)?kind:'unsupported'};
+ for(const [key,limit]of [['title',256],['eyebrow',80]])if(Object.hasOwn(card,key)){if(!text(card[key],limit))refuse();value[key]=card[key];}
+ if(!['title','text'].includes(kind))return value;
+ // HTML is the authored field in current cards. Do not copy its stale plain
+ // mirror, notes, asset IDs, live-document IDs or unrelated metadata.
+ if(card.html){if(!text(card.html,32768))refuse();value.html=card.html;}
+ else if(Object.hasOwn(card,'body')){if(!text(card.body,8000))refuse();value.body=card.body;}
+ if(Object.hasOwn(card,'textScale')){if(![0.85,1,1.2,1.45].includes(card.textScale))refuse();value.textScale=card.textScale;}
+ if(Object.hasOwn(card,'align')){if(!['left','centre'].includes(card.align))refuse();value.align=card.align;}
+ if(card.reveal===true)value.reveal=true;return value;
+}
 function projection(snapshot,diagramId){
  const diagrams=workspaceMetadata(snapshot).diagrams??[],matches=diagrams.filter(diagram=>diagram?.id===diagramId);if(matches.length!==1)refuse();const diagram=matches[0];
  if(typeof diagram.source!=='string'||!diagram.source.isWellFormed()||Buffer.byteLength(diagram.source)>2*1024*1024)refuse();
@@ -17,10 +29,11 @@ function projection(snapshot,diagramId){
  const ids=new Set(),slides=entries.map(entry=>{
   if(!entry||!validId(entry.id)||ids.has(entry.id)||!['node','overview','section','chapter','card'].includes(entry.type))refuse();ids.add(entry.id);
   if(entry.type==='node'&&(!text(entry.nodeId,128)||! /^[A-Za-z_][\w.-]*$/.test(entry.nodeId))||entry.type==='chapter'&&(!text(entry.chapterId,90)||!entry.chapterId)||entry.type==='card'&&(!entry.card||typeof entry.card!=='object'||Array.isArray(entry.card)))refuse();
-  const label=entry.title||(entry.type==='node'?entry.nodeId:entry.type==='chapter'?entry.chapterId:entry.type==='overview'?'Overview':entry.type==='card'?'Content slide':'Section');if(!text(label,256))refuse();
+  const card=entry.type==='card'?publicCard(entry.card):null;
+  const label=entry.title||(entry.type==='node'?entry.nodeId:entry.type==='chapter'?entry.chapterId:entry.type==='overview'?'Overview':entry.type==='card'?card.title||card.eyebrow||'Content slide':'Section');if(!text(label,256))refuse();
   const noteKey=entry.type==='node'?`node:${entry.nodeId}`:entry.type==='chapter'?`chapter:${entry.chapterId}`:entry.type==='overview'?'overview':`${entry.type}:${entry.id}`;
   const note=presentation.notes?.[noteKey],notes=note?.text??'';if(!text(notes,65536))refuse();
-  return {id:entry.id,title:label,notes,render:{entry:structuredClone(entry)}};
+  return {id:entry.id,title:label,notes,render:{entry:card?{id:entry.id,type:'card',title:label,card}:structuredClone(entry)}};
  });
  // One shared native render context, not 600 copies of a potentially large
  // diagram. Private node/agent metadata and other project entities stay out.

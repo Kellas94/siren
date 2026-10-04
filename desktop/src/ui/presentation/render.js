@@ -24,10 +24,11 @@
  window.sirenRenderPublicSlide=async input=>{
   if(busy)fail();busy=true;let url;
   try{
-   if(!input||typeof input!=='object'||typeof input.slide?.title!=='string'||input.slide.title.length>256||typeof input.context?.source!=='string'||input.context.source.length>50000)fail();
-   const entry=input.slide.render?.entry;if(!entry||!['overview','node','section','chapter'].includes(entry.type))fail();
+   if(!input||typeof input!=='object'||typeof input.slide?.title!=='string'||input.slide.title.length>256||typeof input.context?.source!=='string')fail();
+   const entry=input.slide.render?.entry;if(!entry||!['overview','node','section','chapter','card'].includes(entry.type)||['overview','node'].includes(entry.type)&&input.context.source.length>50000)fail();
    host.replaceChildren();const dark=matchMedia('(prefers-color-scheme: dark)').matches,canvas=document.createElement('canvas');canvas.width=1600;canvas.height=900;const context=canvas.getContext('2d',{alpha:false});if(!context)fail();context.fillStyle=dark?'#171719':'#ffffff';context.fillRect(0,0,1600,900);
-   if(['section','chapter'].includes(entry.type)){
+   if(entry.type==='card')window.sirenRenderPresentationCard({card:entry.card,fallbackTitle:input.slide.title,context,host,dark});
+   else if(['section','chapter'].includes(entry.type)){
     const title=document.createElement('h1');title.textContent=input.slide.title;host.append(title);context.fillStyle=dark?'#e9ebf3':'#20283a';context.font='600 58px system-ui';context.textAlign='center';
     const words=input.slide.title.split(/\s+/),lines=[];let line='';for(const word of words){const next=line?line+' '+word:word;if(line&&context.measureText(next).width>1300){lines.push(line);line=word;}else line=next;}if(line)lines.push(line);if(lines.length>6)fail();lines.forEach((line,index)=>context.fillText(line,800,450+(index-(lines.length-1)/2)*76));
    }else{
