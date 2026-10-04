@@ -1,6 +1,7 @@
 import {readOwnedBytes} from '../projects/io.mjs';
 import {Worker} from 'node:worker_threads';
 import {createHash} from 'node:crypto';
+import {normalizeDiffBudget} from './diff-worker.mjs';
 const id=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,128}$/.test(value);
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -12,8 +13,13 @@ function fields(input,allowed,required=allowed){
  return Object.fromEntries(keys.map(key=>[key,descriptors[key].value]));
 }
 export function normalizeAnalysisRequest(input){
- const request=fields(input,['sourceId','version','sha256','kind','jobId','range','budget'],['sourceId','version','sha256','kind','jobId']);
- if(!request||!id(request.sourceId)||!id(request.jobId)||!integer(request.version,1,Number.MAX_SAFE_INTEGER)||!hash(request.sha256)||request.kind!=='index')return null;
+ const request=fields(input,['sourceId','version','sha256','kind','jobId','range','budget','rightRef'],['sourceId','version','sha256','kind','jobId']);
+ if(!request||!id(request.sourceId)||!id(request.jobId)||!integer(request.version,1,Number.MAX_SAFE_INTEGER)||!hash(request.sha256)||!['index','diff'].includes(request.kind))return null;
+ if(request.kind==='diff'){
+  const right=fields(request.rightRef,['sourceId','version','sha256']);if(!right||!id(right.sourceId)||!integer(right.version,1,Number.MAX_SAFE_INTEGER)||!hash(right.sha256)||request.range!==undefined)return null;
+  request.rightRef=Object.freeze(right);try{request.budget=normalizeDiffBudget(request.budget??{});}catch{return null;}return Object.freeze(request);
+ }
+ if(request.rightRef!==undefined)return null;
  const limits={maxUnits:2*1024*1024,maxDefinitions:2000,maxNodes:200000,wallMs:2500},budget=fields(request.budget??{},Object.keys(limits),[]);
  if(!budget||Object.entries(budget).some(([key,value])=>!integer(value,1,limits[key])))return null;
  request.budget={...limits,...budget};
@@ -40,7 +46,7 @@ export class AnalysisService {
  }
  async cancel(jobId){const job=this.#jobs.get(jobId);if(!job)return false;this.#stop(job,'cancelled','CANCELLED');await job.done;return true;}
  async submit(input,{isCurrent=()=>true}={}){
-  const request=normalizeAnalysisRequest(input),base={sourceId:request?.sourceId??null,version:request?.version??null,jobId:request?.jobId??null};
+  const request=normalizeAnalysisRequest(input),base={sourceId:request?.sourceId??null,version:request?.version??null,jobId:request?.jobId??null,...(request?.kind==='diff'?{rightRef:request.rightRef}:{})};
   const result=(status,reason)=>({...base,status,coverage:null,reason});
   if(!request)return result('unsupported','REQUEST_REFUSED');
   if(this.#paused||this.#disposed||!isCurrent())return result('cancelled','CANCELLED');
@@ -49,14 +55,22 @@ export class AnalysisService {
   let complete;const job={done:new Promise(resolve=>{complete=resolve;}),worker:null,stop:null};this.#jobs.set(request.jobId,job);
   const current=()=>!job.stop&&!this.#paused&&!this.#disposed&&isCurrent();
   try{
-   const bytes=await this.#load({sourceId:request.sourceId,version:request.version,sha256:request.sha256},{jobId:request.jobId});
+   const bytes=await this.#load({sourceId:request.sourceId,version:request.version,sha256:request.sha256},{jobId:request.jobId,side:'left'});
    if(!current())return result(job.stop?.status??'cancelled',job.stop?.reason??'CANCELLED');
    if(!(bytes instanceof Uint8Array)||bytes.length>32*1024*1024)return result('budget-exceeded','SOURCE_BYTES_BUDGET');
    if(digest(bytes)!==request.sha256)return result('error','SOURCE_HASH_MISMATCH');
+   let rightBytes;
+   if(request.kind==='diff'){
+    rightBytes=await this.#load(request.rightRef,{jobId:request.jobId,side:'right'});
+    if(!current())return result(job.stop?.status??'cancelled',job.stop?.reason??'CANCELLED');
+    if(!(rightBytes instanceof Uint8Array)||rightBytes.length>32*1024*1024)return result('budget-exceeded','SOURCE_BYTES_BUDGET');
+    if(digest(rightBytes)!==request.rightRef.sha256)return result('error','SOURCE_HASH_MISMATCH');
+   }
    let workerBytes;try{workerBytes=await readOwnedBytes(this.#path,2*1024*1024);}catch{return result('error','WORKER_IDENTITY_REFUSED');}
    if(!current())return result('cancelled','CANCELLED');
    if(workerBytes.length>2*1024*1024||digest(workerBytes)!==this.#hash)return result('error','WORKER_IDENTITY_REFUSED');
-   let message;const worker=job.worker=new Worker(workerBytes.toString('utf8'),{eval:true,workerData:{bytes,request},resourceLimits:{maxOldGenerationSizeMb:128,maxYoungGenerationSizeMb:32,stackSizeMb:4}});
+   if(digest(bytes)!==request.sha256||rightBytes&&digest(rightBytes)!==request.rightRef.sha256)return result('error','SOURCE_HASH_MISMATCH');
+   let message;const worker=job.worker=new Worker(workerBytes.toString('utf8'),{eval:true,workerData:{bytes,rightBytes,request},resourceLimits:{maxOldGenerationSizeMb:128,maxYoungGenerationSizeMb:32,stackSizeMb:4}});
    try{this.#activity({phase:'worker-started'});}catch{/* Diagnostics do not grant authority. */}
    const timer=setTimeout(()=>this.#stop(job,'budget-exceeded','WALL_BUDGET'),request.budget.wallMs);
    try{

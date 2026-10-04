@@ -37,7 +37,7 @@ export async function nativeSourceContext(){
  const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,invokeSourceMutation,NativeWorkingSources,NativeDocsEdits,NativeCodeDocs,DocsLinkService,NativeSourceReads,selectedSourceReference,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativePresentationDecks,PresentationSession,NativeWindowCatalog,DomainRepository,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,workspaceEntities,workspaceMetadata,
   windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
   snapshot:f.selected,selectedId:f.selected.project.id,mode:'readonly',nativeReadonly:true,pinTransition:false,accountQuiesced:false,nativeShellFailure:false,writes:new Set(),bootstrap:{snapshot:f.selected},
-  failure,console,NativeSourceAnalysis,join,rendererRoot:fileURLToPath(new URL('../../generated',import.meta.url)),readOwnedBytes:(path)=>readFile(path),ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
+  failure,console,NativeSourceAnalysis,join,nativeShells:new Map(f.registry.listViews().map((record,i)=>[record.windowId,f.windows[i]])),rendererRoot:fileURLToPath(new URL('../../generated',import.meta.url)),readOwnedBytes:(path)=>readFile(path),ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
  });
  vm.runInContext(mainSlice('let workingSources=null','const retireNativeViews')+';globalThis.owner=workspaceOwner;',context);
  return {...f,context,handlers};

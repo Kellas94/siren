@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-windows')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-edit', 'source-link', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-windows')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -75,6 +75,8 @@ jobs:
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-analysis.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/source-diff.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-link.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -183,6 +185,11 @@ jobs:
             desktop/evidence/source-analysis/*/*.log
             desktop/evidence/source-analysis/*/result.json
             desktop/evidence/source-analysis/*/*.png
+            desktop/evidence/source-diff/*/*.log
+            desktop/evidence/source-diff/*/result.json
+            desktop/evidence/source-diff/*/*.png
+            desktop/evidence/protected-storage-*/launch.json
+            desktop/evidence/protected-storage-*/electron.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
           retention-days: 14

@@ -711,7 +711,7 @@ ipcMain.handle('siren:source-analysis',async(event,method,payload)=>{
   if(!sourceAnalysis){
    const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
    if(!windowRegistry.isCurrent(grant)||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
-   sourceAnalysis??=new NativeSourceAnalysis({registry:windowRegistry,owner:workspaceOwner,referenceFor:sourceReferenceFor,
+   sourceAnalysis??=new NativeSourceAnalysis({registry:windowRegistry,owner:workspaceOwner,referenceFor:sourceReferenceFor,windowsFor:()=>nativeShells.values(),
     repositoryFactory:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),workerPath:join(rendererRoot,'code-analysis-worker.cjs'),workerSha256:build.sourceAnalysis?.entrySha256,onActivity:state=>console.info('SIREN_ANALYSIS_ACTIVITY',JSON.stringify(state))});
   }
   return sourceAnalysis.invoke({event,method,payload});

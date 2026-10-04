@@ -1,3 +1,12 @@
+# 4 October 2026 — native Code A/B comparison qualified locally
+
+Optional Compare sources in Code Structure derives both immutable refs from actual currently open Code windows in the selected project. Complete literal prefix/suffix plus bounded LCS, finite/coarse explicit changes, UTF16-safe bounded previews, expandable exact A/B version/SHA labels, literal hunk paging and current-A editor navigation. Both scopes rechecked during actual reads/publication; actual workers joined on Cancel and common Lock. No new dependency/code execution/source cache. Two real Cancel UI defects reproduced RED→GREEN: completion hid the click target, and a fresh job retained a disabled action after scope changes. Cancel now stays in place as Clear and immediately reflects actual active state.
+
+Actual300k A/B07-09-13 COMPLETE5 and original Structure07-09-02 COMPLETE4, inspected Light/Dark, complete source/project preservation and unchanged captured inputs. Final frozen840/840 (identity2+838), zero failures/skips/cancels/todo/changed inputs, log15049b22e7e8c62cdf8c59a6e07a74137892750a23fa5059cb3ce8454cf9f1dd. Committed package/private sync pending; selected maps/incremental reuse and full performance admission remain open. Implementer report `reviews/2026-10-04-native-diff-root-evidence.md` preserves originals.
+
+Previous index privateb52 has actual DesktopCI56 FAILURE at original15s protected-storage probe, package skipped; Launcher47 SUCCESS. Hosted Structure passed; failing storage phase unknown. Original artifact/log retained in `reviews/2026-10-04-ci56-adverse.md`. Finite parent-owned phase/PID diagnostics now preserve timeout evidence without raising15000ms; current local DPAPI encrypt/fresh-decrypt/logout passed173.36ms. No hosted success or storage fix is inferred. Main unmerged/no public release/independent approval; Git graph frozen.
+
+--- Previous index qualification retained ---
 # 4 October 2026 — native Code structure worker qualification
 
 Final frozen828/828 (identity2+826), zero failed/skipped/cancelled/todo and zero changed inputs, log9234bc238484b19b9ed2210ae74f12f60b2ccba38ba6639160544a15a4720062. Current bounded-worker source-native300k06-20-31 COMPLETE4 and original readonly Code/Docs06-20-42 COMPLETE6, owned processes closed. Source commit and committed package qualification follow; no current Code hosted verdict is inferred.
