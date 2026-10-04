@@ -13,6 +13,9 @@ import {NativeDocsEdits} from '../../src/windows/docs-edits.mjs';
 import {NativeCodeDocs} from '../../src/windows/code-docs.mjs';
 import {DocsLinkService} from '../../src/windows/docs.mjs';
 import {NativeSourceReads,selectedSourceReference} from '../../src/windows/source-reads.mjs';
+import {NativeSourceAnalysis} from '../../src/windows/source-analysis.mjs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {NativeDocsReads} from '../../src/windows/docs-reads.mjs';
 import {NativeDiagramReads} from '../../src/windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from '../../src/windows/diagram-edits.mjs';
@@ -34,7 +37,7 @@ export async function nativeSourceContext(){
  const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,invokeSourceMutation,NativeWorkingSources,NativeDocsEdits,NativeCodeDocs,DocsLinkService,NativeSourceReads,selectedSourceReference,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativePresentationDecks,PresentationSession,NativeWindowCatalog,DomainRepository,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,workspaceEntities,workspaceMetadata,
   windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
   snapshot:f.selected,selectedId:f.selected.project.id,mode:'readonly',nativeReadonly:true,pinTransition:false,accountQuiesced:false,nativeShellFailure:false,writes:new Set(),bootstrap:{snapshot:f.selected},
-  failure,console,ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
+  failure,console,NativeSourceAnalysis,join,rendererRoot:fileURLToPath(new URL('../../generated',import.meta.url)),readOwnedBytes:(path)=>readFile(path),ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
  });
  vm.runInContext(mainSlice('let workingSources=null','const retireNativeViews')+';globalThis.owner=workspaceOwner;',context);
  return {...f,context,handlers};

@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('sirenSourceAnalysis',Object.freeze(Object.fromEntries(['submit','cancel'].map(method=>[method,payload=>ipcRenderer.invoke('siren:source-analysis',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenDiagramRead',Object.freeze({getDiagram:()=>sourceFlushNonce===null?ipcRenderer.invoke('siren:diagram-read','getDiagram'):ipcRenderer.invoke('siren:diagram-read','getDiagram',undefined,sourceFlushNonce)}));
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>sourceFlushNonce===null?ipcRenderer.invoke('siren:docs-read','getDocument'):ipcRenderer.invoke('siren:docs-read','getDocument',undefined,sourceFlushNonce)}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));

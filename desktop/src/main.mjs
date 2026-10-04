@@ -19,6 +19,7 @@ import {NativeDocsEdits} from './windows/docs-edits.mjs';
 import {NativeCodeDocs} from './windows/code-docs.mjs';
 import {DocsLinkService} from './windows/docs.mjs';
 import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
+import {NativeSourceAnalysis} from './windows/source-analysis.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from './windows/diagram-edits.mjs';
@@ -409,6 +410,7 @@ const createPresentation=()=>new PresentationSession({registry:windowRegistry,lo
 });
 let presentationSession=createPresentation();
 let sourceReads=null;
+let sourceAnalysis=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
@@ -417,7 +419,7 @@ const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:worksp
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
@@ -431,13 +433,14 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   }
   if(workspaceBarrier)throw Object.assign(Error('Preparation pending'),{code:'PROJECT_BUSY'});
   const capturedPresentation=presentationSession;
+  const capturedAnalysis=sourceAnalysis;
   const barrierOwner={
-   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();},
-   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();return sourceDrain;},
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();return sourceDrain;},
    reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
    reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
-   captureQuiescence:()=>{if(!capturedPresentation.isIdle())throw Error('Presentation not drained');return workspaceOwner.captureQuiescence();},
-   isQuiescent:proof=>presentationSession===capturedPresentation&&capturedPresentation.isIdle()&&workspaceOwner.isQuiescent(proof),
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&workspaceOwner.isQuiescent(proof),
    isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
   };
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
@@ -467,6 +470,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
 const retireNativeViews = () => {
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
+  sourceAnalysis?.dispose();sourceAnalysis=null;
   workingSources?.dispose();workingSources=null;
   workingDocs?.dispose();workingDocs=null;
   workingDiagrams?.dispose();workingDiagrams=null;
@@ -699,6 +703,19 @@ ipcMain.handle('siren:source-readers', async (event, method, payload) => {
   });
   const operation=sourceReads.invoke({event,method,payload});writes.add(operation);
   try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:source-analysis',async(event,method,payload)=>{
+ const operation=(async()=>{
+  const grant=windowRegistry.capture(event),ref=grant?.role==='code'?sourceReferenceFor(grant):null;
+  if(!ref||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
+  if(!sourceAnalysis){
+   const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
+   if(!windowRegistry.isCurrent(grant)||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
+   sourceAnalysis??=new NativeSourceAnalysis({registry:windowRegistry,owner:workspaceOwner,referenceFor:sourceReferenceFor,
+    repositoryFactory:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),workerPath:join(rendererRoot,'code-analysis-worker.cjs'),workerSha256:build.sourceAnalysis?.entrySha256,onActivity:state=>console.info('SIREN_ANALYSIS_ACTIVITY',JSON.stringify(state))});
+  }
+  return sourceAnalysis.invoke({event,method,payload});
+ })();writes.add(operation);try{return await operation;}catch{return {ok:false,code:'ANALYSIS_FAILED'};}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:source-mutations',async(event,method,payload,flushNonce)=>{
   const operation=invokeSourceMutation({event,method,payload,flushNonce,registry:windowRegistry,owner:workspaceOwner,canEdit:grant=>workingSources?.isWorking(grant)===true});

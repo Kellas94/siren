@@ -56,7 +56,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     item.addEventListener('click', () => { if (!disposed && view) action(); }); buttons.set(name, item); toolbar.append(item); return item;
   }
   const adapter = createEditorAdapter({ client, readonly, extensions: [lineNumbers(), drawSelection(), history(), search({ top: true }),
-    indentUnit.of('    '), pythonSupport(pythonParser), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),
+    indentUnit.of('    '), pythonSupport(pythonParser), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),EditorView.contentAttributes.of({tabindex:'0'}),
     keymap.of([{ key: 'Mod-s', run: () => { if(!readonly)void flush(); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
   ] });
   // Search panels live outside CM's contentDOM. Its editor input handlers do
@@ -91,6 +91,8 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
       : value.paused ? 'Editing paused'
       : value.readonly ? 'Read only' : value.durability === 'recovery-degraded' ? 'Source saved · recovery degraded'
       : value.dirty ? 'Draft stored · Save source to commit' : value.durability === 'committed' ? 'Source saved' : value.ready ? 'Ready' : 'Choose a source';
+    const current=adapter.getState(),selection=current?.selection.main;
+    if(selection){root.dataset.selectionFrom=String(selection.from);root.dataset.selectionTo=String(selection.to);status.textContent+=` · line ${current.doc.lineAt(selection.head).number}${selection.empty?'':` · ${selection.to-selection.from} selected`}`;}
     if (view && nextEnabled !== enabled) { enabled = nextEnabled; view.dispatch({ effects: editable.reconfigure(EditorView.editable.of(enabled)) }); }
   }
   const unsubscribe = adapter.subscribe(refresh); paintTheme(); refresh();

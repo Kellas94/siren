@@ -5,6 +5,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parse } from 'parse5';
 import { Script } from 'node:vm';
 import { buildWindowEntrypoints } from './windows.mjs';
+import {buildAnalysisWorker} from './analysis.mjs';
 import {buildPresentationRender} from './presentation-render.mjs';
 import { buildWorkspaceEntrypoint } from './workspace.mjs';
 import { importHelper, buildImportValidation } from './import-validation.mjs';
@@ -215,10 +216,12 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, 'app.html'), html, { encoding: 'utf8' });
   const windowEntrypoints = await buildWindowEntrypoints(outputDir);
+  const analysisBuild=await buildAnalysisWorker({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.analysis-build')});
+  await writeFile(join(outputDir,'code-analysis-worker.cjs'),await readFile(analysisBuild.workerPath));
   const homeEntrypoint = await buildWorkspaceEntrypoint({outputDir});
   const importValidation=expectedSha256.toLowerCase()===BASELINE_SHA256?await buildImportValidation({baselinePath,outputDir}):null;
   const presentationRender=await buildPresentationRender({outputDir});
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},...(importValidation?{importValidation}:{}) };
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},sourceAnalysis:{entrySha256:analysisBuild.sha256,bytes:analysisBuild.bytes,pythonModuleSha256:analysisBuild.pythonModuleSha256},...(importValidation?{importValidation}:{}) };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }
