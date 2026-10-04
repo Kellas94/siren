@@ -52,7 +52,8 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
     return { ref: identity(current), disposed: current?.disposed, fenced: current?.fenced };
   };
   const status = () => Object.freeze({ ready: !!state, disposed, opening, readonly, fenced, dirty, paused,
-    pending, saving: !!saving, code: error, sourceRef: bound, durability: lastReceipt?.durability ?? null });
+    pending, saving: !!saving, code: error, sourceRef: bound, durability: lastReceipt?.durability ?? null,
+    utf8Bytes:bytes,utf16Units:state?.doc.length??0,lines:state?.doc.lines??0 });
   function publish() {
     const value = status(), token = generation, clientAtPublish = lifecycle();
     for (const callback of [...observers]) {

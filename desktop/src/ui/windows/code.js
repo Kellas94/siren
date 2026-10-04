@@ -45,7 +45,14 @@
       document.body.dataset.sourceReadonly=String(readonly);
       linkButton.hidden=readonly;
       client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
-      unsubscribeEditor=ownEditor.subscribe(()=>{sourceChanges.reconcile();analysis?.reconcile();});sourceChanges.reconcile();analysis?.reconcile();
+      unsubscribeEditor=ownEditor.subscribe(value=>{
+        if(token!==generation||disposed||paused||editor!==ownEditor||!value.ready||!value.sourceRef)return;
+        const draft=value.dirty||value.pending;
+        status.textContent=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
+        document.body.dataset.sourceVersion=String(value.sourceRef.version);document.body.dataset.sourceSha256=value.sourceRef.sha256;
+        document.body.dataset.sourceUnits=String(value.utf16Units);document.body.dataset.sourceLines=String(value.lines);
+        sourceChanges.reconcile();analysis?.reconcile();
+      });sourceChanges.reconcile();analysis?.reconcile();
       ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){

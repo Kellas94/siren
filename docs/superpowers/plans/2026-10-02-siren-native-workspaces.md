@@ -4,6 +4,12 @@
 
 **Goal:** Detach multiple Docs/Code views and Presenter/Audience into coordinated native Windows windows usable across monitors.
 
+4 October current scoped package qualification: clean7ddebd2 development0284b793,101includedfiles byte-verified/ASAR33064148, ten actual package groups passed including nativeNewDocs/CodeEdit/peerSync300k and exact shared-save/Lock/source/history assertions; Guidedevseparate. All11exits0/captures/archive unchanged; full911/911 current source. Private sync follows; whole native task/physical-display/attach-back completion is not claimed.
+
+4 October latest scoped qualification: new-document/Code-summary combined27544closed,9actualnativegroupspassed unchangedinputs, originalfull911/911/no fail/skip/cancel/todo/changedInputs/logacb0488c9914ef074e25e5d696fd21d805896870971ad746577aba50ce06871e. Clean source commit/current package/private follows; full physical/attach-back/rich-block qualification remains open.
+
+4 October partial continuation: native Home Docs now offers New document via title-only native authority, genuine all-view preparation, post-save snapshot and atomic manifest/recovery. Two actual dirty Docs plus pinned300k Code preserve every existing agent/history/source/diagram field; creating retires old grants and the new document uses existing Add text/heading/save. Empty default Agent/Releases are hidden only in display. Code summary now tracks genuine stored version and incremental local bytes/lines after actual RED. Native current newDocs4/CodeEdit4/sync5/analysis4/DocsEdit4/DocsSources5/newlink4/Home7/Guide4 passed; full27544 active, package/private follows. Root report reviews/2026-10-04-native-documents-and-code-summary-root-evidence.md. Attach-back, richer native blocks, huge-catalog discovery, physical displays and full final independent qualification remain open.
+
 **Architecture:** A native registry issues role/access/epoch grants; one domain/save owner serves typed intents and source subscriptions. Satellites render only their needed views. Access transitions and Quit drain all editors before final authority changes; geometries restore against current display work areas.
 
 **Tech Stack:** Existing Electron BrowserWindow/screen/Menu and sandboxed local renderers; source contracts from the large-source plan. No new UI framework or AI dependency.

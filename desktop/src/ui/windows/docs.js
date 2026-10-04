@@ -31,7 +31,8 @@
   make('p',content,readonly?'Document · Read only':'Working document · Edit text and linked-code context. Save when ready.').className='document-caption';
   if(!readonly)paintEditor(focusBlock);
   paintSources(value);
-  const entries=Object.entries(value).filter(([key])=>!(readonly?['id','title']:['id','title','blocks']).includes(key));let end=0,section=0;
+  const entries=Object.entries(value).filter(([key,item])=>!(readonly?['id','title']:['id','title','blocks']).includes(key)&&
+    !(key==='agent'&&item===null||key==='releases'&&Array.isArray(item)&&item.length===0));let end=0,section=0;
   const more=make('button',outline,'More sections');more.type='button';
   const extend=()=>{const next=Math.min(end+40,entries.length);for(const [name,item] of entries.slice(end,next)){
    const node=make('section',content);node.id='document-section-'+(++section);node.className='document-section';

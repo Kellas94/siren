@@ -3,7 +3,7 @@ import { navigationFields as fields, navigationArray as array, normalizeLocation
 
 const fail=code=>Object.freeze({ok:false,code});
 const codes=new Set(['ACCESS_REFUSED','CANCELLED','PROJECT_UNAVAILABLE','ENTITY_UNAVAILABLE','SOURCE_VERSION_UNAVAILABLE','RECOVERY_REQUIRED','NAVIGATION_LIMIT','INVALID_NAVIGATION','NAVIGATION_WRITE_FAILED','TRANSITION_FAILED','UNAVAILABLE','MIGRATION_INCOMPLETE','PROJECT_FORMAT_REFUSED']);
-for(const code of ['SOURCE_BUDGET','UNSUPPORTED_ENCODING','SOURCE_IMPORT_FAILED','REVISION_CONFLICT'])codes.add(code);
+for(const code of ['SOURCE_BUDGET','UNSUPPORTED_ENCODING','SOURCE_IMPORT_FAILED','DOCUMENT_CREATE_FAILED','REVISION_CONFLICT'])codes.add(code);
 const methods=new Set(['getHomeState','continueWork','openProject','createProject','recordLocation']);
 const stamp=value=>typeof value==='string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString()===value;
 const label=value=>typeof value==='string' && value.length<=256;

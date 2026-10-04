@@ -40,6 +40,7 @@ import {HomeAuthority} from './navigation/authority.mjs';
 import {HomeService} from './navigation/service.mjs';
 import {createHomeProjectCopy} from './navigation/project-copies.mjs';
 import {importHomeSource} from './navigation/source-import.mjs';
+import {createHomeDocument,normalizeHomeDocument} from './navigation/document-create.mjs';
 import {HomeTransitionReceipts} from './navigation/transition-receipts.mjs';
 import {continueSavedLocation} from './navigation/continue.mjs';
 import {NavigationStore} from './navigation/store.mjs';
@@ -545,12 +546,13 @@ const navigateEmptyRecovery=async(scope,entryUrl)=>{
   }catch{return {ok:false,code:'TRANSITION_FAILED'};}
   finally{if(roster)windowRegistry.releaseRoster(roster);nativeNavigationTarget=null;writes.selectionTransition=false;}
 };
-const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migrate=false,sourceImport}={})=>{
+const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migrate=false,sourceImport,documentCreate}={})=>{
   if(!scope.transition||!scope.isCurrent()||writes.selectionTransition||pinTransition||accountTransition||
     window.webContents.getURL()!=='siren://app/home.html')return {ok:false,code:'ACCESS_REFUSED'};
   if(create&&(nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
   if(migrate&&(!create||snapshot?.schema!==1))return {ok:false,code:'PROJECT_FORMAT_REFUSED'};
   if(sourceImport&&(create||snapshot?.schema!==2||nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
+  if(documentCreate&&(create||sourceImport||snapshot?.schema!==2||nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
   const contents=window.webContents,frame=contents.mainFrame,generation=bootstrap.selectionGeneration||0,previous=selectedId;
   const live=()=>!window.isDestroyed()&&!contents.isDestroyed()&&contents===window.webContents&&contents.mainFrame===frame&&
     contents.getURL()==='siren://app/home.html'&&localPin.state().unlocked&&!accountQuiesced&&!pinTransition&&
@@ -561,7 +563,7 @@ const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migra
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
     // Do not manufacture a new selection or checkpoint when reopening the
     // current verified project. The existing renderer remains current.
-    if(!sourceImport&&next?.project.id===selectedId){const grant=windowRegistry.capturePrimary({sender:contents,senderFrame:frame});return grant?{ok:true,epoch:grant.epoch}:{ok:false,code:'ACCESS_REFUSED'};}
+    if(!sourceImport&&!documentCreate&&next?.project.id===selectedId){const grant=windowRegistry.capturePrimary({sender:contents,senderFrame:frame});return grant?{ok:true,epoch:grant.epoch}:{ok:false,code:'ACCESS_REFUSED'};}
     if(snapshot)await prepareNativeWorkspace('native-home-navigation');
     else{homeAuthority.invalidate();contents.send('siren:home-invalidated');}
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
@@ -580,6 +582,11 @@ const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migra
       const latest=await projects.readProject(previous);if(!live())return {ok:false,code:'ACCESS_REFUSED'};
       const imported=await importHomeSource({root:dataRoot,snapshot:latest,...sourceImport,recovery,writerOptions,isCurrent:()=>live()&&writes.selectionTransition&&writes.selectionQuiesced});
       if(!imported.ok)return {ok:false,code:imported.code};next=imported.snapshot;
+    }
+    if(documentCreate){
+      const latest=await projects.readProject(previous);if(!live())return {ok:false,code:'ACCESS_REFUSED'};
+      const made=await createHomeDocument({root:dataRoot,snapshot:latest,...documentCreate,recovery,writerOptions,isCurrent:()=>live()&&writes.selectionTransition&&writes.selectionQuiesced});
+      if(!made.ok)return {ok:false,code:made.code};next=made.snapshot;
     }
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
     await selected(next);changed=true;writes.selectionQuiesced=false;
@@ -612,6 +619,14 @@ ipcMain.handle('siren:home-recovery',(event,input)=>{
   try{navigationFields(input??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
   if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html'||mode==='normal')return {ok:false,code:'ACCESS_REFUSED'};
   return invokeHome({event,method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateEntry(scope,'siren://app/app.html')}});
+});
+ipcMain.handle('siren:home-document-create',(event,input)=>{
+  let request;try{request=normalizeHomeDocument(input);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
+  if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html')return {ok:false,code:'SENDER_REFUSED'};
+  return invokeHome({event,method:'createProject',payload:{label:'New document'},authority:homeAuthority,transitions:homeTransitions,services:{createProject:(_input,scope)=>{
+    if(nativeReadonly||mode!=='normal'||snapshot?.schema!==2||writes.selectionTransition||!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+    return selectHomeProject({projectId:selectedId},scope,{documentCreate:request});
+  }}});
 });
 ipcMain.handle('siren:home-source-import',(event,input)=>{
   try{navigationFields(input??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}

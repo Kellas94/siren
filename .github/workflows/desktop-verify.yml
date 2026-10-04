@@ -60,7 +60,7 @@ jobs:
       - name: Actual development renderer and protected storage
         run: |
           $nativeFailures = @()
-          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-link-create', 'docs-sources', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'diagram-vector', 'diagram-export', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-source-projects', 'presentation-render', 'presentation-style', 'presentation-cards', 'presentation-windows')) {
+          foreach ($nativeScript in @('shell', 'protected-storage', 'account-transition', 'code-windows', 'desktop-ui', 'code-recovery', 'recovery-zoom', 'code-diagram-interaction', 'guided-intro', 'dev-first-run', 'access-screen', 'local-pin', 'headless-import', 'source-owner', 'source-read', 'source-analysis', 'source-diff', 'source-map', 'source-edit', 'source-link', 'source-link-create', 'docs-sources', 'source-sync', 'docs-edit', 'diagram-preview', 'diagram-edit', 'diagram-guided', 'diagram-style', 'diagram-build', 'diagram-vector', 'diagram-export', 'view-control-rollback', 'large-source-docs', 'code-view-flush', 'domain-workspaces', 'readonly-roster', 'home-entry', 'home-navigation', 'home-recovery', 'home-library', 'home-documents', 'home-source-projects', 'presentation-render', 'presentation-style', 'presentation-cards', 'presentation-windows')) {
             Write-Output "Native behavior: $nativeScript"
             node "tests/native/$nativeScript.mjs"
             if ($LASTEXITCODE -ne 0) { $nativeFailures += $nativeScript }
@@ -144,6 +144,9 @@ jobs:
             desktop/evidence/diagram-edit/*/result.json
             desktop/evidence/diagram-edit/*/*.png
             desktop/evidence/diagram-edit/*/*.log
+            desktop/evidence/home-documents/*/result.json
+            desktop/evidence/home-documents/*/*.png
+            desktop/evidence/home-documents/*/*.log
             desktop/evidence/home-source-projects/*/result.json
             desktop/evidence/home-source-projects/*/diagnostic.json
             desktop/evidence/home-source-projects/*/*.png
@@ -250,6 +253,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-build.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/home-documents.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { throw "Packaged new Docs failed" }
+          node tests/native/source-edit.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Code editing failed" }
           node tests/native/home-source-projects.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { throw "Packaged Home source projects failed" }
           node tests/native/source-link-create.mjs --package $preview.previewRoot --300k
@@ -336,6 +343,9 @@ jobs:
             desktop/evidence/diagram-edit/*/result.json
             desktop/evidence/diagram-edit/*/*.png
             desktop/evidence/diagram-edit/*/*.log
+            desktop/evidence/home-documents/*/result.json
+            desktop/evidence/home-documents/*/*.png
+            desktop/evidence/home-documents/*/*.log
             desktop/evidence/home-source-projects/*/result.json
             desktop/evidence/home-source-projects/*/diagnostic.json
             desktop/evidence/home-source-projects/*/*.png

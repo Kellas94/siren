@@ -26,6 +26,7 @@ homeBridge.openModule=payload=>ipcRenderer.invoke('siren:home-route',payload);
 homeBridge.importProject=()=>ipcRenderer.invoke('siren:home-import',{});
 homeBridge.convertProject=()=>ipcRenderer.invoke('siren:home-convert',{});
 homeBridge.importSource=()=>ipcRenderer.invoke('siren:home-source-import',{});
+homeBridge.createDocument=payload=>ipcRenderer.invoke('siren:home-document-create',payload);
 homeBridge.showRecovery=()=>ipcRenderer.invoke('siren:home-recovery',{});
 homeBridge.getCatalog=payload=>ipcRenderer.invoke('siren:windows','getCatalog',payload??{});
 homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',payload);

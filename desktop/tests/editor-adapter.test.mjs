@@ -38,6 +38,14 @@ async function fixture(t, text = '\ufeffa😀b\r\nc\nd\rbare', readonly = false)
     export: version => repo.exportSource({ projectId, sourceId: ref.sourceId, version }) };
 }
 
+check('summary metrics track exact local Unicode bytes/lines while source identity advances only on native acknowledgement',async t=>{
+ const original='a😀\r\nȘ\n',f=await fixture(t,original);await f.editor.open(f.ref);
+ assert.equal(f.editor.getStatus().utf8Bytes,Buffer.byteLength(original));assert.equal(f.editor.getStatus().utf16Units,original.length);assert.equal(f.editor.getStatus().lines,3);
+ const entered=deferred(),gate=deferred();f.delayEdit(()=>{entered.resolve();return gate.promise;});const inserted='Ω\r\n';assert.equal(f.editor.dispatch({changes:{from:0,insert:inserted}}).ok,true);await entered.promise;
+ const pending=f.editor.getStatus();assert.equal(pending.utf8Bytes,Buffer.byteLength(inserted+original));assert.equal(pending.utf16Units,(inserted+original).length);assert.equal(pending.lines,4);assert.equal(pending.sourceRef.version,1);assert.equal(pending.dirty,true);
+ const saving=f.editor.flush();gate.resolve();const receipt=await saving;assert.equal(receipt.ok,true);const saved=f.editor.getStatus();assert.equal(saved.sourceRef.version,2);assert.equal(saved.dirty,false);assert.equal(saved.utf8Bytes,Buffer.byteLength(inserted+original));assert.deepEqual(await f.export(2),Buffer.from(inserted+original));
+});
+
 check('view pause freezes upstream admission while all earlier multi-range edits reach the source commit', async t => {
   const f = await fixture(t, 'a😀b\r\nc'); await f.editor.open(f.ref);
   const entered = deferred(), gate = deferred(); f.delayEdit(() => { entered.resolve(); return gate.promise; });
