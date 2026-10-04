@@ -47,16 +47,36 @@
    if(block?.kind!=='knowledge'||typeof block.id!=='string'||!Array.isArray(block.rows))continue;
    scanned+=block.rows.length;if(scanned>65536)return;
    for(const row of block.rows){const ref=row?.sourceRef;
-    if(typeof row?.id==='string'&&typeof ref?.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256))links.push({blockId:block.id,rowId:row.id,name:typeof(row.name??row.title)==='string'?(row.name??row.title).slice(0,200):'Linked source',version:ref.version});
+    if(typeof row?.id==='string'&&typeof ref?.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256))links.push({blockId:block.id,rowId:row.id,name:typeof(row.name??row.title)==='string'?(row.name??row.title).slice(0,200):'Linked source',sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256});
    }
   }
   if(!links.length)return;
-  const section=make('section',content);section.className='document-section document-sources';section.id='document-linked-sources';make('h2',section,'Linked code');make('p',section,'Open the exact saved version in a separate Code window. Local document edits stay here.').className='document-caption';
+  const section=make('section',content);section.className='document-section document-sources';section.id='document-linked-sources';make('h2',section,'Linked code');make('p',section,'Preview the saved code here, or open its exact version in Code. Local document edits stay here.').className='document-caption';
   const nav=make('button',outline,'Linked code');nav.type='button';nav.addEventListener('click',()=>section.scrollIntoView({block:'start'}));
   const holder=make('div',section),more=make('button',section,'More linked sources');more.type='button';let end=0;
   const extend=()=>{const next=Math.min(end+40,links.length);for(const link of links.slice(end,next)){
    const card=make('div',holder);card.className='document-source';const text=make('div',card);make('strong',text,link.name);make('span',text,'Saved version '+link.version);
+   const toggle=make('button',card,'Preview');toggle.type='button';toggle.className='document-source-preview-toggle';toggle.setAttribute('aria-expanded','false');
    const button=make('button',card,'Open in Code');button.type='button';button.className='document-source-open';button.dataset.blockId=link.blockId;button.dataset.rowId=link.rowId;
+   const preview=make('section',holder);preview.className='document-source-preview';preview.hidden=true;preview.setAttribute('aria-label',link.name+' · Saved code preview');
+   const caption=make('p',preview,'Saved version '+link.version+' · Plain text preview');
+   const paging=make('div',preview);paging.className='document-preview-paging';const previous=make('button',paging,'Previous'),range=make('span',paging),nextPage=make('button',paging,'Next');previous.type=nextPage.type='button';previous.className='document-preview-previous';nextPage.className='document-preview-next';range.setAttribute('aria-live','polite');
+   const code=make('pre',preview);code.tabIndex=0;code.setAttribute('aria-label','Saved source text');
+   let page=null,history=[];
+   const readPage=(start,move)=>{
+    if(paused||disposed||pending||sourceOpening||draft?.getStatus().pending)return;
+    const token=generation,expectedDocumentVersion=draft?.getStatus().version;toggle.disabled=previous.disabled=nextPage.disabled=true;preview.dataset.previewReady='false';range.textContent='Loading saved code…';
+    const own=Promise.resolve().then(async()=>{try{
+     const result=await window.sirenDocsSources.previewLinkedSource({blockId:link.blockId,rowId:link.rowId,expectedDocumentVersion,start});
+     if(disposed||paused||token!==generation)return;
+     if(result?.ok!==true){range.textContent=result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Refresh to preview it.':'Preview could not load. Your work is retained.';return;}
+     if(result.sourceRef?.sourceId!==link.sourceId||result.sourceRef.version!==link.version||result.sourceRef.sha256!==link.sha256||result.start!==start||!Number.isSafeInteger(result.end)||!Number.isSafeInteger(result.totalUnits)||result.end<start||result.end>result.totalUnits||result.end-start>8192||typeof result.text!=='string'||result.text.length!==result.end-start||!result.text.isWellFormed())throw Error('Invalid saved preview');
+     if(move==='next'&&page){history.push(page.start);if(history.length>128)history.shift();}else if(move==='previous')history.pop();else if(move==='start')history=[];
+     page={start:result.start,end:result.end,total:result.totalUnits};code.textContent=result.text;caption.textContent='Saved version '+link.version+' · Plain text preview';range.textContent=result.totalUnits?`${(result.start+1).toLocaleString()}–${result.end.toLocaleString()} of ${result.totalUnits.toLocaleString()} characters`:'Empty source';preview.dataset.previewStart=String(result.start);preview.dataset.previewEnd=String(result.end);preview.dataset.previewTotal=String(result.totalUnits);preview.dataset.previewReady='true';
+    }catch{if(!disposed&&!paused&&token===generation)range.textContent='Preview could not load. Your work is retained.';}
+    finally{if(sourceOpening===own)sourceOpening=null;if(!disposed&&!paused&&token===generation){toggle.disabled=false;previous.disabled=!history.length;nextPage.disabled=!page||page.end>=page.total||preview.dataset.previewReady!=='true';}}});sourceOpening=own;
+   };
+   toggle.addEventListener('click',()=>{if(paused||disposed||sourceOpening)return;if(!preview.hidden){preview.hidden=true;toggle.textContent='Preview';toggle.setAttribute('aria-expanded','false');code.textContent='';page=null;history=[];return;}preview.hidden=false;toggle.textContent='Hide preview';toggle.setAttribute('aria-expanded','true');readPage(0,'start');});previous.addEventListener('click',()=>{if(history.length)readPage(history.at(-1),'previous');});nextPage.addEventListener('click',()=>{if(page&&page.end<page.total)readPage(page.end,'next');});
    button.addEventListener('click',()=>{
     if(paused||disposed||pending||sourceOpening||draft?.getStatus().pending)return;
     const token=generation,expectedDocumentVersion=draft?.getStatus().version;button.disabled=true;status.textContent='Opening saved code version '+link.version+'…';

@@ -417,7 +417,7 @@ let sourceAnalysis=null;
 const docsReads=new NativeDocsReads({registry:windowRegistry,owner:workspaceOwner,documentFor:(_grant,entityId)=>workspaceMetadata(snapshot).workpapers?.find(document=>document.id===entityId),readonlyFor:grant=>!workingDocs?.isWorking(grant),editingState:canOpenWorkingDocs});
 const docsSources=new NativeDocsSources({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,snapshotFor:()=>snapshot,
  canOpen:grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure&&grant.projectId===selectedId,
- sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
+ sources:({canWrite,readers})=>new SourceRepository(dataRoot,{...writerOptions,canWrite,...(readers?{readers}:{})}),
  show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Linked source window unavailable');view.webContents.send('siren:view-ready');view.show();},
 });
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});

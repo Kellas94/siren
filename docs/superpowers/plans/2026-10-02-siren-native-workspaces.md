@@ -76,6 +76,8 @@ Integrated order: Sources 1–3 → this plan Task 1 → Sources 4–6 → this 
 
 ### Task 4: Docs/Code native detach, attach-back and shared window shelf
 
+4 October Docs source-preview scope: explicit native saved-version pages respect document CAS/Lock/current owner, preserve dirtyDocs/history, open no window and never save. Actual300k5/LightDark +Docs4/newlink4/recovery/Guide4 passed unchangedcaptures; finalfull897/897. Rootreport desktop/reviews/2026-10-04-docs-source-preview-root-evidence.md. Clean committed package/private follows. Attach-back/newDocs/knowledgeeditors/manuals/fullphysicalqualification still open. Prior opener privateba133709 has actual CI64development/package/gate/launcherSUCCESS, distinct from this unhosted preview.
+
 4 October post-restart Docs→Code scoped boundary qualified: genuine native Docs opens pinned saved source versions while preserving local Docs edits, stale-token refusals, source history and shared Lock. Final frozen892/892, guarded renderer and committed-source development package aa7518b (100 exact archived files, ASARcbb022f52d350051d70cdd4717396be240255a8ed2c930489e07d76c70ce39aa) passed original package/recovery plus300k DocsSources4/newlink4/largeDocs4/Home7, captures/archive unchanged. Evidence is root implementer only. Original hosted CI63 remains adverse; new document/knowledge editor/preview/manuals/attach-back/full physical display qualification remains open. No full task checkbox closed.
 
 **Files:** Create `desktop/src/ui/windows/shelf.js`; extend role entry/client; modify desktop UI/css and builder adapters; create `desktop/tests/window-views.test.mjs`, `desktop/tests/native/multi-workspaces.mjs`.
