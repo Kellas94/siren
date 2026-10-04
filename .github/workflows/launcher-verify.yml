@@ -1,7 +1,6 @@
 name: Native launcher development verification
 on:
-  pull_request:
-    paths: ['desktop/launcher/**', '.github/workflows/launcher-verify.yml']
+  workflow_call:
   workflow_dispatch:
 permissions:
   contents: read

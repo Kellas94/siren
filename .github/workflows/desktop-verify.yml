@@ -1,7 +1,6 @@
 name: Desktop prototype verification
 on:
-  pull_request:
-    paths: ['desktop/**', '.github/workflows/desktop-verify.yml']
+  workflow_call:
   workflow_dispatch:
 permissions:
   contents: read

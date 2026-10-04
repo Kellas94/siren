@@ -3,7 +3,7 @@ import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {ProjectStore} from '../../src/projects/store.mjs';
-import {launchDesktop,unlockDesktop} from './drive.mjs';
+import {launchDesktop,unlockDesktop,waitForDesktopStartup} from './drive.mjs';
 const root=resolve('evidence/home-recovery',new Date().toISOString().replaceAll(':','-')),data=join(root,'owned-data');await mkdir(data,{recursive:true});
 const names=['src/main.mjs','src/preload.cjs','src/navigation/transition-receipts.mjs','src/ui/storage.js','src/ui/workspace/home.js','generated/home.html','generated/app.html','tests/native/home-recovery.mjs','tests/native/drive.mjs'];
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(names.map(async n=>[n,hash(await readFile(n))]))),inputs=await capture();
@@ -12,6 +12,9 @@ await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,pro
 let driver;const result={status:'ADVERSE',inputs,cases:[]};
 try{
  driver=await launchDesktop({extraArgs:['--siren-test-root='+data]});result.ownedPid=driver.pid;
+ // CDP target discovery can precede the committed frame and its native preload.
+ // Qualify the real locked startup receipt before checking privacy, without unlocking.
+ result.startup=await waitForDesktopStartup(driver);
  assert.equal(await driver.evaluate('location.href'),'siren://app/home.html');assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'),null);
  assert.equal(await driver.evaluate('document.body.innerText.includes("OWNED_RECOVERY_PRIVATE_LABEL")'),false);
  await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});await driver.waitFor('document.getElementById("homeRecovery")!=null');
