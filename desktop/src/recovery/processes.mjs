@@ -33,10 +33,14 @@ export async function inspectWindowsProcess(pid, { onFailure } = {}) {
     // Cold/native startup may take longer than five seconds under host load.
     // Still cancel at a finite deadline and treat every failure as unknown.
     ({stdout,stderr}=await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 10000, maxBuffer: 16384 }));
-    phase='decode';return decodeWindowsProcessResult(stdout,pid);
+    phase='decode';const observed=decodeWindowsProcessResult(stdout,pid);
+    // A cmdlet/query error may still leave valid-looking `null` on stdout.
+    // That is unknown identity, never proof of death or writable ownership.
+    if(stderr)throw Object.assign(new Error('Windows process query diagnostics refused'),{code:'PROCESS_RESULT_INVALID',reason:'NATIVE_STDERR'});
+    return observed;
   } catch (error) {
     // Optional trusted diagnostic hook; normal startup never logs process paths.
-    const reason=['EMPTY_RESPONSE','INVALID_JSON','INVALID_SHAPE','PID_MISMATCH','INVALID_PATH','INVALID_START_TIME','RESPONSE_LIMIT'].includes(error.reason)?error.reason:'QUERY_FAILED';
+    const reason=['EMPTY_RESPONSE','INVALID_JSON','INVALID_SHAPE','PID_MISMATCH','INVALID_PATH','INVALID_START_TIME','RESPONSE_LIMIT','NATIVE_STDERR'].includes(error.reason)?error.reason:'QUERY_FAILED';
     try { onFailure?.({ name: error.name, code: error.code ?? null, killed: error.killed === true, signal: error.signal ?? null,phase,reason,stdoutBytes:byteCount(phase==='query'?error.stdout:stdout),stderrBytes:byteCount(phase==='query'?error.stderr:stderr) }); } catch { /* diagnostics cannot grant identity */ }
     return undefined;
   }

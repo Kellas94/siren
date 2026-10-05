@@ -35,3 +35,11 @@ test('actual inspector distinguishes query and decode refusals, reports byte cou
   assert.equal(events[0].phase,phase);assert.equal(events[0].reason,reason);assert.equal(events[0].stdoutBytes,expectedStdout);assert.equal(events[0].stderrBytes,expectedStderr);assert.equal(JSON.stringify(events).includes('PRIVATE_BODY'),false);assert.equal(JSON.stringify(events).includes('PRIVATE_NATIVE_PATH'),false);
  }
 });
+
+test('native stderr cannot turn a refused query into missing process or grant live ownership',async()=>{
+ const source=await readFile(new URL('../src/recovery/processes.mjs',import.meta.url),'utf8'),marker='export async function inspectWindowsProcess(',body=source.slice(source.indexOf(marker)).replace('export ','');
+ for(const stdout of ['null',JSON.stringify(actual)]){
+  let calls=0;const failures=[];const inspect=runInNewContext('('+body+')',{process:{platform:'win32'},Buffer,decodeWindowsProcessResult:implementation.decodeWindowsProcessResult,run:async(file,args,options)=>{calls++;assert.equal(options.timeout,10000);return {stdout,stderr:'PRIVATE_QUERY_ERROR'};}});
+  assert.equal(await inspect(123,{onFailure:f=>failures.push(f)}),undefined);assert.equal(calls,1);assert.equal(failures.length,1);assert.equal(failures[0].phase,'decode');assert.equal(failures[0].reason,'NATIVE_STDERR');assert.equal(failures[0].stderrBytes,19);assert.equal(JSON.stringify(failures).includes('PRIVATE_QUERY_ERROR'),false);
+ }
+});
