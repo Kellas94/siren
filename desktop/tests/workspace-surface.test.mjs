@@ -44,7 +44,7 @@ test('attach/detach moves one native view with the same contents/frame and resto
   f.shell.show();assert.equal(f.surface.attach(),true);assert.equal(f.shell.visible,false);
   assert.deepEqual(f.host.contentView.children,[view]);assert.deepEqual(f.shell.contentView.children,[]);
   assert.equal(f.surface.webContents,f.wc);assert.equal(f.wc.mainFrame,frame);
-  assert.deepEqual(view.bounds,{x:0,y:48,width:900,height:602});
+  assert.deepEqual(view.bounds,{x:0,y:102,width:900,height:548});
   f.host.minimized=true;assert.equal(f.surface.focus(),true);assert.equal(f.host.minimized,false);assert.equal(f.wc.focused,true);
   assert.equal(f.surface.detach(),true);assert.deepEqual(f.host.contentView.children,[]);assert.deepEqual(f.shell.contentView.children,[view]);
   assert.equal(f.shell.visible,true);assert.equal(f.wc.closeCalls,0);assert.equal(f.wc.mainFrame,frame);
@@ -68,7 +68,7 @@ test('a destroyed host or contents cannot receive a view',()=>{
   for(const target of ['host','wc']){const f=fixture();f[target].destroyed=true;assert.equal(f.surface.attach(),false);assert.deepEqual(f.shell.contentView.children,[f.view]);}
 });
 test('unsafe or undersized viewport refuses movement before native ownership changes',()=>{
-  for(const bounds of [{width:900,height:48},{width:NaN,height:500},{width:32769,height:500}]){
+  for(const bounds of [{width:900,height:102},{width:NaN,height:500},{width:32769,height:500}]){
     const f=fixture();f.host.getContentBounds=()=>bounds;assert.equal(f.surface.attach(),false);assert.deepEqual(f.shell.contentView.children,[f.view]);
   }
 });

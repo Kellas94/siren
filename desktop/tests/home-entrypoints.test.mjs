@@ -17,9 +17,12 @@ test('Home is a bounded standalone entry with exact local script identities and 
   assert.equal(receipt.sha256,createHash('sha256').update(bytes).digest('hex'));
   assert.equal(receipt.bytes,bytes.length);assert.ok(bytes.length<64*1024);
   const nodes=[];const visit=n=>{nodes.push(n);for(const child of n.childNodes||[])visit(child);};visit(parse(html));
-  const scripts=nodes.filter(n=>n.tagName==='script');assert.equal(scripts.length,4);
+  const scripts=nodes.filter(n=>n.tagName==='script');assert.equal(scripts.length,5);
   assert.match(html,/sirenWindowDock/);assert.match(html,/nativeWindowShelf/);
-  for(const script of scripts){assert.equal(script.attrs.some(a=>a.name==='src'),false);const code=script.childNodes.map(n=>n.value||'').join('');assert.ok(html.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"));}
+  for(const script of scripts){const src=script.attrs.find(a=>a.name==='src');if(src){assert.equal(src.value,'siren://app/assets/shell.js');assert.equal(script.attrs.find(a=>a.name==='integrity')?.value,'sha384-'+createHash('sha384').update(await readFile(join(root,'assets/shell.js'))).digest('base64'));}else{const code=script.childNodes.map(n=>n.value||'').join('');assert.ok(html.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"));}}
+  assert.equal(await resolveLocalResource({url:'siren://app/assets/shell.js',rendererRoot:root}),join(root,'assets/shell.js'));
+  assert.equal(await resolveLocalResource({url:'siren://app/assets/shell.css',rendererRoot:root}),join(root,'assets/shell.css'));
+  for(const url of ['siren://app/assets/shell.js?x=1','siren://app/assets/%73hell.js','siren://app/assets/../app.html','siren://app/assets/other.js'])await assert.rejects(resolveLocalResource({url,rendererRoot:root}));
   // The exact SVG namespace is a DOM identifier, not a fetched resource.
   // Continue refusing every other URL and external script source.
   const withoutSvgNamespace=html.replaceAll('"http://www.w3.org/2000/svg"','""');

@@ -11,6 +11,7 @@ import {buildDiagramVector} from './diagram-vector.mjs';
 import { buildWorkspaceEntrypoint } from './workspace.mjs';
 import { importHelper, buildImportValidation } from './import-validation.mjs';
 import {readDesktopChrome} from './chrome.mjs';
+import {addDesktopShell,patchClassicAppearance} from './appearance.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -239,6 +240,14 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     if (!Number.isSafeInteger(end)) throw new Error('Desktop head marker mismatch');
     html = html.slice(0, end) + `<style>${css}</style>\n` + html.slice(end);
   }
+  if(expectedSha256.toLowerCase()===BASELINE_SHA256){
+    html=patchClassicAppearance(html);
+    for(const argument of ['el.themePreset.value','el.themePresetMobile.value','option.dataset.themeValue']){
+      const token='applyTheme('+argument+', true)';
+      if(html.split(token).length!==2)throw Error('Classic user theme route mismatch');
+      html=html.replace(token,'applyTheme('+argument+', true, true)');
+    }
+  }
   const nodes = [];
   const visit = node => { nodes.push(node); for (const child of node.childNodes || []) visit(child); };
   visit(parse(html, { sourceCodeLocationInfo: true }));
@@ -252,6 +261,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   const location = metas[0].sourceCodeLocation;
   html = html.slice(0, location.startOffset) + `<meta http-equiv="Content-Security-Policy" content="${csp}" />` + html.slice(location.endOffset);
   await mkdir(outputDir, { recursive: true });
+  if(expectedSha256.toLowerCase()===BASELINE_SHA256)html=await addDesktopShell(html,outputDir);
   await writeFile(join(outputDir, 'app.html'), html, { encoding: 'utf8' });
   const windowEntrypoints = await buildWindowEntrypoints(outputDir);
   const analysisBuild=await buildAnalysisWorker({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.analysis-build')});

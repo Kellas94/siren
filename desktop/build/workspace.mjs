@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
 import {transform} from 'esbuild';
 import {readDesktopChrome} from './chrome.mjs';
+import {addDesktopShell} from './appearance.mjs';
 
 /** Standalone, data-free build. Production entry/route admission is separate. */
 export async function buildWorkspaceEntrypoint({outputDir}) {
@@ -17,13 +18,14 @@ export async function buildWorkspaceEntrypoint({outputDir}) {
   for(const script of scripts){if(/<\/script/i.test(script))throw Error('Home script boundary refused');new Script(script);}
   styles.push(await readDesktopChrome());
   if(styles.some(css=>/<\/style/i.test(css)))throw Error('Home style boundary refused');
+  for(let index=0;index<styles.length;index++)styles[index]=(await transform(styles[index],{loader:'css',minify:true,target:'es2022',legalComments:'none'})).code;
   const hashes=scripts.map(script=>"'sha256-"+createHash('sha256').update(script).digest('base64')+"'");
   const csp=`default-src 'none'; script-src ${hashes.join(' ')}; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none';`;
   const html=`<!doctype html><html lang="en" data-desktop-locked="true"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SIREN — Home</title><style>${styles.join('\n')}</style></head><body>
 <div id="sirenIntroOverlay" class="home-opening" aria-label="SIREN opening"><div class="home-opening-lines" aria-hidden="true"><i></i><i></i><i></i></div><div class="home-opening-word">SIREN</div><p>Ideas. Connected.</p></div>
 <div id="sirenLockVault" class="home-vault" hidden aria-label="Locking SIREN"><div class="home-vault-door"><span>S</span></div></div>
 <main id="homeRoot" hidden></main><script>${scripts.join('</script><script>')}</script></body></html>`;
-  const bytes=Buffer.from(html);if(bytes.length>=64*1024)throw Error('Home entry budget exceeded');
+  const bytes=Buffer.from(await addDesktopShell(html,outputDir));if(bytes.length>=64*1024)throw Error('Home entry budget exceeded: '+bytes.length);
   await mkdir(outputDir,{recursive:true});await writeFile(join(outputDir,'home.html'),bytes);
   return Object.freeze({sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,scriptCount:scripts.length});
 }

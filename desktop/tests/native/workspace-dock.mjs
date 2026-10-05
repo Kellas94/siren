@@ -9,6 +9,7 @@ import {workspaceMetadata} from '../../src/windows/entities.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
 import {reserveInspectorPort,attachNativeKeyboard} from './native-keyboard.mjs';
+import {waitForNativeCondition} from './condition.mjs';
 const evidence=resolve('evidence/workspace-dock',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
 const paths=['src/ui/windows/identity.js','src/ui/windows/docs.js','src/navigation/window-labels.mjs','src/ui/workspace/home.js','src/ui/shared/chrome.css','src/main.mjs','src/windows/surface.mjs','src/windows/registry.mjs','src/windows/factory.mjs','src/windows/dock-ipc.mjs','src/windows/focus.mjs','src/windows/layout.mjs','src/preload.cjs','src/windows/preload.cjs','src/ui/windows/entry.js','src/ui/windows/shelf.js','src/ui/windows/shelf.css','build/workspace.mjs','build/renderer.mjs','build/windows.mjs','generated/home.html','generated/app.html','generated/windows/code.html','generated/windows/docs.html','tests/native/native-keyboard.mjs','tests/native/workspace-dock.mjs'];
 const hash=b=>createHash('sha256').update(b).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))]))),inputs=await capture();
@@ -52,7 +53,9 @@ try{
  assert.equal(await driver.evaluate('(()=>{const t=document.querySelector('+JSON.stringify(readerTab)+'),b=t.getBoundingClientRect(),s=t.querySelector(".native-shelf-state").getBoundingClientRect();return s.width>0&&s.left>=b.left&&s.right<=b.right&&t.getAttribute("aria-label").includes("Minimized");})()'),true);
  await native.windowShortcut(editCode.url,'1');await driver.waitFor('document.hasFocus()&&!document.body.inert');
  await driver.screenshot(join(evidence,'home-named-windows.png'));
- await driver.click(readerTab);assert.equal((await native.windowState(code.url)).minimized,false);
+ await driver.click(readerTab);
+ await waitForNativeCondition(()=>native.windowState(code.url).then(state=>!state.minimized),'actual native window restored after shelf activation');
+ assert.equal((await native.windowState(code.url)).minimized,false);
  await driver.waitFor('!document.querySelector('+JSON.stringify(readerTab)+').textContent.includes("Minimized")');
  assert.deepEqual(await projects.readProject(original.project.id),selected);
  result.cases.push({name:'Home identifies selected project without a continuation; shared shelf names actual source/version and independent unsaved Docs, restores a genuinely minimized view without saving or peer-title access',ok:true});
@@ -60,7 +63,7 @@ try{
    assert.equal((await item.page.evaluate('window.sirenWindowDock.attach('+JSON.stringify({windowId:item.view.windowId})+')')).ok,true);
    const state=await native.surfaceState(item.url),old=before[all.indexOf(item)];
    for(const key of ['contentsId','frameRoutingId','frameProcessId','nativeId'])assert.equal(state[key],old[key],key);
-   assert.equal(state.parents.length,1);assert.equal(state.parents[0].bounds.y,48);assert.equal(state.parents[0].drawn,true);assert.equal(state.visible,false);
+   assert.equal(state.parents.length,1);assert.equal(state.parents[0].bounds.y,102);assert.equal(state.parents[0].drawn,true);assert.equal(state.visible,false);
    assert.equal(await item.page.evaluate('__dockIdentity.node===(document.querySelector(".cm-editor")||document.getElementById("documentContent"))&&__dockIdentity.origin===performance.timeOrigin'),true);
  }
  const current=await Promise.all(all.map(item=>native.surfaceState(item.url)));assert.equal(current.filter(s=>s.parents[0].drawn).length,1);
@@ -80,7 +83,7 @@ try{
  await native.placeView('siren://app/home.html',{x:40,y:40,width:1120,height:780});
  const hostSize=(await native.surfaceState('siren://app/home.html')).contentBounds;
  await editCode.page.waitFor('innerWidth==='+hostSize.width);const resized=await native.surfaceState(editCode.url);
- assert.deepEqual(resized.parents[0].bounds,{x:0,y:48,width:hostSize.width,height:hostSize.height-48});
+ assert.deepEqual(resized.parents[0].bounds,{x:0,y:102,width:hostSize.width,height:hostSize.height-102});
  await editCode.page.screenshot(join(evidence,'code-attached.png'));await driver.screenshot(join(evidence,'workspace-shelf.png'));
  assert.equal((await driver.evaluate('window.sirenWindow.focusView('+JSON.stringify({windowId:editDocs.view.windowId})+')')).ok,true);
  await editDocs.page.screenshot(join(evidence,'docs-attached.png'));

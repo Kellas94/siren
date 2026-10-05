@@ -109,7 +109,7 @@ test('release of a preparation roster and focusing an attached view catch up a h
  const f=await fixture(),surface=f.surfaces.get(f.code.windowId);assert.equal(f.registry.attachView(f.code.windowId),true);
  const roster=f.registry.freezeRoster();f.host.getContentBounds=()=>({width:1120,height:700});
  assert.equal(f.registry.resizeAttached(),false);assert.equal(f.registry.releaseRoster(roster),true);
- assert.equal(f.registry.focusView(f.code.windowId),true);assert.deepEqual(surface.view.bounds,{x:0,y:48,width:1120,height:652});
+ assert.equal(f.registry.focusView(f.code.windowId),true);assert.deepEqual(surface.view.bounds,{x:0,y:102,width:1120,height:598});
  await f.registry.invalidateEpochAsync({preserveWorkspace:true});
 });
 test('returning to the main workspace hides attached pixels without navigating or discarding them',async()=>{

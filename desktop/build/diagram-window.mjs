@@ -7,6 +7,7 @@ import {buildDiagramEngine} from './diagram.mjs';
 import {buildDiagramGuided} from './diagram-guided.mjs';
 import {buildDiagramStyle} from './diagram-style.mjs';
 import {readDesktopChrome} from './chrome.mjs';
+import {addDesktopShell} from './appearance.mjs';
 export async function buildDiagramWindow({outputDir}){
  const engine=await buildDiagramEngine({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.diagram-build')});
  const guided=await buildDiagramGuided({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
@@ -21,6 +22,7 @@ export async function buildDiagramWindow({outputDir}){
  template=template.replace(label,'<div class="diagram-editor-modes" aria-label="Mermaid editor"><button id="diagramTextMode" aria-pressed="true">Text</button><button id="diagramGuidedMode" aria-pressed="false">Guided</button></div>'+label).replace(textarea,'</textarea><div id="diagramGuided" hidden aria-label="Guided Mermaid lines"></div></section>').replace(style,(await readFile(new URL('../src/ui/diagram/guided.css',import.meta.url),'utf8'))+style);
  template=template.replace('</style>',(await readDesktopChrome())+'</style>');
  const html=template.replace('__DIAGRAM_CSP__',"default-src 'none'; script-src "+hashes.join(' ')+"; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none';").replace('__DIAGRAM_SCRIPTS__',()=>scripts.map(code=>'<script>'+code+'</script>').join(''));
- await mkdir(join(outputDir,'windows'),{recursive:true});await writeFile(join(outputDir,'windows','diagram.html'),html);
- return Object.freeze({sha256:createHash('sha256').update(html).digest('hex'),engine});
+ const output=await addDesktopShell(html,outputDir);
+ await mkdir(join(outputDir,'windows'),{recursive:true});await writeFile(join(outputDir,'windows','diagram.html'),output);
+ return Object.freeze({sha256:createHash('sha256').update(output).digest('hex'),engine});
 }

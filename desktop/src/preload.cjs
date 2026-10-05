@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('sirenShell',Object.freeze(Object.fromEntries(['getAppearance','setAppearance','navigate'].map(method=>[method,payload=>ipcRenderer.invoke('siren:shell',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>ipcRenderer.invoke('siren:docs-read','getDocument')}));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 contextBridge.exposeInMainWorld('sirenSource', Object.freeze(Object.fromEntries(['getMetrics', 'readRange'].map(method => [method, payload => ipcRenderer.invoke('siren:sources', method, payload)]))));
@@ -32,6 +33,7 @@ homeBridge.getCatalog=payload=>ipcRenderer.invoke('siren:windows','getCatalog',p
 homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',payload);
 homeBridge.focusView=payload=>ipcRenderer.invoke('siren:windows','focusView',payload);
 homeBridge.onInvalidated=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=()=>callback();ipcRenderer.on('siren:home-invalidated',listener);return()=>ipcRenderer.removeListener('siren:home-invalidated',listener);};
+homeBridge.onNavigate=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=(_event,surface)=>{if(['diagrams','docs','code','present','find'].includes(surface))callback(surface);};ipcRenderer.on('siren:shell-module',listener);return()=>ipcRenderer.removeListener('siren:shell-module',listener);};
 contextBridge.exposeInMainWorld('sirenHome',Object.freeze(homeBridge));
 const admitted=bootstrap?.navigationPending===true?new Promise(resolve=>ipcRenderer.once('siren:workspace-admitted',()=>resolve())):Promise.resolve();
 contextBridge.exposeInMainWorld('sirenDesktopAdmitted',()=>admitted);

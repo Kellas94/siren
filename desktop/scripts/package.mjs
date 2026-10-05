@@ -9,6 +9,7 @@ import { hashOwnedFile } from '../src/updates/download.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
+  ...['contracts','store','ipc'].map(n=>`src/appearance/${n}.mjs`),
   ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','budgets','domain-validation','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
@@ -18,6 +19,7 @@ const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
+  if(['generated/assets/shell.js','generated/assets/shell.css'].includes(path))return true;
   if (typeof path !== 'string' || path.split('/').some(p => !p || p === '.' || p === '..') || path.includes('\\') || /(?:\.map|\.d\.ts|\.log|\.pem|\.key)$/.test(path) || /(?:^|\/)(?:\.env[^/]*|credentials[^/]*|test-[^/]*|[^/]*\.test\.[^/]*)$/.test(path)) return false;
   if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/home.html' || path === 'generated/build.json' || path === 'generated/import-validation.html' || path==='generated/presentation-render.html' || path==='generated/diagram-vector.html' || path==='generated/code-analysis-worker.cjs' || ['generated/windows/code.html','generated/windows/docs.html','generated/windows/diagram.html','generated/windows/presenter.html','generated/windows/audience.html'].includes(path)) return true;
   if (path.startsWith('src/')) return false;
@@ -35,6 +37,7 @@ async function walk(directory, prefix = '') {
 }
 export async function collectApplicationInputs(desktopRoot, production) {
   const candidates = ['package.json','generated/app.html','generated/home.html','generated/build.json','generated/import-validation.html','generated/presentation-render.html','generated/diagram-vector.html','generated/code-analysis-worker.cjs','generated/windows/code.html','generated/windows/docs.html','generated/windows/diagram.html','generated/windows/presenter.html','generated/windows/audience.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
+  candidates.push('generated/assets/shell.js','generated/assets/shell.css');
   for (const packageName of production) candidates.push(...(await walk(join(desktopRoot, 'node_modules', packageName))).map(p => `node_modules/${packageName}/` + p));
   return candidates.filter(path => allowedAppFile(path, production));
 }

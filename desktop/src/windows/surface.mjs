@@ -35,7 +35,8 @@ export function createWorkspaceSurface({BaseWindow,WebContentsView,host,windowOp
     catch{return false;}
   };
   const viewport=target=>{
-    const {width,height}=target.getContentBounds();const top=target===host?48:0;
+    // The main host reserves the 54px application navigation and 48px view shelf.
+    const {width,height}=target.getContentBounds();const top=target===host?102:0;
     return Number.isSafeInteger(width)&&Number.isSafeInteger(height)&&width>0&&width<=32768&&height>top&&height<=32768
       ?{x:0,y:top,width,height:height-top}:null;
   };

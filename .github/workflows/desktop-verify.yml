@@ -56,7 +56,7 @@ jobs:
           exit 0
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
-      - name: Retain scoped test evidence in private CI
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -119,6 +119,12 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -239,7 +245,7 @@ jobs:
         run: node build/renderer.mjs baseline/R78.html generated
       - name: Actual development renderer and protected storage
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
-      - name: Retain scoped test evidence in private CI
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -303,6 +309,12 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -422,6 +434,10 @@ jobs:
           $preview = $packageJson | ConvertFrom-Json
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/workspace-appearance.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged shared appearance/navigation failed" }
+          node tests/native/docs-reader.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged semantic Docs reading failed" }
           node tests/native/source-analysis.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-diff.mjs --package $preview.previewRoot --300k
@@ -466,7 +482,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged native close commands failed" }
           node tests/native/presentation-windows.mjs --lines 300000 --package $preview.previewRoot
           exit $LASTEXITCODE
-      - name: Retain scoped test evidence in private CI
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -529,6 +545,12 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json

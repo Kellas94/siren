@@ -41,7 +41,7 @@ try{
  for(let cycle=0;cycle<3;cycle++)for(const item of all){
   await item.page.waitFor('!document.getElementById("transferView").hidden&&document.body.dataset.nativePlacement==="detached"');await item.page.click('#transferView');await item.page.waitFor('document.body.dataset.nativePlacement==="attached"');
   const current=await native.surfaceState(item.url),old=before[all.indexOf(item)];for(const key of ['nativeId','contentsId','frameRoutingId','frameProcessId'])assert.equal(current[key],old[key],key);
-  assert.equal(current.parents.length,1);assert.equal(current.parents[0].bounds.y,48);assert.equal(current.parents[0].drawn,true);assert.equal(current.visible,false);
+  assert.equal(current.parents.length,1);assert.equal(current.parents[0].bounds.y,102);assert.equal(current.parents[0].drawn,true);assert.equal(current.visible,false);
   assert.equal(await item.page.evaluate('__dockIdentity.node===document.getElementById("diagramSource")&&__dockIdentity.time===performance.timeOrigin'),true);
   if(cycle<2){await native.windowShortcut(item.url,'D');await item.page.waitFor('document.body.dataset.nativePlacement==="detached"');}
  }
@@ -57,7 +57,7 @@ try{
  assert.equal(await working.page.evaluate('document.getElementById("diagramCanvas").textContent.includes("PRIVATE_DOCS")'),false);assert.deepEqual(await projects.readProject(initial.project.id),selected);
  result.cases.push({name:'shared shelf labels Diagram/Code/Docs distinctly and restores peers; Diagram cannot borrow another view ID, wrong-role diagram read/edit refused',ok:true});
  await native.placeView('siren://app/home.html',{x:40,y:40,width:1120,height:780});const bounds=(await native.surfaceState('siren://app/home.html')).contentBounds;
- await working.page.waitFor('innerWidth==='+bounds.width);assert.deepEqual((await native.surfaceState(working.url)).parents[0].bounds,{x:0,y:48,width:bounds.width,height:bounds.height-48});await working.page.screenshot(join(evidence,'diagram-attached-dark.png'));
+ await working.page.waitFor('innerWidth==='+bounds.width);assert.deepEqual((await native.surfaceState(working.url)).parents[0].bounds,{x:0,y:102,width:bounds.width,height:bounds.height-102});await working.page.screenshot(join(evidence,'diagram-attached-dark.png'));
  await native.windowShortcut(working.url,'D');await working.page.waitFor('document.body.dataset.nativePlacement==="detached"');await native.windowShortcut(working.url,'A');await working.page.waitFor('document.body.dataset.nativePlacement==="attached"');
  await working.page.evaluate('document.getElementById("diagramTheme").value="light";document.getElementById("diagramTheme").dispatchEvent(new Event("change"))');await working.page.waitFor('document.body.dataset.diagramRendered==="true"');await working.page.screenshot(join(evidence,'diagram-attached-light.png'));
  assert.equal(await working.page.evaluate('document.getElementById("diagramSource").value'),draft);await working.page.click('#diagramFit');assert.equal(await working.page.evaluate('document.getElementById("diagramZoom").textContent'),'100%');assert.equal(await working.page.evaluate('document.getElementById("diagramSource").value'),draft);result.cases.push({name:'actual host resize fits same Diagram below shelf; native CtrlAltD/A route restores same dirty diagram and light/dark preview; explicit Fit resets zoom without editing source',ok:true});

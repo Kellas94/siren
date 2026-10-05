@@ -3,6 +3,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
+import {pointerExpression,stablePointerExpression} from './pointer.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
@@ -41,7 +42,7 @@ async function attachPage(url){
  };
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
  const waitFor=async expression=>{const until=Date.now()+30000;while(Date.now()<until){if(await evaluate(expression))return;await delay(100);}throw Error('Native Code UI condition not met: '+expression);};
- const click=async selector=>{const point=await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing native Code control');const r=e.getBoundingClientRect(),left=Math.max(0,r.left),right=Math.min(innerWidth,r.right),top=Math.max(0,r.top),bottom=Math.min(innerHeight,r.bottom),x=(left+right)/2,y=(top+bottom)/2;return {x,y,hit:right>left&&bottom>top&&e.contains(document.elementFromPoint(x,y))};})()`);assert.equal(point.hit,true,'Native Code control must be visible and hit-testable: '+selector);for(const type of ['mousePressed','mouseReleased'])await send('Input.dispatchMouseEvent',{type,x:point.x,y:point.y,button:'left',clickCount:1});};
+ const click=async selector=>{await waitFor(stablePointerExpression(selector));const point=await evaluate(pointerExpression(selector));assert.equal(point.hit,true,'Native Code control must be visible and hit-testable: '+selector);for(const type of ['mousePressed','mouseReleased'])await send('Input.dispatchMouseEvent',{type,x:point.x,y:point.y,button:'left',clickCount:1});};
  const key=async(key,code=key,windowsVirtualKeyCode=13)=>{for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode});};
  return {evaluate,waitFor,click,key,send,screenshot:async path=>{const r=await send('Page.captureScreenshot',{format:'png'});await writeFile(path,Buffer.from(r.data,'base64'));}};
 }

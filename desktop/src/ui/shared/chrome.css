@@ -4,7 +4,7 @@
 :root[data-theme],body[data-theme]{--siren-bg:var(--app-bg);--siren-panel:var(--panel-bg);--siren-alt:var(--panel-alt);--siren-input:var(--input-bg);--siren-ink:var(--text);--siren-muted:var(--muted);--siren-line:var(--border);--siren-accent:var(--primary);--siren-focus:var(--focus-ring)}
 :root:has(#homeRoot){--home-bg:var(--siren-bg);--home-panel:var(--siren-panel);--home-ink:var(--siren-ink);--home-muted:var(--siren-muted);--home-line:var(--siren-line);--home-accent:var(--siren-accent)}
 .home-resume:after{background:radial-gradient(ellipse at 100% 50%,color-mix(in srgb,var(--siren-accent) 14%,var(--siren-panel)),transparent 75%)}
-.home-primary{color:#fff}
+.home-primary{color:var(--siren-accent-ink,#fff)}
 body[data-role=code] .siren-code-editor{border-color:var(--siren-line)}
 body[data-role]{background:var(--siren-bg);color:var(--siren-ink);font-family:var(--siren-font)}
 body[data-role] button,body[data-role] select{font-family:var(--siren-font);font-size:12px;line-height:1.35;min-height:32px;padding:7px 11px;border:1px solid var(--siren-line);border-radius:9px;background:var(--siren-panel);color:var(--siren-ink);transition:background .12s,border-color .12s}
@@ -16,7 +16,7 @@ body[data-role] header h1{font-family:var(--siren-font);font-size:20px;font-weig
 body[data-role] #viewStatus{color:var(--siren-muted);opacity:1;line-height:1.5;min-height:18px}
 body[data-role] #closeView{background:transparent}
 body[data-role] #transferView{background:var(--siren-alt)}
-body[data-role] :is(#saveDiagram,#saveDocument){background:var(--siren-accent);color:#fff;border-color:transparent}
+body[data-role] :is(#saveDiagram,#saveDocument){background:var(--siren-accent);color:var(--siren-accent-ink,#fff);border-color:transparent}
 body[data-role] :is(#diagramSource,#diagramViewport,#diagramGuided,#diagramStylePanel,#diagramBuildPanel,#codeAnalysis,.document-group,.document-knowledge,.document-source,.document-source-preview,.document-structured-row){border-color:var(--siren-line);border-radius:var(--siren-radius);background:var(--siren-panel)}
 body[data-role] :is(#diagramSource,.document-editor input,.document-editor textarea,.document-field input,.document-field textarea,#analysisFilter){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line)}
 body[data-role] :is(.diagram-note,.diagram-source-panel label,.document-caption){color:var(--siren-muted);opacity:1}

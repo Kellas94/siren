@@ -30,6 +30,7 @@
   clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
   make('p',content,readonly?'Document · Read only':'Working document · Edit sections and linked-code context. Save when ready.').className='document-caption';
   if(!readonly)paintEditor(focusBlock);
+  else window.SirenNativeDocsReader.render({parent:content,outline,blocks:value.blocks});
   paintSources(value);
   const entries=Object.entries(value).filter(([key,item])=>!(readonly?['id','title']:['id','title','blocks']).includes(key)&&
     !(key==='agent'&&item===null||key==='releases'&&Array.isArray(item)&&item.length===0));let end=0,section=0;

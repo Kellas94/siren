@@ -12,6 +12,8 @@ import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {invokeDock} from './windows/dock-ipc.mjs';
+import {AppearanceStore} from './appearance/store.mjs';
+import {invokeShell} from './appearance/ipc.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
 import {WindowLayoutStore,NativeLayoutMemory} from './windows/layout-memory.mjs';
@@ -948,6 +950,30 @@ ipcMain.handle('siren:window-dock',(event,method,payload)=>{
   if(method==='getShelf'&&result.ok)windowRegistry.resizeAttached();
   return result;
 });
+const appearanceStore=new AppearanceStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier});
+ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,payload,store:appearanceStore,
+ context:()=>({projectName:snapshot?.project?.label||'Local workspace'}),
+ capture:own=>{
+  if(!localPin.state().unlocked||pinTransition||accountTransition||writes.selectionTransition||workspaceBarrier||nativeShellFailure)return null;
+  if(own.sender===window.webContents){const grant=homeAuthority.capture(own);return grant?{role:'workspace',kind:'home',grant}:null;}
+  const grant=windowRegistry.capture(own);return grant?{role:grant.role,kind:'native',grant}:null;
+ },
+ isCurrent:own=>Boolean(own&&localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier&&
+  (own.kind==='home'?homeAuthority.isCurrent(own.grant):windowRegistry.isCurrent(own.grant))),
+ navigate:async(surface,scope)=>{
+  if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+  // Even an already-loaded Home may have dirty satellite working copies.
+  // Re-enter through the coordinator; merely focusing Home bypasses its save
+  // and revocation proof. Empty first-use Home has no project to prepare.
+  if(snapshot||window.webContents.getURL()!=='siren://app/home.html'){
+   const receipt=await services.goHome();if(!receipt?.ok)return receipt;
+  }
+  if(window.isDestroyed()||!localPin.state().unlocked||writes.selectionTransition||workspaceBarrier)return {ok:false,code:'ACCESS_REFUSED'};
+  if(snapshot)windowRegistry.showWorkspace();if(window.isMinimized())window.restore();window.show();window.focus();
+  if(surface!=='home')window.webContents.send('siren:shell-module',surface);
+  return {ok:true};
+ },
+}));
 window.on('resize',()=>windowRegistry.resizeAttached());
 const presentationIPC=new NativePresentationIPC({registry:windowRegistry,sessionFor:()=>presentationSession,
  displays:()=>screen.getAllDisplays().slice(0,32).map((display,index)=>({id:String(display.id),label:typeof display.label==='string'&&display.label?display.label.slice(0,160):`Display ${index+1} · ${display.size.width} × ${display.size.height}`})),

@@ -65,6 +65,14 @@ test('Present library discovers only verified diagram IDs and labels, never auth
  const result=await f.call({role:'presenter'});assert.equal(result.ok,true);assert.deepEqual(result.items,[{role:'presenter',entityId:'deck-a',label:'Presentation Ș😀',readonly:true}]);assert.equal(JSON.stringify(result).includes('PRIVATE'),false);
 });
 
+test('explicit all-module search retains separate Diagram and Present destinations without private content',async()=>{
+ const f=await fixture();f.select({...f.selected,json:JSON.stringify({diagrams:[{id:'deck-a',name:'Review flow',source:'PRIVATE_SOURCE',presentation:{notes:'PRIVATE_NOTES'}}],workpapers:[]})});
+ const result=await f.call({role:'all',query:'Review flow'});assert.equal(result.ok,true);
+ assert.deepEqual(result.items.map(({role,entityId})=>({role,entityId})),[{role:'diagram',entityId:'deck-a'},{role:'presenter',entityId:'deck-a'}]);
+ assert.equal(JSON.stringify(result).includes('PRIVATE'),false);
+ assert.deepEqual((await f.call()).items.filter(i=>i.entityId==='deck-a').map(i=>i.role),['diagram']);
+});
+
 test('Code library uses selected file names and marks unlinked code without exposing source bytes or provenance paths',async()=>{
  const f=await fixture(),ref=f.refs[0],point={sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256};
  f.select({...f.selected,json:JSON.stringify({codeFiles:[{id:'owned-file',name:'Exact Ș😀.py',sourceRef:point,linkedRef:null}],workpapers:[]})});

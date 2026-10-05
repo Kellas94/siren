@@ -7,6 +7,7 @@ import { pythonLanguage, python } from '@codemirror/lang-python';
 import { tags } from '@lezer/highlight';
 import { createEditorAdapter } from './editor-adapter.js';
 import { createCodeViewLifecycle } from './view-lifecycle.js';
+import { readonlySelectionGuard } from './selection-guard.js';
 
 function pythonSupport(parser) {
   if (!parser || typeof parser.configure !== 'function') throw new TypeError('PATCHED_PYTHON_REQUIRED');
@@ -56,6 +57,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     item.addEventListener('click', () => { if (!disposed && view) action(); }); buttons.set(name, item); toolbar.append(item); return item;
   }
   const adapter = createEditorAdapter({ client, readonly, extensions: [lineNumbers(), drawSelection(), history(), search({ top: true }),
+    readonlySelectionGuard({readonly,isFocused:()=>Boolean(view?.contentDOM.contains(document.activeElement))}),
     indentUnit.of('    '), pythonSupport(pythonParser), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),EditorView.contentAttributes.of({tabindex:'0'}),
     keymap.of([{ key: 'Mod-s', run: () => { if(!readonly)void flush(); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
   ] });

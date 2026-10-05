@@ -20,6 +20,14 @@ export async function waitForDesktopStartup(driver) {
 }
 
 // Explicit fixture authorization: raw launchDesktop always exposes the real lock.
+export async function waitForWorkspaceAdmission(driver){
+ await driver.evaluate('window.sirenDesktopAdmitted()');
+ await driver.waitFor('(async()=>{const receipt=await window.sirenWindow.getView();return receipt?.ok===true&&receipt.view?.role==="workspace";})()');
+ const receipt=await driver.evaluate('window.sirenWindow.getView()');
+ assert.equal(receipt?.ok,true,'Native registry admission must acknowledge');
+ assert.equal(receipt.view.role,'workspace','Only the genuine workspace receipt admits these probes');
+ return receipt;
+}
 // This uses the production native PIN receipts; it never edits bootstrap/storage.
 export async function unlockDesktop(driver, { pin, autoSetup = false, surface='diagrams' } = {}) {
   assert.match(pin || '', /^(?:[0-9]{4}|[0-9]{6})$/, 'Owned fixture PIN must contain four or six digits');
@@ -62,6 +70,7 @@ export async function unlockDesktop(driver, { pin, autoSetup = false, surface='d
     await driver.evaluate('window.sirenHome.openModule({surface:"diagrams"})').catch(()=>{/* The originating frame is intentionally retired; assert destination below. */});
     await driver.waitFor('location.href==="siren://app/app.html" && window.sirenDesktopBootstrap?.pin?.unlocked===true && document.getElementById("desktopHome")!=null');
   }
+  if(surface==='diagrams'&&await driver.evaluate('location.href==="siren://app/app.html"'))await waitForWorkspaceAdmission(driver);
   return unlocked;
 }
 
