@@ -34,7 +34,7 @@ export class NativePresentationIPC{
     const state=session.getPresenter(grant);if(!state.ok)return state;
     const opened=await this.#open(grant,{deckId:state.deck.deckId,...request},{isCurrent:current});
     if(!opened?.view||!opened.grant)return fail('AUDIENCE_OPEN_FAILED');
-    if(!current()||session.bindAudience(grant,opened.grant).ok!==true){if(this.#registry.discardView(opened.view.windowId)!==true)return fail('WINDOW_DESTROY_FAILED');return fail('ACCESS_REFUSED');}
+    if(!current()||session.bindAudience(grant,opened.grant).ok!==true){if(await this.#registry.discardViewAsync(opened.view.windowId)!==true)return fail('WINDOW_DESTROY_FAILED');return fail('ACCESS_REFUSED');}
     const {windowId,role,epoch,state:viewState}=opened.view;result={ok:true,view:{windowId,role,epoch,state:viewState}};
    }else return fail('REQUEST_REFUSED');
    return current()?result:fail('ACCESS_REFUSED');

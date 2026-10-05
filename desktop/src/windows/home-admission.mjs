@@ -23,7 +23,7 @@ export async function invokeHomeWindow({event,payload,registry,snapshot}){
   if(request.role==='code'&&(snapshot.schema!==2||!snapshot.sourceRefs.some(ref=>ref.sourceId===request.entityId&&ref.version===request.version)))return fail('ACCESS_REFUSED');
   const opened=await WindowRegistry.prototype.openView.call(registry,request);
   if(!WindowRegistry.prototype.isCurrent.call(registry,grant)){
-   return fail(WindowRegistry.prototype.discardView.call(registry,opened.windowId)?'SENDER_REFUSED':'WINDOW_DESTROY_FAILED');
+   return fail(await WindowRegistry.prototype.discardViewAsync.call(registry,opened.windowId)?'SENDER_REFUSED':'WINDOW_DESTROY_FAILED');
   }
   return {ok:true,view:{windowId:opened.windowId,role:opened.role,projectId:opened.projectId,epoch:opened.epoch,entityId:opened.entityId,state:opened.state}};
  }catch(cause){return fail(cause?.code==='WINDOW_DESTROY_FAILED'?'WINDOW_DESTROY_FAILED':grant&&!WindowRegistry.prototype.isCurrent.call(registry,grant)?'SENDER_REFUSED':'ACCESS_REFUSED');}

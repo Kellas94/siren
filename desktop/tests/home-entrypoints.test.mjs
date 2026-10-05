@@ -17,7 +17,8 @@ test('Home is a bounded standalone entry with exact local script identities and 
   assert.equal(receipt.sha256,createHash('sha256').update(bytes).digest('hex'));
   assert.equal(receipt.bytes,bytes.length);assert.ok(bytes.length<64*1024);
   const nodes=[];const visit=n=>{nodes.push(n);for(const child of n.childNodes||[])visit(child);};visit(parse(html));
-  const scripts=nodes.filter(n=>n.tagName==='script');assert.equal(scripts.length,3);
+  const scripts=nodes.filter(n=>n.tagName==='script');assert.equal(scripts.length,4);
+  assert.match(html,/sirenWindowDock/);assert.match(html,/nativeWindowShelf/);
   for(const script of scripts){assert.equal(script.attrs.some(a=>a.name==='src'),false);const code=script.childNodes.map(n=>n.value||'').join('');assert.ok(html.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"));}
   // The exact SVG namespace is a DOM identifier, not a fetched resource.
   // Continue refusing every other URL and external script source.

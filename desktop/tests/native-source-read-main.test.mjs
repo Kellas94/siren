@@ -23,7 +23,7 @@ test('actual native view retirement disposes read sessions before revoking nativ
  vm.runInContext(mainSlice('const retireNativeViews','const navigation=')+';globalThis.retire=retireNativeViews;',f.context);
  const order=[];vm.runInContext('globalThis.reads=sourceReads',f.context);const dispose=f.context.reads.dispose.bind(f.context.reads),invalidate=f.registry.invalidateEpoch.bind(f.registry);
  f.context.reads.dispose=()=>{order.push('readers');dispose();};f.registry.invalidateEpoch=options=>{order.push('windows');invalidate(options);};f.context.nativeShells=new Map();
- f.context.retire();assert.deepEqual(order,['readers','windows']);
+ await f.context.retire();assert.deepEqual(order,['readers','windows']);
  assert.equal((await handler(f.event(0),'getReference')).code,'ACCESS_REFUSED');assert.equal(f.context.writes.size,0);
 });
 test('both actual preloads expose finite readonly context/read session methods with no write channel',async()=>{

@@ -7,12 +7,12 @@ import {transform} from 'esbuild';
 /** Standalone, data-free build. Production entry/route admission is separate. */
 export async function buildWorkspaceEntrypoint({outputDir}) {
   const ui=new URL('../src/ui/',import.meta.url);
-  const scripts=await Promise.all(['workspace/intro.js','workspace/home.js','pin.js'].map(async name=>{
+  const scripts=await Promise.all(['workspace/intro.js','workspace/home.js','pin.js','windows/shelf.js'].map(async name=>{
     const source=(await readFile(new URL(name,ui),'utf8')).replaceAll('\r\n','\n');
     if(/<\/script/i.test(source))throw Error('Home script boundary refused');
     return (await transform(source,{minify:true,target:'es2022',charset:'utf8',legalComments:'inline'})).code;
   }));
-  const styles=await Promise.all(['desktop.css','workspace/workspace.css'].map(async name=>(await readFile(new URL(name,ui),'utf8')).replaceAll('\r\n','\n')));
+  const styles=await Promise.all(['desktop.css','workspace/workspace.css','windows/shelf.css'].map(async name=>(await readFile(new URL(name,ui),'utf8')).replaceAll('\r\n','\n')));
   for(const script of scripts){if(/<\/script/i.test(script))throw Error('Home script boundary refused');new Script(script);}
   if(styles.some(css=>/<\/style/i.test(css)))throw Error('Home style boundary refused');
   const hashes=scripts.map(script=>"'sha256-"+createHash('sha256').update(script).digest('base64')+"'");

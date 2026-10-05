@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen } from 'electron';
+import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { join, basename } from 'node:path';
@@ -11,6 +11,7 @@ import { ProjectStore } from './projects/store.mjs';
 import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
+import {invokeDock} from './windows/dock-ipc.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
 import {WindowLayoutStore,NativeLayoutMemory} from './windows/layout-memory.mjs';
@@ -55,6 +56,7 @@ import {invokeHome} from './navigation/ipc.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory,settleHiddenBounds } from './windows/factory.mjs';
+import {createWorkspaceSurface} from './windows/surface.mjs';
 import { workspaceEntities,workspaceMetadata } from './windows/entities.mjs';
 import { openOwnedSelection } from './projects/selection.mjs';
 import { parseLegacyImport } from './projects/migration.mjs';
@@ -161,7 +163,7 @@ const changeSelection = async action => {
     await prepareNativeWorkspace();
     writes.selectionQuiesced = true;
     await Promise.all([...writes]);
-    retireNativeViews();
+    await retireNativeViews();
     const result = await action(); changed = bootstrap.selectionGeneration !== generation; return result;
   } finally {
     writes.selectionQuiesced = false; writes.selectionTransition = false;
@@ -201,7 +203,7 @@ const services = {
       await prepareNativeWorkspace();
       accountQuiesced = true;
       await Promise.all([...writes]);
-      retireNativeViews();
+      await retireNativeViews();
       localPin.lock(); return { ok: true };
     } catch (error) {
       await rollbackNativePreparation();
@@ -229,7 +231,7 @@ const services = {
         await prepareNativeWorkspace();
         accountQuiesced = true;
         await Promise.all([...writes]);
-        retireNativeViews();
+        await retireNativeViews();
       } });
       if (state.ok !== false) { grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode, reason, snapshot: null, recoveryProjectId: null, readonly: true }; committed = true; }
       return state;
@@ -248,7 +250,7 @@ const services = {
     try {
       await prepareNativeWorkspace();
       accountQuiesced = true; await Promise.all([...writes]);
-      retireNativeViews();
+      await retireNativeViews();
       const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
     } finally {
       accountQuiesced = false; accountTransition = false;
@@ -345,7 +347,14 @@ const windowRegistry = new WindowRegistry({
   createWindow: nativeViewFactory({ BrowserWindow, displays: () => {
     const primaryId = screen.getPrimaryDisplay().id;
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
-  }, layoutMemory:nativeLayoutMemory,preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record, layoutTicket) => {
+  }, layoutMemory:nativeLayoutMemory,preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'),
+  createSurface:typeof BaseWindow==='function'&&typeof WebContentsView==='function'?options=>{
+    let surface;surface=createWorkspaceSurface({...options,BaseWindow,WebContentsView,host:window,
+      isCurrent:()=>!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!nativeShellFailure&&
+        Boolean(windowRegistry.capture({sender:surface.webContents,senderFrame:surface.webContents.mainFrame})),
+      onFailure:()=>{nativeShellFailure=true;},
+    });return surface;
+  }:undefined,onCreated: (view, record, layoutTicket) => {
     nativeShells.set(record.windowId, view);
     let layoutTracked=false;
     view.on('show',()=>{
@@ -354,6 +363,14 @@ const windowRegistry = new WindowRegistry({
       if(layoutTicket.layout.maximized&&current())view.maximize();
       if(layoutTicket.layout.fullscreen&&current())view.setFullScreen(true);
       nativeLayoutMemory.track(view,layoutTicket,{isCurrent:current});
+      windowRegistry.surfaceFor(view)?.resize();
+    });
+    view.on('resize',()=>windowRegistry.surfaceFor(view)?.resize());
+    if(['code','docs'].includes(record.role))view.webContents.on('context-menu',()=>{
+      const surface=windowRegistry.surfaceFor(view);if(!surface)return;
+      const attached=surface.placement()==='attached';
+      Menu.buildFromTemplate([{label:attached?'Detach window':'Attach to workspace',accelerator:attached?'Ctrl+Alt+D':'Ctrl+Alt+A',click:()=>nativeWindowFocus.transfer(attached?'detach':'attach',view)},
+        {label:'Main workspace',click:()=>nativeWindowFocus.showMain()},{type:'separator'},{role:'copy'},{role:'selectAll'}]).popup();
     });
     bindNativeWindowFocusKeys(view,nativeWindowFocus,nativeWindowLayout);
     if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
@@ -505,7 +522,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
   const operation=workspaceOwner.invoke(grant,{kind:'workspace',method,payload:method==='saveProject'?payload.request:{}},payload.nonce);
   writes.add(operation);try{const result=await operation;console.info('SIREN_PRIMARY_PREPARE_STAGE',JSON.stringify({stage:result.ok===true?'sealed':'refused',method,elapsedMs:Math.round(performance.now()-started)}));return result;}finally{writes.delete(operation);}
 });
-const retireNativeViews = () => {
+const retireNativeViews = async () => {
   diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
@@ -514,10 +531,11 @@ const retireNativeViews = () => {
   workingDocs?.dispose();workingDocs=null;
   workingDiagrams?.dispose();workingDiagrams=null;
   let failed = false;
-  try { windowRegistry.invalidateEpoch({ preserveWorkspace: true }); } catch { failed = true; }
+  try { await windowRegistry.invalidateEpochAsync({ preserveWorkspace: true }); } catch { failed = true; }
   // Includes hidden pending factories, which have no registry grant yet.
   for (const view of nativeShells.values()) {
-    try { if (!view.isDestroyed()) view.destroy(); if (!view.isDestroyed()) failed = true; } catch { failed = true; }
+    try {const surface=windowRegistry.surfaceFor(view);if(surface)await surface.dispose();else if (!view.isDestroyed()) view.destroy();
+      if (!view.isDestroyed()||surface&&!surface.isDestroyed()) failed = true; } catch { failed = true; }
   }
   nativeShellFailure = failed;
   workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();
@@ -597,7 +615,7 @@ const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migra
     if(snapshot)await prepareNativeWorkspace('native-home-navigation');
     else{homeAuthority.invalidate();contents.send('siren:home-invalidated');}
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
-    writes.selectionQuiesced=true;await Promise.all([...writes]);retireNativeViews();
+    writes.selectionQuiesced=true;await Promise.all([...writes]);await retireNativeViews();
     if(create){
       if(desktop||migrate){
         // Preparation may have genuinely saved the legacy editor. Read the
@@ -696,11 +714,13 @@ ipcMain.handle('siren:home-import',(event,input)=>{
 });
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
 const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindow:window,
- windowFor:id=>nativeShells.get(id),focusedWindow:()=>BrowserWindow.getFocusedWindow(),
+ windowFor:id=>nativeShells.get(id),focusedWindow:()=>typeof BaseWindow==='function'?BaseWindow.getFocusedWindow():BrowserWindow.getFocusedWindow(),
  canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
 });
 const nativeWindowLayout=new NativeWindowLayout({registry:windowRegistry,mainWindow:window,
- placementMemory:nativeLayoutMemory,
+  placementMemory:nativeLayoutMemory,
+  projectBounds:typeof process==='object'&&process.platform==='win32'&&typeof screen.dipToScreenRect==='function'&&typeof screen.screenToDipRect==='function'
+    ?bounds=>screen.screenToDipRect(null,screen.dipToScreenRect(null,bounds)):undefined,
  windowFor:id=>nativeShells.get(id),displays:()=>{const primary=screen.getPrimaryDisplay().id;return screen.getAllDisplays().map(d=>({id:d.id,workArea:d.workArea,primary:d.id===primary}));},
  canRecoverViews:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
 });
@@ -721,6 +741,8 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
     {type:'separator'},
     {label:'Next window',accelerator:'Ctrl+Alt+Right',click:()=>nativeWindowFocus.cycle(1)},
     {label:'Previous window',accelerator:'Ctrl+Alt+Left',click:()=>nativeWindowFocus.cycle(-1)},
+    {label:'Attach Code / Docs to workspace',accelerator:'Ctrl+Alt+A',click:(_item,origin)=>nativeWindowFocus.transfer('attach',origin)},
+    {label:'Detach selected Code / Docs',accelerator:'Ctrl+Alt+D',click:(_item,origin)=>nativeWindowFocus.transfer('detach',origin)},
     {type:'separator'},
     {label:'Move this window to monitor…',click:(_item,origin)=>showNativeMonitorMenu({Menu,layout:nativeWindowLayout,originWindow:origin??window})},
     {label:'Bring all windows back',accelerator:'Ctrl+Alt+B',click:(_item,origin)=>nativeWindowLayout.bringAllBack(origin??window)},
@@ -818,7 +840,7 @@ ipcMain.handle('siren:source-editors',async(event,method,payload)=>{
     if(!admitted.ok||!canOpenWorking(grant)||!workingSources.isWorking(fresh))throw Error('Native working source refused');
     view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
    }catch{
-    if(opened&&!windowRegistry.discardView(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}
+    if(opened&&!await windowRegistry.discardViewAsync(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}
     return {ok:false,code:'ACCESS_REFUSED'};
    }
   })();
@@ -842,7 +864,7 @@ ipcMain.handle('siren:docs-editors',async(event,method,payload,flushNonce)=>{
           const admitted=await workingDocs.admit(fresh);if(!admitted.ok||!canOpenWorkingDocs(grant)||!workingDocs.isWorking(fresh))throw Error('Working document refused');
         }
         view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
-      }catch{if(opened&&!windowRegistry.discardView(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}return {ok:false,code:'ACCESS_REFUSED'};}
+      }catch{if(opened&&!await windowRegistry.discardViewAsync(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}return {ok:false,code:'ACCESS_REFUSED'};}
     })();writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
   }
   if(!workingDocs)return {ok:false,code:'ACCESS_REFUSED'};
@@ -870,7 +892,7 @@ ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
           const admitted=await workingDiagrams.admit(fresh);if(!admitted.ok||!canOpenWorkingDiagram(grant)||!workingDiagrams.isWorking(fresh))throw Error('Working diagram refused');
         }
         view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
-      }catch{if(opened&&!windowRegistry.discardView(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}return {ok:false,code:'ACCESS_REFUSED'};}
+      }catch{if(opened&&!await windowRegistry.discardViewAsync(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}return {ok:false,code:'ACCESS_REFUSED'};}
     })();writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
   }
   if(!workingDiagrams)return {ok:false,code:'ACCESS_REFUSED'};
@@ -899,13 +921,13 @@ const invokeNativeWindow=async (event, method, payload) => {
     const current = windowRegistry.caller(event); const view = nativeShells.get(result.view.windowId);
     const registered = view && windowRegistry.caller({ sender: view.webContents, senderFrame: view.webContents.mainFrame });
     if (!before || !current || current.windowId !== before.windowId || current.epoch !== before.epoch || !registered || registered.epoch !== current.epoch) {
-      const discarded = windowRegistry.discardView(result.view.windowId);
+      const discarded = await windowRegistry.discardViewAsync(result.view.windowId);
       if (!discarded) nativeShellFailure = true;
       return failure(discarded ? 'SENDER_REFUSED' : 'WINDOW_DESTROY_FAILED', 'Native view admission changed');
     }
     try { view.webContents.send('siren:view-ready'); view.show(); }
     catch {
-      const discarded = windowRegistry.discardView(result.view.windowId);
+      const discarded = await windowRegistry.discardViewAsync(result.view.windowId);
       if (!discarded) nativeShellFailure = true;
       return failure(discarded ? 'OPERATION_FAILED' : 'WINDOW_DESTROY_FAILED', 'Native window could not be shown');
     }
@@ -913,6 +935,16 @@ const invokeNativeWindow=async (event, method, payload) => {
   return result;
 };
 ipcMain.handle('siren:windows',invokeNativeWindow);
+ipcMain.handle('siren:window-dock',(event,method,payload)=>{
+  if(pinTransition||accountTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)
+    return {ok:false,code:'PROJECT_BUSY'};
+  const result=invokeDock({registry:windowRegistry,event,method,payload});
+  // A preparation can suppress a resize event. The next trusted shelf refresh
+  // catches up hidden and visible attached views once all transition gates open.
+  if(method==='getShelf'&&result.ok)windowRegistry.resizeAttached();
+  return result;
+});
+window.on('resize',()=>windowRegistry.resizeAttached());
 const presentationIPC=new NativePresentationIPC({registry:windowRegistry,sessionFor:()=>presentationSession,
  displays:()=>screen.getAllDisplays().slice(0,32).map((display,index)=>({id:String(display.id),label:typeof display.label==='string'&&display.label?display.label.slice(0,160):`Display ${index+1} · ${display.size.width} × ${display.size.height}`})),
  setFullscreen:(grant,enabled,scope)=>{const view=nativeShells.get(grant.windowId);if(!scope.isCurrent()||!view||view.isDestroyed())return {ok:false,code:'ACCESS_REFUSED'};view.setFullScreen(enabled);return scope.isCurrent()?{ok:true}:{ok:false,code:'ACCESS_REFUSED'};},
@@ -923,13 +955,13 @@ const presentationIPC=new NativePresentationIPC({registry:windowRegistry,session
    opened=await windowRegistry.openView({role:'audience',entityId:request.deckId});if(!scope.isCurrent())throw Error('Audience access retired');
    const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Audience unavailable');if(display)view.setBounds(display.workArea);
    const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(!grant)throw Error('Audience registration unavailable');return {view:opened,grant};
-  }catch{if(opened&&windowRegistry.discardView(opened.windowId)!==true){nativeShellFailure=true;throw Error('Audience destruction incomplete');}throw Error('Audience unavailable');}
+  }catch{if(opened&&await windowRegistry.discardViewAsync(opened.windowId)!==true){nativeShellFailure=true;throw Error('Audience destruction incomplete');}throw Error('Audience unavailable');}
  },
 });
 ipcMain.handle('siren:presentation',async(event,method,payload)=>{
  const operation=presentationIPC.invoke({event,method,payload});writes.add(operation);
  try{const result=await operation;
-  if(method==='openAudience'&&result?.ok){const view=nativeShells.get(result.view.windowId);try{if(!view||view.isDestroyed())throw Error('Audience unavailable');view.webContents.send('siren:view-ready');view.show();}catch{const discarded=windowRegistry.discardView(result.view.windowId);if(!discarded)nativeShellFailure=true;return {ok:false,code:discarded?'AUDIENCE_OPEN_FAILED':'WINDOW_DESTROY_FAILED'};}}
+  if(method==='openAudience'&&result?.ok){const view=nativeShells.get(result.view.windowId);try{if(!view||view.isDestroyed())throw Error('Audience unavailable');view.webContents.send('siren:view-ready');view.show();}catch{const discarded=await windowRegistry.discardViewAsync(result.view.windowId);if(!discarded)nativeShellFailure=true;return {ok:false,code:discarded?'AUDIENCE_OPEN_FAILED':'WINDOW_DESTROY_FAILED'};}}
   return result;
  }finally{writes.delete(operation);}
 });
@@ -966,7 +998,7 @@ window.on('close', event => {
     closeProgress('write-join');
     await Promise.all([...writes]);
     closeProgress('retire-views');
-    retireNativeViews();
+    await retireNativeViews();
     if(!await nativeLayoutMemory.flush())console.warn('SIREN_LAYOUT_WRITE_FAILED');
     closeProgress('journal');
     if (processIdentity) await journal.recordSession({ event: 'clean-close', sessionId, version: app.getVersion(), processIdentity });

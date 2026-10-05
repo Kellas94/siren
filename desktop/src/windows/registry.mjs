@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {navigationFields} from '../navigation/contracts.mjs';
 import {WORKSPACE_ENTRIES,workspaceEntryURL} from '../navigation/entries.mjs';
+import {workspaceSurfaceFor,ownsWorkspaceWindow} from './surface.mjs';
 
 const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
@@ -58,6 +59,7 @@ export class WindowRegistry {
   #workspaceNavigation = null;
   #navigationTickets = new WeakMap();
   #navigationCommits = new WeakMap();
+  #selectedSurface = null;
 
   constructor({ createWindow, authorize, closeTimeoutMs = 10000 }) {
     if (typeof createWindow !== 'function' || typeof authorize !== 'function') throw new TypeError('Native factory and authorization required');
@@ -120,8 +122,21 @@ export class WindowRegistry {
       : `siren://app/windows/${request.role}.html?windowId=${windowId}`;
     const record = Object.freeze({ windowId, role: request.role, projectId: scope.projectId,
       epoch: this.#epoch, entityId: request.entityId, state: 'active' });
-    const window = await this.#createWindow(Object.freeze({ ...record,
-      ...(Object.hasOwn(request, 'version') ? { version: request.version } : {}), mainFrameUrl, modal: false }));
+    let window;
+    try{window=await this.#createWindow(Object.freeze({ ...record,
+      ...(Object.hasOwn(request, 'version') ? { version: request.version } : {}), mainFrameUrl, modal: false }));}
+    catch(error){
+      const failed=error&&(typeof error==='object'||typeof error==='function')?Object.getOwnPropertyDescriptor(error,'nativeWindow')?.value:null;
+      const reused=failed===this.#workspace?.window||failed?.webContents===this.#workspace?.webContents
+        ||[...this.#views.values()].some(entry=>entry.window===failed||entry.webContents===failed?.webContents);
+      if(ownsWorkspaceWindow(failed)&&!reused){
+        if(failed.webContents)this.#retiredContents.add(failed.webContents);
+        this.#unclosedWindows.add(failed);this.#destructionFailed=true;
+        if(!await this.#destroyWindowAsync(failed))throw refuse('WINDOW_DESTROY_FAILED','Unadmitted native surface destruction incomplete');
+        this.#destructionFailed=this.#unclosedWindows.size>0;
+      }
+      throw error;
+    }
     const webContents = window?.webContents;
     const reused = window === this.#workspace?.window || webContents === this.#workspace?.webContents
       || [...this.#views.values()].some(entry => entry.window === window || entry.webContents === webContents);
@@ -143,7 +158,7 @@ export class WindowRegistry {
       }
     } catch (error) {
       if (webContents && typeof webContents === 'object') this.#retiredContents.add(webContents);
-      if (!this.#destroyWindow(window)) throw refuse('WINDOW_DESTROY_FAILED', 'Native rejected window destruction incomplete');
+      if (!await this.#destroyWindowAsync(window)) throw refuse('WINDOW_DESTROY_FAILED', 'Native rejected window destruction incomplete');
       throw error;
     }
     this.#register({ record, window, request, scope, mainFrameUrl });
@@ -160,7 +175,18 @@ export class WindowRegistry {
       target.on(name, callback);
       entry.listeners.push([target, name, callback]);
     };
-    const forget = () => this.#forget(entry);
+    const forget = () => {
+      const surface=workspaceSurfaceFor(window);
+      if(surface&&!surface.isDestroyed()){
+        // Native shell and renderer lifetimes differ. A direct system close
+        // cannot lose the remaining handle or clear the admission fence.
+        entry.revoked=true;this.#retiredContents.add(webContents);
+        this.#unclosedWindows.add(window);this.#destructionFailed=true;
+        void this.#destroyWindowAsync(window).then(disposed=>{
+          if(disposed){this.#forget(entry);this.#destructionFailed=this.#unclosedWindows.size>0;}
+        });
+      }else this.#forget(entry);
+    };
     const revoke = () => {
       entry.closeInvalidated = true;
       if (this.#workspace?.window === window) {
@@ -181,8 +207,10 @@ export class WindowRegistry {
   #destroyWindow(window) {
     if (typeof window?.destroy !== 'function' || typeof window?.isDestroyed !== 'function') return true;
     try {
-      if (!window.isDestroyed()) window.destroy();
-      if (window.isDestroyed()) {
+      const surface=workspaceSurfaceFor(window);
+      if(surface)void surface.dispose().catch(()=>{});
+      else if (!window.isDestroyed()) window.destroy();
+      if (window.isDestroyed() && (!surface||surface.isDestroyed())) {
         this.#unclosedWindows.delete(window);
         return true;
       }
@@ -190,6 +218,12 @@ export class WindowRegistry {
     this.#unclosedWindows.add(window);
     this.#destructionFailed = true;
     return false;
+  }
+
+  async #destroyWindowAsync(window){
+    try{const surface=workspaceSurfaceFor(window);if(surface)await surface.dispose();}
+    catch{this.#unclosedWindows.add(window);this.#destructionFailed=true;return false;}
+    return this.#destroyWindow(window);
   }
 
   #forget(entry) {
@@ -210,6 +244,70 @@ export class WindowRegistry {
     return [...this.#views.values()].filter(entry => this.#live(entry)).map(({ record, window }) => ({
       ...record, state: window.isMinimized() ? 'minimized' : 'active',
     }));
+  }
+
+  surfaceRecords(){
+    return this.listViews().flatMap(record=>{
+      const surface=workspaceSurfaceFor(this.#views.get(record.windowId)?.window);
+      return surface&&['code','docs'].includes(record.role)?[{windowId:record.windowId,role:record.role,
+        entityId:record.entityId,placement:surface.placement(),selected:this.#selectedSurface===record.windowId&&surface.isVisible()}]:[];
+    });
+  }
+
+  #surfaceAction(entry,method,...args){
+    try{return workspaceSurfaceFor(entry.window)?.[method](...args)===true;}
+    catch{
+      entry.revoked=true;this.#retiredContents.add(entry.webContents);
+      this.#unclosedWindows.add(entry.window);this.#destructionFailed=true;
+      void this.#destroyWindowAsync(entry.window).then(disposed=>{
+        if(disposed){this.#forget(entry);this.#destructionFailed=this.#unclosedWindows.size>0;}
+      });return false;
+    }
+  }
+  #surfaceReady(entry){
+    return !this.#roster&&!this.#workspaceNavigation&&!this.#destructionFailed&&entry
+      &&['code','docs'].includes(entry.record.role)&&workspaceSurfaceFor(entry.window)
+      &&!!this.caller({sender:entry.webContents,senderFrame:entry.webContents.mainFrame});
+  }
+  #selectSurface(windowId){
+    if(this.#roster||this.#workspaceNavigation||this.#destructionFailed)return false;
+    if(windowId!==null&&!this.#surfaceReady(this.#views.get(windowId)))return false;
+    for(const entry of this.#views.values())if(workspaceSurfaceFor(entry.window)?.placement()==='attached'&&!this.#surfaceReady(entry))return false;
+    for(const entry of this.#views.values()){
+      const surface=workspaceSurfaceFor(entry.window);
+      if(surface?.placement()==='attached'&&entry.record.windowId!==windowId
+        &&(!this.#surfaceReady(entry)||!this.#surfaceAction(entry,'setAttachedVisible',false)))return false;
+    }
+    if(windowId!==null){
+      const entry=this.#views.get(windowId);
+      if(!this.#surfaceReady(entry)||!this.#surfaceAction(entry,'setAttachedVisible',true))return false;
+    }
+    this.#selectedSurface=windowId;return true;
+  }
+  attachView(windowId){
+    const entry=this.#views.get(windowId);
+    if(!this.#surfaceReady(entry))return false;
+    for(const peer of this.#views.values())if(workspaceSurfaceFor(peer.window)?.placement()==='attached'&&!this.#surfaceReady(peer))return false;
+    if(!this.#surfaceAction(entry,'attach'))return false;
+    return this.#selectSurface(windowId)&&this.#surfaceAction(entry,'focus');
+  }
+  detachView(windowId){
+    const entry=this.#views.get(windowId);
+    if(!this.#surfaceReady(entry)||!this.#surfaceAction(entry,'detach'))return false;
+    if(this.#selectedSurface===windowId)this.#selectedSurface=null;
+    return this.#surfaceAction(entry,'focus');
+  }
+  showWorkspace(){
+    const owner=this.#workspace;
+    if(!owner||!this.caller({sender:owner.webContents,senderFrame:owner.webContents.mainFrame})||!this.#selectSurface(null))return false;
+    try{if(owner.window.isMinimized())owner.window.restore();owner.window.show();owner.window.focus();owner.webContents.focus();return true;}catch{return false;}
+  }
+  resizeAttached(){
+    if(this.#roster||this.#workspaceNavigation||this.#destructionFailed)return false;
+    let result=true;
+    for(const entry of this.#views.values())if(workspaceSurfaceFor(entry.window)?.placement()==='attached')
+      result=this.#surfaceReady(entry)&&this.#surfaceAction(entry,'resize')&&result;
+    return result;
   }
 
   // Main-only roster proof: no identifiers from IPC can stand in for captured
@@ -312,6 +410,11 @@ export class WindowRegistry {
   focusView(windowId) {
     const entry = this.#views.get(windowId);
     if (!entry || !this.caller({ sender: entry.webContents, senderFrame: entry.webContents.mainFrame })) return false;
+    const surface=workspaceSurfaceFor(entry.window);if(surface){
+      if(!this.#surfaceReady(entry))return false;
+      return (surface.placement()!=='attached'||this.#selectSurface(windowId))&&this.#surfaceAction(entry,'focus');
+    }
+    if(entry.record.role==='workspace'&&this.#workspace&& !this.#selectSurface(null))return false;
     if (entry.window.isMinimized()) entry.window.restore();
     entry.window.focus();
     return true;
@@ -323,10 +426,11 @@ export class WindowRegistry {
     const captured = caller && this.caller(caller);
     if (caller && !captured) return false;
     const sender = caller?.sender; const frame = caller?.senderFrame;
+    const destroyed=()=>entry.window.isDestroyed()&&(!workspaceSurfaceFor(entry.window)||workspaceSurfaceFor(entry.window).isDestroyed());
     // The intentional self-close loses its grant. Prove that exact native close
     // under the unchanged epoch/policy instead of accepting any revoked sender.
     const authorizedClose = () => {
-      if (entry.closeInvalidated || !entry.window.isDestroyed() || entry.record.epoch !== this.#epoch) return false;
+      if (entry.closeInvalidated || !destroyed() || entry.record.epoch !== this.#epoch) return false;
       if (!captured || captured.windowId !== windowId) return true;
       if (caller.sender !== sender || caller.senderFrame !== frame || sender !== entry.webContents || frame !== entry.mainFrame) return false;
       try {
@@ -348,11 +452,13 @@ export class WindowRegistry {
       clearTimeout(timer);
       entry.window.off('closed', onClosed); entry.window.off('close', onClose);
       entry.webContents.off('will-prevent-unload', onPreventUnload);
+      entry.webContents.off('destroyed',onContentsDestroyed);
       entry.pendingClose = null;
       if (timedOut) reject(refuse('WINDOW_CLOSE_TIMEOUT', 'Native window close confirmation timed out'));
       else resolve(closed);
     };
-    const onClosed = () => finish(entry.window.isDestroyed());
+    const onClosed = () => {if(destroyed())finish(true);};
+    const onContentsDestroyed=()=>{if(destroyed())finish(true);};
     const onClose = event => {
       closeEvent = event;
       queueMicrotask(() => { if (event.defaultPrevented === true && !entry.window.isDestroyed()) finish(false); });
@@ -364,11 +470,12 @@ export class WindowRegistry {
     };
     entry.window.on('closed', onClosed); entry.window.on('close', onClose);
     entry.webContents.on('will-prevent-unload', onPreventUnload);
+    entry.webContents.on('destroyed',onContentsDestroyed);
     entry.pendingClose = pending;
     timer = setTimeout(() => finish(false, true), this.#closeTimeoutMs);
     try { entry.window.close(); }
     catch (error) { finish(false); throw error; }
-    if (entry.window.isDestroyed()) { finish(true); return confirm(true); }
+    if (destroyed()) { finish(true); return confirm(true); }
     if (closeEvent?.defaultPrevented === true) { finish(false); return false; }
     return pending.then(confirm);
   }
@@ -388,6 +495,15 @@ export class WindowRegistry {
     entry.revoked = true; entry.closeInvalidated = true; this.#retiredContents.add(entry.webContents);
     if (!this.#destroyWindow(entry.window)) return false;
     this.#forget(entry); return true;
+  }
+
+  async discardViewAsync(windowId){
+    const entry=this.#views.get(windowId);
+    if(!entry||entry.window===this.#workspace?.window)return false;
+    entry.revoked=true;entry.closeInvalidated=true;this.#retiredContents.add(entry.webContents);
+    this.#unclosedWindows.add(entry.window);this.#destructionFailed=true;
+    if(!await this.#destroyWindowAsync(entry.window))return false;
+    this.#forget(entry);this.#destructionFailed=this.#unclosedWindows.size>0;return true;
   }
 
   invalidateEpoch({ preserveWorkspace = false } = {}) {
@@ -410,6 +526,21 @@ export class WindowRegistry {
     this.#destructionFailed = failed;
     if (failed) throw refuse('WINDOW_DESTROY_FAILED', 'Native data window destruction incomplete');
     return this.#epoch;
+  }
+
+  // Revocation/concealment begins synchronously. The awaited native surface
+  // disposal proves both handles gone; shell destruction alone cannot admit
+  // another epoch. Failed handles remain retained and all admission fenced.
+  async invalidateEpochAsync(options={}){
+    try{return this.invalidateEpoch(options);}
+    catch(error){if(error?.code!=='WINDOW_DESTROY_FAILED')throw error;}
+    const epoch=this.#epoch;
+    const results=await Promise.all([...this.#unclosedWindows].map(window=>this.#destroyWindowAsync(window)));
+    this.#destructionFailed=this.#unclosedWindows.size>0;
+    if(results.some(result=>result!==true)||this.#destructionFailed)
+      throw refuse('WINDOW_DESTROY_FAILED','Native data window destruction incomplete');
+    if(this.#epoch!==epoch)throw refuse('ACCESS_REFUSED','Native retirement superseded');
+    return epoch;
   }
 
   // Native-only queued-operation proof. Identifiers projected to renderers are
@@ -438,6 +569,9 @@ export class WindowRegistry {
 
   // Trusted native adapters only; no preload or IPC exposes captured handles.
   eventFor(grant) {return this.isCurrent(grant)?this.#captures.get(grant):null;}
+  // Main-only lookup of the exact owned shell, including pending/retired
+  // factory handles. No IPC/preload projects native surfaces or this method.
+  surfaceFor(window){return workspaceSurfaceFor(window);}
 
   // Main-only source scope preserves the version requested when this genuine
   // native Code window was admitted. Projected IDs cannot recreate it.

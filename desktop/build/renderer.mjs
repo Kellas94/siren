@@ -225,9 +225,9 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     html = html.replace(tourCard, tourCard + "\n        tourCard.dataset.desktopStep = String(step.sel === '#desktopOptions');");
     const uiRoot = fileURLToPath(new URL('../src/ui/', import.meta.url));
     const storage = await readFile(join(uiRoot, 'storage.js'), 'utf8');
-    const ui = await readFile(join(uiRoot, 'desktop.js'), 'utf8');
+    const ui = (await readFile(join(uiRoot, 'desktop.js'), 'utf8'))+'\n'+(await readFile(join(uiRoot,'windows/shelf.js'),'utf8'));
     const pinUi = await readFile(join(uiRoot, 'pin.js'), 'utf8');
-    const css = await readFile(join(uiRoot, 'desktop.css'), 'utf8');
+    const css = (await readFile(join(uiRoot, 'desktop.css'), 'utf8'))+'\n'+(await readFile(join(uiRoot,'windows/shelf.css'),'utf8'));
     if ([storage, ui, pinUi].some(s => /<\/script/i.test(s)) || /<\/style/i.test(css)) throw new Error('Unexpected adapter closing tag');
     const appScript = "  <script>\n    (() => {\n      'use strict';\n\n      const APP_VERSION";
     if (html.split(appScript).length !== 2) throw new Error('Desktop script patch marker mismatch');

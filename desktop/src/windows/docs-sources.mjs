@@ -70,7 +70,7 @@ export class NativeDocsSources{
    this.#show(opened);
    return Object.freeze({ok:true,view:Object.freeze({windowId:opened.windowId,role:opened.role,projectId:opened.projectId,epoch:opened.epoch,entityId:opened.entityId,state:opened.state})});
   }catch(cause){
-   if(opened&&!this.#registry.discardView(opened.windowId))return fail('WINDOW_DESTROY_FAILED');
+   if(opened&&!await this.#registry.discardViewAsync(opened.windowId))return fail('WINDOW_DESTROY_FAILED');
    return fail(['REQUEST_REFUSED','ACCESS_REFUSED','DOCUMENT_CONFLICT','LINK_TARGET_REFUSED','SOURCE_RESULT_REFUSED','SOURCE_READER_BUDGET','SOURCE_RANGE_REFUSED','WINDOW_DESTROY_FAILED'].includes(cause?.code)?cause.code:['INVALID_RANGE','INVALID_UNICODE'].includes(cause?.code)?'SOURCE_RANGE_REFUSED':method==='previewLinkedSource'?'SOURCE_PREVIEW_FAILED':'SOURCE_OPEN_FAILED');
   }finally{
    try{reader?.dispose();}finally{if(reserved)this.#previews--;}

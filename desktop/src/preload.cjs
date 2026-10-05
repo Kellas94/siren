@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('sirenHome',Object.freeze(homeBridge));
 const admitted=bootstrap?.navigationPending===true?new Promise(resolve=>ipcRenderer.once('siren:workspace-admitted',()=>resolve())):Promise.resolve();
 contextBridge.exposeInMainWorld('sirenDesktopAdmitted',()=>admitted);
 const windowMethods = ['getView', 'listViews', 'openView', 'focusView', 'closeView', 'getCatalog'];
+contextBridge.exposeInMainWorld('sirenWindowDock',Object.freeze(Object.fromEntries(['getShelf','attach','detach','showWorkspace'].map(method=>[method,payload=>ipcRenderer.invoke('siren:window-dock',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenWindow', Object.freeze(Object.fromEntries(windowMethods.map(method => [method, payload => ipcRenderer.invoke('siren:windows', method, payload)]))));
 
 // The captured native frame alone receives this finite draining ticket.

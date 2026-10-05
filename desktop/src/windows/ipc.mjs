@@ -84,8 +84,8 @@ export async function invokeWindow({ event, method, payload, registry }) {
       const view = live && record(opened, live);
       if (!view || view.role !== data.role || view.entityId !== data.entityId) {
         // Trusted registry disposal bypasses a user-cancelable normal close.
-        if (!validId(opened?.windowId) || typeof registry.discardView !== 'function'
-          || registry.discardView(opened.windowId) !== true) return failure('WINDOW_DESTROY_FAILED');
+        if (!validId(opened?.windowId) || typeof registry.discardViewAsync !== 'function'
+          || await registry.discardViewAsync(opened.windowId) !== true) return failure('WINDOW_DESTROY_FAILED');
         return failure(live ? 'VIEW_REFUSED' : 'SENDER_REFUSED');
       }
       return { ok: true, view };

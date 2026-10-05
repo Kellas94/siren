@@ -51,6 +51,17 @@ test('cross-DPI monitor movement uses actual DIP bounds and positions before siz
  code.getBounds=()=>({...actual});code.getNormalBounds=()=>({...cached});code.setPosition=(x,y)=>{actual={...actual,x,y};cached={...actual};positioned=true;};code.setSize=(width,height)=>{assert.equal(positioned,true);actual={...actual,width,height};cached={...actual};sized=true;};code.setBounds=b=>{actual={...b,width:Math.round(b.width/1.5),height:Math.round(b.height/1.5)};cached={...actual};};
  assert.equal(await f.layout.moveToMonitor(f.layout.prepareMove(code),2),true);assert.equal(sized,true);assert.deepEqual(actual,{x:-1500,y:60,width:700,height:500});
 });
+test('native completion matches the exact OS DIP-pixel projection while preserving the requested size and rejecting out-of-area projections',async()=>{
+ for(const unsafe of [false,true]){
+  const projection=b=>({...b,width:b.width+1,...(unsafe?{x:32000}:{})});
+  const f=await fixture({projectBounds:projection}),code=f.windows.get(f.code.windowId);f.state.displays.push({id:2,workArea:{x:-1600,y:0,width:1600,height:900}});
+  code.normal={x:100,y:100,width:700,height:500};code.getBounds=()=>({...code.normal});let requested;
+  code.setPosition=(x,y)=>{code.normal={...code.normal,x,y};};code.setSize=(width,height)=>{requested={width,height};code.normal={...code.normal,width:width+1,height};};
+  assert.equal(await f.layout.moveToMonitor(f.layout.prepareMove(code),2),!unsafe);
+  if(!unsafe){assert.deepEqual(requested,{width:700,height:500});assert.deepEqual(code.normal,{x:-1500,y:60,width:701,height:500});}
+  else assert.equal(requested,undefined,'Unsafe projection is refused before requesting a native size');
+ }
+});
 test('native monitor popup uses radio choices and a captured one-use origin without exposing renderer move authority',async()=>{
  assert.equal(typeof implementation.showNativeMonitorMenu,'function');const f=await fixture(),code=f.windows.get(f.code.windowId);let template,popup;
  const Menu={buildFromTemplate(items){template=items;return {popup(options){popup=options;}};}};

@@ -14,19 +14,26 @@ export class NativeWindowLayout{
  #active=null;#pending=null;#generation=0;#disposed=false;
  #moves=new WeakMap();
  #placementMemory;
- constructor({registry,mainWindow,windowFor,displays,canRecoverViews,placementMemory}){
+ #projectBounds;
+ constructor({registry,mainWindow,windowFor,displays,canRecoverViews,placementMemory,projectBounds=bounds=>({...bounds})}){
   if(!['listViews','capture','isCurrent'].every(k=>typeof registry?.[k]==='function')||!mainWindow||![windowFor,displays,canRecoverViews].every(fn=>typeof fn==='function'))throw TypeError('NATIVE_LAYOUT_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#main=mainWindow;this.#windowFor=windowFor;this.#displays=displays;this.#canRecover=canRecoverViews;this.#placementMemory=placementMemory;
+  if(typeof projectBounds!=='function')throw TypeError('NATIVE_BOUND_PROJECTION_REQUIRED');
+  this.#registry=registry;this.#main=mainWindow;this.#windowFor=windowFor;this.#displays=displays;this.#canRecover=canRecoverViews;this.#placementMemory=placementMemory;this.#projectBounds=projectBounds;
  }
  #capture(window){
   if(this.#disposed||!window||window.isDestroyed())return null;
   if(window===this.#main)return {window};
   if(this.#canRecover()!==true)return null;
   const grant=this.#registry.capture({sender:window.webContents,senderFrame:window.webContents.mainFrame});
-  return grant&&this.#windowFor(grant.windowId)===window&&this.#registry.isCurrent(grant)?{window,grant}:null;
+  if(!grant||this.#windowFor(grant.windowId)!==window||!this.#registry.isCurrent(grant))return null;
+  return this.#registry.surfaceFor?.(window)?.placement()==='attached'
+    ?{window:this.#main,attached:{window,grant}}:{window,grant};
  }
  #current(target){
   if(this.#disposed||this.#main.isDestroyed()||target.window.isDestroyed())return false;
+  if(target.attached&&(this.#canRecover()!==true||!this.#registry.isCurrent(target.attached.grant)
+    ||this.#windowFor(target.attached.grant.windowId)!==target.attached.window
+    ||this.#registry.surfaceFor?.(target.attached.window)?.placement()!=='attached'))return false;
   if(target.window===this.#main)return true;
   if(this.#canRecover()!==true||!this.#registry.isCurrent(target.grant)||this.#windowFor(target.grant.windowId)!==target.window)return false;
   const fresh=this.#registry.capture({sender:target.window.webContents,senderFrame:target.window.webContents.mainFrame});
@@ -80,6 +87,13 @@ export class NativeWindowLayout{
      normal={...normal,x:to.x+normal.x-from.x,y:to.y+normal.y-from.y};
     }
     const next=restoreBounds({normalBounds:normal},areas).normalBounds;
+    // Windows may project an integer DIP rectangle onto a fractional pixel
+    // grid. Keep the original request and require exact readback of Electron's
+    // native pixel roundtrip; never accept a general +/- pixel tolerance.
+    const expected=this.#projectBounds({...next});
+    if(!expected||!['x','y','width','height'].every(key=>Number.isSafeInteger(expected[key]))||expected.width<=0||expected.height<=0
+      ||!areas.some(({workArea:a})=>expected.x>=a.x&&expected.y>=a.y&&expected.x+expected.width<=a.x+a.width&&expected.y+expected.height<=a.y+a.height))
+      throw Error('NATIVE_BOUND_PROJECTION_REFUSED');
     if(!this.#minimum.has(w))this.#minimum.set(w,w.getMinimumSize());
     const minimum=this.#minimum.get(w);
     if(!this.#valid(request,target))throw Error('NATIVE_LAYOUT_CANCELLED');
@@ -87,11 +101,11 @@ export class NativeWindowLayout{
     if(!this.#valid(request,target))throw Error('NATIVE_LAYOUT_CANCELLED');
     if(request.moving&&!w.isMinimized()&&typeof w.setPosition==='function'&&typeof w.setSize==='function'){
      w.setPosition(next.x,next.y,false);let lastPosition;
-     await this.#settled(request,target,()=>{const current=normalDIP(w),stable=lastPosition&&equalBounds(current,lastPosition);lastPosition=current;return stable&&current.x===next.x&&current.y===next.y;});
+     await this.#settled(request,target,()=>{const current=normalDIP(w),stable=lastPosition&&equalBounds(current,lastPosition);lastPosition=current;return stable&&current.x===expected.x&&current.y===expected.y;});
      if(!this.#valid(request,target))throw Error('NATIVE_LAYOUT_CANCELLED');w.setSize(next.width,next.height,false);
     }else if(!equalBounds(normalDIP(w),next))w.setBounds(next,false);
-    await this.#settled(request,target,()=>equalBounds(normalDIP(w),next));
-    const nativeNormal=w.getNormalBounds();placedBounds=next;
+    await this.#settled(request,target,()=>equalBounds(normalDIP(w),expected));
+    const nativeNormal=w.getNormalBounds();placedBounds=expected;
     this.#restoreMode(target,state,restoreMinimized);
     await this.#settled(request,target,()=>equalBounds(w.getNormalBounds(),nativeNormal)&&w.isMaximized()===state.maximized&&w.isFullScreen()===state.fullscreen&&w.isMinimized()===(restoreMinimized?false:state.minimized));
     placed=true;
@@ -133,9 +147,9 @@ export class NativeWindowLayout{
   try{
    if(this.#disposed||this.#active)return null;
    const origin=this.#capture(originWindow);if(!origin)return null;
-   const displays=this.#areas(),current=restoreBounds({normalBounds:normalDIP(originWindow)},displays).displayId;
+   const displays=this.#areas(),current=restoreBounds({normalBounds:normalDIP(origin.window)},displays).displayId;
    const ticket=Object.freeze({choices:Object.freeze(displays.map((d,i)=>Object.freeze({id:d.id,label:`Display ${i+1} · ${d.workArea.width} × ${d.workArea.height}${d.primary?' · Main display':''}`,current:d.id===current})))});
-   this.#moves.set(ticket,{explicit:true,moving:true,origin,originFrame:originWindow.webContents.mainFrame,targets:[origin],displays,fingerprint:JSON.stringify(displays),generation:this.#generation});
+   this.#moves.set(ticket,{explicit:true,moving:true,origin,originFrame:origin.window.webContents.mainFrame,targets:[origin],displays,fingerprint:JSON.stringify(displays),generation:this.#generation});
    return ticket;
   }catch{return null;}
  }

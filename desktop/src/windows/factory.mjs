@@ -1,5 +1,6 @@
 import { restoreBounds } from './geometry.mjs';
 import {setTimeout as nativePause} from 'node:timers/promises';
+import {workspaceSurfaceFor} from './surface.mjs';
 
 /** Hidden native shells can acquire a different frame size during creation on
  * a scaled display. Place then size on that display before caching a mode. */
@@ -26,7 +27,7 @@ export async function settleHiddenBounds(window,bounds){
 }
 
 /** Data-free native shells. Main supplies the native registry's exact role URL. */
-export function nativeViewFactory({ BrowserWindow, displays, preload, presentationPreload, layoutMemory, onCreated = () => {} }) {
+export function nativeViewFactory({ BrowserWindow, displays, preload, presentationPreload, layoutMemory, createSurface, onCreated = () => {} }) {
   return async options => {
     const expected = `siren://app/windows/${options.role}.html?windowId=${options.windowId}`;
     const presenting=['presenter','audience'].includes(options.role);
@@ -34,12 +35,17 @@ export function nativeViewFactory({ BrowserWindow, displays, preload, presentati
       throw Object.assign(new Error('Native entrypoint refused'), { code: 'REQUEST_REFUSED' });
     }
     const ticket=layoutMemory?.reserve(options);
-    const { normalBounds } = ticket?.layout??restoreBounds({}, displays());let window;
+    const { normalBounds } = ticket?.layout??restoreBounds({}, displays());let window,surface;
     try {
-    window = new BrowserWindow({ ...normalBounds, show: false, title: 'SIREN — '+({code:'Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[options.role]),
+    const windowOptions={ ...normalBounds, show: false, title: 'SIREN — '+({code:'Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[options.role]),
       minWidth: Math.min(480, normalBounds.width), minHeight: Math.min(320, normalBounds.height), backgroundColor: '#171719',
-      webPreferences: { preload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true },
-    });
+    };
+    const webPreferences={ preload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true };
+    if(['code','docs'].includes(options.role)&&typeof createSurface==='function'){
+      surface=createSurface({windowOptions,webPreferences});window=surface?.window;
+      if(!window||workspaceSurfaceFor(window)!==surface||window.webContents!==surface.webContents)
+        throw Object.assign(Error('Owned native surface required'),{code:'ACCESS_REFUSED'});
+    }else window=new BrowserWindow({...windowOptions,webPreferences});
       if(ticket)window.once('closed',()=>layoutMemory.release(ticket));
       const wc = window.webContents;
       wc.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -47,7 +53,7 @@ export function nativeViewFactory({ BrowserWindow, displays, preload, presentati
       wc.on('will-frame-navigate', event => { if (!event.isMainFrame || event.url !== expected) event.preventDefault(); });
       wc.on('will-attach-webview', event => event.preventDefault());
       onCreated(window, options, ticket);
-      await window.loadURL(expected);
+      if(surface)await wc.loadURL(expected);else await window.loadURL(expected);
       if (window.isDestroyed() || wc.isDestroyed() || wc.getURL() !== expected || wc.mainFrame.url !== expected) {
         throw Object.assign(new Error('Native entrypoint unavailable'), { code: 'ACCESS_REFUSED' });
       }
@@ -56,8 +62,9 @@ export function nativeViewFactory({ BrowserWindow, displays, preload, presentati
     } catch (error) {
       if(ticket)layoutMemory.release(ticket);
       if(!window)throw error;
-      try { if (!window.isDestroyed()) window.destroy(); if (!window.isDestroyed()) throw new Error('Native destruction not confirmed'); } catch {
-        throw Object.assign(new Error('Unregistered native window destruction incomplete'), { code: 'WINDOW_DESTROY_FAILED' });
+      try { if(surface)await surface.dispose();else if (!window.isDestroyed()) window.destroy();
+        if (!window.isDestroyed()||surface&&!surface.isDestroyed()) throw new Error('Native destruction not confirmed'); } catch {
+        throw Object.assign(new Error('Unregistered native window destruction incomplete'), { code: 'WINDOW_DESTROY_FAILED',...(surface?{nativeWindow:window}:{}) });
       }
       throw error;
     }

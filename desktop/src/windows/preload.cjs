@@ -64,6 +64,7 @@ contextBridge.exposeInMainWorld('sirenSourceEdit',Object.freeze({
 }));
 contextBridge.exposeInMainWorld('sirenCodeDocs',Object.freeze(Object.fromEntries(['listTargets','listDocuments','commitCodeToDocs','createCodeToDocs'].map(method=>[method,payload=>ipcRenderer.invoke('siren:code-docs',method,payload)]))));
 const methods = ['getView', 'listViews', 'openView', 'focusView', 'closeView'];
+contextBridge.exposeInMainWorld('sirenWindowDock',Object.freeze(Object.fromEntries(['getShelf','attach','detach'].map(method=>[method,payload=>ipcRenderer.invoke('siren:window-dock',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenDiagramExport',Object.freeze({
  exportSvg:payload=>ipcRenderer.invoke('siren:diagram-export','exportSvg',payload),
  revealExport:payload=>ipcRenderer.invoke('siren:diagram-export','revealExport',payload),

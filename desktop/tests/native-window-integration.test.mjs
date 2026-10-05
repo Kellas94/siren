@@ -73,6 +73,14 @@ function fixture() {
   const invoke=(method,payload,eventOverride=event())=>handlers.get('siren:windows')(eventOverride,method,payload);
   return {context,owner,handles,event,bootstrap,invoke,setLocked:value=>{unlocked=!value;},setFaults:(load,destroy)=>{failLoad=load;failDestroy=destroy;},setDelay:promise=>{delayLoad=promise;},setAdmission:kind=>{failAdmission=kind;},failJournal:()=>{failJournal=true;},closeErrors:()=>closeErrors};
 }
+
+test('actual main retirement awaits native async destruction before confirming a transition',async()=>{
+ const f=fixture();f.bootstrap();await f.invoke('openView',{role:'docs',entityId:'doc_a'});
+ const original=f.context.registry.invalidateEpochAsync.bind(f.context.registry);let release,entered=false;
+ const held=new Promise(done=>{release=done;});f.context.registry.invalidateEpochAsync=async options=>{entered=true;await held;return original(options);};
+ const retirement=f.context.retire();assert.equal(entered,true);assert.equal(typeof retirement?.then,'function');
+ assert.equal(f.handles[1].isDestroyed(),false);release();await retirement;assert.equal(f.handles[1].isDestroyed(),true);
+});
 test('actual main binds exact native owner, scoped shell entries and locked null bootstrap',async()=>{
   const f=fixture(); f.setLocked(true); assert.equal(f.bootstrap().snapshot,null); assert.equal(f.context.registry.listViews().length,0);
   assert.equal((await f.invoke('openView',{role:'docs',entityId:'doc_a'})).code,'SENDER_REFUSED');
@@ -85,7 +93,7 @@ test('actual main binds exact native owner, scoped shell entries and locked null
   const satellite=f.handles[1]; const sender={sender:satellite.webContents,senderFrame:satellite.webContents.mainFrame};
   assert.equal((await f.invoke('listViews',undefined,sender)).code,'ACCESS_REFUSED');
   assert.equal(f.context.registry.listViews().length,3);
-  f.context.retire(); assert.equal(f.owner.isDestroyed(),false); assert.equal(f.handles.slice(1).every(w=>w.isDestroyed()),true); assert.equal(f.context.registry.listViews().length,0);
+  await f.context.retire(); assert.equal(f.owner.isDestroyed(),false); assert.equal(f.handles.slice(1).every(w=>w.isDestroyed()),true); assert.equal(f.context.registry.listViews().length,0);
 });
 
 test('actual main exposes bounded selected Docs/Code metadata to the genuine App owner, never its satellite',async()=>{
@@ -107,12 +115,12 @@ test('main failed factory destruction fences every later open and data bootstrap
   f.setFaults(false,false);
   assert.equal((await f.invoke('openView',{role:'docs',entityId:'doc_b'})).code,'PROJECT_BUSY');
   assert.equal(f.bootstrap().snapshot,null); assert.equal(f.handles[1].isDestroyed(),false);
-  f.context.retire(); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.bootstrap().snapshot.project.id,'owned_project');
+  await f.context.retire(); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.bootstrap().snapshot.project.id,'owned_project');
 });
 test('actual main revokes a hidden in-flight native factory before a transition can admit or show it',async()=>{
   const f=fixture(); f.bootstrap(); let release; f.setDelay(new Promise(r=>{release=r;}));
   const pending=f.invoke('openView',{role:'docs',entityId:'doc_a'}); assert.equal(f.handles.length,2); assert.equal(f.handles[1].shown,false);
-  f.context.retire(); release(); assert.equal((await pending).ok,false); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.handles[1].shown,false); assert.equal(f.context.registry.listViews().length,0);
+  const retiring=f.context.retire(); release(); await retiring; assert.equal((await pending).ok,false); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.handles[1].shown,false); assert.equal(f.context.registry.listViews().length,0);
 });
 test('actual ready/send/show failures dispose the admitted shell or fence retained native handles',async()=>{
   for (const kind of ['send','show']) for (const cannotDestroy of [false,true]) {
