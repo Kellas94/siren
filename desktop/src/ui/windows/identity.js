@@ -11,7 +11,7 @@
   const title=roles[role];if(!title)return;
   const text=label(name,title),versionText=Number.isSafeInteger(version)&&version>0?' · v'+version:Number.isSafeInteger(revision)&&revision>0?' · r'+revision:'';
   document.title='SIREN — '+title+' — '+text+versionText+' · '+(readonly?'Read only':'Working copy')+(dirty&&!readonly?' · Unsaved':'');
-  const heading=document.getElementById('viewTitle');if(heading){heading.textContent=role==='code'?title+' · '+text:text;heading.title=document.title;}
+  const heading=document.getElementById('viewTitle');if(heading){heading.textContent=title+' · '+text;heading.title=document.title;}
  }
  window.SirenNativeViewIdentity=Object.freeze({set,clear});
 })();

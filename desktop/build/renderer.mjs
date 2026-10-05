@@ -10,6 +10,7 @@ import {buildPresentationRender} from './presentation-render.mjs';
 import {buildDiagramVector} from './diagram-vector.mjs';
 import { buildWorkspaceEntrypoint } from './workspace.mjs';
 import { importHelper, buildImportValidation } from './import-validation.mjs';
+import {readDesktopChrome} from './chrome.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -227,7 +228,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     const storage = await readFile(join(uiRoot, 'storage.js'), 'utf8');
     const ui = (await readFile(join(uiRoot, 'desktop.js'), 'utf8'))+'\n'+(await readFile(join(uiRoot,'windows/shelf.js'),'utf8'));
     const pinUi = await readFile(join(uiRoot, 'pin.js'), 'utf8');
-    const css = (await readFile(join(uiRoot, 'desktop.css'), 'utf8'))+'\n'+(await readFile(join(uiRoot,'windows/shelf.css'),'utf8'));
+    const css = (await readFile(join(uiRoot, 'desktop.css'), 'utf8'))+'\n'+(await readFile(join(uiRoot,'windows/shelf.css'),'utf8'))+'\n'+await readDesktopChrome();
     if ([storage, ui, pinUi].some(s => /<\/script/i.test(s)) || /<\/style/i.test(css)) throw new Error('Unexpected adapter closing tag');
     const appScript = "  <script>\n    (() => {\n      'use strict';\n\n      const APP_VERSION";
     if (html.split(appScript).length !== 2) throw new Error('Desktop script patch marker mismatch');

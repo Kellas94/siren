@@ -39,7 +39,7 @@ export class NativeWindowFocus{
    const origin=originWindow??this.#focused();let grant;
    if(origin===this.#main){const selected=this.#registry.surfaceRecords?.().find(row=>row.selected);if(selected){const w=this.#windowFor(selected.windowId);grant=this.#registry.capture({sender:w?.webContents,senderFrame:w?.webContents.mainFrame});}}
    else grant=this.#registry.capture({sender:origin?.webContents,senderFrame:origin?.webContents.mainFrame});
-   return !!grant&&['code','docs'].includes(grant.role)&&this.#registry[method==='attach'?'attachView':'detachView']?.(grant.windowId)===true;
+   return !!grant&&['code','docs','diagram'].includes(grant.role)&&this.#registry[method==='attach'?'attachView':'detachView']?.(grant.windowId)===true;
   }catch{return false;}
  }
  closeActive(originWindow){

@@ -1,0 +1,84 @@
+{
+  "author": "/root",
+  "kind": "implementer-source-execution",
+  "sourceCommit": "169035cef57153771fc05b46d09e4274e4f457f3",
+  "unit": {
+    "tests": 1058,
+    "pass": 1058,
+    "fail": 0,
+    "inputs": 423,
+    "currentRawInputsUnchanged": true,
+    "resultPath": "evidence/workspace-surface/full-suite-2026-10-05T21-25-30.721Z/result.json",
+    "resultSha256": "ac0b32932450b35c3184988026320135c517403a1b7806898374bf94c876f023",
+    "logSha256": "bc3a91078169b46933d30cb88538e7f11fb0ef3199de6826405ac81f9d1f438d"
+  },
+  "native": {
+    "groups": 4,
+    "cases": 28,
+    "capturedInputPairs": 124,
+    "aggregatePath": "evidence/context-shelf-qualification/2026-10-05T21-26-51.312Z/result.json",
+    "aggregateSha256": "5f6b4f3e7f7201694fd26ad63dd1b3635d997afb959b64b9f90b0329174c7dcd",
+    "runs": [
+      {
+        "resultPath": "evidence/workspace-dock/2026-10-05T21-25-31.822Z/result.json",
+        "resultSha256": "5a2a53e88cdf37472848cc50ba2178f20b8082b3fed40dae06ade6beeabf6aad",
+        "cases": 6,
+        "lineCount": null,
+        "inputs": 24,
+        "scope": "Actual production Code/Docs same native renderer docking, two Code and two Docs, independent dirty state, native resize/visibility, exact save/common Lock. No physical monitor, full Task4 or release admission."
+      },
+      {
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-dock\\2026-10-05T21-26-51.385Z\\result.json",
+        "resultSha256": "d45f41239c4e1dc67fdb1922b5ece644eb6f496fbd68d721022bc163f2596df7",
+        "cases": 5,
+        "lineCount": 300000,
+        "inputs": 20,
+        "scope": "Actual same-renderer Diagram attachment, original native toolbar/keys/shelf, draft/selection/zoom/theme, Code/Docs peers, exact coordinated Close/Lock and source preservation. Presentation roles/physical monitors remain separate."
+      },
+      {
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\source-read\\2026-10-05T21-27-16.381Z\\result.json",
+        "resultSha256": "5e4593478f94d8f9a5b2e1fd4ecd3925d70236b8047d8ffcd64cfaa0061a7d29",
+        "cases": 11,
+        "lineCount": null,
+        "inputs": 48,
+        "scope": "Actual production native readonly Code/Docs: 300k-line source, EOF Find, Python colours, themes, Wrap; scoped Docs document/outline/lazy sections, safe literal imported text and Lock; no writable editor or physical multi-monitor admission"
+      },
+      {
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\presentation-windows\\2026-10-05T21-27-33.617Z\\result.json",
+        "resultSha256": "54172c0caa4f30f9ecc321fc463cf88377ba885b5dfdfc5b05dc4e0f0ff37029",
+        "cases": 6,
+        "lineCount": 100000,
+        "inputs": 32,
+        "scope": "Actual native Home/Presenter/Audience, Mermaid image and section navigation, role/privacy refusal, explicit deck refresh, observed native fullscreen/Escape/minimize/restore and all-view Lock with Code/Docs. Physical multi-monitor/DPI, rich media, exported decks and packaged runtime are not qualified here."
+      }
+    ]
+  },
+  "images": [
+    {
+      "path": "evidence\\workspace-dock\\2026-10-05T21-25-31.822Z\\code-attached.png",
+      "sha256": "ca00e0dc071bcf949fc4d902138395b6169eeea901ff7bb0c112e8b0d60706cb"
+    },
+    {
+      "path": "evidence\\workspace-dock\\2026-10-05T21-25-31.822Z\\docs-attached.png",
+      "sha256": "95b7e4266359bf4ab48aae79a51110b85c8602a5a82bc89da5598b607c1852aa"
+    },
+    {
+      "path": "evidence\\workspace-dock\\2026-10-05T21-25-31.822Z\\home-named-windows.png",
+      "sha256": "24574e9fc391d6d952852d9f6a74c22443b7684ca5ec68659e2b39f234465989"
+    },
+    {
+      "path": "evidence\\workspace-dock\\2026-10-05T21-25-31.822Z\\home-project-context.png",
+      "sha256": "216477e22b427efd0299a9e6a79e76c6c66e6c13a73e2ddddbf21f05040be8ac"
+    },
+    {
+      "path": "evidence\\workspace-dock\\2026-10-05T21-25-31.822Z\\workspace-shelf.png",
+      "sha256": "55e37b94a00948d76bd36d14c2196952979ff1dc1e66934c3fc7b91baf779f3d"
+    }
+  ],
+  "independentReports": [
+    "2026-10-06-context-shelf-independent.md",
+    "2026-10-06-context-shelf-followup-independent.md",
+    "2026-10-06-context-shelf-final-evidence-independent.md"
+  ],
+  "scope": "Current selected Home context and bounded same-owner native captions/state badges; no global theme sync, rich parity, packaged/hosted/release, independent Electron, physical monitor or wholeTask4/6 admission."
+}

@@ -98,7 +98,7 @@ try{
  result.cases.push({name:'actual 300k-line readonly Code editor, EOF Find outside initial viewport, Python highlighting, light/dark, Wrap and refused native text input',ok:true});
  await pages[2].waitFor("document.body.dataset.documentReady==='true'");
  const documentResult=await pages[2].evaluate('window.sirenDocsRead.getDocument()');assert.equal(documentResult.ok,true);assert.deepEqual(documentResult.document,doc);assert.equal(documentResult.sha256,hash(Buffer.from(JSON.stringify(doc))));
- assert.equal(await pages[2].evaluate("document.querySelector('#viewTitle').textContent"),doc.title);assert.equal(await pages[2].evaluate("document.body.dataset.documentSha256"),documentResult.sha256);
+ assert.equal(await pages[2].evaluate("document.querySelector('#viewTitle').textContent"),'Docs · '+doc.title);assert.equal(await pages[2].evaluate("document.body.dataset.documentSha256"),documentResult.sha256);
  await pages[2].click('#document-section-1 summary');await pages[2].waitFor("document.querySelector('#document-section-1').textContent.includes('Context investigator')");
  assert.equal(await pages[2].evaluate("document.querySelector('#documentContent').textContent.includes('Context connects the code to its purpose.')"),true);
  assert.equal(await pages[2].evaluate("document.querySelector('#documentContent img, #documentContent script')!==null||window.__docsInjected===true"),false);

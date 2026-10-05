@@ -3,6 +3,7 @@ import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
 import {transform} from 'esbuild';
+import {readDesktopChrome} from './chrome.mjs';
 
 /** Standalone, data-free build. Production entry/route admission is separate. */
 export async function buildWorkspaceEntrypoint({outputDir}) {
@@ -14,6 +15,7 @@ export async function buildWorkspaceEntrypoint({outputDir}) {
   }));
   const styles=await Promise.all(['desktop.css','workspace/workspace.css','windows/shelf.css'].map(async name=>(await readFile(new URL(name,ui),'utf8')).replaceAll('\r\n','\n')));
   for(const script of scripts){if(/<\/script/i.test(script))throw Error('Home script boundary refused');new Script(script);}
+  styles.push(await readDesktopChrome());
   if(styles.some(css=>/<\/style/i.test(css)))throw Error('Home style boundary refused');
   const hashes=scripts.map(script=>"'sha256-"+createHash('sha256').update(script).digest('base64')+"'");
   const csp=`default-src 'none'; script-src ${hashes.join(' ')}; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none';`;

@@ -1,0 +1,275 @@
+{
+  "author": "/root",
+  "sourceCommit": "c97ce8f87ad769df8cb74203777173696195ee6a",
+  "scope": "Shared chrome styles and native Diagram attachment/source qualification; no full product, packaged, hosted, physical-monitor, global-theme-sync or functional-parity admission.",
+  "unit": {
+    "tests": 1055,
+    "pass": 1055,
+    "fail": 0,
+    "inputs": 423,
+    "currentRawInputsUnchanged": true,
+    "resultPath": "evidence/workspace-surface/full-suite-2026-10-05T20-55-01.786Z/result.json",
+    "resultSha256": "e8809e5236a3eaa84cc254d56ccddee2c0089c6b29190a2213fda3e202446df0",
+    "logSha256": "96836f9f3761ec2ac80947be2e013bf2ff497dafc9e7ed60ba60f2e421e0942b"
+  },
+  "native": {
+    "groups": 7,
+    "cases": 36,
+    "resultPath": "evidence/diagram-dock-qualification/2026-10-05T20-54-47.832Z/result.json",
+    "resultSha256": "933796d49aedde32585235f8e9ea593bfb83368a94aab88e7118859c31431ef0",
+    "runs": [
+      {
+        "name": "diagram-dock",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-dock\\2026-10-05T20-54-47.895Z\\result.json",
+        "resultSha256": "0370e9a3dbd02dfb4bedb5d9b25f82c11e3f4f75729036e5917dcde002a7abd2",
+        "cases": 5,
+        "lineCount": 300000,
+        "scope": "Actual same-renderer Diagram attachment, original native toolbar/keys/shelf, draft/selection/zoom/theme, Code/Docs peers, exact coordinated Close/Lock and source preservation. Presentation roles/physical monitors remain separate."
+      },
+      {
+        "name": "diagram-edit",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-edit\\2026-10-05T20-55-18.304Z\\result.json",
+        "resultSha256": "46c5e2230050c08802a940cc105b64376aa33b35d7fa47eecac128b1d2c9d59b",
+        "cases": 4,
+        "lineCount": 300000,
+        "scope": "Actual source-only native Diagram editing, frozen validator, independent saves, same-entity conflicts, local preview/theme retention, explicit review/reload, real Close and all-view Lock. Build/Guided and metadata style rendering are still separate work."
+      },
+      {
+        "name": "diagram-guided",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-guided\\2026-10-05T20-55-42.717Z\\result.json",
+        "resultSha256": "b39ebdcd5278bab505a7f71aca0f6ee7f26df3bf9ea9a97c5a2751ec4a2550d7",
+        "cases": 4,
+        "lineCount": 300000,
+        "scope": "Actual native Guided readonly, finite page DOM, real invalid-field Lock rollback and explicit Save/Ctrl+S/Lock retaining every unrelated source and field. Build/style editing and physical displays are not qualified."
+      },
+      {
+        "name": "diagram-build",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-build\\2026-10-05T20-55-58.944Z\\result.json",
+        "resultSha256": "2ce7bcff1f273b98989c33f6e86596ab6ee0534d6888679058176c672fc90105",
+        "cases": 7,
+        "lineCount": 300000,
+        "scope": "Actual native Guided readonly, finite page DOM, real invalid-field Lock rollback and explicit Save/Ctrl+S/Lock retaining every unrelated source and field. Actual metadata styles, imported colour precedence, one-transaction source/style Save and Lock are included. Native bounded flowchart Build label/shape/add/connect/direction, explicit save and tentative-field Lock refusal are included. Free block positioning/vector export/physical displays remain unqualified."
+      },
+      {
+        "name": "diagram-export",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-export\\2026-10-05T20-56-22.718Z\\result.json",
+        "resultSha256": "34846da3263b0a95adb5a179f29de24e35cac6b269ef19e2035aaa479a92a5c5",
+        "cases": 5,
+        "lineCount": 300000,
+        "scope": "Actual native Diagram SVG button, saved-entity transport, bounded isolated rendering, readonly/dirty/stale/wrong-role behavior, whole project/source preservation and common Lock. Reveal integration uses actual receipt but does not open Explorer in this unattended fixture."
+      },
+      {
+        "name": "workspace-dock",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-dock\\2026-10-05T20-56-36.914Z\\result.json",
+        "resultSha256": "ce1eec091953fb1d5032b5379d5c5ecde0f18e9eec49c2d54b536458e5dd000b",
+        "cases": 5,
+        "lineCount": null,
+        "scope": "Actual production Code/Docs same native renderer docking, two Code and two Docs, independent dirty state, native resize/visibility, exact save/common Lock. No physical monitor, full Task4 or release admission."
+      },
+      {
+        "name": "presentation-windows",
+        "resultPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\presentation-windows\\2026-10-05T20-56-49.753Z\\result.json",
+        "resultSha256": "be98deb81dcc74c7ded76bae3bafb0fc8e5840565baca7c1af7ee5d9d112a223",
+        "cases": 6,
+        "lineCount": 100000,
+        "scope": "Actual native Home/Presenter/Audience, Mermaid image and section navigation, role/privacy refusal, explicit deck refresh, observed native fullscreen/Escape/minimize/restore and all-view Lock with Code/Docs. Physical multi-monitor/DPI, rich media, exported decks and packaged runtime are not qualified here."
+      }
+    ]
+  },
+  "visual": {
+    "resultPath": "evidence/ui-consistency/final-2026-10-05T21-02-35.941Z/result.json",
+    "resultSha256": "3f4570533063aed372bafd1a0c432da1dc4aa7cef6356f8ea25036ab0b6f4e8f",
+    "screenshots": [
+      {
+        "filename": "01-home-light.png",
+        "theme": "light",
+        "geometry": {
+          "url": "siren://app/home.html",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(47, 41, 36)",
+          "background": "rgba(0, 0, 0, 0)",
+          "font": "Inter, system-ui, sans-serif",
+          "scrollWidth": 1089
+        },
+        "sha256": "3e7844e2455183dae18ab45f59b42c50118bb9b12e7ae230e3bad1a7ce1dcc93",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\01-home-light.png"
+      },
+      {
+        "filename": "01-home-dark.png",
+        "theme": "dark",
+        "geometry": {
+          "url": "siren://app/home.html",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(244, 247, 251)",
+          "background": "rgba(0, 0, 0, 0)",
+          "font": "Inter, system-ui, sans-serif",
+          "scrollWidth": 1089
+        },
+        "sha256": "75aee2b9f128f7148492f33cf28f05b8b8c6841778b02ec6ae615c324c7a9826",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\01-home-dark.png"
+      },
+      {
+        "filename": "02-code-light.png",
+        "theme": "light",
+        "geometry": {
+          "url": "siren://app/windows/code.html?windowId=83d82986-2e2d-4a92-9024-e8115540728f",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(47, 41, 36)",
+          "background": "rgb(244, 239, 231)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "5243b52dae37f2b141515a63a18530f4c45104b53ce8db1941a1f057028d1f2f",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-code-light.png"
+      },
+      {
+        "filename": "02-code-dark.png",
+        "theme": "dark",
+        "geometry": {
+          "url": "siren://app/windows/code.html?windowId=83d82986-2e2d-4a92-9024-e8115540728f",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(244, 247, 251)",
+          "background": "rgb(10, 15, 22)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "24b052a432258d8aecae1f6891fa3fd130f7225325f11b8211af8a4d1e94107f",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-code-dark.png"
+      },
+      {
+        "filename": "02-docs-light.png",
+        "theme": "light",
+        "geometry": {
+          "url": "siren://app/windows/docs.html?windowId=69b142f9-4b35-4814-bae1-8301498608de",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(47, 41, 36)",
+          "background": "rgb(244, 239, 231)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "2041ceeaa8e8495b7ab0a1f3373fd4efd089e611100d170b32e4f5d16b8ab2c0",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-docs-light.png"
+      },
+      {
+        "filename": "02-docs-dark.png",
+        "theme": "dark",
+        "geometry": {
+          "url": "siren://app/windows/docs.html?windowId=69b142f9-4b35-4814-bae1-8301498608de",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(244, 247, 251)",
+          "background": "rgb(10, 15, 22)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "33e96248a250157fa1691f63a83c19ef2ee4a41ad554f98675da7a2f357663f9",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-docs-dark.png"
+      },
+      {
+        "filename": "02-diagram-light.png",
+        "theme": "light",
+        "geometry": {
+          "url": "siren://app/windows/diagram.html?windowId=f91cea56-f461-40f0-8ee1-7e7e03b0f9f5",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(47, 41, 36)",
+          "background": "rgb(244, 239, 231)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "324639fba9cc51cc463b09086a788ffc0b083e9495ad97cfc1922315e621cc98",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-diagram-light.png"
+      },
+      {
+        "filename": "02-diagram-dark.png",
+        "theme": "dark",
+        "geometry": {
+          "url": "siren://app/windows/diagram.html?windowId=f91cea56-f461-40f0-8ee1-7e7e03b0f9f5",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(244, 247, 251)",
+          "background": "rgb(10, 15, 22)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "715a4e23089b92f9d60ee24b4d3c575f5f00e74b4869ddfa5ea71db0e8612156",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-diagram-dark.png"
+      },
+      {
+        "filename": "02-presenter-light.png",
+        "theme": "light",
+        "geometry": {
+          "url": "siren://app/windows/presenter.html?windowId=6d5e95f2-aeb9-4d75-84e9-3d98c6ac4e4c",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(47, 41, 36)",
+          "background": "rgb(244, 239, 231)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "e7806178617535037a865542e947136f92ea144b5f88e57ea11cb9eceeb07a9d",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-presenter-light.png"
+      },
+      {
+        "filename": "02-presenter-dark.png",
+        "theme": "dark",
+        "geometry": {
+          "url": "siren://app/windows/presenter.html?windowId=6d5e95f2-aeb9-4d75-84e9-3d98c6ac4e4c",
+          "width": 1104,
+          "height": 715,
+          "color": "rgb(244, 247, 251)",
+          "background": "rgb(10, 15, 22)",
+          "font": "Inter, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+          "scrollWidth": 1104
+        },
+        "sha256": "79f3663c693b47f71fe2cfa0062eb8ef79cc5fd68afe5d4e4a4d7f54386ce79a",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\02-presenter-dark.png"
+      },
+      {
+        "filename": "03-legacy.png",
+        "sha256": "531f6f2bd6e00101361eea3ca3f8f35501d0638d542a93b39346edc913dba453",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\03-legacy.png"
+      },
+      {
+        "filename": "04-legacy-navy.png",
+        "values": {
+          "palette": "navy",
+          "color": "rgb(238, 247, 255)",
+          "ink": "#eef7ff",
+          "panel": "#0b192b",
+          "sharedPanel": "#0b192b",
+          "shelf": "rgb(11, 25, 43)"
+        },
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\04-legacy-navy.png",
+        "sha256": "b52714be884d1383f7eb0df2eb6888abda01d1ccb1dfdb092acafee55d637237"
+      },
+      {
+        "filename": "04-legacy-light.png",
+        "values": {
+          "palette": "light",
+          "color": "rgb(47, 41, 36)",
+          "ink": "#2f2924",
+          "panel": "#fffdf8",
+          "sharedPanel": "#fffdf8",
+          "shelf": "rgb(255, 253, 248)"
+        },
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\ui-consistency\\final-2026-10-05T21-02-35.941Z\\04-legacy-light.png",
+        "sha256": "984aa06e3aa84cff6a4678dee552a609cb90d9bc6f33a870d444851f58f07566"
+      }
+    ],
+    "limits": "Owned fixture native Electron content screenshots; excludes OS titlebar, physical monitors and screen-reader validation.",
+    "projectUnchanged": true
+  },
+  "independentReports": [
+    "2026-10-05-diagram-dock-independent.md",
+    "2026-10-05-app-ui-consistency-independent.md",
+    "2026-10-05-app-ui-consistency-visual-independent.md",
+    "2026-10-05-app-ui-foundation-independent.md",
+    "2026-10-05-app-ui-foundation-followup-independent.md"
+  ]
+}

@@ -1,0 +1,35 @@
+/* Shared desktop chrome; content rendering, native bounds and grants stay local. */
+:root{--siren-bg:light-dark(#f4efe7,#0a0f16);--siren-panel:light-dark(#fffdf8,#111923);--siren-alt:light-dark(#f7f1e8,#151f2b);--siren-input:light-dark(#ffffff,#0d151f);--siren-ink:light-dark(#2f2924,#f4f7fb);--siren-muted:light-dark(#665e56,#a9b7c8);--siren-line:light-dark(#d8cec1,#2c3a4b);--siren-accent:light-dark(#9a4c2e,#2563eb);--siren-focus:light-dark(#b95f38,#93c5fd);--siren-radius:12px;--siren-font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+/* Classic retains all existing named palettes. */
+:root[data-theme],body[data-theme]{--siren-bg:var(--app-bg);--siren-panel:var(--panel-bg);--siren-alt:var(--panel-alt);--siren-input:var(--input-bg);--siren-ink:var(--text);--siren-muted:var(--muted);--siren-line:var(--border);--siren-accent:var(--primary);--siren-focus:var(--focus-ring)}
+:root:has(#homeRoot){--home-bg:var(--siren-bg);--home-panel:var(--siren-panel);--home-ink:var(--siren-ink);--home-muted:var(--siren-muted);--home-line:var(--siren-line);--home-accent:var(--siren-accent)}
+.home-resume:after{background:radial-gradient(ellipse at 100% 50%,color-mix(in srgb,var(--siren-accent) 14%,var(--siren-panel)),transparent 75%)}
+.home-primary{color:#fff}
+body[data-role=code] .siren-code-editor{border-color:var(--siren-line)}
+body[data-role]{background:var(--siren-bg);color:var(--siren-ink);font-family:var(--siren-font)}
+body[data-role] button,body[data-role] select{font-family:var(--siren-font);font-size:12px;line-height:1.35;min-height:32px;padding:7px 11px;border:1px solid var(--siren-line);border-radius:9px;background:var(--siren-panel);color:var(--siren-ink);transition:background .12s,border-color .12s}
+body[data-role] button:hover:not(:disabled){background:var(--siren-alt);border-color:var(--siren-muted)}
+body[data-role] button:disabled{cursor:default;opacity:.5}
+body[data-role] :is(button,select,input,textarea,summary):focus-visible{outline:2px solid var(--siren-focus);outline-offset:3px}
+body[data-role] :is(main>header,body>header){gap:8px;padding:0 0 14px;border-bottom:1px solid var(--siren-line)}
+body[data-role] header h1{font-family:var(--siren-font);font-size:20px;font-weight:600;letter-spacing:-.035em}
+body[data-role] #viewStatus{color:var(--siren-muted);opacity:1;line-height:1.5;min-height:18px}
+body[data-role] #closeView{background:transparent}
+body[data-role] #transferView{background:var(--siren-alt)}
+body[data-role] :is(#saveDiagram,#saveDocument){background:var(--siren-accent);color:#fff;border-color:transparent}
+body[data-role] :is(#diagramSource,#diagramViewport,#diagramGuided,#diagramStylePanel,#diagramBuildPanel,#codeAnalysis,.document-group,.document-knowledge,.document-source,.document-source-preview,.document-structured-row){border-color:var(--siren-line);border-radius:var(--siren-radius);background:var(--siren-panel)}
+body[data-role] :is(#diagramSource,.document-editor input,.document-editor textarea,.document-field input,.document-field textarea,#analysisFilter){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line)}
+body[data-role] :is(.diagram-note,.diagram-source-panel label,.document-caption){color:var(--siren-muted);opacity:1}
+body[data-role] :is(#documentOutline,#slideList){padding:10px;background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius)}
+body[data-role] #documentContent{background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius);padding:20px 28px 40px}
+body[data-role] .document-layout{border-top:0;padding-top:0;gap:14px}
+body[data-role] .notes{border-color:var(--siren-line);color:var(--siren-ink)}
+body[data-role] :is(#slideList button[aria-current=true],.diagram-editor-modes button[aria-pressed=true]){background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel));border-color:var(--siren-accent)}
+/* Public slide pixels remain immutable. */
+body[data-role=presenter] #publicSlide{background:var(--siren-panel);border-color:var(--siren-line);border-radius:var(--siren-radius)}
+#nativeWindowShelf{font-family:var(--siren-font);background:var(--siren-panel);color:var(--siren-ink);border-color:var(--siren-line)}
+#nativeWindowShelf button:focus-visible{outline-color:var(--siren-focus)}
+#nativeWindowShelf button[aria-pressed=true]{border-color:var(--siren-accent);background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel))}
+#desktopBar,.desktop-windows-panel,.desktop-recovery-panel{font-family:var(--siren-font)}
+.home-topbar .home-current{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-topbar-tools{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){body[data-role] button,body[data-role] select{transition:none}}

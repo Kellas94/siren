@@ -11,7 +11,7 @@
   finally{pending=false;signature='';await refresh();}
  }
  function build(){
-  bar=make('nav',document.body);bar.id='nativeWindowShelf';bar.setAttribute('aria-label','Open Code and Docs views');
+  bar=make('nav',document.body);bar.id='nativeWindowShelf';bar.setAttribute('aria-label','Open Code, Docs and Diagrams views');
   button(bar,'Workspace',()=>window.sirenWindowDock.showWorkspace()).title='Return to the main workspace · Ctrl+Alt+1';
   tabs=make('div',bar);tabs.className='native-shelf-tabs';tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Open views');
   active=button(bar,'Detach',()=>{const item=rows.find(row=>row.selected);return item?window.sirenWindowDock.detach({windowId:item.windowId}):Promise.resolve({ok:false});});
@@ -22,10 +22,14 @@
   rows=items;if(!bar)build();bar.hidden=items.length===0;
   document.body.classList.toggle('native-shelf-open',items.length>0);active.hidden=!items.some(item=>item.selected);
   const focused=document.activeElement?.dataset?.windowId;
-  tabs.replaceChildren();const counts={code:0,docs:0};
+  tabs.replaceChildren();const counts={code:0,docs:0,diagram:0},labels={code:'⌘ Code',docs:'Docs',diagram:'Diagrams'};
   for(const item of items){
-    const name=(item.role==='code'?'⌘ Code':'Docs')+' '+(++counts[item.role]);
-    const tab=button(tabs,name,()=>window.sirenWindow.focusView({windowId:item.windowId}));
+    const fallback=labels[item.role]+' '+(++counts[item.role]);
+    const label=typeof item.label==='string'?item.label:fallback,dirty=label.endsWith(' · Unsaved'),min=item.state==='minimized';
+    const name=label+(min?' · Minimized':''),tab=button(tabs,'',()=>window.sirenWindow.focusView({windowId:item.windowId}));
+    make('span',tab,dirty?label.slice(0,-10):label).className='native-shelf-name';
+    for(const text of [dirty?' · Unsaved':'',min?' · Minimized':''])if(text)make('span',tab,text).className='native-shelf-state';
+    tab.setAttribute('aria-label',name);
     tab.dataset.windowId=item.windowId;tab.setAttribute('aria-pressed',String(item.selected));
     tab.title=name+' · '+(item.placement==='attached'?'Attached':'Separate window')+' · '+item.entityId;
     if(item.placement==='detached')tab.classList.add('native-shelf-detached');

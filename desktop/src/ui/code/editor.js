@@ -20,10 +20,10 @@ function pythonSupport(parser) {
 }
 function appearance(dark) {
   return [EditorView.theme({
-    '&': { height: '100%', backgroundColor: dark ? '#181c24' : '#fbfcff', color: dark ? '#d9e0ed' : '#182335' },
+    '&': { height: '100%', backgroundColor: `var(--siren-input,${dark ? '#181c24' : '#fbfcff'})`, color: `var(--siren-ink,${dark ? '#d9e0ed' : '#182335'})` },
     '.cm-scroller': { overflow: 'auto', fontFamily: 'Consolas, monospace', fontSize: '14px' },
     '.cm-content': { caretColor: dark ? '#ffffff' : '#172c49' },
-    '.cm-gutters': { backgroundColor: dark ? '#232936' : '#edf1f8', color: dark ? '#a7b4ca' : '#51637f', border: 'none' },
+    '.cm-gutters': { backgroundColor: `var(--siren-alt,${dark ? '#232936' : '#edf1f8'})`, color: `var(--siren-muted,${dark ? '#a7b4ca' : '#51637f'})`, border: 'none' },
     '.cm-line': { padding: '0 12px' }, '.cm-search': { padding: '8px' }
   }, { dark }), syntaxHighlighting(HighlightStyle.define([
     { tag: tags.keyword, color: dark ? '#b6a2ff' : '#7039a6' },
@@ -78,7 +78,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   root.append(toolbar, surface, status); container.replaceChildren(root);
   function paintTheme() {
     const dark = theme === 'dark'; root.dataset.theme = theme;
-    root.style.background = dark ? '#232936' : '#edf1f8'; root.style.color = dark ? '#d9e0ed' : '#182335';
+    root.style.background = `var(--siren-alt,${dark ? '#232936' : '#edf1f8'})`; root.style.color = `var(--siren-ink,${dark ? '#d9e0ed' : '#182335'})`;
   }
   function refresh(value = adapter.getStatus()) {
     if (disposed) return;

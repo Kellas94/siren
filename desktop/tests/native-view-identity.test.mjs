@@ -39,9 +39,9 @@ test('native title identifies source, exact version, mode and local draft withou
  const f=await ui();f.api.set({role:'code',name:'agent Ș😀.py',version:3,readonly:false,dirty:true});
  assert.equal(f.document.title,'SIREN — ⌘ Code — agent Ș😀.py · v3 · Working copy · Unsaved');assert.equal(f.heading.textContent,'⌘ Code · agent Ș😀.py');
  f.api.set({role:'code',name:'agent Ș😀.py',version:4,readonly:true});assert.equal(f.document.title,'SIREN — ⌘ Code — agent Ș😀.py · v4 · Read only');
- f.api.set({role:'docs',name:'<img onerror=bad>\nAgent\u202e',revision:2,readonly:false});assert.equal(f.heading.textContent,'<img onerror=bad> Agent');assert.equal(f.document.title,'SIREN — Docs — <img onerror=bad> Agent · r2 · Working copy');assert.equal(f.document.title.includes('\n'),false);assert.equal(f.document.title.includes('\u202e'),false);
+ f.api.set({role:'docs',name:'<img onerror=bad>\nAgent\u202e',revision:2,readonly:false});assert.equal(f.heading.textContent,'Docs · <img onerror=bad> Agent');assert.equal(f.document.title,'SIREN — Docs — <img onerror=bad> Agent · r2 · Working copy');assert.equal(f.document.title.includes('\n'),false);assert.equal(f.document.title.includes('\u202e'),false);
 });
 test('bounded Unicode titles never retain a broken surrogate or metadata after reset',async()=>{
- const f=await ui();f.api.set({role:'diagram',name:'x'.repeat(119)+'😀rest',version:1,readonly:true});assert.ok(f.heading.textContent.length<=120);assert.equal(f.heading.textContent.isWellFormed(),true);
+ const f=await ui();f.api.set({role:'diagram',name:'x'.repeat(119)+'😀rest',version:1,readonly:true});assert.ok(f.heading.textContent.startsWith('Diagrams · '));assert.ok(f.heading.textContent.slice('Diagrams · '.length).length<=120);assert.equal(f.heading.textContent.isWellFormed(),true);
  f.api.clear('diagram');assert.equal(f.document.title,'SIREN — Diagrams');assert.equal(f.heading.textContent,'Diagrams');assert.equal(f.heading.title,'');
 });

@@ -62,7 +62,7 @@
    $('viewTitle').textContent=result.diagram.name||'Diagrams';document.body.dataset.diagramId=result.diagram.id;document.body.dataset.diagramReadonly=String(readonly);document.body.dataset.diagramReady='true';document.body.dataset.diagramRendered='false';canvas.replaceChildren();updateState();
    if(guidedMode)guidedView.reset();
   },
-  onPreview({svg,targets}){canvas.replaceChildren(svg);styleView.setTargets(targets);buildView.setTargets(targets);const title=$('diagramPreviewTitle'),diagram=draft?.getDiagram();title.textContent=diagram?.diagramTitleTouched?diagram.diagramTitle||'':'';title.hidden=!title.textContent;title.title=title.textContent;viewport.dataset.hasTitle=String(!title.hidden);fit();document.body.dataset.diagramRendered='true';lastError='';updateState();},
+  onPreview({svg,targets}){canvas.replaceChildren(svg);styleView.setTargets(targets);buildView.setTargets(targets);const title=$('diagramPreviewTitle'),diagram=draft?.getDiagram();title.textContent=diagram?.diagramTitleTouched?diagram.diagramTitle||'':'';title.hidden=!title.textContent;title.title=title.textContent;viewport.dataset.hasTitle=String(!title.hidden);transform();document.body.dataset.diagramRendered='true';lastError='';updateState();},
   onError(){document.body.dataset.diagramRendered='false';lastError=sourceInput.value.length>50000?'Your source is retained. Preview supports up to 50,000 characters.':'The preview could not render. Your exact source and project data were retained.';updateState();}
  });
  const refresh=()=>{if(!paused&&!disposed)void session.refresh();};

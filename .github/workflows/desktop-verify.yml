@@ -173,6 +173,9 @@ jobs:
             desktop/evidence/diagram-export/*/result.json
             desktop/evidence/diagram-export/*/*.log
             desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -354,6 +357,9 @@ jobs:
             desktop/evidence/diagram-export/*/result.json
             desktop/evidence/diagram-export/*/*.log
             desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -438,6 +444,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-export.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/diagram-dock.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram docking failed" }
           node tests/native/diagram-build.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-structured.mjs --package $preview.previewRoot --300k
@@ -575,6 +583,9 @@ jobs:
             desktop/evidence/diagram-export/*/result.json
             desktop/evidence/diagram-export/*/*.log
             desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png

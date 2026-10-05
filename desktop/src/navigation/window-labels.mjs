@@ -3,13 +3,21 @@ import {workspaceMetadata} from '../windows/entities.mjs';
 const roles=Object.freeze({code:'⌘ Code',docs:'Docs',diagram:'Diagrams',presenter:'Presenter',audience:'Audience'});
 const own=(value,key)=>{const descriptor=value&&typeof value==='object'?Object.getOwnPropertyDescriptor(value,key):null;return descriptor&&Object.hasOwn(descriptor,'value')?descriptor.value:undefined;};
 const key=ref=>ref&&typeof ref.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256)?`${ref.sourceId}:${ref.version}:${ref.sha256}`:null;
-function name(value,fallback){
+function name(value,fallback,limit=160){
  if(typeof value!=='string')return fallback;
- const clean=value.slice(0,1024).toWellFormed().replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,' ').replace(/\s+/g,' ').trim().slice(0,160);
+ const clean=value.slice(0,1024).toWellFormed().replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,' ').replace(/\s+/g,' ').trim().slice(0,limit);
  return (/[\uD800-\uDBFF]$/.test(clean)?clean.slice(0,-1):clean)||fallback;
 }
 const fileName=value=>typeof value==='string'&&value.length>0&&value.length<=200&&value.isWellFormed()&&!/[\\/:\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(value)&&value!=='.'&&value!=='..'?value:null;
 const rows=value=>Array.isArray(value)?value.slice(0,4096):[];
+
+/** Display-only native title; never use it to select an entity or authorize work. */
+export function surfaceWindowLabel(role,title,entityId){
+ const module=roles[role];if(!['code','docs','diagram'].includes(role))return null;
+ const prefix='SIREN — '+module+' — ';
+ const fallback=typeof entityId==='string'?entityId.slice(0,8):module;
+ return module+' · '+name(typeof title==='string'&&title.startsWith(prefix)?title.slice(prefix.length):null,fallback,224);
+}
 
 /** Trusted native roster and selected saved metadata only. A main-owned callback
  * may supply {reference, working:true} from a current NativeWorkingSources grant;

@@ -7,16 +7,22 @@ export function invokeDock({registry,event,method,payload}){
  let grant,sender,frame;
  const current=()=>event.sender===sender&&event.senderFrame===frame&&registry.isCurrent(grant);
  try{
-  grant=registry.capture(event);if(!grant||!['workspace','code','docs'].includes(grant.role))return failure('ACCESS_REFUSED');
+  grant=registry.capture(event);if(!grant||!['workspace','code','docs','diagram'].includes(grant.role))return failure('ACCESS_REFUSED');
   sender=event.sender;frame=event.senderFrame;
   if(!['getShelf','attach','detach','showWorkspace'].includes(method))return failure('REQUEST_REFUSED');
   let data;try{data=navigationFields(payload??{},method==='attach'||method==='detach'?['windowId']:[],method==='attach'||method==='detach'?['windowId']:[]);}
   catch{return failure('REQUEST_REFUSED');}
   const rows=registry.surfaceRecords().slice(0,64).filter(row=>id(row.windowId)&&id(row.entityId)
-    &&['code','docs'].includes(row.role)&&['attached','detached'].includes(row.placement)&&typeof row.selected==='boolean'
+    &&['code','docs','diagram'].includes(row.role)&&['attached','detached'].includes(row.placement)&&typeof row.selected==='boolean'
     &&(grant.role==='workspace'||row.windowId===grant.windowId));
   if(!current())return failure('ACCESS_REFUSED');
-  if(method==='getShelf')return {ok:true,items:rows.map(({windowId,role,entityId,placement,selected})=>({windowId,role,entityId,placement,selected}))};
+  if(method==='getShelf'){
+    const items=rows.map(({windowId,role,entityId,placement,selected})=>{
+      const summary=registry.surfaceSummary?.(windowId);
+      return {windowId,role,entityId,placement,selected,...(summary?{label:summary.label,state:summary.state}:{})};
+    });
+    return current()?{ok:true,items}:failure('ACCESS_REFUSED');
+  }
   if(method==='showWorkspace'){
     if(grant.role!=='workspace')return failure('ACCESS_REFUSED');
     return registry.showWorkspace()===true&&current()?{ok:true}:failure('VIEW_REFUSED');

@@ -96,7 +96,7 @@
  };
  function updateState(){
   if(!draft||disposed)return;const state=draft.getStatus();
-  if(!paused)window.SirenNativeViewIdentity.set({role:'docs',name:draft.getDocument().title,revision:state.projectRevision,readonly,dirty:state.dirty});
+  if(!paused){const name=draft.getDocument().title;window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
   save.hidden=readonly;save.disabled=state.pending||state.paused||state.fenced||!state.dirty;
   for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced||element.dataset.documentAtLimit==='true';
   document.body.dataset.documentDirty=String(state.dirty);document.body.dataset.documentVersion=state.version;document.body.dataset.documentSha256=state.sha256;

@@ -41,7 +41,7 @@ export function nativeViewFactory({ BrowserWindow, displays, preload, presentati
       minWidth: Math.min(480, normalBounds.width), minHeight: Math.min(320, normalBounds.height), backgroundColor: '#171719',
     };
     const webPreferences={ preload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true };
-    if(['code','docs'].includes(options.role)&&typeof createSurface==='function'){
+    if(['code','docs','diagram'].includes(options.role)&&typeof createSurface==='function'){
       surface=createSurface({windowOptions,webPreferences});window=surface?.window;
       if(!window||workspaceSurfaceFor(window)!==surface||window.webContents!==surface.webContents)
         throw Object.assign(Error('Owned native surface required'),{code:'ACCESS_REFUSED'});

@@ -29,9 +29,9 @@ function fixture({failLoad=false,hold=false}={}){
   createSurface:options=>{created=createWorkspaceSurface({BaseWindow:Base,WebContentsView:ContentsView,host,...options,isCurrent:()=>true,destructionTimeoutMs:20});created.webContents.failLoad=failLoad;created.webContents.hold=hold;return created;}});
  return {factory,get surface(){return created;}};
 }
-test('factory opts Code/Docs into the same owned surface and preserves isolated role URL/preferences',async()=>{
- for(const role of ['code','docs']){const f=fixture(),window=await f.factory(request(role));assert.equal(workspaceSurfaceFor(window),f.surface);assert.equal(window.webContents,f.surface.webContents);assert.equal(window.webContents.getURL(),request(role).mainFrameUrl);await f.surface.dispose();}
- const f=fixture();for(const role of ['diagram','presenter','audience']){const window=await f.factory(request(role));assert.equal(workspaceSurfaceFor(window),null);assert.equal(f.surface,undefined);window.destroy();}
+test('factory opts Code/Docs/Diagram into the same owned surface while presentation roles stay isolated',async()=>{
+ for(const role of ['code','docs','diagram']){const f=fixture(),window=await f.factory(request(role));assert.equal(workspaceSurfaceFor(window),f.surface);assert.equal(window.webContents,f.surface.webContents);assert.equal(window.webContents.getURL(),request(role).mainFrameUrl);await f.surface.dispose();}
+ const f=fixture();for(const role of ['presenter','audience']){const window=await f.factory(request(role));assert.equal(workspaceSurfaceFor(window),null);assert.equal(f.surface,undefined);window.destroy();}
 });
 test('a failed surface load rejects only after actual renderer and shell cleanup',async()=>{
  const f=fixture({failLoad:true,hold:true});let finished=false;

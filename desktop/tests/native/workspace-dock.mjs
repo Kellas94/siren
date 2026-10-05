@@ -10,17 +10,22 @@ import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
 import {reserveInspectorPort,attachNativeKeyboard} from './native-keyboard.mjs';
 const evidence=resolve('evidence/workspace-dock',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
-const paths=['src/main.mjs','src/windows/surface.mjs','src/windows/registry.mjs','src/windows/factory.mjs','src/windows/dock-ipc.mjs','src/windows/focus.mjs','src/windows/layout.mjs','src/preload.cjs','src/windows/preload.cjs','src/ui/windows/entry.js','src/ui/windows/shelf.js','src/ui/windows/shelf.css','build/workspace.mjs','build/renderer.mjs','build/windows.mjs','generated/home.html','generated/app.html','generated/windows/code.html','generated/windows/docs.html','tests/native/native-keyboard.mjs','tests/native/workspace-dock.mjs'];
+const paths=['src/ui/windows/identity.js','src/ui/windows/docs.js','src/navigation/window-labels.mjs','src/ui/workspace/home.js','src/ui/shared/chrome.css','src/main.mjs','src/windows/surface.mjs','src/windows/registry.mjs','src/windows/factory.mjs','src/windows/dock-ipc.mjs','src/windows/focus.mjs','src/windows/layout.mjs','src/preload.cjs','src/windows/preload.cjs','src/ui/windows/entry.js','src/ui/windows/shelf.js','src/ui/windows/shelf.css','build/workspace.mjs','build/renderer.mjs','build/windows.mjs','generated/home.html','generated/app.html','generated/windows/code.html','generated/windows/docs.html','tests/native/native-keyboard.mjs','tests/native/workspace-dock.mjs'];
 const hash=b=>createHash('sha256').update(b).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))]))),inputs=await capture();
 const data=join(evidence,'owned-data'),projects=new ProjectStore(data),sources=new SourceRepository(data);await mkdir(data,{recursive:true});
 const original=await projects.createProject({label:'Actual Code Docs docking',json:'{}'}),text='def agent(context):\n    return context + 1\n',ref=await sources.importSource({projectId:original.project.id,bytes:Buffer.from(text)});
 const document={id:'doc-a',title:'Agent context',blocks:[{id:'text-a',kind:'text',html:'<p>Original context</p>'}]};
-assert.equal((await commitManifest({projects,repository:sources,projectId:original.project.id,baseRevision:1,sourceRefs:[ref],metadata:{workpapers:[document]},operationId:'owned-dock-seed'})).ok,true);
+assert.equal((await commitManifest({projects,repository:sources,projectId:original.project.id,baseRevision:1,sourceRefs:[ref],metadata:{workpapers:[document],codeFiles:[{id:'agent-file',name:'agent Ș😀.py',sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}}]},operationId:'owned-dock-seed'})).ok,true);
 const selected=await projects.readProject(original.project.id),result={status:'ADVERSE',inputs,cases:[],scope:'Actual production Code/Docs same native renderer docking, two Code and two Docs, independent dirty state, native resize/visibility, exact save/common Lock. No physical monitor, full Task4 or release admission.'};let driver,native;
 const keys=async(page,key,code,keyCode,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await page.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:keyCode,modifiers});};
 try{
  const port=await reserveInspectorPort();driver=await launchDesktop({extraArgs:[`--siren-test-root=${data}`,`--siren-test-project=${original.project.id}`,`--inspect=127.0.0.1:${port}`]});native=await attachNativeKeyboard({port,pid:driver.pid});result.ownedPid=driver.pid;
  await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});
+ await driver.waitFor('document.querySelector(".home-current")!=null&&!document.body.inert');
+ assert.equal(await driver.evaluate('document.querySelector(".home-current").textContent'),'Home · Actual Code Docs docking');
+ assert.equal(await driver.evaluate('document.querySelector(".home-resume .home-eyebrow").textContent'),'CURRENT PROJECT');
+ assert.equal(await driver.evaluate('document.querySelector(".home-resume h2").textContent'),'Actual Code Docs docking');
+ await driver.screenshot(join(evidence,'home-project-context.png'));
  const open=async(role,entityId)=>{const response=await driver.evaluate('window.sirenWindow.openView('+JSON.stringify({role,entityId,...(role==='code'?{version:1}:{})})+')');assert.equal(response.ok,true,JSON.stringify(response));const url=`siren://app/windows/${role}.html?windowId=${response.view.windowId}`,page=await attachNativePage(driver,url);await page.waitFor(`document.body.dataset.${role==='code'?'source':'document'}Ready==='true'`);return {view:response.view,url,page};};
  const code=await open('code',ref.sourceId),docs=await open('docs','doc-a');
  const working=async item=>{const response=await item.page.evaluate(item.view.role==='code'?'window.sirenSourceEdit.openWorkingCopy()':'window.sirenDocsEdit.openWorkingCopy()');assert.equal(response.ok,true,JSON.stringify(response));const url=`siren://app/windows/${item.view.role}.html?windowId=${response.view.windowId}`,page=await attachNativePage(driver,url);await page.waitFor(`document.body.dataset.${item.view.role==='code'?'source':'document'}Ready==='true'&&document.body.dataset.${item.view.role==='code'?'source':'document'}Readonly==='false'`);return {view:response.view,url,page};};
@@ -28,9 +33,29 @@ try{
  const before=await Promise.all(all.map(item=>native.surfaceState(item.url)));assert.ok(before.every(s=>s.nativeClass==='BaseWindow'&&s.parents.length===1));
  for(const item of all)await item.page.evaluate('globalThis.__dockIdentity={node:document.querySelector(".cm-editor")||document.getElementById("documentContent"),origin:performance.timeOrigin};true');
  await editDocs.page.click('#documentTitleInput');await keys(editDocs.page,'a','KeyA',65,2);await editDocs.page.send('Input.insertText',{text:'Context kept through docking'});await editDocs.page.waitFor('document.body.dataset.documentDirty==="true"');
+ assert.equal(await editDocs.page.evaluate('document.getElementById("viewTitle").textContent'),'Docs · Context kept through docking');assert.equal(await editDocs.page.evaluate('document.querySelector("#documentContent > h1").textContent'),'Context kept through docking');
+ for(const mode of ['light','dark']){
+  await editDocs.page.evaluate('document.getElementById("documentTheme").value='+JSON.stringify(mode)+';document.getElementById("documentTheme").dispatchEvent(new Event("change"));true');
+  assert.equal(await editDocs.page.evaluate('getComputedStyle(document.getElementById("documentTitleInput")).backgroundColor'),mode==='light'?'rgb(255, 255, 255)':'rgb(13, 21, 31)');
+  await editDocs.page.screenshot(join(evidence,'docs-edit-'+mode+'.png'));
+ }
  await editDocs.page.evaluate('document.getElementById("documentTitleInput").setSelectionRange(2,7);true');
  await editCode.page.click('.cm-content');await keys(editCode.page,'End','End',35,2);await editCode.page.send('Input.insertText',{text:'# Attached draft 😀\n'});await editCode.page.waitFor('document.body.dataset.sourceVersion==="2"');
  assert.deepEqual(await projects.readProject(original.project.id),selected);
+ await driver.waitFor('document.querySelectorAll("#nativeWindowShelf [data-window-id]").length===4');
+ const codeTab='#nativeWindowShelf [data-window-id="'+editCode.view.windowId+'"]',docsTab='#nativeWindowShelf [data-window-id="'+editDocs.view.windowId+'"]';
+ await driver.waitFor('document.querySelector('+JSON.stringify(codeTab)+').textContent.includes("agent Ș😀.py · v2 · Working copy · Unsaved")&&document.querySelector('+JSON.stringify(docsTab)+').textContent.includes("Context kept through docking")&&document.querySelector('+JSON.stringify(docsTab)+').textContent.includes("Unsaved")');
+ assert.equal((await editCode.page.evaluate('window.sirenWindowDock.getShelf()')).items.length,1);
+ await native.minimizeView(code.url);
+ const readerTab='#nativeWindowShelf [data-window-id="'+code.view.windowId+'"]';
+ await driver.waitFor('document.querySelector('+JSON.stringify(readerTab)+').textContent.includes("Minimized")');
+ assert.equal(await driver.evaluate('(()=>{const t=document.querySelector('+JSON.stringify(readerTab)+'),b=t.getBoundingClientRect(),s=t.querySelector(".native-shelf-state").getBoundingClientRect();return s.width>0&&s.left>=b.left&&s.right<=b.right&&t.getAttribute("aria-label").includes("Minimized");})()'),true);
+ await native.windowShortcut(editCode.url,'1');await driver.waitFor('document.hasFocus()&&!document.body.inert');
+ await driver.screenshot(join(evidence,'home-named-windows.png'));
+ await driver.click(readerTab);assert.equal((await native.windowState(code.url)).minimized,false);
+ await driver.waitFor('!document.querySelector('+JSON.stringify(readerTab)+').textContent.includes("Minimized")');
+ assert.deepEqual(await projects.readProject(original.project.id),selected);
+ result.cases.push({name:'Home identifies selected project without a continuation; shared shelf names actual source/version and independent unsaved Docs, restores a genuinely minimized view without saving or peer-title access',ok:true});
  for(let cycle=0;cycle<3;cycle++)for(const item of all){
    assert.equal((await item.page.evaluate('window.sirenWindowDock.attach('+JSON.stringify({windowId:item.view.windowId})+')')).ok,true);
    const state=await native.surfaceState(item.url),old=before[all.indexOf(item)];

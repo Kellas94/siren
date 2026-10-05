@@ -10,6 +10,17 @@ const reference={sourceId:'agent-source',version:2,sha256:'a'.repeat(64)};
 const snapshot={schema:2,revision:12,project:{id:'selected'},sourceRefs:[{...reference,provenance:{kind:'standalone',fileName:'agent Ș😀.py'}}],json:JSON.stringify({workpapers:[{id:'doc-a',title:'Audit Ș😀',content:'PRIVATE_DOC_BODY'}],diagrams:[{id:'diagram-a',name:'Agent flow',version:4,source:'PRIVATE_DIAGRAM_BODY'}],releases:[{name:'PRIVATE_RELEASE'}]})};
 const view=(role,entityId,id=role)=>({windowId:id,projectId:'selected',role,entityId,state:'active'});
 
+test('native shelf titles are literal bounded metadata with an exact role prefix and Unicode safety',()=>{
+ const label=module.surfaceWindowLabel;assert.equal(typeof label,'function');
+ assert.equal(label('code','SIREN — ⌘ Code — agent.py · v2 · Working copy · Unsaved','source'),'⌘ Code · agent.py · v2 · Working copy · Unsaved');
+ assert.equal(label('docs','SIREN — ⌘ Code — OTHER_PRIVATE','doc-owned'),'Docs · doc-owne');
+ assert.equal(label('audience','PRIVATE_SLIDE','slide'),null);
+ const unsafe=label('diagram','SIREN — Diagrams — <img onerror=bad>\n\u202e'+'😀'.repeat(200),'own');
+ assert.ok(unsafe.length<=256);assert.equal(unsafe.isWellFormed(),true);assert.doesNotMatch(unsafe,/[\n\u202e]/);assert.match(unsafe,/<img onerror=bad>/);
+ const long=label('code','SIREN — ⌘ Code — '+'x'.repeat(120)+' · v9007199254740991 · Working copy · Unsaved','own');
+ assert.match(long,/ · v9007199254740991 · Working copy · Unsaved$/);assert.ok(long.length<=256);
+});
+
 test('Home distinguishes real registered Code, Docs, diagram and presentation names from generic roles',()=>{
  assert.equal(typeof module.homeWindowSummaries,'function');
  const result=module.homeWindowSummaries(snapshot,[view('code','agent-source'),view('docs','doc-a'),view('diagram','diagram-a'),view('presenter','diagram-a'),view('audience','diagram-a')],()=>reference);

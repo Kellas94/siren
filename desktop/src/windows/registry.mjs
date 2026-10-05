@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import {navigationFields} from '../navigation/contracts.mjs';
 import {WORKSPACE_ENTRIES,workspaceEntryURL} from '../navigation/entries.mjs';
 import {workspaceSurfaceFor,ownsWorkspaceWindow} from './surface.mjs';
+import {surfaceWindowLabel} from '../navigation/window-labels.mjs';
 
 const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
@@ -249,9 +250,23 @@ export class WindowRegistry {
   surfaceRecords(){
     return this.listViews().flatMap(record=>{
       const surface=workspaceSurfaceFor(this.#views.get(record.windowId)?.window);
-      return surface&&['code','docs'].includes(record.role)?[{windowId:record.windowId,role:record.role,
+      return surface&&['code','docs','diagram'].includes(record.role)?[{windowId:record.windowId,role:record.role,
         entityId:record.entityId,placement:surface.placement(),selected:this.#selectedSurface===record.windowId&&surface.isVisible()}]:[];
     });
+  }
+
+  surfaceSummary(windowId){
+    const entry=this.#views.get(windowId);
+    if(!entry||!workspaceSurfaceFor(entry.window)||!['code','docs','diagram'].includes(entry.record.role))return null;
+    const current=()=>this.#live(entry)&&!!this.caller({sender:entry.webContents,senderFrame:entry.webContents.mainFrame});
+    if(!current())return null;
+    try{
+      const label=surfaceWindowLabel(entry.record.role,entry.webContents.getTitle?.(),entry.record.entityId);
+      const visibleHost=workspaceSurfaceFor(entry.window).placement()==='attached'?this.#workspace?.window:entry.window;
+      if(!visibleHost||visibleHost.isDestroyed())return null;
+      const state=visibleHost.isMinimized()?'minimized':'open';
+      return current()?{label,state}:null;
+    }catch{return null;}
   }
 
   #surfaceAction(entry,method,...args){
@@ -266,7 +281,7 @@ export class WindowRegistry {
   }
   #surfaceReady(entry){
     return !this.#roster&&!this.#workspaceNavigation&&!this.#destructionFailed&&entry
-      &&['code','docs'].includes(entry.record.role)&&workspaceSurfaceFor(entry.window)
+      &&['code','docs','diagram'].includes(entry.record.role)&&workspaceSurfaceFor(entry.window)
       &&!!this.caller({sender:entry.webContents,senderFrame:entry.webContents.mainFrame});
   }
   #selectSurface(windowId){

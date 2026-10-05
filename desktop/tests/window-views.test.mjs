@@ -23,15 +23,69 @@ class Window extends EventEmitter{
  focus(){this.focused=true;}hide(){this.visible=false;}show(){this.visible=true;}
  getContentBounds(){return {width:1000,height:800};}destroy(){this.destroyed=true;this.emit('closed');}close(){this.destroy();}
 }
-async function fixture(){
+async function fixture({diagram=false}={}){
  const host=new Window();host.webContents=new Contents();host.webContents.mainFrame.url='siren://app/app.html';
- const surfaces=new Map(),entities=new Set(['code_a','doc_a']);let allowed=true;
+ const surfaces=new Map(),entities=new Set(['code_a','doc_a',...(diagram?['diagram_a']:[])]);let allowed=true;
  const registry=new WindowRegistry({authorize:request=>{if(!allowed||request.entityId!==null&&!entities.has(request.entityId))throw Error('retired');return {projectId:'project_a',mode:'normal',access:'write',entityIds:request.entityId===null?[]:[request.entityId]};},
  createWindow:options=>{let surface;surface=createWorkspaceSurface({BaseWindow:Window,WebContentsView:ContentsView,host,isCurrent:()=>!!registry.capture({sender:surface.webContents,senderFrame:surface.webContents.mainFrame})});surface.webContents.mainFrame.url=options.mainFrameUrl;surfaces.set(options.windowId,surface);return surface.window;}});
  registry.bindWorkspace(host);registry.activateWorkspace();
  const code=await registry.openView({role:'code',entityId:'code_a'}),docs=await registry.openView({role:'docs',entityId:'doc_a'});
- return {host,registry,surfaces,code,docs,retire:()=>{allowed=false;},retireEntity:entity=>entities.delete(entity)};
+ const diagramView=diagram?await registry.openView({role:'diagram',entityId:'diagram_a'}):null;
+ return {host,registry,surfaces,code,docs,diagram:diagramView,retire:()=>{allowed=false;},retireEntity:entity=>entities.delete(entity)};
 }
+
+test('shared shelf names only current owned native views and reports real minimized state without source reads',async()=>{
+ const {invokeDock}=await import('../src/windows/dock-ipc.mjs'),f=await fixture({diagram:true});
+ try{
+ const code=f.surfaces.get(f.code.windowId),docs=f.surfaces.get(f.docs.windowId),diagram=f.surfaces.get(f.diagram.windowId);
+ let codeReads=0,peerReads=0;
+ code.webContents.getTitle=()=>{codeReads++;return 'SIREN — ⌘ Code — agent Ș😀.py · v3 · Working copy · Unsaved';};
+ docs.webContents.getTitle=()=>{peerReads++;return 'SIREN — Docs — Agent notes · r4 · Read only';};
+ diagram.webContents.getTitle=()=>{peerReads++;return 'SIREN — Diagrams — Flow · v2 · Read only';};
+ code.window.minimized=true;
+ const event={sender:code.webContents,senderFrame:code.webContents.mainFrame};
+ const own=invokeDock({registry:f.registry,event,method:'getShelf'});
+ assert.equal(own.ok,true);assert.equal(own.items.length,1);assert.equal(peerReads,0);assert.equal(codeReads,1);
+ assert.equal(own.items[0].label,'⌘ Code · agent Ș😀.py · v3 · Working copy · Unsaved');assert.equal(own.items[0].state,'minimized');
+ assert.equal(Object.hasOwn(own.items[0],'draft'),false);assert.equal(JSON.stringify(own).includes('independent'),false);
+ const main=invokeDock({registry:f.registry,event:{sender:f.host.webContents,senderFrame:f.host.webContents.mainFrame},method:'getShelf'});
+ assert.deepEqual(main.items.map(row=>row.label),[own.items[0].label,'Docs · Agent notes · r4 · Read only','Diagrams · Flow · v2 · Read only']);
+ assert.equal(f.registry.focusView(f.code.windowId),true);assert.equal(f.registry.surfaceSummary(f.code.windowId).state,'open');
+ code.window.minimized=true;assert.equal(f.registry.attachView(f.code.windowId),true);assert.equal(code.window.minimized,true);
+ assert.equal(f.registry.surfaceSummary(f.code.windowId).state,'open','Visible attachment does not inherit hidden shell minimization');
+ f.host.minimized=true;assert.equal(f.registry.surfaceSummary(f.code.windowId).state,'minimized');f.host.minimized=false;
+ f.retireEntity('code_a');const reads=codeReads;assert.equal(f.registry.surfaceSummary(f.code.windowId),null);assert.equal(codeReads,reads);
+ }finally{await f.registry.invalidateEpochAsync({preserveWorkspace:true});}
+});
+
+test('title metadata cannot cross a retired grant, navigate a view or execute getters in IPC payloads',async()=>{
+ const {invokeDock}=await import('../src/windows/dock-ipc.mjs'),f=await fixture();
+ try{
+ const code=f.surfaces.get(f.code.windowId),event={sender:code.webContents,senderFrame:code.webContents.mainFrame};
+ let called=false;const payload={get windowId(){called=true;return f.docs.windowId;}};
+ assert.equal(invokeDock({registry:f.registry,event,method:'getShelf',payload}).code,'REQUEST_REFUSED');assert.equal(called,false);
+ code.webContents.getTitle=()=>{f.retire();return 'SIREN — ⌘ Code — SECRET_RETIRED';};
+ const result=invokeDock({registry:f.registry,event,method:'getShelf'});assert.equal(result.code,'ACCESS_REFUSED');assert.equal(JSON.stringify(result).includes('SECRET'),false);
+ }finally{await f.registry.invalidateEpochAsync({preserveWorkspace:true});}
+});
+
+test('Diagram docking retains its renderer and captured grant while refusing borrowed IDs and stale peers',async()=>{
+ const {invokeDock}=await import('../src/windows/dock-ipc.mjs'),f=await fixture({diagram:true});
+ try{
+ const diagram=f.surfaces.get(f.diagram.windowId),code=f.surfaces.get(f.code.windowId),own={sender:diagram.webContents,senderFrame:diagram.webContents.mainFrame};
+ const grant=f.registry.capture(own),frame=diagram.webContents.mainFrame;
+ diagram.webContents.draft='flowchart TD\nA[Unsaved] --> B[Exact]';
+ assert.equal(invokeDock({registry:f.registry,event:own,method:'attach',payload:{windowId:f.diagram.windowId}}).ok,true);
+ assert.equal(diagram.placement(),'attached');assert.equal(diagram.webContents.mainFrame,frame);assert.equal(f.registry.isCurrent(grant),true);
+ assert.deepEqual(invokeDock({registry:f.registry,event:own,method:'getShelf'}).items,[{windowId:f.diagram.windowId,role:'diagram',entityId:'diagram_a',placement:'attached',selected:true,label:'Diagrams · diagram_',state:'open'}]);
+ assert.equal(invokeDock({registry:f.registry,event:own,method:'detach',payload:{windowId:f.code.windowId}}).code,'ACCESS_REFUSED');
+ assert.equal(f.registry.attachView(f.code.windowId),true);assert.equal(diagram.view.visible,false);assert.equal(code.view.visible,true);
+ assert.equal(f.registry.focusView(f.diagram.windowId),true);assert.equal(code.view.visible,false);assert.equal(diagram.webContents.draft,'flowchart TD\nA[Unsaved] --> B[Exact]');
+ assert.equal(invokeDock({registry:f.registry,event:own,method:'detach',payload:{windowId:f.diagram.windowId}}).ok,true);assert.equal(diagram.window.visible,true);
+ assert.equal(f.registry.attachView(f.diagram.windowId),true);f.retireEntity('diagram_a');assert.equal(f.registry.attachView(f.docs.windowId),false);
+ assert.equal(invokeDock({registry:f.registry,event:own,method:'getShelf'}).code,'ACCESS_REFUSED');
+ }finally{await f.registry.invalidateEpochAsync({preserveWorkspace:true});}
+});
 test('two attached native views retain independent renderer draft/selection/history and only the selected one is visible',async()=>{
  const f=await fixture(),code=f.surfaces.get(f.code.windowId),docs=f.surfaces.get(f.docs.windowId);
  const identity=[code.webContents,code.webContents.mainFrame,code.webContents.selection,code.webContents.history];
