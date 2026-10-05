@@ -4,6 +4,44 @@ import {EventEmitter} from 'node:events';
 import {WindowRegistry} from '../src/windows/registry.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from '../src/windows/focus.mjs';
 
+test('close active view targets its captured native shell, never the main workspace or another view',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId),docs=f.windows.get(f.docs.windowId);
+ code.focus();assert.equal(f.focus.closeActive(),true);assert.equal(code.dead,true);assert.equal(docs.dead,false);assert.equal(f.main.dead,false);
+ assert.equal(f.focus.closeActive(f.main),false);assert.equal(f.main.dead,false);
+ f.state.enabled=false;assert.equal(f.focus.closeActive(docs),false);assert.equal(docs.dead,false);
+ f.state.enabled=true;docs.webContents.mainFrame={url:docs.webContents.getURL()};assert.equal(f.focus.closeActive(docs),false);assert.equal(docs.dead,false);
+});
+test('close from main targets only the selected attached view; no selection is a harmless no-op',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId),docs=f.windows.get(f.docs.windowId);
+ f.registry.surfaceRecords=()=>[{windowId:f.docs.windowId,selected:false},{windowId:f.code.windowId,selected:true}];
+ assert.equal(f.focus.closeActive(f.main),true);assert.equal(code.dead,true);assert.equal(docs.dead,false);assert.equal(f.main.dead,false);
+ assert.equal(f.focus.closeActive(f.main),false);assert.equal(docs.dead,false);
+});
+test('close refuses foreign, revoked and mid-selection transition origins; native veto remains intact',async()=>{
+ const f=await fixture(),docs=f.windows.get(f.docs.windowId),foreign=new NativeWindow(200,'siren://app/home.html',f.state);
+ assert.equal(f.focus.closeActive(foreign),false);assert.equal(foreign.dead,false);
+ f.state.mode='readonly';assert.equal(f.focus.closeActive(docs),false);assert.equal(docs.dead,false);f.state.mode='normal';
+ const gated=new NativeWindowFocus({registry:f.registry,mainWindow:f.main,windowFor:id=>{f.state.enabled=false;return f.windows.get(id);},focusedWindow:()=>f.main,canCycle:()=>f.state.enabled});
+ f.registry.surfaceRecords=()=>[{windowId:f.docs.windowId,selected:true}];assert.equal(gated.closeActive(f.main),false);assert.equal(docs.dead,false);
+ f.state.enabled=true;let requests=0;docs.close=()=>requests++;assert.equal(f.focus.closeActive(docs),true);assert.equal(requests,1);assert.equal(docs.dead,false);
+});
+test('Quit requests the permanent main close path from any captured native role and also from locked main',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId);let requests=0;f.main.close=()=>requests++;
+ assert.equal(f.focus.quit(code),true);assert.equal(requests,1);assert.equal(code.dead,false);
+ const foreign=new NativeWindow(200,'siren://app/home.html',f.state);assert.equal(f.focus.quit(foreign),false);assert.equal(requests,1);
+ code.webContents.mainFrame={url:code.webContents.getURL()};assert.equal(f.focus.quit(code),false);assert.equal(requests,1);
+ f.state.mode='locked';assert.equal(f.focus.quit(f.main),true);assert.equal(requests,2);
+});
+test('Ctrl+W and Ctrl+Q use the genuine input origin once, suppress repeat/menu duplicates and preserve composing keys',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId);bindNativeWindowFocusKeys(code,f.focus);let closes=0,quits=0,prevented=0;code.close=()=>closes++;f.main.close=()=>quits++;
+ const event={preventDefault(){prevented++;}},input={type:'keyDown',control:true,alt:false,key:'w'};
+ for(const changed of [{type:'keyUp'},{shift:true},{meta:true},{isComposing:true},{control:false},{alt:true}])code.webContents.emit('before-input-event',event,{...input,...changed});assert.equal(closes,0);assert.equal(quits,0);assert.equal(prevented,0);
+ f.state.focused=f.main;code.webContents.emit('before-input-event',event,input);assert.equal(closes,1);assert.equal(prevented,1);
+ code.webContents.emit('before-input-event',event,{...input,isAutoRepeat:true});assert.equal(closes,1);assert.equal(prevented,2);
+ code.webContents.emit('before-input-event',event,{...input,key:'Q'});assert.equal(quits,1);assert.equal(prevented,3);
+ code.webContents.emit('before-input-event',event,{...input,key:'q',isAutoRepeat:true});assert.equal(quits,1);assert.equal(prevented,4);
+});
+
 // Only the Electron boundary is doubled. Real registry grants, revocation and
 // the focus selector run unchanged; native keyboard execution is separate.
 class NativeWindow extends EventEmitter{

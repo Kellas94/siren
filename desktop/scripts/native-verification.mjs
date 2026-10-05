@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 export const nativeGroups=Object.freeze({
  desktop:Object.freeze(['shell','protected-storage','account-transition','code-windows','desktop-ui','code-recovery','recovery-zoom','code-diagram-interaction','guided-intro','dev-first-run','access-screen','local-pin','headless-import','readonly-roster','home-entry','home-navigation','home-recovery','home-library','window-focus','toast-transition']),
- sources:Object.freeze(['source-owner','source-read','source-analysis','source-diff','source-map','source-edit','source-link','source-link-create','docs-sources','source-sync','docs-edit','view-control-rollback','large-source-docs','code-view-flush','domain-workspaces']),
+ sources:Object.freeze(['source-owner','source-read','source-analysis','source-diff','source-map','source-edit','source-link','source-link-create','docs-sources','source-sync','docs-edit','view-control-rollback','large-source-docs','code-view-flush','domain-workspaces','window-close-keys','window-role-privacy']),
  diagrams:Object.freeze(['diagram-preview','diagram-edit','diagram-guided','diagram-style','diagram-build','diagram-vector','diagram-export','home-library-search','home-documents','docs-structured','home-source-projects','presentation-render','presentation-style','presentation-cards','presentation-windows'])
 });
 const root=fileURLToPath(new URL('../',import.meta.url));

@@ -33,6 +33,10 @@ export async function attachNativeKeyboard({port,pid}){
  deferredGeometryExperiment:async url=>{ownedViewURL(url);const states=[];for(const step of ["w.setFullScreen(false);w.unmaximize();w.restore();","w.setBounds({x:100,y:100,width:700,height:500});","w.setFullScreen(true);"]){states.push(await evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned geometry experiment target missing');${step}return {normal:w.getNormalBounds(),bounds:w.getBounds(),fullscreen:w.isFullScreen()};})()`));}return states;},
  minimizeView:async url=>{ownedViewURL(url);return evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned presentation window unavailable');w.minimize();return true;})()`);},
  focusView:async url=>{ownedViewURL(url);return evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned native window unavailable');w.focus();w.webContents.focus();return true;})()`);},
+ closeShortcut:async(url,keyCode)=>{
+  ownedViewURL(url);assert.ok(['W','Q'].includes(keyCode));
+  return evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned native close input target required');w.focus();const contents=w.webContents;contents.focus();contents.sendInputEvent(${JSON.stringify({type:'keyDown',keyCode,modifiers:['control']})});if(!contents.isDestroyed())contents.sendInputEvent(${JSON.stringify({type:'keyUp',keyCode,modifiers:['control']})});return true;})()`);
+ },
  windowShortcut:async(url,keyCode)=>{
   ownedViewURL(url);assert.ok(['Right','Left','1','B','A','D'].includes(keyCode));
   await evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned native input target unavailable');w.focus();w.webContents.focus();return true;})()`);

@@ -149,6 +149,9 @@ jobs:
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
             desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
             desktop/evidence/window-focus/*/*.png
             desktop/evidence/toast-transition/*/result.json
             desktop/evidence/toast-transition/*/*.png
@@ -324,6 +327,9 @@ jobs:
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
             desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
             desktop/evidence/window-focus/*/*.png
             desktop/evidence/toast-transition/*/result.json
             desktop/evidence/toast-transition/*/*.png
@@ -442,6 +448,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-sources.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { throw "Packaged Docs source opening failed" }
+          node tests/native/window-close-keys.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged native close commands failed" }
           node tests/native/presentation-windows.mjs --lines 300000 --package $preview.previewRoot
           exit $LASTEXITCODE
       - name: Retain scoped test evidence in private CI
@@ -537,6 +545,9 @@ jobs:
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
             desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
             desktop/evidence/window-focus/*/*.png
             desktop/evidence/toast-transition/*/result.json
             desktop/evidence/toast-transition/*/*.png

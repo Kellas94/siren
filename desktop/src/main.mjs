@@ -370,7 +370,9 @@ const windowRegistry = new WindowRegistry({
       const surface=windowRegistry.surfaceFor(view);if(!surface)return;
       const attached=surface.placement()==='attached';
       Menu.buildFromTemplate([{label:attached?'Detach window':'Attach to workspace',accelerator:attached?'Ctrl+Alt+D':'Ctrl+Alt+A',click:()=>nativeWindowFocus.transfer(attached?'detach':'attach',view)},
-        {label:'Main workspace',click:()=>nativeWindowFocus.showMain()},{type:'separator'},{role:'copy'},{role:'selectAll'}]).popup();
+        {label:'Main workspace',click:()=>nativeWindowFocus.showMain()},
+        {label:'Close this view',accelerator:'Ctrl+W',click:()=>nativeWindowFocus.closeActive(view)},
+        {type:'separator'},{role:'copy'},{role:'selectAll'}]).popup();
     });
     bindNativeWindowFocusKeys(view,nativeWindowFocus,nativeWindowLayout);
     if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
@@ -732,7 +734,9 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Lock SIREN', accelerator: 'Ctrl+Alt+L', click: () => desktopCommand('desktopLockPin') },
     { label: 'Open / import local project…', accelerator: 'Ctrl+Alt+O', click: () => desktopCommand('desktopOpenProject') },
     { label: 'Export saved backup…', accelerator: 'Ctrl+Alt+E', click: () => desktopCommand('desktopExportProject') },
-    { type: 'separator' }, { label: 'Quit SIREN', accelerator: 'Ctrl+Q', click: () => window.close() },
+    { type: 'separator' },
+    { label: 'Close active view', accelerator: 'Ctrl+W', click: (_item,origin) => nativeWindowFocus.closeActive(origin) },
+    { label: 'Quit SIREN', accelerator: 'Ctrl+Q', click: (_item,origin) => nativeWindowFocus.quit(origin) },
   ] },
   { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
   { label: 'View', submenu: [{ role: 'togglefullscreen' }] },
@@ -974,7 +978,6 @@ window.webContents.on('before-input-event', (event, input) => {
   const key=input.key.toLowerCase();
   const command=input.alt?new Map([['l','desktopLockPin'],['o','desktopOpenProject'],['e','desktopExportProject'],['u','desktopCheckUpdates'],['r','desktopRecovery']]).get(key):key===','?'desktopPinSettings':null;
   if(command){event.preventDefault();if(!input.isAutoRepeat)desktopCommand(command);}
-  else if(!input.alt&&key==='q'){event.preventDefault();if(!input.isAutoRepeat)window.close();}
 });
 await window.loadURL('siren://app/home.html');
 if(savedMainLayout)await settleHiddenBounds(window,mainBounds);

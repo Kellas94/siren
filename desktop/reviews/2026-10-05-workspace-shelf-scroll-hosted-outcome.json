@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "hosted-shelf-correction-outcome",
+  "run": 37355828768,
+  "head": "005d41edbeb4f76420552b337b7cb8bbc096d747",
+  "status": "completed",
+  "conclusion": "failure",
+  "jobStates": [
+    {
+      "id": 111917857721,
+      "name": "Qualification scope",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111917954254,
+      "name": "launcher / launcher",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111917954313,
+      "name": "desktop / windows",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111917954394,
+      "name": "desktop / Windows packaged workspaces",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111920327774,
+      "name": "desktop / Windows native (diagrams)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111920327832,
+      "name": "desktop / Windows native (sources)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 111920327913,
+      "name": "desktop / Windows native (desktop)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 111922272423,
+      "name": "desktop / Desktop qualification",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 111922325590,
+      "name": "SIREN merge qualification",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "shelfRegression": "Original shelf-occluded Lock oracles now COMPLETE in source/diagram/package logs; this does not override aggregate failure.",
+  "originalFailure": {
+    "child": "source-read",
+    "completedCases": 0,
+    "artifactId": 11365450675,
+    "zipBytes": 1579662,
+    "zipSha256": "bad1834dfd610f123b1a5f589212c13a5a62e189fb0dc54edad65be22cc86ae1",
+    "runtimeDiagnostic": {
+      "phase": "query",
+      "reason": "QUERY_FAILED",
+      "killed": true,
+      "signal": "SIGTERM",
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    "application": "readonly recovery; Process identity unavailable",
+    "classification": "Observed native process-query cancellation. Fail-closed correct; query latency cause not fully measured. Not a proven navigation race. No rerun, retry, deadline relaxation or identity fallback."
+  },
+  "releaseAdmitted": false,
+  "mainMerged": false
+}

@@ -42,13 +42,48 @@ export class NativeWindowFocus{
    return !!grant&&['code','docs'].includes(grant.role)&&this.#registry[method==='attach'?'attachView':'detachView']?.(grant.windowId)===true;
   }catch{return false;}
  }
+ closeActive(originWindow){
+  try{
+   if(this.#canCycle()!==true)return false;
+   let origin=originWindow??this.#focused();
+   if(origin===this.#main){
+    const selected=this.#registry.surfaceRecords?.().find(row=>row.selected);
+    if(!selected)return false;origin=this.#windowFor(selected.windowId);
+   }
+   if(!origin||origin===this.#main||origin.isDestroyed())return false;
+   const grant=this.#registry.capture({sender:origin.webContents,senderFrame:origin.webContents.mainFrame});
+   if(!grant||grant.role==='workspace'||this.#canCycle()!==true||!this.#registry.isCurrent(grant))return false;
+   // Request the existing native close path. It owns working-copy preparation
+   // and vetoes; returning true is a request, not a disposal receipt.
+   origin.close();return true;
+  }catch{return false;}
+ }
+ quit(originWindow){
+  try{
+   const origin=originWindow??this.#focused();
+   if(!origin||this.#main.isDestroyed())return false;
+   if(origin!==this.#main){
+    const grant=this.#registry.capture({sender:origin.webContents,senderFrame:origin.webContents.mainFrame});
+    if(!grant||!this.#registry.isCurrent(grant))return false;
+   }
+   // The permanent main close handler coordinates every draft and native view,
+   // including when the main surface is already locked or a close is pending.
+   this.#main.close();return true;
+  }catch{return false;}
+ }
 }
 
 /** Actual Electron input route. preventDefault suppresses both the page event
  * and its menu accelerator, so a physical key press cannot cycle twice. */
 export function bindNativeWindowFocusKeys(nativeWindow,focus,layout){
  nativeWindow.webContents.on('before-input-event',(event,input)=>{
-  if(input.type!=='keyDown'||!input.control||!input.alt||input.shift||input.meta||input.isComposing)return;
+  if(input.type!=='keyDown'||!input.control||input.shift||input.meta||input.isComposing)return;
+  if(!input.alt&&typeof input.key==='string'&&['w','q'].includes(input.key.toLowerCase())){
+   event.preventDefault();if(input.isAutoRepeat)return;
+   if(input.key.toLowerCase()==='w')focus.closeActive(nativeWindow);else focus.quit(nativeWindow);
+   return;
+  }
+  if(!input.alt)return;
   const action=input.key==='1'?'main':input.key==='ArrowRight'?1:input.key==='ArrowLeft'?-1:layout&&['b','B'].includes(input.key)?'bring-back':['a','A'].includes(input.key)?'attach':['d','D'].includes(input.key)?'detach':null;
   if(action===null)return;
   event.preventDefault();if(input.isAutoRepeat)return;
