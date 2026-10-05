@@ -1,6 +1,6 @@
 import {WindowRegistry} from './registry.mjs';
 import {navigationFields} from '../navigation/contracts.mjs';
-import {workspaceEntities} from './entities.mjs';
+import {workspaceEntities,validEntityId} from './entities.mjs';
 import {verifySnapshot} from '../projects/store.mjs';
 import {validId} from '../projects/paths.mjs';
 const fail=code=>({ok:false,code});
@@ -14,7 +14,7 @@ export async function invokeHomeWindow({event,payload,registry,snapshot}){
   if(!grant||grant.mainFrameUrl!=='siren://app/home.html'||!WindowRegistry.prototype.isCurrent.call(registry,grant))return fail('ACCESS_REFUSED');
   let request;try{
    request=navigationFields(payload,['role','entityId','version'],['role','entityId']);
-   if(!['code','docs','diagram','presenter'].includes(request.role)||!validId(request.entityId)||
+   if(!['code','docs','diagram','presenter'].includes(request.role)||!(request.role==='code'?validId(request.entityId):validEntityId(request.entityId))||
      request.role==='code'&&(!Number.isSafeInteger(request.version)||request.version<1)||
      request.role!=='code'&&Object.hasOwn(request,'version'))return fail('REQUEST_REFUSED');
   }catch{return fail('REQUEST_REFUSED');}

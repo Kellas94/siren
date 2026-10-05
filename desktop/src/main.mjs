@@ -12,7 +12,9 @@ import { SourceRepository } from './sources/repository.mjs';
 import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
-import {NativeWindowLayout,bindNativeDisplayRecovery} from './windows/layout.mjs';
+import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
+import {WindowLayoutStore,NativeLayoutMemory} from './windows/layout-memory.mjs';
+import {restoreBounds} from './windows/geometry.mjs';
 import {WorkspaceCoordinator} from './windows/coordinator.mjs';
 import {PrimaryPersistence} from './windows/primary.mjs';
 import {invokeSourceRead,invokeSourceMutation} from './windows/source-bridge.mjs';
@@ -52,7 +54,7 @@ import {createLocationResolver} from './navigation/resolver.mjs';
 import {invokeHome} from './navigation/ipc.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
-import { nativeViewFactory } from './windows/factory.mjs';
+import { nativeViewFactory,settleHiddenBounds } from './windows/factory.mjs';
 import { workspaceEntities,workspaceMetadata } from './windows/entities.mjs';
 import { openOwnedSelection } from './projects/selection.mjs';
 import { parseLegacyImport } from './projects/migration.mjs';
@@ -319,7 +321,13 @@ const services = {
     return exportBytes(bytes, `SIREN-recovery-${id}.siren-backup`);
   },
 };
-const window = new BrowserWindow({ width: 1440, height: 960, minWidth: 960, minHeight: 640, title: 'SIREN — Desktop prototype', backgroundColor: '#171719', webPreferences: {
+const nativeDisplays=()=>{const primary=screen.getPrimaryDisplay().id;return screen.getAllDisplays().map(d=>({id:d.id,workArea:d.workArea,primary:d.id===primary}));};
+const layoutStore=new WindowLayoutStore(dataRoot);if(!await layoutStore.initialize())console.warn('SIREN_LAYOUT_READ_REFUSED');
+const nativeLayoutMemory=new NativeLayoutMemory({store:layoutStore,displays:nativeDisplays});
+const mainLayoutTicket=nativeLayoutMemory.reserve({role:'workspace'}),savedMainLayout=layoutStore.get('main');
+const primaryWorkArea=screen.getPrimaryDisplay().workArea;
+const mainBounds=restoreBounds(savedMainLayout??{normalBounds:{x:primaryWorkArea.x+Math.max(0,Math.floor((primaryWorkArea.width-1440)/2)),y:primaryWorkArea.y+Math.max(0,Math.floor((primaryWorkArea.height-960)/2)),width:1440,height:960}},nativeDisplays()).normalBounds;
+const window = new BrowserWindow({ ...mainBounds, minWidth: Math.min(960,mainBounds.width), minHeight: Math.min(640,mainBounds.height), title: 'SIREN — Desktop prototype', backgroundColor: '#171719', webPreferences: {
   preload: resolve(here, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
 } });
 const nativeShells = new Map(); let nativeShellFailure = false;
@@ -337,8 +345,16 @@ const windowRegistry = new WindowRegistry({
   createWindow: nativeViewFactory({ BrowserWindow, displays: () => {
     const primaryId = screen.getPrimaryDisplay().id;
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
-  }, preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record) => {
+  }, layoutMemory:nativeLayoutMemory,preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'), onCreated: (view, record, layoutTicket) => {
     nativeShells.set(record.windowId, view);
+    let layoutTracked=false;
+    view.on('show',()=>{
+      const current=()=>Boolean(windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame}));
+      if(layoutTracked||!current())return;layoutTracked=true;
+      if(layoutTicket.layout.maximized&&current())view.maximize();
+      if(layoutTicket.layout.fullscreen&&current())view.setFullScreen(true);
+      nativeLayoutMemory.track(view,layoutTicket,{isCurrent:current});
+    });
     bindNativeWindowFocusKeys(view,nativeWindowFocus,nativeWindowLayout);
     if(['presenter','audience'].includes(record.role))for(const [event,enabled]of [['enter-full-screen',true],['leave-full-screen',false]])view.on(event,()=>{if(!view.isDestroyed()){const grant=windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant)view.webContents.send('siren:presentation-fullscreen',{enabled});}});
     view.on('closed', () => nativeShells.delete(record.windowId));
@@ -684,10 +700,11 @@ const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindo
  canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
 });
 const nativeWindowLayout=new NativeWindowLayout({registry:windowRegistry,mainWindow:window,
+ placementMemory:nativeLayoutMemory,
  windowFor:id=>nativeShells.get(id),displays:()=>{const primary=screen.getPrimaryDisplay().id;return screen.getAllDisplays().map(d=>({id:d.id,workArea:d.workArea,primary:d.id===primary}));},
  canRecoverViews:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
 });
-const unbindDisplayRecovery=bindNativeDisplayRecovery(screen,nativeWindowLayout);window.once('closed',()=>{unbindDisplayRecovery();nativeWindowLayout.dispose();});
+const unbindDisplayRecovery=bindNativeDisplayRecovery(screen,nativeWindowLayout);window.once('closed',()=>{unbindDisplayRecovery();nativeWindowLayout.dispose();nativeLayoutMemory.dispose();});
 bindNativeWindowFocusKeys(window,nativeWindowFocus,nativeWindowLayout);
 Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: 'File', submenu: [
@@ -705,6 +722,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
     {label:'Next window',accelerator:'Ctrl+Alt+Right',click:()=>nativeWindowFocus.cycle(1)},
     {label:'Previous window',accelerator:'Ctrl+Alt+Left',click:()=>nativeWindowFocus.cycle(-1)},
     {type:'separator'},
+    {label:'Move this window to monitor…',click:(_item,origin)=>showNativeMonitorMenu({Menu,layout:nativeWindowLayout,originWindow:origin??window})},
     {label:'Bring all windows back',accelerator:'Ctrl+Alt+B',click:(_item,origin)=>nativeWindowLayout.bringAllBack(origin??window)},
   ]},
   { label: 'Help', submenu: [
@@ -927,6 +945,9 @@ window.webContents.on('before-input-event', (event, input) => {
   else if(!input.alt&&key==='q'){event.preventDefault();if(!input.isAutoRepeat)window.close();}
 });
 await window.loadURL('siren://app/home.html');
+if(savedMainLayout)await settleHiddenBounds(window,mainBounds);
+if(savedMainLayout?.maximized)window.maximize();if(savedMainLayout?.fullscreen)window.setFullScreen(true);
+nativeLayoutMemory.track(window,mainLayoutTicket);
 const automaticUpdateTimer = setTimeout(() => { if (!window.isDestroyed()) void updates.automaticCheck({ online: net.isOnline() }); }, 10000);
 automaticUpdateTimer.unref();
 let closing = false; let closeRequested = false;
@@ -946,6 +967,7 @@ window.on('close', event => {
     await Promise.all([...writes]);
     closeProgress('retire-views');
     retireNativeViews();
+    if(!await nativeLayoutMemory.flush())console.warn('SIREN_LAYOUT_WRITE_FAILED');
     closeProgress('journal');
     if (processIdentity) await journal.recordSession({ event: 'clean-close', sessionId, version: app.getVersion(), processIdentity });
     closeProgress('window-close');

@@ -13,15 +13,50 @@ class NativeWindow extends EventEmitter{
  setFullScreen(flag){this.fullscreen=flag;}maximize(){this.maximized=true;}unmaximize(){this.maximized=false;}
  restore(){this.minimized=false;}minimize(){this.minimized=true;}focus(){this.focuses++;}close(){this.destroy();}destroy(){this.dead=true;this.emit('closed');}
 }
-async function fixture(){
+async function fixture(adapters={}){
  assert.equal(typeof implementation.NativeWindowLayout,'function','Main-owned native display recovery must be implemented');
  const state={enabled:true,mode:'normal',displays:[{id:1,primary:true,workArea:area}]},windows=new Map();let serial=1;
  const registry=new WindowRegistry({authorize:()=>state.mode==='locked'?null:{projectId:'project-a',mode:state.mode,access:'write',entityIds:['code-a','docs-a']},createWindow:options=>{const w=new NativeWindow(serial++,options.mainFrameUrl);windows.set(options.windowId,w);return w;}});
  const main=new NativeWindow(99,'siren://app/home.html');registry.bindWorkspace(main);registry.activateWorkspace({entryUrl:'siren://app/home.html'});
  const code=await registry.openView({role:'code',entityId:'code-a'}),docs=await registry.openView({role:'docs',entityId:'docs-a'});
- const layout=new implementation.NativeWindowLayout({registry,mainWindow:main,windowFor:id=>windows.get(id),displays:()=>state.displays,canRecoverViews:()=>state.enabled&&state.mode!=='locked'});
+ const layout=new implementation.NativeWindowLayout({registry,mainWindow:main,windowFor:id=>windows.get(id),displays:()=>state.displays,canRecoverViews:()=>state.enabled&&state.mode!=='locked',...adapters});
  return {state,registry,windows,main,code,docs,layout};
 }
+test('native placement suspends mode persistence before fullscreen exit and cancels that metadata transaction at Lock',async()=>{
+ const ends=[];let held=false;const f=await fixture({placementMemory:{beginPlacement(){held=true;return ok=>{held=false;ends.push(ok);};}}}),docs=f.windows.get(f.docs.windowId);docs.fullscreen=true;
+ docs.setFullScreen=flag=>{assert.equal(held,true);docs.fullscreen=flag;if(!flag)queueMicrotask(()=>{f.state.mode='locked';});};
+ const ticket=f.layout.prepareMove(docs);assert.equal(await f.layout.moveToMonitor(ticket,1),false);assert.deepEqual(ends,[false]);assert.equal(held,false);
+});
+test('monitor chooser moves only its captured native Code to the selected negative-coordinate display and preserves modes',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId);
+ f.state.displays.push({id:2,workArea:{x:-1600,y:0,width:1600,height:900}});code.normal={x:100,y:100,width:700,height:500};code.maximized=true;code.minimized=true;
+ const before=f.registry.listViews();
+ assert.equal(typeof f.layout.prepareMove,'function');const ticket=f.layout.prepareMove(code);
+ assert.equal(ticket.choices.length,2);assert.equal(ticket.choices[0].current,true);assert.equal(ticket.choices[1].current,false);
+ assert.equal(await f.layout.moveToMonitor(ticket,2),true);
+ assert.deepEqual(code.normal,{x:-1500,y:60,width:700,height:500});assert.equal(code.maximized,true);assert.equal(code.minimized,true);
+ assert.equal(f.main.changes,0);assert.equal(f.windows.get(f.docs.windowId).changes,0);assert.equal(f.main.focuses,0);assert.deepEqual(f.registry.listViews(),before);
+ assert.equal(await f.layout.moveToMonitor(ticket,1),false,'A consumed chooser cannot be replayed');
+});
+test('monitor chooser refuses copied tickets, forged displays, retired frames and changed display topology before mutation',async()=>{
+ for(const revoke of ['copied','unknown','frame','topology','lock']){
+  const f=await fixture(),code=f.windows.get(f.code.windowId);assert.equal(typeof f.layout.prepareMove,'function');let ticket=f.layout.prepareMove(code),id=1;
+  if(revoke==='copied')ticket={...ticket};if(revoke==='unknown')id='1';if(revoke==='frame')code.webContents.mainFrame={url:code.webContents.getURL()};if(revoke==='topology')f.state.displays[0].workArea={...area,width:800};if(revoke==='lock')f.state.mode='locked';
+  assert.equal(await f.layout.moveToMonitor(ticket,id),false,revoke);assert.equal(code.changes,0);assert.equal(f.main.changes,0);
+ }
+});
+test('cross-DPI monitor movement uses actual DIP bounds and positions before sizing on the destination display',async()=>{
+ const f=await fixture(),code=f.windows.get(f.code.windowId);f.state.displays.push({id:2,workArea:{x:-1600,y:0,width:1600,height:900}});
+ let actual={x:100,y:100,width:700,height:500},cached={...actual,width:1050,height:750},positioned=false,sized=false;
+ code.getBounds=()=>({...actual});code.getNormalBounds=()=>({...cached});code.setPosition=(x,y)=>{actual={...actual,x,y};cached={...actual};positioned=true;};code.setSize=(width,height)=>{assert.equal(positioned,true);actual={...actual,width,height};cached={...actual};sized=true;};code.setBounds=b=>{actual={...b,width:Math.round(b.width/1.5),height:Math.round(b.height/1.5)};cached={...actual};};
+ assert.equal(await f.layout.moveToMonitor(f.layout.prepareMove(code),2),true);assert.equal(sized,true);assert.deepEqual(actual,{x:-1500,y:60,width:700,height:500});
+});
+test('native monitor popup uses radio choices and a captured one-use origin without exposing renderer move authority',async()=>{
+ assert.equal(typeof implementation.showNativeMonitorMenu,'function');const f=await fixture(),code=f.windows.get(f.code.windowId);let template,popup;
+ const Menu={buildFromTemplate(items){template=items;return {popup(options){popup=options;}};}};
+ assert.equal(implementation.showNativeMonitorMenu({Menu,layout:f.layout,originWindow:code}),true);assert.equal(popup.window,code);assert.equal(template[0].type,'radio');
+ code.webContents.mainFrame={url:code.webContents.getURL()};assert.equal(await template[0].click(),false);assert.equal(code.changes,0);
+});
 test('removed-display recovery rehomes actual admitted native handles without focus, navigation or grants',async()=>{
  const f=await fixture(),before=f.registry.listViews();assert.equal(await f.layout.recover(),true);
  for(const w of [f.main,...f.windows.values()]){assert.deepEqual(w.normal,{x:0,y:40,width:700,height:500});assert.equal(w.focuses,0);}

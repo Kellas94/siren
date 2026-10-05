@@ -1,4 +1,5 @@
 import { validId } from '../projects/paths.mjs';
+import {validEntityId} from '../windows/entities.mjs';
 
 export const NAVIGATION_BYTES = 64 * 1024;
 const error = code => Object.assign(new Error(code), { code });
@@ -34,7 +35,7 @@ const offset = value => Number.isSafeInteger(value) && value >= 0;
 const finite = value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
 function layout(input) {
   const item=fields(input,['role','entityId','version','normalBounds','displayId','maximized','fullscreen'],['role','entityId','normalBounds','displayId','maximized','fullscreen']);
-  if (!['diagram','docs','code','presenter','audience'].includes(item.role) || !validId(item.entityId) ||
+  if (!['diagram','docs','code','presenter','audience'].includes(item.role) || !(item.role==='code'?validId(item.entityId):validEntityId(item.entityId)) ||
       Object.hasOwn(item,'version') && (!offset(item.version) || item.version < 1) ||
       !(Number.isSafeInteger(item.displayId) || typeof item.displayId === 'string' && item.displayId.length > 0 && item.displayId.length <= 128) ||
       typeof item.maximized !== 'boolean' || typeof item.fullscreen !== 'boolean') invalid();
@@ -45,7 +46,7 @@ function layout(input) {
 export function normalizeLocation(input,{projectId}) {
   if (!validId(projectId)) invalid();
   const item=fields(input,['surface','entityId','sourceRef','cursor','scroll','layouts'],['surface']);
-  if (!['diagrams','docs','code','present'].includes(item.surface) || Object.hasOwn(item,'entityId') && !validId(item.entityId)) invalid();
+  if (!['diagrams','docs','code','present'].includes(item.surface) || Object.hasOwn(item,'entityId') && !(item.surface==='code'?validId(item.entityId):validEntityId(item.entityId))) invalid();
   const result={schema:1,projectId,surface:item.surface};
   if (Object.hasOwn(item,'entityId')) result.entityId=item.entityId;
   if (Object.hasOwn(item,'sourceRef')) {

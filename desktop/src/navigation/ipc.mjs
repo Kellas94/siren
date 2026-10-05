@@ -1,4 +1,5 @@
 import { validId } from '../projects/paths.mjs';
+import {validEntityId} from '../windows/entities.mjs';
 import { navigationFields as fields, navigationArray as array, normalizeLocation } from './contracts.mjs';
 
 const fail=code=>Object.freeze({ok:false,code});
@@ -34,7 +35,7 @@ function homeState(input,grant) {
   if(new Set(projects.map(item=>item.projectId)).size!==projects.length)invalid();
   const views=array(value.views,16).map(input=>{
     const item=fields(input,['windowId','role','entityId','label','state']);
-    if(!validId(item.windowId)||!validId(item.entityId)||!label(item.label)||!['diagram','docs','code','presenter','audience'].includes(item.role)||!['open','minimized'].includes(item.state))invalid();return item;
+    if(!validId(item.windowId)||!(item.role==='code'?validId(item.entityId):validEntityId(item.entityId))||!label(item.label)||!['diagram','docs','code','presenter','audience'].includes(item.role)||!['open','minimized'].includes(item.state))invalid();return item;
   });
   if(new Set(views.map(item=>item.windowId)).size!==views.length)invalid();
   const capabilities=fields(value.capabilities,['diagrams','docs','code','present']);

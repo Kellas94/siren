@@ -19,7 +19,10 @@ test('Home is a bounded standalone entry with exact local script identities and 
   const nodes=[];const visit=n=>{nodes.push(n);for(const child of n.childNodes||[])visit(child);};visit(parse(html));
   const scripts=nodes.filter(n=>n.tagName==='script');assert.equal(scripts.length,3);
   for(const script of scripts){assert.equal(script.attrs.some(a=>a.name==='src'),false);const code=script.childNodes.map(n=>n.value||'').join('');assert.ok(html.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"));}
-  assert.equal(/script-src 'unsafe-inline'|https?:\/\/|localStorage|createSirenDesktopStore|mermaid\.initialize|loadPersistedState|diagramRender|sourceText|codeFiles/.test(html),false);
+  // The exact SVG namespace is a DOM identifier, not a fetched resource.
+  // Continue refusing every other URL and external script source.
+  const withoutSvgNamespace=html.replaceAll('"http://www.w3.org/2000/svg"','""');
+  assert.equal(/script-src 'unsafe-inline'|https?:\/\/|localStorage|createSirenDesktopStore|mermaid\.initialize|loadPersistedState|diagramRender|sourceText|codeFiles/.test(withoutSvgNamespace),false);
   assert.match(html,/<html[^>]*data-desktop-locked="true"/);
   assert.equal(await resolveLocalResource({url:'siren://app/home.html',rendererRoot:root}),join(root,'home.html'));
   assert.equal(allowedAppFile('generated/home.html',new Set()),true);

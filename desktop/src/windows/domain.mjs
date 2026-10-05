@@ -3,7 +3,7 @@ import {validId} from '../projects/paths.mjs';
 import {digest} from '../projects/atomic.mjs';
 import {verifySnapshot} from '../projects/store.mjs';
 import {commitManifest,selectedManifestHistory} from '../sources/manifest.mjs';
-import {workspaceMetadata} from './entities.mjs';
+import {workspaceMetadata,validEntityId} from './entities.mjs';
 import {documentVersion} from './docs.mjs';
 const error=code=>Object.assign(new Error(code),{code});
 const fail=code=>Object.freeze({ok:false,code});
@@ -26,7 +26,7 @@ function dataCopy(value,depth=0,budget={nodes:0,bytes:0}) {
 function domainIntent(domain,input) {
  if(!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');
  const idKey=domain==='docs'?'documentId':'diagramId',request=navigationFields(input,['operationId',idKey,'expectedVersion','action','payload']);
- if(!validId(request.operationId)||!validId(request[idKey])||(domain==='docs'?!hash(request.expectedVersion):!Number.isSafeInteger(request.expectedVersion)||request.expectedVersion<1||request.expectedVersion>=Number.MAX_SAFE_INTEGER))throw error('REQUEST_REFUSED');
+ if(!validId(request.operationId)||!validEntityId(request[idKey])||(domain==='docs'?!hash(request.expectedVersion):!Number.isSafeInteger(request.expectedVersion)||request.expectedVersion<1||request.expectedVersion>=Number.MAX_SAFE_INTEGER))throw error('REQUEST_REFUSED');
  let payload;
  if(domain==='docs'&&request.action==='rename'){payload=navigationFields(request.payload,['title']);if(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed())throw error('REQUEST_REFUSED');}
  else if(domain==='docs'&&['replace-blocks','replace-content'].includes(request.action)){
@@ -47,7 +47,7 @@ export function normalizeDomainRequest(domain,method,input) {
   if(method===`apply${domain==='docs'?'Document':'Diagram'}`)return normalizeDomainIntent(domain,input);
   const read=method===`read${domain==='docs'?'Document':'Diagram'}`,flush=method===`flush${domain==='docs'?'Document':'Diagram'}`;
   if(!read&&!flush)throw error('REQUEST_REFUSED');const payload=navigationFields(input,read?['entityId']:['entityId','expectedVersion']);
-  if(!validId(payload.entityId)||flush&&(domain==='docs'?!hash(payload.expectedVersion):!Number.isSafeInteger(payload.expectedVersion)||payload.expectedVersion<1))throw error('REQUEST_REFUSED');return Object.freeze(payload);
+  if(!validEntityId(payload.entityId)||flush&&(domain==='docs'?!hash(payload.expectedVersion):!Number.isSafeInteger(payload.expectedVersion)||payload.expectedVersion<1))throw error('REQUEST_REFUSED');return Object.freeze(payload);
  }catch{throw error('REQUEST_REFUSED');}
 }
 const fingerprint=value=>digest(Buffer.from(JSON.stringify(value)));
@@ -91,7 +91,7 @@ export class DomainRepository {
  }
  #adapters(scope){guard(scope);const canWrite=()=>scope.isCurrent()===true;return {projects:this.#projects({scope,canWrite}),repository:this.#sources({scope,canWrite})};}
  async read(domain,input,scope) {
-  try{if(!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');const {entityId}=navigationFields(input,['entityId']);if(!validId(entityId))throw error('REQUEST_REFUSED');const {projects}=this.#adapters(scope),snapshot=await projects.readProject(scope.projectId);guard(scope);verifySnapshot(snapshot);const entity=selectedEntity(snapshot,domain,entityId);if(Buffer.byteLength(JSON.stringify(entity))>8*1024*1024)throw error('ENTITY_BUDGET');return Object.freeze({...receipt(snapshot,domain,entityId,'committed'),entity:JSON.parse(JSON.stringify(entity))});}
+  try{if(!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');const {entityId}=navigationFields(input,['entityId']);if(!validEntityId(entityId))throw error('REQUEST_REFUSED');const {projects}=this.#adapters(scope),snapshot=await projects.readProject(scope.projectId);guard(scope);verifySnapshot(snapshot);const entity=selectedEntity(snapshot,domain,entityId);if(Buffer.byteLength(JSON.stringify(entity))>8*1024*1024)throw error('ENTITY_BUDGET');return Object.freeze({...receipt(snapshot,domain,entityId,'committed'),entity:JSON.parse(JSON.stringify(entity))});}
   catch(cause){return fail(cause.code??'DOMAIN_READ_FAILED');}
  }
  async apply(domain,input,scope) {
@@ -113,7 +113,7 @@ export class DomainRepository {
  }
  async flush(domain,input,scope) {
   try {
-   const {entityId,expectedVersion}=navigationFields(input,['entityId','expectedVersion']);if(!validId(entityId)||!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');
+   const {entityId,expectedVersion}=navigationFields(input,['entityId','expectedVersion']);if(!validEntityId(entityId)||!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');
    const {projects,repository}=this.#adapters(scope),snapshot=await projects.readProject(scope.projectId);guard(scope);verifySnapshot(snapshot);
    if(version(snapshot,domain,entityId)!==expectedVersion)throw error(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT');let durability='committed';
    if(snapshot.schema===2){const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:snapshot.revision-1,sourceRefs:snapshot.sourceRefs,metadata:JSON.parse(snapshot.json),operationId:snapshot.operationId});guard(scope);if(!saved.ok)return fail(saved.code);durability=saved.durability;}

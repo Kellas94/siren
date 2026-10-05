@@ -21,6 +21,10 @@ test('native App catalog lists readonly Docs and exact selected Code versions wi
  assert.equal(JSON.stringify(result).includes('PLANTED_DOCS_PRIVATE_CONTENT'),false);assert.equal(JSON.stringify(result).includes('foreign secret'),false);
  assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
 });
+test('native Home catalog retains imported uppercase and underscore Docs/Diagram identities as literal metadata',async()=>{
+ const f=await fixture();f.select({...f.selected,json:JSON.stringify({workpapers:[{id:'_AgentNotes',title:'Imported notes'}],diagrams:[{id:'Flow-A',name:'Imported flow',source:'flowchart TD\nA-->B'}]})});
+ const result=await f.call();assert.equal(result.ok,true);assert.ok(result.items.some(i=>i.role==='docs'&&i.entityId==='_AgentNotes'));assert.ok(result.items.some(i=>i.role==='diagram'&&i.entityId==='Flow-A'));
+});
 test('catalog is bounded and paginated while preserving exact metadata and Unicode labels',async()=>{
  const f=await fixture();const workpapers=Array.from({length:130},(_,index)=>({id:'doc-'+index,title:'Ș😀 document '+index,content:'PRIVATE_'+index}));
  f.select({...f.selected,json:JSON.stringify({workpapers})});const first=await f.call(),second=await f.call({cursor:first.nextCursor}),last=await f.call({cursor:second.nextCursor});

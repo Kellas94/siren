@@ -2,7 +2,8 @@ import { MAX_WORKSPACE_BYTES } from '../projects/budgets.mjs';
 import { validId as sourceId } from '../projects/paths.mjs';
 
 const workspaceKey = 't-industries-siren-v23-state';
-const docId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
+export const validEntityId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
+const docId = validEntityId;
 const empty = () => ({ code: [], docs: [], diagram: [] });
 
 function object(value) {

@@ -1,5 +1,5 @@
 import {navigationFields} from '../navigation/contracts.mjs';
-import {workspaceMetadata} from './entities.mjs';
+import {workspaceMetadata,validEntityId} from './entities.mjs';
 import {validId} from '../projects/paths.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 const label=value=>{const short=value.toWellFormed().slice(0,160);return /[\uD800-\uDBFF]$/.test(short)?short.slice(0,-1):short;};
@@ -24,7 +24,7 @@ export class NativeWindowCatalog {
    if(!live||live.windowId!==grant.windowId||live.epoch!==grant.epoch||snapshot?.project?.id!==grant.projectId)return fail('ACCESS_REFUSED');
    const rows=[],seen=new Set(),metadata=workspaceMetadata(snapshot);
    for(const document of metadata.workpapers??[]){
-    if(!validId(document?.id))continue;if(seen.has(document.id))return fail('CATALOG_REFUSED');seen.add(document.id);
+    if(!validEntityId(document?.id))continue;if(seen.has(document.id))return fail('CATALOG_REFUSED');seen.add(document.id);
     rows.push({role:'docs',entityId:document.id,label:typeof document.title==='string'&&document.title?label(document.title):'Untitled document',readonly:true});
    }
    const refs=new Map();
@@ -38,7 +38,7 @@ export class NativeWindowCatalog {
    for(const ref of refs.values()){const name=names.get(key(ref)),text=name?name+(linked.has(key(ref))?'':' · Unlinked'):'Source '+ref.sourceId.slice(0,8);rows.push({role:'code',entityId:ref.sourceId,label:label(text),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}});}
    const diagramIds=new Set();
    for(const diagram of metadata.diagrams??[]){
-    if(!validId(diagram?.id))continue;if(diagramIds.has(diagram.id))return fail('CATALOG_REFUSED');diagramIds.add(diagram.id);
+    if(!validEntityId(diagram?.id))continue;if(diagramIds.has(diagram.id))return fail('CATALOG_REFUSED');diagramIds.add(diagram.id);
     rows.push({role:role==='presenter'?'presenter':'diagram',entityId:diagram.id,label:typeof diagram.name==='string'&&diagram.name?label(diagram.name):'Untitled diagram',readonly:true});
    }
    const selected=role?rows.filter(item=>item.role===role):rows;

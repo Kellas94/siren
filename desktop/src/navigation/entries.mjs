@@ -1,5 +1,6 @@
 import {navigationFields} from './contracts.mjs';
 import {validId} from '../projects/paths.mjs';
+import {validEntityId} from '../windows/entities.mjs';
 
 export const WORKSPACE_ENTRIES=Object.freeze({home:'siren://app/home.html',module:'siren://app/app.html'});
 const refuse=code=>Object.assign(new Error(code),{code});
@@ -11,7 +12,7 @@ export function normalizeRoute(input) {
  try {
   const route=navigationFields(input,['surface','entityId','sourceRef'],['surface']);
   if(!['home','diagrams','docs','code','present'].includes(route.surface))throw refuse('INVALID_ROUTE');
-  if(Object.hasOwn(route,'entityId')&&!validId(route.entityId))throw refuse('INVALID_ROUTE');
+  if(Object.hasOwn(route,'entityId')&&!(route.surface==='code'?validId(route.entityId):validEntityId(route.entityId)))throw refuse('INVALID_ROUTE');
   if(route.surface==='home'&&Object.keys(route).length!==1)throw refuse('INVALID_ROUTE');
   if(Object.hasOwn(route,'sourceRef')) {
    const ref=navigationFields(route.sourceRef,['sourceId','version','sha256']);
