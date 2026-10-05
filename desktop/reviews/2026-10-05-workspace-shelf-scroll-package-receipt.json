@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "implementer-copied-package-evidence",
+  "sourceCommit": "3ea917dfa22315515196fb958364439b0c37c2a8",
+  "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-768f3903-66df-4449-8466-be4bc848d75a",
+  "archive": {
+    "bytes": 53566167,
+    "sha256": "6be88008dc0765e62d58950805e11b16ba198089492d0af594694de8d73221e6"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "byteCheck": {
+    "author": "/root",
+    "sourceCommit": "3ea917dfa22315515196fb958364439b0c37c2a8",
+    "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-768f3903-66df-4449-8466-be4bc848d75a",
+    "files": 243,
+    "archive": {
+      "bytes": 53566167,
+      "sha256": "6be88008dc0765e62d58950805e11b16ba198089492d0af594694de8d73221e6"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "exactApplicationBytes": true,
+    "unchangedElectronRuntime": true,
+    "releaseAdmitted": false
+  },
+  "status": "COMPLETE",
+  "runs": [
+    {
+      "name": "dock",
+      "resultPath": "evidence\\workspace-dock\\2026-10-05T18-14-57.377Z\\result.json",
+      "resultSha256": "a216ebde28882319fa63a8a169c12e15e46b087128e69b1506053019ae8924f2",
+      "logSha256": "c6adb4ccc28678421eb1e4dddc2c3059cbeded0e9c01a8d5a93d82794ad9edb6",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 5,
+      "inputs": 22,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\workspace-dock\\2026-10-05T18-14-57.377Z\\Pachet-Știință-Dock"
+      ]
+    },
+    {
+      "name": "focus",
+      "resultPath": "evidence\\window-focus\\2026-10-05T18-15-14.263Z\\result.json",
+      "resultSha256": "47f892a2d206fae85956b9b28791dfef7fba75c7dcc839e1628e800d3c78f84a",
+      "logSha256": "74d40c7c376974ab8c34adb34e922a9324c70744eec1324ae89cd4f522b7cf37",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 9,
+      "inputs": 13,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\window-focus\\2026-10-05T18-15-14.263Z\\Pachet-Știință-Ferestre"
+      ]
+    },
+    {
+      "name": "docs300k",
+      "resultPath": "evidence\\docs-edit\\2026-10-05T18-15-28.865Z\\result.json",
+      "resultSha256": "134676d1ef2c320e62448d0f4c7d88c44852b852f758cc96abccd2e27dc129b6",
+      "logSha256": "0a557612bb4346ab6e4315d3b72eeeca1dee1a09c1537d59c9f8267541899611",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 28,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\docs-edit\\2026-10-05T18-15-28.865Z\\Pachet-Știință-Docs"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "code300k",
+      "resultPath": "evidence\\source-edit\\2026-10-05T18-15-57.756Z\\result.json",
+      "resultSha256": "e4766a4daabd41ae8846b96f3ef94ce8543b70aab1266d41b70769cbf299638b",
+      "logSha256": "84b2afd9bff24f7637bc53963aed68368494ee69546728dacfff537b1b245d9a",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 16,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\source-edit\\2026-10-05T18-15-57.756Z\\Pachet-Știință-Code"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "monitor",
+      "resultPath": "evidence\\monitor-memory\\2026-10-05T18-16-16.974Z\\result.json",
+      "resultSha256": "7f70e0a2d3ad0e1e970b74b18560eef160952c082b20d76244c45a8e11477c26",
+      "logSha256": "65d1a573255b1f2da4b24680b45d1e1eac32d5d9b234554a7683074dc9f8ccba",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 3,
+      "inputs": 7,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\monitor-memory\\2026-10-05T18-16-16.974Z\\Pachet-Știință-Monitoare"
+      ]
+    },
+    {
+      "name": "analysis",
+      "resultPath": "evidence\\source-analysis\\2026-10-05T18-16-31.925Z\\result.json",
+      "resultSha256": "73ec8178d6a63beac1be62cf45333a2f9766173c610e14571801771efd897e26",
+      "logSha256": "18d376eeea04d422c9dc7cbe32619b7a40aef90481e9715d53142627c66ddbf3",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 21,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\source-analysis\\2026-10-05T18-16-31.925Z\\Pachet-Știință-Analysis"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "compact-analysis",
+      "resultPath": "evidence\\source-analysis\\2026-10-05T18-16-47.486Z\\result.json",
+      "resultSha256": "a73b2a96b2b027e982833c6d8dfe694791a705b2462726e0f69aa611d72ecbbe",
+      "logSha256": "0c5caab83ff29ff96c9b2617e09543506f0db7dfde28723c935f1ab20852d4b0",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 22,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\source-analysis\\2026-10-05T18-16-47.486Z\\Pachet-Știință-Analysis"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "portable",
+      "resultPath": "evidence\\packaged-2026-10-05T18-17-03.104Z\\result.json",
+      "resultSha256": "b2955a2ba84e740eb1ff1b1086a3b5e82e999269a279500ea3308d9c611d6f9a",
+      "logSha256": "973e9fbff89e62455e1fe2faef2ae19d0443a55cf2fd3a8572bcbe9a0f16f54c",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": null,
+      "inputs": null,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\packaged-2026-10-05T18-17-03.104Z\\Mutat-Știință-2",
+        "evidence\\packaged-2026-10-05T18-17-03.104Z\\Pachet-Știință-1",
+        "evidence\\packaged-2026-10-05T18-17-03.104Z\\Siguranță-readonly-3"
+      ]
+    }
+  ],
+  "releaseAdmitted": false,
+  "scope": "Eight sequential root-owned actual copied-package runs; configured native geometry, Code/Docs docking, exact300k source/docs and original portable recovery. Not wholeTask4/Task6/physical hotplug/cleanPC/accounts/updates/production."
+}

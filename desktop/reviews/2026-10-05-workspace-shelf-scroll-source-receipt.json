@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "implementer-scroll-source-followup",
+  "sourceBase": "ba64c566383bee1065bb7eb1a1a8357f8ecea6ed",
+  "cssSha256": "cda1428a6a6a8b616ef1ff8b7f994d35a2674d937e5e1d02d6269a87b69e3ec3",
+  "records": [
+    {
+      "path": "workspace-surface/full-suite-2026-10-05T18-09-11.834Z",
+      "sha256": "362728f671ae884fff1eb19269a1fc0a971ddb28f96ddb1826eb54d02b698192",
+      "inputs": 417,
+      "cases": 1047
+    },
+    {
+      "path": "workspace-dock/shelf-scroll-2026-10-05T18-08-31.338Z",
+      "sha256": "97c7b2ef91ffee6cf99af321e6a56d06f0fb7659ff6cf499bd4b75e125403c7c",
+      "inputs": 5,
+      "cases": 4
+    },
+    {
+      "path": "workspace-dock/2026-10-05T18-09-29.550Z",
+      "sha256": "3577e2c08f3a0a810ac12528cfe5545600b23ace4bc7b80cdb20d94ddde88eaa",
+      "inputs": 21,
+      "cases": 5
+    },
+    {
+      "path": "source-analysis/2026-10-05T18-10-23.201Z",
+      "sha256": "a552c9f0f9dc85cd2a0134ff7a7aaad39cac1a921d21fd61a69237f741201969",
+      "inputs": 22,
+      "cases": 4,
+      "lineCount": 300000
+    }
+  ],
+  "independent": {
+    "author": "/root/workspace_surface_review",
+    "path": "reviews/2026-10-05-workspace-shelf-scroll-independent.md",
+    "sha256": "2b8f99e72ba61ec1156105910ea8500a3466d0df20ec38fd18a0165349676fcd"
+  },
+  "originalHosted": {
+    "run": 37352432832,
+    "head": "da039dc3d4245396395fdf0eb0e9e6acdc168f6c",
+    "status": "FAILURE",
+    "cause": "Original pointer Lock covered by fixed shelf after nearest scroll; sources7/diagrams2/packageanalysis1 adverse. Original unit1047 and Launcher/desktop native succeeded; gates failed.",
+    "artifacts": [
+      {
+        "id": 11363361761,
+        "sha256": "2b311d665fae5286eade8175277778a6242c5a609dd947d73282813aedc906f2"
+      },
+      {
+        "id": 11363662027,
+        "sha256": "7b9776e19d204a2b1f384998e17e970d3a17c59fd240899e99a02cc2ad191e97"
+      },
+      {
+        "id": 11363268817,
+        "sha256": "8c9d7e5fd364e258d621b6f440191e1c6d94dbfad3554aaedb0ee15fb068d00c"
+      }
+    ]
+  },
+  "releaseAdmitted": false,
+  "scope": "Exact CSS reservation; controlled actual Home hit-tests, same-renderer dock and unchanged Python analysis oracle in compact CSS viewport; fresh full1047. New copied-package/hosted qualification pending."
+}
