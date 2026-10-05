@@ -170,6 +170,9 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -348,6 +351,9 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -566,6 +572,9 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
