@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 /** Hold a genuine metadata call at the UI boundary; no authority or reply is fabricated. */
 export async function verifyClosedSearch({driver,result}){
  await driver.click('.home-library .home-secondary:last-child');
+ // Native close queues the renderer close event. Do not hide the original
+ // Home and mount a second library until its actual controls are retired.
+ await driver.waitFor('document.querySelector(".home-library")==null');
  await driver.evaluate(`(async()=>{
   document.getElementById('homeRoot').hidden=true;const host=document.createElement('main');host.id='searchRaceHome';document.body.append(host);
   let release;const gate=new Promise(r=>release=r);window.__ownedSearchRace={entered:false,release};
@@ -10,7 +13,7 @@ export async function verifyClosedSearch({driver,result}){
   const home=window.renderSirenHome({container:host,bridge,desktop:window.sirenDesktop,bootstrap:window.sirenDesktopBootstrap});window.__ownedSearchRace.home=home;await home.refresh();
  })()`);
  await driver.click('#searchRaceHome #homeModule-docs');await driver.waitFor('document.querySelectorAll("#searchRaceHome .home-library [data-entity-id]").length===64');
- await driver.click('#homeLibraryQuery');await driver.send('Input.insertText',{text:'Document 129'});await driver.click('#homeLibrarySearch');await driver.waitFor('window.__ownedSearchRace.entered===true');
+ await driver.click('#searchRaceHome #homeLibraryQuery');await driver.send('Input.insertText',{text:'Document 129'});await driver.click('#searchRaceHome #homeLibrarySearch');await driver.waitFor('window.__ownedSearchRace.entered===true');
  assert.equal(await driver.evaluate('document.getElementById("homeLibrarySearch").disabled'),true);assert.equal(await driver.evaluate('document.getElementById("homeLibraryQuery").disabled'),true);
  await driver.click('#searchRaceHome .home-library .home-secondary:last-child');
  assert.equal(await driver.evaluate('document.querySelector("#searchRaceHome .home-library")?.open===true'),false);
