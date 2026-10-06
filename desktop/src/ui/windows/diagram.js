@@ -2,16 +2,16 @@
  'use strict';
  const $=id=>document.getElementById(id),status=$('viewStatus'),canvas=$('diagramCanvas'),host=$('diagramRenderHost'),theme=$('diagramTheme'),viewport=$('diagramViewport');
  let disposed=false,paused=false,zoom=1,panX=0,panY=0,drag=null,splitDrag=false,split=32;
- let draft=null,readonly=true,latest=null,previewTimer=null,refreshTimer=null,lastError='';
+ let draft=null,readonly=true,latest=null,previewTimer=null,refreshTimer=null,lastError='',saveError='';
  const sourceInput=$('diagramSource'),saveButton=$('saveDiagram'),workingButton=$('openWorkingDiagram'),notice=$('diagramChangesNotice');
  let guidedMode=false;
  let exporting=false,exportReceipt=null;
- const styleView=window.SirenNativeDiagramStyleView.create({host:$('diagramStylePanel'),diagramFor:()=>draft?.getDiagram(),editable:()=>!disposed&&!paused&&!readonly&&draft&&!draft.getStatus().pending&&!draft.getStatus().fenced,onStyle:patch=>{if(!draft||!guidedView.commit())return {ok:false};const result=draft.setStyle(patch);if(result.ok){lastError='';document.body.dataset.diagramRendered='false';clearTimeout(previewTimer);previewTimer=setTimeout(preview,120);}return result;},onStatus:message=>{lastError=message;updateState();},onPending:updateState});
+ const styleView=window.SirenNativeDiagramStyleView.create({host:$('diagramStylePanel'),diagramFor:()=>draft?.getDiagram(),editable:()=>!disposed&&!paused&&!readonly&&draft&&!draft.getStatus().pending&&!draft.getStatus().fenced,onStyle:patch=>{if(!draft||!guidedView.commit())return {ok:false};const before=draft.getDiagram(),result=draft.setStyle(patch);if(result.ok){if(Object.keys(patch).some(key=>JSON.stringify(before[key])!==JSON.stringify(patch[key])))saveError='';lastError='';document.body.dataset.diagramRendered='false';clearTimeout(previewTimer);previewTimer=setTimeout(preview,120);}return result;},onStatus:message=>{lastError=message;updateState();},onPending:updateState});
  const buildView=window.SirenNativeDiagramBuildView.create({host:$('diagramBuildPanel'),sourceFor:()=>draft?.getDiagram().source??'',editable:()=>!disposed&&!paused&&!readonly&&draft&&!draft.getStatus().pending&&!draft.getStatus().fenced,onSource:replaceSource,onStatus:message=>{lastError=message;updateState();},onPending:updateState});
  const guidedView=window.SirenNativeGuidedView.create({host:$('diagramGuided'),sourceFor:()=>draft?.getDiagram().source??'',editable:()=>!disposed&&!paused&&!readonly&&draft&&!draft.getStatus().pending&&!draft.getStatus().fenced,
   onSource:value=>replaceSource(value),onStatus:message=>{lastError=message;updateState();}});
  function replaceSource(value){
-  if(!draft||paused||disposed)return false;const result=draft.setSource(value);if(!result.ok)return false;
+  if(!draft||paused||disposed)return false;const changed=draft.getDiagram().source!==value,result=draft.setSource(value);if(!result.ok)return false;if(changed)saveError='';
   sourceInput.value=value;document.body.dataset.diagramRendered='false';clearTimeout(previewTimer);previewTimer=setTimeout(preview,250);return true;
  }
  function updateState(){
@@ -25,7 +25,7 @@
   document.body.dataset.diagramDirty=String(state.dirty);document.body.dataset.diagramVersion=String(state.version);document.body.dataset.diagramSha256=state.sha256;
   if(guidedMode)guidedView.paint();
   styleView.paint();buildView.paint();
-  status.textContent=lastError||(readonly?'Read only · Mermaid 12.0.0 · Mermaid source colours retained':state.pending?'Saving diagram…':state.fenced?'Save refused · Your local diagram is retained':state.dirty?'Unsaved diagram · Preview only · Ctrl + S to save':'Diagram saved · Mermaid 12.0.0 · Other project data retained');
+  status.textContent=state.pending?'Saving diagram…':saveError||lastError||(readonly?'Read only · Mermaid 12.0.0 · Mermaid source colours retained':state.pending?'Saving diagram…':state.fenced?'Save refused · Your local diagram is retained':state.dirty?'Unsaved diagram · Preview only · Ctrl + S to save':'Diagram saved · Mermaid 12.0.0 · Other project data retained');
  }
  const media=matchMedia('(prefers-color-scheme: dark)'),dark=()=>theme.value==='dark'||theme.value==='system'&&media.matches;
  function appearance(){document.documentElement.style.colorScheme=theme.value==='system'?'light dark':theme.value;document.body.dataset.diagramTheme=dark()?'dark':'light';}
@@ -57,7 +57,7 @@
    try{const result=await window.mermaid.render('nativeDiagram_'+token,source,target),svg=sanitize(result.svg),targets=window.SirenNativeDiagramStyle.apply(svg,diagram||{source},provenance);return {svg,targets};}finally{target.remove();}
   });renderQueue=operation;return operation;},
   onSource(result){
-   const own=window.SirenNativeDiagramDraft.create({context:result,bridge:{...window.sirenDiagramEdit,getDiagram:window.sirenDiagramRead.getDiagram},onChange:updateState});draft?.dispose();draft=own;readonly=result.readonly;lastError='';latest=null;notice.hidden=true;
+   const own=window.SirenNativeDiagramDraft.create({context:result,bridge:{...window.sirenDiagramEdit,getDiagram:window.sirenDiagramRead.getDiagram},onChange:updateState});draft?.dispose();draft=own;readonly=result.readonly;lastError='';saveError='';delete document.body.dataset.diagramSaveError;latest=null;notice.hidden=true;
    sourceInput.value=result.diagram.source;$('diagramSourceLabel').textContent=readonly?'Exact saved Mermaid · Read only':'Working Mermaid · Save explicitly';workingButton.hidden=!readonly||result.canEdit!==true;
    $('viewTitle').textContent=result.diagram.name||'Diagrams';document.body.dataset.diagramId=result.diagram.id;document.body.dataset.diagramReadonly=String(readonly);document.body.dataset.diagramReady='true';document.body.dataset.diagramRendered='false';canvas.replaceChildren();updateState();
    if(guidedMode)guidedView.reset();
@@ -74,7 +74,7 @@
  sourceInput.addEventListener('input',()=>{if(!draft)return;lastError='';if(!replaceSource(sourceInput.value))sourceInput.value=draft.getDiagram().source;});
  const setEditorMode=guided=>{if(paused||disposed||!guidedView.commit())return;guidedMode=guided;sourceInput.hidden=guided;$('diagramGuided').hidden=!guided;$('diagramTextMode').setAttribute('aria-pressed',String(!guided));$('diagramGuidedMode').setAttribute('aria-pressed',String(guided));if(guided)guidedView.paint();};
  $('diagramTextMode').addEventListener('click',()=>setEditorMode(false));$('diagramGuidedMode').addEventListener('click',()=>setEditorMode(true));
- const save=async()=>{if(paused||disposed||readonly||!draft||!guidedView.commit()||!styleView.commit()||!buildView.commit())return;lastError='';const result=await draft.save();if(!result.ok){lastError=result.code==='DOMAIN_VALIDATION_FAILED'?'Save refused by project validation · Correct the source and try again':'Save refused · Your local source is retained. Review the saved diagram separately or reload explicitly.';notice.hidden=false;$('diagramChangesMessage').textContent='Your local source was retained.';}updateState();};
+ const save=async()=>{if(paused||disposed||readonly||!draft||!guidedView.commit()||!styleView.commit()||!buildView.commit())return;lastError='';const result=await draft.save();if(!result.ok){document.body.dataset.diagramSaveError=['DOMAIN_VALIDATION_FAILED','DIAGRAM_CONFLICT','DIAGRAM_FENCED','ACCESS_REFUSED','DIAGRAM_RESULT_REFUSED','DIAGRAM_SAVE_FAILED','VIEW_DISPOSED'].includes(result.code)?result.code:'SAVE_REFUSED';saveError=result.code==='DOMAIN_VALIDATION_FAILED'?'Save refused by project validation · Correct the source and try again':'Save refused · Your local source is retained. Review the saved diagram separately or reload explicitly.';notice.hidden=false;$('diagramChangesMessage').textContent='Your local source was retained.';}else{saveError='';delete document.body.dataset.diagramSaveError;}updateState();};
  $('diagramExportSvg').addEventListener('click',async()=>{
   if(paused||disposed||exporting||!draft)return;const state=draft.getStatus();if(state.dirty||state.pending||state.paused||state.fenced||guidedView.isEditing()||styleView.isEditing()||buildView.isEditing())return;
   exporting=true;lastError='Exporting saved diagram…';updateState();try{

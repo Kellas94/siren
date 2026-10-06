@@ -99,6 +99,7 @@
   if(!draft||disposed)return;const state=draft.getStatus();
   if(!paused){const name=draft.getDocument().title;window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
   if(!paused&&!state.disposed){document.body.dataset.documentReady='true';document.body.dataset.documentId=state.documentId;}
+  const historyNotice=content.querySelector('[data-document-history-limit]');if(historyNotice)historyNotice.hidden=!state.historyLimited;
   save.hidden=readonly;save.disabled=state.pending||state.paused||state.fenced||!state.dirty;
   for(const [action,enabled]of [['undo',state.canUndo],['redo',state.canRedo]]){const button=content.querySelector('[data-document-history="'+action+'"]');if(button)button.disabled=paused||!enabled;}
   for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced||element.dataset.documentAtLimit==='true';
@@ -110,7 +111,7 @@
   const section=make('section',content);section.className='document-section document-editor';const value=draft.getContent();
   const history=make('div',section);history.className='document-history-tools';history.setAttribute('role','toolbar');history.setAttribute('aria-label','Document history');
   for(const [action,title]of [['undo','Undo'],['redo','Redo']]){const button=make('button',history,title);button.type='button';button.dataset.documentHistory=action;button.title=action==='undo'?'Undo · Ctrl+Z':'Redo · Ctrl+Shift+Z';button.addEventListener('pointerdown',event=>event.preventDefault());button.addEventListener('click',()=>historyAction(action));}
-  if(draft.getStatus().historyLimited)make('small',history,'Large edit · Local history limited');
+  const limitNotice=make('small',history,'Large edit · Local history limited');limitNotice.dataset.documentHistoryLimit='true';limitNotice.hidden=!draft.getStatus().historyLimited;
   const titleLabel=make('label',section,'Document title'),title=make('input',titleLabel);title.className='document-edit';title.id='documentTitleInput';title.value=value.title;
   const change=(key,newValue)=>{const current=draft.getContent();current[key]=newValue;draft.setContent(current,{historyGroup:key});};title.addEventListener('input',()=>change('title',title.value));
   const holder=make('div',section);let rendered=0;const more=make('button',section,'More blocks');more.type='button';

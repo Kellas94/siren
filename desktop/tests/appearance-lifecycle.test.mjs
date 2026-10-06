@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
 import {patchClassicAppearance} from '../build/appearance.mjs';
 
-test('actual original same-theme restore retains an open menu and the original palette lifecycle',async()=>{
+test('actual original same and changed native restore retains an open menu and the original palette lifecycle',async()=>{
  const html=(await readFile(new URL('../baseline/R78.html',import.meta.url),'utf8')).replaceAll('\r\n','\n');
  const start=html.indexOf('      function applyTheme(themeName, shouldRender) {'),end=html.indexOf('\n      function ',start+40);
  const functionSource=html.slice(start,end)+'\n      function following() {}';
@@ -17,6 +17,6 @@ test('actual original same-theme restore retains an open menu and the original p
  assert.equal(menu.hidden,false,'Delayed same native-owned appearance must not close the menu');
  assert.equal(paletteUpdates,1,'Retain the genuine original theme lifecycle work');
  context.applyTheme('dark',true,true);assert.equal(menu.hidden,true,'Genuine user choice closes the menu');
- menu.hidden=false;window.sirenClassicAppearance.apply('light');assert.equal(menu.hidden,true,'A genuinely changed native theme closes the old palette menu');
+ menu.hidden=false;window.sirenClassicAppearance.apply('light');assert.equal(menu.hidden,false,'Late changed native preference must preserve the menu already opened by the user');
  window.sirenShell=undefined;menu.hidden=false;context.applyTheme('light',false);assert.equal(menu.hidden,true,'Standalone original same-theme restore retains its own behavior');
 });

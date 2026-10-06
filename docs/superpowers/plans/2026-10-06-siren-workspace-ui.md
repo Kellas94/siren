@@ -63,3 +63,9 @@ Source0109ff28 full1082/native6/copied7 completed with unchanged captures/identi
 Source561c119 scoped native formatting/local history now qualified locally:1087 full tests, five affected native probes (Docs edit/format/structured300k, appearance and strict small Desktop), four separate copied-package probes, all unchanged captures. Exact248-file package/ASAR025fc501, original runtime unchanged. Root evidence/receipt and actual independently authored Docs report are separate under desktop/reviews/2026-10-06-docs-authoring-*. Three minor authoring observations remain open; images/comments/releases and complete Present/Diagram/decorative parity remain open.
 
 Canonical0304 hosted37400502223 FINALFAILURE is retained: Desktop17/20 shell readiness/hidden menus, package diagram-style rollback/save after appearance8 passed. New source adds only bounded read-only theme transitions for diagnosing fresh hosted execution, not a claim that these failures or intermittent appearance filesystem refusal are fixed.
+
+## Feedback correction checkpoint
+
+Sourcee27a7f2 adds explicit Clear block formatting, retained rejected-paste text with messages, live history-limit notice and independent Diagram save-refusal visibility through preview completion. Full1087, affected native6, copied5 all COMPLETE/unchanged; exact248-file ASARe8ed4ea8/originalruntime unchanged. Independently authored CI analysis demonstrates the original feedback defect and correction by the same isolated mocked receipt RED/GREEN, without native/hosted certification. Original Docs independent report remains exactc9af571. Root evidence/receipt: desktop/reviews/2026-10-06-workspace-feedback-root-*.
+
+Fresh37403029139 on6acf remains IN_PROGRESS for the prior Docs batch; actual hidden-theme closer/shell/Guided receipts are not inferred from local success. No next sync while that run is qualifying. Full images/comments/releases/Present/Diagram/decorative/physical parity remains open.

@@ -41,6 +41,10 @@ try {
     // one real pointer click, after the same hit/animation sensor as Code uses.
     const themeSelector = `[data-theme-value="${theme}"]`;
     await driver.waitFor(`(()=>{const e=document.querySelector(${JSON.stringify(themeSelector)}),m=document.getElementById('themeMenu');if(!e||!m||m.hidden)return false;const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return r.width>0&&r.height>0&&x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&e.contains(document.elementFromPoint(x,y))&&m.getAnimations().length===0})()`);
+    // Exercise the production programmatic restore while a real pointer-opened
+    // menu is active. Native ownership and the strict final click oracle remain.
+    await driver.evaluate('window.sirenClassicAppearance.apply('+JSON.stringify(theme==='dark'?'light':'dark')+')');
+    assert.equal(await driver.evaluate('document.getElementById("themeMenu").hidden'),false,'Programmatic changed native preference must preserve the genuinely opened menu');
     await driver.click(themeSelector);
     await driver.waitFor(`document.body.dataset.theme === '${theme}'`);
     await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
