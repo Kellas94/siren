@@ -84,3 +84,10 @@ test('accepted native appearance survives a later legacy startup theme and user 
  window.sirenClassicAppearance.apply('kpmg');context.applyTheme('light',false);
  assert.equal(state.theme,'kpmg');assert.equal(document.body.dataset.theme,'kpmg');
 });
+
+test('failed preference writes preserve finite native diagnostics without exposing paths or changing refusal',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'siren-appearance-diagnostic-')),original=new AppearanceStore(root);await original.set({theme:'kpmg'});
+ const events=[],store=new AppearanceStore(root,{onDiagnostic:event=>{events.push(event);throw Error('Observer must not change refusal');},fault:async phase=>{if(phase==='before-rename')throw Object.assign(Error('Private path and OS detail must not enter diagnostics'),{code:'EPERM',path:'private-path'});}});
+ assert.equal((await store.set({theme:'dark'})).code,'APPEARANCE_WRITE_FAILED');assert.equal((await original.read()).theme,'kpmg');
+ assert.deepEqual(events,[{phase:'before-rename',code:'EPERM'}]);assert.equal(JSON.stringify(events).includes('private-path'),false);
+});

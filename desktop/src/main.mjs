@@ -950,7 +950,7 @@ ipcMain.handle('siren:window-dock',(event,method,payload)=>{
   if(method==='getShelf'&&result.ok)windowRegistry.resizeAttached();
   return result;
 });
-const appearanceStore=new AppearanceStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier});
+const appearanceStore=new AppearanceStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier,onDiagnostic:event=>console.warn('SIREN_APPEARANCE_FAILURE',JSON.stringify(event))});
 ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,payload,store:appearanceStore,
  context:()=>({projectName:snapshot?.project?.label||'Local workspace'}),
  capture:own=>{
