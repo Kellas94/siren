@@ -1,0 +1,16 @@
+{
+  "author": "/root",
+  "localBase": "346790e1e7c59e3f860dd1eb8c0d0f188895e437",
+  "localMetadataHead": "429f2ee05452ba96597f8802d64baf1f22ab34e6",
+  "localProduct": "2c54954c4e789cf428fd54dd625e717bf369a650",
+  "remoteParent": "bd0606c85eb1f69d33e0e694a8428efd8dc5f0d6",
+  "remoteHead": "28ac3091bfa82e89e9820c6d3134888859fd3ddb",
+  "remoteTree": "7880c027c92763f53df0c25c375c6328c791db71",
+  "branch": "feature/portable-foundation-2026-10-02",
+  "blobCount": 1541,
+  "delta": {"localFiles": 56, "newFiles": 22, "canonicalIgnorePrefixPreserved": true, "canonicalIgnoreSHA": "fc3ac33c621b0ffa8b7535638d3a353e5c7ecc0e", "untouchedBlobsVerified": 1484, "expectedLeaseVerified": true, "force": false},
+  "hosted": {"runId": 37425898400, "statusAtSync": "in_progress", "finalQualification": "pending"},
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {"number": 2, "open": true, "draft": true, "merged": false},
+  "releaseAdmitted": false
+}

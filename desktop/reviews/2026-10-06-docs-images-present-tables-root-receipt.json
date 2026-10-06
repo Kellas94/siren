@@ -1,0 +1,52 @@
+{
+  "author": "/root",
+  "kind": "local-qualification-not-independent-approval",
+  "sourceCommit": "abcebe36bf5bd94b86634e9ea4050931bd1ead71",
+  "status": "LOCAL_QUALIFIED_HOSTED_PENDING",
+  "units": {
+    "tests": 1138,
+    "evidence": "evidence/workspace-surface/media-tables-final-suite-2026-10-06T19-03-30.724Z/result.json",
+    "sha256": "d9378f54c8f1ee00481c66dfaf69bf6db6198a108ebd930a848efe3fa78fb975"
+  },
+  "portableCopies": {
+    "probes": 5,
+    "cases": 36,
+    "evidence": "evidence/workspace-surface/media-tables-package-native-2026-10-06T19-05-22.763Z/result.json",
+    "sha256": "e3f3caf32de06637410a281509c5fe72bdf8a9314a4562c240bc4bc24c468204",
+    "changedInputs": []
+  },
+  "package": {
+    "previewRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-b0d371cf-1d86-423f-838c-939ec4f0d51a",
+    "archive": {
+      "bytes": 53808578,
+      "sha256": "b7b3235c2c3df28d6856918ae17e1fcf3a3a1750f71a72e948c5546aab89555c"
+    },
+    "files": 253,
+    "identityEvidence": "evidence/workspace-surface/package-identity-2026-10-06T19-05-10.310Z/result.json",
+    "sha256": "baa682528650eb9434ff9099c5707e0ba76ba33b4b4fcbc5bff5c4e70885b772",
+    "processReader": {
+      "schema": 1,
+      "kind": "windows-process-reader",
+      "sourceSha256": "4d751525c646cdc652d5f2e263697ec1b033568167b99cfcabc993c625b726a8",
+      "compilerSha256": "46809206887326d2d24db1eff1f3064de972c3451abe766b49111450a5e08e00",
+      "binary": {
+        "bytes": 6144,
+        "sha256": "485d4fe26225c75670e2ce425fa0daa816f5b8ef93b1561042b7138e01fed6a3"
+      }
+    }
+  },
+  "review": {
+    "original": "reviews/2026-10-06-docs-images-present-tables-independent.md",
+    "sha256": "0cf5cbfc2c7cfc9ed7a5d4bef082d5450048a3208ec8cf8efc6867f9ba54c29c",
+    "verdict": "CHANGES REQUESTED retained; two P2 findings fixed by root with observed RED2 then GREEN18; full final1138 and copied5/36 pass. No independent native or hosted approval claimed."
+  },
+  "adverse": [
+    "evidence/docs-context-native/2026-10-06T19-01-48.919Z/result.json (undecodable PNG fixture refused; original retained; final native test explicitly checks refusal then imports real Canvas PNG)",
+    "evidence/media-review-2026-10-06-result.json (original independent findings preserved)"
+  ],
+  "limits": [
+    "PNG/JPEG imports512KiB/16MP; document budget2MiB; no binary media repository",
+    "Tables20x12/1000chars percell; unfit layout/refusal explicit, reveal tables remain unsupported",
+    "No merge/release/installed-app replacement; richer authoring/media/review/parity and physical-monitor/DPI/IME/accessibility still open"
+  ]
+}

@@ -1,3 +1,4 @@
+import {normalizeTableRows} from '../documents/presentation-edits.mjs';
 import {WindowRegistry} from './registry.mjs';
 import {verifySnapshot} from '../projects/store.mjs';
 import {digest} from '../projects/atomic.mjs';
@@ -11,6 +12,7 @@ const styleKeys=['diagramTitle','diagramTitleTouched','direction','curve','fontF
 function publicCard(card){
  const kind=card.kind??'title',value={kind:['title','text','table','image','embed','doc','facts'].includes(kind)?kind:'unsupported'};
  for(const [key,limit]of [['title',256],['eyebrow',80]])if(Object.hasOwn(card,key)){if(!text(card[key],limit))refuse();value[key]=card[key];}
+ if(kind==='table'){try{value.rows=normalizeTableRows(card.rows);}catch{refuse();}if(card.headerRow!==undefined&&typeof card.headerRow!=='boolean')refuse();value.headerRow=card.headerRow??false;if(card.reveal===true)value.reveal=true;return value;}
  if(!['title','text'].includes(kind))return value;
  // HTML is the authored field in current cards. Do not copy its stale plain
  // mirror, notes, asset IDs, live-document IDs or unrelated metadata.

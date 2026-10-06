@@ -46,9 +46,14 @@ export const domainHelper = `
                 return same(sanitizeWorkpaperBlock(projected,report),projected)&&report.length===0;
               });
             };
+            const imageFieldsOnly=block=>{
+              const matches=(before?.blocks||[]).filter(item=>item?.id===block?.id);if(matches.length!==1||block?.kind!=='image'||matches[0].kind!=='image')return false;
+              const allowed=['dataUri','caption','fileName'],without=value=>Object.fromEntries(Object.entries(value).filter(([key])=>!allowed.includes(key)));if(!same(without(block),without(matches[0])))return false;
+              const projected={id:block.id,kind:'image',dataUri:block.dataUri??'',caption:block.caption??'',fileName:block.fileName??''},report=[];return same(sanitizeWorkpaperBlock(projected,report),projected)&&report.length===0;
+            };
             return payload.blocks.length<=MAX_WP_BLOCKS&&payload.blocks.every(block=>{
               if(existing.has(JSON.stringify(canonical(block))))return true;
-              if(labelsOnly(block))return true;
+              if(labelsOnly(block)||imageFieldsOnly(block))return true;
               const report=[];return same(sanitizeWorkpaperBlock(block,report),block)&&report.length===0;
             });
           }

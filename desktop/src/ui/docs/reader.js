@@ -22,6 +22,9 @@
   const card=make('section',parent);card.className='document-reader-block';card.dataset.blockId=typeof block?.id==='string'?block.id:'';
   if(block?.kind==='heading'&&typeof block.text==='string'){make('h'+Math.max(2,Math.min(6,Number.isSafeInteger(block.level)?block.level:2)),card,block.text);return true;}
   if(block?.kind==='text'&&typeof block.html==='string'){html(card,block.html);return true;}
+  if(block?.kind==='image'){
+   const figure=make('figure',card);figure.className='document-image';if(window.SirenDocumentImages?.inspectDocumentImage(block.dataUri).ok){const image=make('img',figure);image.src=block.dataUri;image.alt=block.caption||block.fileName||'Document image';image.loading='lazy';image.decoding='async';}else make('p',figure,'Image unavailable · Original evidence retained');if(block.caption||block.fileName)make('figcaption',figure,block.caption||block.fileName);return true;
+  }
   if(block?.kind==='table'&&Array.isArray(block.rows)){
    const table=make('table',card);table.className='document-reader-table';const body=make('tbody',table);let at=0;
    const more=make('button',card,'More rows');more.type='button';
@@ -41,7 +44,7 @@
  }
  window.SirenNativeDocsReader=Object.freeze({render({parent,outline,blocks}){
   if(!Array.isArray(blocks)||!blocks.length)return;
-  if(!blocks.some(block=>['heading','text','table','checklist','prompt'].includes(block?.kind)))return;
+  if(!blocks.some(block=>['heading','text','table','checklist','prompt','image'].includes(block?.kind)))return;
   const page=make('section',parent);page.className='document-reader';page.setAttribute('aria-label','Document content');
   const nav=make('button',outline,'Contents');nav.type='button';nav.addEventListener('click',()=>page.scrollIntoView({block:'start'}));
   const holder=make('div',page),more=make('button',page,'More document blocks');more.type='button';let at=0;

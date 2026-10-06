@@ -300,3 +300,17 @@ WP-001_*.json
 !desktop/tests/native/presentation-authoring.mjs
 !desktop/tests/presentation-authoring.test.mjs
 !docs/superpowers/plans/2026-10-06-siren-docs-present-authoring.md
+
+# Native Docs images and public presentation tables: durable exact inputs
+!desktop/reviews/2026-10-06-docs-deck-canonical-sync.json
+!desktop/reviews/2026-10-06-docs-deck-hosted-evidence.md
+!desktop/reviews/2026-10-06-docs-deck-hosted-receipt.json
+!desktop/reviews/2026-10-06-docs-images-present-tables-independent.md
+!desktop/reviews/2026-10-06-docs-images-present-tables-root-evidence.md
+!desktop/reviews/2026-10-06-docs-images-present-tables-root-receipt.json
+!desktop/reviews/2026-10-06-native-media-parity-next-analysis.md
+!desktop/src/documents/images.mjs
+!desktop/src/ui/docs/images.js
+!desktop/tests/docs-images.test.mjs
+!desktop/tests/presentation-tables.test.mjs
+!docs/superpowers/plans/2026-10-06-siren-docs-images-present-tables.md
