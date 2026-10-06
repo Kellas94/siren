@@ -9,6 +9,7 @@ From this directory with Node 24.16.0:
 ```powershell
 npm ci
 npm run runtime:install
+node scripts/build-process-reader.mjs
 npm run verify
 node build/renderer.mjs baseline/R78.html generated
 npm start
@@ -25,6 +26,12 @@ create and confirm a 4- or 6-digit PIN. The iPhone-style dots/keypad also accept
 keyboard input. **Desktop… → Settings… → Change PIN…** requires the current
 PIN. **Lock SIREN** (Ctrl+Alt+L) confirms local saves before locking; Ctrl+,
 opens Settings. Restart always locks again. No online account is required.
+
+The fixed Windows process reader is built once using the .NET Framework compiler
+already installed with Windows. The package includes the reader and its source/binary
+identity receipt. Startup never compiles code or starts PowerShell to inspect a
+process. Unknown identity still requires read-only recovery; the original exact
+PID, Unicode executable path and 100ns creation time remain the ownership check.
 
 Development data is isolated in `.dev-data/`. Import a complete `.siren` project
 explicitly; no installed/browser profile is imported automatically. The unchanged

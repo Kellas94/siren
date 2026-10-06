@@ -11,5 +11,10 @@ if not exist "%~dp0desktop\generated\app.html" (
   pause
   exit /b 1
 )
+if not exist "%~dp0desktop\native\generated\process-identity.exe" (
+  echo SIREN development process reader is missing. Follow desktop\README.md.
+  pause
+  exit /b 1
+)
 start "SIREN development" /D "%~dp0desktop" "%~dp0desktop\node_modules\electron\dist\electron.exe" "%~dp0desktop"
 exit /b 0

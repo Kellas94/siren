@@ -29,7 +29,7 @@ export async function runNativeGroup(group,{run=runScript,onResult=()=>{}}={}){
 if(resolve(process.argv[1]??'')===fileURLToPath(import.meta.url)){
  if(process.argv.length!==4||process.argv[2]!=='--group'||!Object.hasOwn(nativeGroups,process.argv[3]))throw Error('NATIVE_GROUP_REFUSED');
  const group=process.argv[3],directory=resolve(root,'evidence/native-verification');await mkdir(directory,{recursive:true});
- const names=['scripts/native-verification.mjs','../.github/workflows/desktop-verify.yml',...nativeGroups[group].map(name=>'tests/native/'+name+'.mjs')];
+ const names=['scripts/native-verification.mjs','../.github/workflows/desktop-verify.yml','scripts/build-process-reader.mjs','src/recovery/processes.mjs','src/recovery/native-process.mjs','native/process-identity.cs','native/generated/process-identity.exe','native/generated/process-identity.json',...nativeGroups[group].map(name=>'tests/native/'+name+'.mjs')];
  const capture=async()=>Object.fromEntries(await Promise.all(names.map(async name=>[name,createHash('sha256').update(await readFile(resolve(root,name))).digest('hex')]))),inputs=await capture();
  const progress={group,status:'RUNNING',started:new Date().toISOString(),results:[],inputs};
  const save=()=>writeFile(resolve(directory,group+'.json'),JSON.stringify(progress,null,2));await save();

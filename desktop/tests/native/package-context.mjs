@@ -14,6 +14,9 @@ export async function copiedPackageContext(evidence){
  const verify=async()=>{
   assert.deepEqual(await hashOwnedFile(join(copy,'App/versions/0.1.0/resources/app.asar'),1024**3),receipt.appArchive);
   assert.deepEqual(await hashOwnedFile(join(copy,receipt.appRelativePath),1024**3),receipt.runtimeBinary);
+  assert.ok(receipt.processReader,'Copied runtime requires the committed fixed process reader receipt');
+  assert.deepEqual(await hashOwnedFile(join(copy,'App/versions/0.1.0/resources/siren-process-identity.exe'),131072),receipt.processReader.binary);
+  assert.deepEqual(JSON.parse(await readFile(join(copy,'App/versions/0.1.0/resources/siren-process-identity.json'),'utf8')),receipt.processReader);
  };
  await verify();
  return {copy,data:join(copy,'Data'),receipt,launch:{executable:join(copy,receipt.appRelativePath),packaged:true},verify};

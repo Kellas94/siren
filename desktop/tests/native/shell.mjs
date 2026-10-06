@@ -2,14 +2,21 @@ import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
+import {copiedPackageContext} from './package-context.mjs';
 
 const evidence = resolve('evidence', `shell-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(resolve(evidence, 'owned-data-'));
-const driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`] });
-await unlockDesktop(driver, { pin: '4826', autoSetup: true });
+const packaged=await copiedPackageContext(evidence);
+let driver;
 const checks = [];
 try {
+  driver=await launchDesktop(packaged?.launch??{ extraArgs: [`--siren-test-root=${root}`] });
+  await unlockDesktop(driver, { pin: '4826', autoSetup: true });
+  const startup=await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState})');
+  await writeFile(resolve(evidence,'startup.json'),JSON.stringify(startup,null,2));
+  assert.equal(startup.mode,'normal','Shell isolation requires actual normal startup; Recovery is not successful shell admission');
+  assert.equal(startup.readonly,false);assert.equal(startup.pinUnlocked,true);
   await driver.waitFor('document.readyState === "complete" && document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor('!!document.querySelector("svg .node")');
   const runtime = await driver.evaluate('({userAgent:navigator.userAgent, title:document.title, version:document.getElementById("brandVersion").textContent, node:typeof require, process:typeof process, methods:Object.keys(window.sirenDesktop).sort()})');
@@ -28,4 +35,8 @@ try {
   await driver.screenshot(resolve(evidence, 'desktop.png'));
   await writeFile(resolve(evidence, 'result.json'), JSON.stringify({ scope: 'Task1 shell only; no production auth/update or project recovery certification', completed: true, pid: driver.pid, runtime, attack, checks }, null, 2));
   console.log(JSON.stringify({ completed: true, checks: checks.length, evidence }));
-} finally { await writeFile(resolve(evidence, 'electron.log'), driver.logs()); await driver.close(); }
+} catch(error){
+  const state=driver?await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState,version:document.getElementById("brandVersion")?.textContent,recoveryOpen:document.getElementById("desktopRecoveryPanel")?.open===true})').catch(()=>({observationUnavailable:true})):null;
+  await writeFile(resolve(evidence,'failure-state.json'),JSON.stringify({completed:false,checks,error:String(error.stack||error),state},null,2));
+  if(driver)await driver.screenshot(resolve(evidence,'failure.png')).catch(()=>{});throw error;
+} finally { if(driver){await writeFile(resolve(evidence, 'electron.log'), driver.logs()); await driver.close();}if(packaged)await packaged.verify(); }

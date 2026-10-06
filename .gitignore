@@ -246,3 +246,20 @@ WP-001_*.json
 **/node_modules/
 **/.npm-cache/
 **/npm-cache/
+
+# ---- fixed native process reader: durable exact inputs only -----------------------------------
+!/desktop/native/README.md
+!/desktop/native/process-identity.cs
+!/desktop/reviews/2026-10-06-ci37409331278-root-retention.json
+!/desktop/reviews/2026-10-06-ci37409331278-shell-startup-independent.md
+!/desktop/reviews/2026-10-06-docs-present-next-batch-analysis-independent.md
+!/desktop/reviews/2026-10-06-native-process-reader-correction-independent.md
+!/desktop/reviews/2026-10-06-native-process-reader-design.md
+!/desktop/reviews/2026-10-06-native-process-reader-root-evidence.md
+!/desktop/reviews/2026-10-06-native-process-reader-root-receipt.json
+!/desktop/scripts/build-process-reader.mjs
+!/desktop/src/recovery/native-process.mjs
+!/desktop/tests/native-process-provider.test.mjs
+!/desktop/tests/process-reader-native.test.mjs
+/desktop/native/generated/
+

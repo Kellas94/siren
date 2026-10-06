@@ -30,7 +30,7 @@ test('drive-relative and current-drive-rooted paths cannot identify an executabl
 test('actual inspector distinguishes query and decode refusals, reports byte counts and never retries',async()=>{
  const source=await readFile(new URL('../src/recovery/processes.mjs',import.meta.url),'utf8'),marker='export async function inspectWindowsProcess(',body=source.slice(source.indexOf(marker)).replace('export ','');
  for(const [reply,phase,reason,expectedStdout,expectedStderr] of [[{stdout:'',stderr:'PRIVATE_BODY'},'decode','EMPTY_RESPONSE',0,12],[{stdout:'PRIVATE_NATIVE_PATH',stderr:''},'decode','INVALID_JSON',19,0],[Object.assign(Error('PRIVATE_BODY'),{code:'EPERM',stdout:'PRIVATE_NATIVE_PATH',stderr:'PRIVATE_BODY'}),'query','QUERY_FAILED',19,12]]){
-  let calls=0;const events=[];const inspect=runInNewContext('('+body+')',{process:{platform:'win32'},Buffer,decodeWindowsProcessResult:implementation.decodeWindowsProcessResult,run:async(file,args,options)=>{calls++;assert.equal(file,'powershell.exe');assert.equal(options.timeout,10000);assert.equal(options.maxBuffer,16384);assert.match(args[3],/Get-Process -Id 123 /);if(reply instanceof Error)throw reply;return reply;}});
+  let calls=0;const events=[];const inspect=runInNewContext('('+body+')',{process:{platform:'win32'},Buffer,decodeWindowsProcessResult:implementation.decodeWindowsProcessResult,runWindowsIdentity:async(pid,options)=>{calls++;assert.equal(pid,123);assert.equal(options.timeout,10000);assert.equal(options.maxBuffer,16384);if(reply instanceof Error)throw reply;return reply;}});
   assert.equal(await inspect(123,{onFailure:event=>events.push(event)}),undefined);assert.equal(calls,1);assert.equal(events.length,1);
   assert.equal(events[0].phase,phase);assert.equal(events[0].reason,reason);assert.equal(events[0].stdoutBytes,expectedStdout);assert.equal(events[0].stderrBytes,expectedStderr);assert.equal(JSON.stringify(events).includes('PRIVATE_BODY'),false);assert.equal(JSON.stringify(events).includes('PRIVATE_NATIVE_PATH'),false);
  }
@@ -39,7 +39,7 @@ test('actual inspector distinguishes query and decode refusals, reports byte cou
 test('native stderr cannot turn a refused query into missing process or grant live ownership',async()=>{
  const source=await readFile(new URL('../src/recovery/processes.mjs',import.meta.url),'utf8'),marker='export async function inspectWindowsProcess(',body=source.slice(source.indexOf(marker)).replace('export ','');
  for(const stdout of ['null',JSON.stringify(actual)]){
-  let calls=0;const failures=[];const inspect=runInNewContext('('+body+')',{process:{platform:'win32'},Buffer,decodeWindowsProcessResult:implementation.decodeWindowsProcessResult,run:async(file,args,options)=>{calls++;assert.equal(options.timeout,10000);return {stdout,stderr:'PRIVATE_QUERY_ERROR'};}});
+  let calls=0;const failures=[];const inspect=runInNewContext('('+body+')',{process:{platform:'win32'},Buffer,decodeWindowsProcessResult:implementation.decodeWindowsProcessResult,runWindowsIdentity:async(pid,options)=>{calls++;assert.equal(pid,123);assert.equal(options.timeout,10000);return {stdout,stderr:'PRIVATE_QUERY_ERROR'};}});
   assert.equal(await inspect(123,{onFailure:f=>failures.push(f)}),undefined);assert.equal(calls,1);assert.equal(failures.length,1);assert.equal(failures[0].phase,'decode');assert.equal(failures[0].reason,'NATIVE_STDERR');assert.equal(failures[0].stderrBytes,19);assert.equal(JSON.stringify(failures).includes('PRIVATE_QUERY_ERROR'),false);
  }
 });

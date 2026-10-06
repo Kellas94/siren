@@ -6,13 +6,14 @@ import { createPackage, listPackage } from '@electron/asar';
 import { buildRenderer } from '../build/renderer.mjs';
 import { buildInventory } from './inventory.mjs';
 import { hashOwnedFile } from '../src/updates/download.mjs';
+import {buildProcessReader} from './build-process-reader.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
   ...['contracts','store','ipc'].map(n=>`src/appearance/${n}.mjs`),
   ...['access','credentials','local-pin','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','budgets','domain-validation','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
-  ...['access','checkpoints','diagnostics','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
+  ...['access','checkpoints','diagnostics','native-process','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc','analysis','diff-worker'].map(n=>`src/sources/${n}.mjs`),
   ...['contracts','entries','authority','service','project-copies','source-import','document-create','continue','transition-receipts','store','catalog','resolver','ipc','window-labels'].map(n=>`src/navigation/${n}.mjs`),
   ...['readiness','registry','surface','dock-ipc','focus','layout','layout-memory','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','source-analysis','working-sources','code-docs','docs-reads','docs-sources','docs-edits','diagram-reads','diagram-edits','diagram-export','diagram-vector-render','catalog','home-admission','readonly-seals','control','source-barrier','presentation','presentation-deck','presentation-render','presentation-ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs','src/windows/presentation-preload.cjs',
@@ -43,10 +44,12 @@ export async function collectApplicationInputs(desktopRoot, production) {
 }
 export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..'), sourceCommit }) {
   if (!/^[a-f0-9]{40}$/.test(sourceCommit)) throw new Error('Committed source identity required');
+  const processReader=await buildProcessReader({desktopRoot});
   const identity = JSON.parse(await readFile(join(desktopRoot, 'package.json'), 'utf8'));
   const renderer = await buildRenderer({ baselinePath: join(desktopRoot, 'baseline/R78.html'), outputDir: join(desktopRoot, 'generated') });
   const electronRoot = join(desktopRoot, 'node_modules/electron/dist');
   const inventory = await buildInventory({ desktopRoot, electronRoot });
+  inventory.windowsProcessReader={...processReader.receipt,implementation:'SIREN-owned fixed read-only helper',osProvidedRuntime:'.NET Framework 4.x',thirdPartyPackages:[]};
   const production = new Set(inventory.npm.map(p => p.name));
   const previewRoot = join(desktopRoot, 'dist', `development-${randomUUID()}`); const source = join(desktopRoot, 'dist', `.build-input-${randomUUID()}`); const version = '0.1.0';
   const app = join(previewRoot, 'App', 'versions', version); await mkdir(app, { recursive: true }); await mkdir(source);
@@ -60,6 +63,9 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
     await copyFile(join(electronRoot, entry.name), join(app, entry.name));
   }
   await rename(join(app, 'electron.exe'), join(app, 'SIREN.exe')); await mkdir(join(app, 'resources'));
+  await copyFile(processReader.executable,join(app,'resources/siren-process-identity.exe'));
+  await copyFile(join(dirname(processReader.executable),'process-identity.json'),join(app,'resources/siren-process-identity.json'));
+  if((await hashOwnedFile(join(app,'resources/siren-process-identity.exe'),131072)).sha256!==processReader.receipt.binary.sha256)throw Error('PACKAGED_PROCESS_READER_CHANGED');
   const archivePath = join(app, 'resources', 'app.asar'); await createPackage(source, archivePath);
   const archiveEntries = listPackage(archivePath, { isPack: false }).map(path => path.replaceAll('\\', '/').replace(/^\//, ''));
   for (const path of sourceFiles) if (!archiveEntries.includes(path)) throw new Error('Required runtime module missing from archive');
@@ -75,7 +81,7 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   }
   const binary = await hashOwnedFile(join(app, 'SIREN.exe'), 1024 ** 3); const originalBinary = await hashOwnedFile(join(electronRoot, 'electron.exe'), 1024 ** 3);
   if (binary.sha256 !== originalBinary.sha256) throw new Error('Runtime binary changed during copying');
-  const receipt = { schema: 1, kind: 'development-preview', releaseAdmitted: false, sourceCommit, desktopVersion: identity.version, rendererVersion: '1.131.0', renderer, electron: inventory.electron.version, dataSchema: 1, appRelativePath: `App/versions/${version}/SIREN.exe`, appArchive: await hashOwnedFile(archivePath, 1024 ** 3), runtimeBinary: binary, inventoryQualified: false, launcherQualified: false, accountConfigured: false, updatesConfigured: false };
+  const receipt = { schema: 1, kind: 'development-preview', releaseAdmitted: false, sourceCommit, desktopVersion: identity.version, rendererVersion: '1.131.0', renderer, processReader:processReader.receipt, electron: inventory.electron.version, dataSchema: 1, appRelativePath: `App/versions/${version}/SIREN.exe`, appArchive: await hashOwnedFile(archivePath, 1024 ** 3), runtimeBinary: binary, inventoryQualified: false, launcherQualified: false, accountConfigured: false, updatesConfigured: false };
   await writeFile(join(previewRoot, 'BUILD-IDENTITY.json'), JSON.stringify(receipt, null, 2));
   await writeFile(join(previewRoot, 'README.txt'), 'SIREN desktop development preview. Not a production portable release.\nOpen App/versions/0.1.0/SIREN.exe to inspect the prototype.\nProjects/recovery/profile are created in Data outside App. Production activation/feed and the update launcher are not configured or qualified. No general portability/security/licensing admission is claimed.\n');
   return { previewRoot, appPath: join(app, 'SIREN.exe'), receipt };

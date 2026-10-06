@@ -1,7 +1,5 @@
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import {win32} from 'node:path';
-const run = promisify(execFile);
+import {runWindowsIdentity} from './native-process.mjs';
 
 const invalidReply=reason=>Object.assign(new Error('Windows process identity response refused'),{code:'PROCESS_RESULT_INVALID',reason});
 /** A native query is evidence only for its requested PID, exact path and creation time. */
@@ -24,15 +22,12 @@ export function decodeWindowsProcessResult(stdout,pid){
 export async function inspectWindowsProcess(pid, { onFailure } = {}) {
   if (!Number.isSafeInteger(pid) || pid < 1) return undefined;
   if (process.platform !== 'win32') return undefined;
-  // Windows PowerShell otherwise emits lossy ASCII into a redirected pipe.
-  // Process ownership and recovery must compare the actual Unicode path.
-  const script = `[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $p = Get-Process -Id ${pid} -ErrorAction SilentlyContinue; if ($null -eq $p) { 'null' } elseif (!$p.Path) { '{"unknown":true}' } else { @{pid=$p.Id;path=$p.Path;startedAt=$p.StartTime.ToUniversalTime().ToString('o')} | ConvertTo-Json -Compress }`;
   let phase='query',stdout='',stderr='';
   const byteCount=value=>typeof value==='string'?Math.min(65536,Buffer.byteLength(value)):0;
   try {
-    // Cold/native startup may take longer than five seconds under host load.
-    // Still cancel at a finite deadline and treat every failure as unknown.
-    ({stdout,stderr}=await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 10000, maxBuffer: 16384 }));
+    // Fixed bundled native reader avoids a PowerShell startup for every query.
+    // Keep the exact PID/path/100ns timestamp, finite deadline and unknown guard.
+    ({stdout,stderr}=await runWindowsIdentity(pid,{timeout:10000,maxBuffer:16384}));
     phase='decode';const observed=decodeWindowsProcessResult(stdout,pid);
     // A cmdlet/query error may still leave valid-looking `null` on stdout.
     // That is unknown identity, never proof of death or writable ownership.

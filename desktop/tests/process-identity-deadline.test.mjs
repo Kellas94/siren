@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { Script } from 'node:vm';
 import { performance } from 'node:perf_hooks';
 import { inspectWindowsProcess,decodeWindowsProcessResult } from '../src/recovery/processes.mjs';
+import {runWindowsIdentity} from '../src/recovery/native-process.mjs';
 import { SessionJournal } from '../src/recovery/sessions.mjs';
 
 const runNative = promisify(execFile);
@@ -20,15 +21,17 @@ async function delayedInspector(delayMs, observations) {
   const marker = 'export async function inspectWindowsProcess(';
   assert.equal(source.split(marker).length, 2, 'The source function extraction must remain exact');
   const functionSource = source.slice(source.indexOf(marker)).replace('export ', '');
-  const run = async (file, args, options) => {
-    assert.equal(file, 'powershell.exe');
-    assert.deepEqual(Array.from(args).slice(0, 3), ['-NoProfile', '-NonInteractive', '-Command']);
-    assert.match(args[3], /^\[Console\]::OutputEncoding/);
+  const query = async (pid, options) => {
     const began = performance.now();
     const observation = { delayMs, deadlineMs: options.timeout, completed: false };
     observations.push(observation);
     try {
-      const native = await runNative(file, [...args.slice(0, 3), `Start-Sleep -Milliseconds ${delayMs}; ${args[3]}`], options);
+      const native = await runWindowsIdentity(pid,options,{execute:async(file,args,settings)=>{
+        assert.equal(args[0],String(pid));assert.equal(settings.timeout,10000);
+        // Only the external process boundary adds latency. The fixed binary,
+        // query PID and strict admission remain the actual production reader.
+        return runNative('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Sleep -Milliseconds ${delayMs}; & '${file.replaceAll("'","''")}' ${pid}`],settings);
+      }});
       observation.completed = true; observation.stdoutBytes = Buffer.byteLength(native.stdout);
       return native;
     } catch (error) {
@@ -36,7 +39,7 @@ async function delayedInspector(delayMs, observations) {
       throw error;
     } finally { observation.elapsedMs = performance.now() - began; }
   };
-  return new Script(`(${functionSource})`, { filename: 'actual-inspectWindowsProcess-with-owned-native-latency' }).runInNewContext({ run, process,Buffer,decodeWindowsProcessResult });
+  return new Script(`(${functionSource})`, { filename: 'actual-inspectWindowsProcess-with-owned-native-latency' }).runInNewContext({ runWindowsIdentity:query, process,Buffer,decodeWindowsProcessResult });
 }
 
 test('real Windows identity survives six-second native startup and remains fail-closed on bounded cancellation', { skip: process.platform !== 'win32', timeout: 60000 }, async () => {
@@ -47,7 +50,7 @@ test('real Windows identity survives six-second native startup and remains fail-
   const executable = join(folder, 'node.exe'); await copyFile(process.execPath, executable);
   const child = spawn(executable, ['-e', 'console.log(JSON.stringify({path:process.execPath}));setInterval(()=>{},1000)'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   const exited = once(child, 'exit');
-  const result = { completed: false, scope: 'Controlled native PowerShell startup latency, exact actual Unicode child identity and bounded unknown-to-readonly. Not a CI20-cause diagnosis.', observations: [] };
+  const result = { completed: false, scope: 'Controlled external query latency, fixed native reader, exact actual Unicode child identity and bounded unknown-to-readonly. Not a retrospective CI-cause timing proof.', observations: [] };
   try {
     const [bytes] = await once(child.stdout, 'data');
     const expected = JSON.parse(bytes.toString('utf8').trim());

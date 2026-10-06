@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import {readFile,access} from 'node:fs/promises';
 const api=await import('../scripts/native-verification.mjs').catch(error=>{if(error.code!=='ERR_MODULE_NOT_FOUND')throw error;return {};});
 const required=["shell","protected-storage","account-transition","code-windows","desktop-ui","code-recovery","recovery-zoom","code-diagram-interaction","guided-intro","dev-first-run","access-screen","local-pin","headless-import","source-owner","source-read","source-analysis","source-diff","source-map","source-edit","source-link","source-link-create","docs-sources","source-sync","docs-edit","docs-format","diagram-preview","diagram-edit","diagram-guided","diagram-style","diagram-build","diagram-vector","diagram-export","view-control-rollback","large-source-docs","code-view-flush","domain-workspaces","readonly-roster","home-entry","home-navigation","home-recovery","home-library","home-library-search","home-documents","docs-structured","home-source-projects","presentation-render","presentation-style","presentation-cards","presentation-windows","window-focus","toast-transition"];
+test('native identity is compiled before both original development groups and native unit tests',async()=>{
+ const workflow=await readFile(new URL('../../.github/workflows/desktop-verify.yml',import.meta.url),'utf8');
+ const windows=workflow.slice(workflow.indexOf('  windows:'),workflow.indexOf('  native_windows:'));
+ assert.ok(windows.indexOf('node scripts/build-process-reader.mjs')<windows.indexOf('node --test --test-concurrency=1'));
+ const native=workflow.slice(workflow.indexOf('  native_windows:'),workflow.indexOf('  packaged_windows:'));
+ assert.ok(native.indexOf('node scripts/build-process-reader.mjs')>=0);
+ assert.ok(native.indexOf('node scripts/build-process-reader.mjs')<native.indexOf('node scripts/native-verification.mjs'));
+});
+
 test('shared UI package checks fail independently and retain original evidence in every named upload',async()=>{
  const workflow=await readFile(new URL('../../.github/workflows/desktop-verify.yml',import.meta.url),'utf8');
  for(const name of ['workspace-appearance','docs-reader','docs-format','ui-personality'])assert.ok(workflow.includes('node tests/native/'+name+'.mjs --package $preview.previewRoot'));

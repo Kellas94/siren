@@ -32,6 +32,8 @@ jobs:
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
+      - name: Build fixed native process reader
+        run: node scripts/build-process-reader.mjs
       - name: Unit and protocol behavior (includes real 180-second timeout)
         # CI27 exhausted six minutes before the expanded suite completed.
         # Individual behavioral deadlines remain unchanged; keep this bounded.
@@ -40,14 +42,14 @@ jobs:
           New-Item -ItemType Directory -Force evidence | Out-Null
           # Native process identity must not compete with large editor/storage
           # worker fixtures. Preserve the product's bounded unknown/refusal path.
-          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs')
+          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs', 'tests/process-reader-native.test.mjs')
           foreach ($identityFile in $identityFiles) {
             if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
           }
           node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
           $identityExit = $LASTEXITCODE
           $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
-            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs') } |
+            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs') } |
             Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
           if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
           node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
@@ -66,6 +68,8 @@ jobs:
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -249,6 +253,8 @@ jobs:
           exit $LASTEXITCODE
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
+      - name: Build fixed native process reader
+        run: node scripts/build-process-reader.mjs
       - name: Actual development renderer and protected storage
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
       - name: Retain scoped test evidence
@@ -262,6 +268,8 @@ jobs:
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -444,6 +452,8 @@ jobs:
           $packageJson = node scripts/package.mjs $sourceCommit
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $preview = $packageJson | ConvertFrom-Json
+          node tests/native/shell.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/workspace-appearance.mjs --package $preview.previewRoot
@@ -508,6 +518,8 @@ jobs:
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
