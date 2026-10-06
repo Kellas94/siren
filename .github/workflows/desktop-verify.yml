@@ -125,6 +125,9 @@ jobs:
             desktop/evidence/docs-reader/*/result.json
             desktop/evidence/docs-reader/*/electron.log
             desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -315,6 +318,9 @@ jobs:
             desktop/evidence/docs-reader/*/result.json
             desktop/evidence/docs-reader/*/electron.log
             desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -450,6 +456,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-edit.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-format.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs formatting/history failed" }
           node tests/native/diagram-preview.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-edit.mjs --package $preview.previewRoot --300k
@@ -551,6 +559,9 @@ jobs:
             desktop/evidence/docs-reader/*/result.json
             desktop/evidence/docs-reader/*/electron.log
             desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json

@@ -4,6 +4,30 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {createHash,webcrypto} from 'node:crypto';
 const fingerprint=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+test('local Docs history groups typing, preserves original blocks and metadata, and refuses paused or uncertain edits',async()=>{
+ const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};let time=100;
+ vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder,Date:{now:()=>time}});
+ const document={id:'history-doc',title:'Original',agent:{author:'Original author'},releases:[{verdict:'not-run'}],blocks:[{id:'opaque',kind:'unknown',html:'<custom data-keep="exact">Ș😀</custom>'}]};
+ const own=window.SirenNativeDocsDraft.create({context:{ok:true,readonly:false,document,version:'1'.repeat(64),sha256:fingerprint(document),projectRevision:1},bridge:{applyDocument:async()=>({ok:false,code:'DOCUMENT_CONFLICT'})}});
+ own.setContent({title:'A',blocks:document.blocks},{historyGroup:'title'});time+=20;own.setContent({title:'AB',blocks:document.blocks},{historyGroup:'title'});
+ assert.equal(own.getStatus().canUndo,true);assert.equal(own.undo().ok,true);assert.equal(own.getContent().title,'Original');assert.equal(own.getStatus().dirty,false);
+ assert.equal(own.redo().ok,true);assert.equal(own.getContent().title,'AB');assert.deepEqual(own.getDocument().agent,document.agent);assert.deepEqual(own.getDocument().releases,document.releases);assert.deepEqual(own.getContent().blocks,document.blocks);
+ time+=1500;own.setContent({title:'ABC',blocks:document.blocks},{historyGroup:'title'});own.undo();assert.equal(own.getContent().title,'AB');own.setContent({title:'Different',blocks:document.blocks});assert.equal(own.getStatus().canRedo,false);
+ const preparing=own.flushView();assert.equal(own.undo().ok,false);await preparing;assert.equal(own.getStatus().fenced,true);own.resumeView();assert.equal(own.undo().ok,false);assert.equal(own.getContent().title,'Different');
+});
+
+test('Docs history stays bounded for large content and resets when a clean view adopts an external saved document',async()=>{
+ const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder});
+ const document={id:'large-history',title:'Original',blocks:[]},context={ok:true,readonly:false,document,version:'1'.repeat(64),sha256:fingerprint(document),projectRevision:1};
+ const own=window.SirenNativeDocsDraft.create({context,bridge:{}});
+ for(let i=0;i<80;i++)own.setContent({title:String(i),blocks:[]});let count=0;while(own.undo().ok)count++;assert.equal(count,60);
+ own.setContent({title:'Huge',blocks:[{id:'large',kind:'text',html:'x'.repeat(3*1024*1024)}]});assert.equal(own.getStatus().canUndo,false);assert.equal(own.getStatus().historyLimited,true);assert.equal(own.getContent().blocks[0].html.length,3*1024*1024);
+ const external={...document,title:'External'},receipt={...context,document:external,version:'2'.repeat(64),sha256:fingerprint(external),projectRevision:2};
+ const clean=window.SirenNativeDocsDraft.create({context,bridge:{getDocument:async()=>receipt,flushDocument:async request=>({ok:true,domain:'docs',entityId:document.id,version:request.expectedVersion,sha256:receipt.sha256,projectRevision:2,durability:'committed'})}});
+ clean.setContent({title:'Temporary',blocks:[]});clean.setContent({title:'Original',blocks:[]});assert.equal(clean.getStatus().canUndo,true);assert.equal((await clean.flushView()).ok,true);clean.resumeView();assert.equal(clean.getContent().title,'External');assert.equal(clean.getStatus().canUndo,false);
+ const locked=window.SirenNativeDocsDraft.create({context:{...context,readonly:true},bridge:{}});assert.equal(locked.undo().ok,false);assert.equal(locked.redo().ok,false);
+});
 test('Docs rejects a well-shaped save receipt with the wrong complete entity hash and fences uncertain commit exceptions',async()=>{
  const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8');
  for(const fault of ['hash','transport']){

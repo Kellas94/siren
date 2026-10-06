@@ -17,7 +17,7 @@ export async function buildWindowEntrypoints(outputDir) {
   if(/<\/script/i.test(editorScript))throw Error('Code script closing tag refused');
   new Script(editorScript);
   const editorHash=createHash('sha256').update(editorScript).digest('base64');
-  const docsScript=identityScript+'\n'+(await readFile(new URL('../src/ui/docs/reader.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/docs/structured.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/windows/docs.js',import.meta.url),'utf8')).replaceAll('\r\n','\n');
+  const docsScript=identityScript+'\n'+(await readFile(new URL('../src/ui/docs/rich.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/docs/reader.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/docs/structured.js',import.meta.url),'utf8')).replaceAll('\r\n','\n')+'\n'+(await readFile(new URL('../src/ui/windows/docs.js',import.meta.url),'utf8')).replaceAll('\r\n','\n');
   if(/<\/script/i.test(docsScript))throw Error('Docs script closing tag refused');new Script(docsScript);
   const docsHash=createHash('sha256').update(docsScript).digest('base64');
   const script = (await readFile(new URL('../src/ui/windows/entry.js', import.meta.url), 'utf8')).replaceAll('\r\n', '\n');

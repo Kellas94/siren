@@ -57,3 +57,9 @@ Final sourcedd1ec00ebe538de9aa879febe440f60cbd3e2583 preserves genuine early Stu
 ## Native menu and admission checkpoint
 
 Source0109ff28 full1082/native6/copied7 completed with unchanged captures/identities. Actual extracted original theme function reproduced delayed same-owned-theme menu closure; corrected closure retains other palette lifecycle and user/standalone behavior. Shared appearance now requires genuine successful native preference admission before apply; finite refusal metadata clarifies subsequent failures. Prior37396637182 hostedFAILURE retained, exact save-refusal cause stillOPEN; fresh canonical CI required. Original independent review byte-exact and separately authored; root receipt/report separate. Full rich functional/decorative parity remainsOPEN.
+
+## Docs authoring checkpoint
+
+Source561c119 scoped native formatting/local history now qualified locally:1087 full tests, five affected native probes (Docs edit/format/structured300k, appearance and strict small Desktop), four separate copied-package probes, all unchanged captures. Exact248-file package/ASAR025fc501, original runtime unchanged. Root evidence/receipt and actual independently authored Docs report are separate under desktop/reviews/2026-10-06-docs-authoring-*. Three minor authoring observations remain open; images/comments/releases and complete Present/Diagram/decorative parity remain open.
+
+Canonical0304 hosted37400502223 FINALFAILURE is retained: Desktop17/20 shell readiness/hidden menus, package diagram-style rollback/save after appearance8 passed. New source adds only bounded read-only theme transitions for diagnosing fresh hosted execution, not a claim that these failures or intermittent appearance filesystem refusal are fixed.

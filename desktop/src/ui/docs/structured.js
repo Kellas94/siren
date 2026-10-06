@@ -16,13 +16,13 @@
   if(block.kind==='settings')return Array.isArray(block.rows)&&block.rows.length>0&&block.rows.length<=80&&block.rows.every(row=>exact(row,['key','value'])&&string(row.key,80)&&string(row.value,4000));
   return string(block.label,120)&&!!block.label&&string(block.model,80)&&string(block.text,200000)&&string(block.reasoningEffort,400)&&typeof block.updatedAt==='string'&&typeof block.copiedAt==='string'&&Array.isArray(block.history)&&block.history.length<=60&&block.history.every(entry=>exact(entry,['at','text'])&&typeof entry.at==='string'&&string(entry.text,200000));
  }
- function renderEditor({parent,draft,index,canEdit,onRemove,onOpen,preserved,focus=false}){
+ function renderEditor({parent,draft,index,canEdit,onRemove,onOpen,preserved,focus=false,focusField=null}){
   const original=draft.getContent().blocks[index];if(!isEditableBlock(original))throw TypeError('Exact structured block required');
   const doc=parent.ownerDocument,make=(tag,holder,text)=>{const node=doc.createElement(tag);if(text!==undefined)node.textContent=text;holder.append(node);return node;};
   const details=make('details',parent);details.className='document-group document-structured';details.dataset.structuredId=original.id;
-  const summary=make('summary',details,names[original.kind]);summary.dataset.structuredSummary=original.id;const body=make('div',details);let page=0;
+  const summary=make('summary',details,names[original.kind]);summary.dataset.structuredSummary=original.id;const body=make('div',details);const row=typeof focusField==='string'?/^(?:cell:|done:|text:|key:|value:)(\d+)/.exec(focusField):null;let page=row?Math.floor(Number(row[1])/20):0;
   const target=()=>{const state=draft.getStatus();if(!details.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed||state.readonly)return null;const next=draft.getContent(),block=next.blocks[index];return block?.id===original.id&&block.kind===original.kind&&isEditableBlock(block)?{next,block}:null;};
-  const write=(node,mutate)=>{if(!node.isConnected)return false;const own=target();if(!own)return false;mutate(own.block);if(!isEditableBlock(own.block))return false;return draft.setContent(own.next)?.ok===true;};
+  const write=(node,mutate)=>{if(!node.isConnected)return false;const own=target();if(!own)return false;mutate(own.block);if(!isEditableBlock(own.block))return false;return draft.setContent(own.next,{historyGroup:node.dataset.structuredField?'structured:'+original.id+':'+node.dataset.structuredField:null})?.ok===true;};
   const button=(holder,title,action,handler,limited=false)=>{const node=make('button',holder,title);node.type='button';node.className='document-edit';node.dataset.structuredAction=action;node.dataset.documentAtLimit=String(limited);node.disabled=limited;node.addEventListener('click',()=>{if(!node.isConnected||limited||!target())return;handler(node);});return node;};
   const input=(holder,title,value,max,key,apply,{area=false,check=false}={})=>{
    const label=make('label',holder,title),node=make(area?'textarea':'input',label);node.className='document-edit';node.dataset.structuredField=key;node.setAttribute('aria-label',title);

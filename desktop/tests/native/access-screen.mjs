@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
 import {observeAccessToast} from './toast-observation.mjs';
+import {installThemeObservation,readThemeObservation} from './theme-observation.mjs';
 
 const evidence = resolve('evidence', `access-screen-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(evidence, { recursive: true });
@@ -28,6 +29,7 @@ try {
   await driver.waitFor('window.sirenDesktopBootstrap?.mode === "locked"');
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'), null);
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
+  await installThemeObservation(driver);
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -109,7 +111,8 @@ try {
   assert.equal((await driver.evaluate('window.sirenDesktop.getPinState()')).unlocked, true);
   result.reducedMotion = true; result.phase = 'complete'; result.completed = true;
   console.log(JSON.stringify({ completed: true, evidence }));
-} catch (error) {
+ } catch (error) {
+  if(driver){result.themeObservation=await readThemeObservation(driver);console.error('SIREN_THEME_TRANSITIONS '+JSON.stringify(result.themeObservation));}
   result.error = String(error.stack || error); if (driver) await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
   throw error;
 } finally {

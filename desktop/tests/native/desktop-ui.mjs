@@ -4,6 +4,7 @@ import { resolve, join } from 'node:path';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { RecoveryStore } from '../../src/recovery/checkpoints.mjs';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
+import {installThemeObservation,readThemeObservation} from './theme-observation.mjs';
 
 const evidence = resolve('evidence', `desktop-ui-${new Date().toISOString().replaceAll(':', '-')}`); await mkdir(evidence, { recursive: true });
 const root = await mkdtemp(join(evidence, 'data-')); const projects = new ProjectStore(root);
@@ -26,6 +27,7 @@ async function scrollToDesktopDone() {
 try {
   driver = await launchDesktop({ extraArgs: [`--siren-test-root=${root}`, `--siren-test-project=${first.project.id}`] });
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
+  await installThemeObservation(driver);
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor(`[...document.querySelectorAll('[id$="IntroOverlay"]')].every(e=>getComputedStyle(e).display==='none'||Number(getComputedStyle(e).opacity)<0.01)`);
   if (await driver.evaluate('document.getElementById("introOverviewDialog")?.open')) await driver.click('#closeIntroOverview');
@@ -83,7 +85,10 @@ try {
   if (driver) {
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
     const state = await driver.evaluate(`({theme:document.body.dataset.theme,menu:{hidden:document.getElementById('themeMenu')?.hidden,expanded:document.getElementById('themeMenuButton')?.getAttribute('aria-expanded'),rect:document.getElementById('themeMenu')?.getBoundingClientRect().toJSON()},options:[...document.querySelectorAll('[data-theme-value="dark"],[data-theme-value="light"]')].map(e=>{const r=e.getBoundingClientRect(),h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {theme:e.dataset.themeValue,rect:r.toJSON(),hit:e.contains(h),cover:h?.id||h?.className||h?.tagName}})})`).catch(() => null);
-    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ error: String(error.stack || error), state, doneGeometry }, null, 2));
+    const themeObservation=await readThemeObservation(driver);
+    await writeFile(join(evidence, 'failure-state.json'), JSON.stringify({ error: String(error.stack || error), state, doneGeometry,themeObservation }, null, 2));
+    await writeFile(join(evidence,'result.json'),JSON.stringify({completed:false,error:String(error.stack||error),state,doneGeometry,themeObservation},null,2));
+    console.error('SIREN_THEME_TRANSITIONS '+JSON.stringify(themeObservation));
     console.error('SIREN_DESKTOP_UI_DIAGNOSTIC ' + JSON.stringify(state));
   }
   throw error;

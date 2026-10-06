@@ -12,6 +12,8 @@
    if(node.nodeType!==1&&node.nodeType!==11)return;
    if(forbidden.has(node.nodeName))return;
    const next=tags.has(node.nodeName)?make(node.nodeName.toLowerCase(),target):target;
+   const ink=window.SirenNativeDocsRichText?.styleColor(node.getAttribute?.('style'));if(next!==target&&ink)next.style.color=ink;
+   const classes=node.nodeName==='SPAN'?window.SirenNativeDocsRichText?.textClasses(node.getAttribute?.('class')):null;if(next!==target&&classes)next.className=classes.join(' ');
    for(const child of node.childNodes)copy(child,next,depth+1);
   };copy(template.content,parent,0);
   if(truncated)make('p',parent,'Complex rich block · Display limited; saved content is unchanged.').className='document-caption';

@@ -2,17 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,access} from 'node:fs/promises';
 const api=await import('../scripts/native-verification.mjs').catch(error=>{if(error.code!=='ERR_MODULE_NOT_FOUND')throw error;return {};});
-const required=["shell","protected-storage","account-transition","code-windows","desktop-ui","code-recovery","recovery-zoom","code-diagram-interaction","guided-intro","dev-first-run","access-screen","local-pin","headless-import","source-owner","source-read","source-analysis","source-diff","source-map","source-edit","source-link","source-link-create","docs-sources","source-sync","docs-edit","diagram-preview","diagram-edit","diagram-guided","diagram-style","diagram-build","diagram-vector","diagram-export","view-control-rollback","large-source-docs","code-view-flush","domain-workspaces","readonly-roster","home-entry","home-navigation","home-recovery","home-library","home-library-search","home-documents","docs-structured","home-source-projects","presentation-render","presentation-style","presentation-cards","presentation-windows","window-focus","toast-transition"];
+const required=["shell","protected-storage","account-transition","code-windows","desktop-ui","code-recovery","recovery-zoom","code-diagram-interaction","guided-intro","dev-first-run","access-screen","local-pin","headless-import","source-owner","source-read","source-analysis","source-diff","source-map","source-edit","source-link","source-link-create","docs-sources","source-sync","docs-edit","docs-format","diagram-preview","diagram-edit","diagram-guided","diagram-style","diagram-build","diagram-vector","diagram-export","view-control-rollback","large-source-docs","code-view-flush","domain-workspaces","readonly-roster","home-entry","home-navigation","home-recovery","home-library","home-library-search","home-documents","docs-structured","home-source-projects","presentation-render","presentation-style","presentation-cards","presentation-windows","window-focus","toast-transition"];
 test('shared UI package checks fail independently and retain original evidence in every named upload',async()=>{
  const workflow=await readFile(new URL('../../.github/workflows/desktop-verify.yml',import.meta.url),'utf8');
- for(const name of ['workspace-appearance','docs-reader'])assert.ok(workflow.includes('node tests/native/'+name+'.mjs --package $preview.previewRoot'));
+ for(const name of ['workspace-appearance','docs-reader','docs-format'])assert.ok(workflow.includes('node tests/native/'+name+'.mjs --package $preview.previewRoot'));
  assert.match(workflow,/if \(\$LASTEXITCODE -ne 0\) \{ throw "Packaged shared appearance\/navigation failed" \}/);
  assert.match(workflow,/if \(\$LASTEXITCODE -ne 0\) \{ throw "Packaged semantic Docs reading failed" \}/);
+ assert.match(workflow,/if \(\$LASTEXITCODE -ne 0\) \{ throw "Packaged Docs formatting\/history failed" \}/);
  const check=text=>{
   const blocks=text.split(/(?=^      - )/m).map(block=>block.split(/(?=^  [A-Za-z_][A-Za-z0-9_-]*:)/m)[0]);
   for(const upload of ['desktop-development-evidence','desktop-native-${{ matrix.group }}-evidence','desktop-packaged-evidence']){
    const own=blocks.filter(block=>block.split('\n').some(line=>line.trim()==='name: '+upload));assert.equal(own.length,1);assert.match(own[0],/if: always\(\)/);
-   for(const name of ['workspace-appearance','docs-reader'])for(const leaf of ['result.json','electron.log','*.png'])assert.equal(own[0].split('desktop/evidence/'+name+'/*/'+leaf).length-1,1);
+   for(const name of ['workspace-appearance','docs-reader','docs-format'])for(const leaf of ['result.json','electron.log','*.png'])assert.equal(own[0].split('desktop/evidence/'+name+'/*/'+leaf).length-1,1);
   }
  };
  check(workflow);const line='            desktop/evidence/docs-reader/*/result.json';

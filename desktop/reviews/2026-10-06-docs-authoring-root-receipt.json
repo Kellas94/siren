@@ -1,0 +1,114 @@
+{
+  "author": "/root",
+  "sourceCommit": "561c119c67e5531d98dd986c6a6f62c92620881a",
+  "scope": "Scoped Docs authoring/local history and read-only hosted diagnostics; root actual tests, not independent release approval",
+  "paths": {
+    "full": "evidence/workspace-surface/full-suite-2026-10-06T02-04-07.907Z",
+    "native": "evidence/workspace-surface/docs-final-native-2026-10-06T02-07-46.139Z",
+    "packaged": "evidence/workspace-surface/docs-package-native-2026-10-06T02-08-27.460Z",
+    "identity": "evidence/workspace-surface/package-identity-2026-10-06T02-08-16.540Z"
+  },
+  "full": {
+    "tests": 1087,
+    "status": "COMPLETE",
+    "changedInputs": [],
+    "logSha256": "8350b53182503fff040ed81b0a2dc1fd19b4dc6705611c59d801cba40f27ee00"
+  },
+  "native": {
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "docs-format",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-edit",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-structured",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "desktop-ui",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": []
+  },
+  "packaged": {
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "packaged",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-format",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-edit",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": [],
+    "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-4ceeeea6-c901-4943-9d40-556fba391e8d",
+    "archive": {
+      "bytes": 53666890,
+      "sha256": "025fc501135e3821488dfc735c1b92ce76579d2db1e8a0ebe6e3e59cb353caf9"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "files": 248,
+    "releaseAdmitted": false
+  },
+  "independentReview": {
+    "path": "reviews/2026-10-06-docs-authoring-independent.md",
+    "author": "/root/shared_workspace_review",
+    "sha256": "c9af571176ebfbb3b86989f5bd3c7ea3e788034d93b1e622b63380eb5fb5174a",
+    "scope": "17 targeted units and isolated mocked renderer/frozen validator; no native/package/hosted certification",
+    "remainingMinor": [
+      "Remove formatting",
+      "Live history-limit notice",
+      "Rejected paste feedback"
+    ]
+  },
+  "priorIndependentReview": {
+    "sha256": "441bc4fa1615e9afc33e2b8c89721862389bdf9c0fb687923fbab82b711a611a"
+  },
+  "hosted": {
+    "id": 37400502223,
+    "head": "0304c275c7f41ec1f5cedad3e799bca247c8639c",
+    "conclusion": "failure",
+    "desktop": "17/20; shell readiness and hidden theme menu",
+    "packaged": "Appearance8 complete; diagram-style adverse2 after refused Lock rollback"
+  },
+  "open": [
+    "Actual hosted menu closure cause",
+    "Shell initial renderer readiness failure",
+    "Guided save after refused Lock rollback",
+    "Intermittent appearance write failure not proven fixed",
+    "Docs images/comments/releases and remaining full feature parity",
+    "Physical monitors/DPI/IME/accessibility"
+  ]
+}
