@@ -447,3 +447,32 @@ WP-001_*.json
 !/docs/superpowers/plans/2026-10-07-siren-home-saved-backup.md
 !/docs/superpowers/plans/2026-10-07-siren-native-docs-export.md
 
+
+# Native Docs saved-export qualification, exact new tracked files
+!/desktop/reviews/2026-10-07-docs-export-local-qualification.json
+!/desktop/reviews/2026-10-07-docs-export-local-qualification.md
+!/desktop/reviews/2026-10-07-docs-export-native-development-observation.md
+!/desktop/reviews/2026-10-07-docs-export-native-keyboard-observation.md
+!/desktop/reviews/2026-10-07-home-backup-canonical-sync.json
+!/desktop/reviews/2026-10-07-home-backup-hosted-evidence.json
+!/desktop/reviews/2026-10-07-home-backup-hosted-evidence.md
+!/desktop/reviews/2026-10-07-native-docs-export-ci-independent.md
+!/desktop/reviews/2026-10-07-native-docs-export-independent-original.md
+!/desktop/reviews/2026-10-07-native-docs-export-independent-recheck.md
+!/desktop/reviews/2026-10-07-native-docs-export-integration-independent-original.md
+!/desktop/reviews/2026-10-07-native-docs-export-integration-independent-recheck.md
+!/desktop/reviews/2026-10-07-native-presenter-notes-export-parity-analysis.json
+!/desktop/reviews/2026-10-07-native-presenter-notes-export-parity-analysis.md
+!/desktop/src/documents/export.mjs
+!/desktop/src/ui/docs/export.js
+!/desktop/src/windows/docs-export.mjs
+!/desktop/tests/docs-export-ci.test.mjs
+!/desktop/tests/docs-export-main.test.mjs
+!/desktop/tests/docs-export-package.test.mjs
+!/desktop/tests/docs-export-preload.test.mjs
+!/desktop/tests/docs-export-view.test.mjs
+!/desktop/tests/document-export-format.test.mjs
+!/desktop/tests/native-docs-export.test.mjs
+!/desktop/tests/native/docs-export.mjs
+!/docs/superpowers/plans/2026-10-07-siren-native-presenter-notes-export.md
+

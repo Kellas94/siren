@@ -3,6 +3,7 @@
  const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
  let generation=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null,sourceOpening=null;const media=matchMedia('(prefers-color-scheme: dark)');
  const working=document.getElementById('openWorkingDocument'),save=document.getElementById('saveDocument'),notice=document.getElementById('documentChangesNotice'),noticeMessage=document.getElementById('documentChangesMessage');
+ const exportView=window.SirenNativeDocsExportView.create({button:document.getElementById('exportDocument'),revealButton:document.getElementById('revealDocumentExport'),getContext:()=>draft?.getStatus(),isReady:()=>!paused&&!disposed&&!pending&&!draft?.getStatus().pending&&document.body.dataset.documentReady==='true',onStatus:text=>status.textContent=text,bridge:window.sirenDocsExport});
  const contextButton=document.getElementById('documentContext');contextButton.addEventListener('click',()=>{if(paused||disposed||pending||!draft)return;const own=draft;window.SirenDocsContext.open({draft:own,canEdit:()=>draft===own&&!readonly&&!paused&&!disposed&&!own.getStatus().paused&&!own.getStatus().pending&&!own.getStatus().fenced,onChange:()=>{if(draft===own&&!paused&&!disposed){paint(own.getDocument());updateState();}}});});
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
@@ -98,6 +99,7 @@
  };
  function updateState(){
   if(!draft||disposed)return;const state=draft.getStatus();
+  exportView.update();
   contextButton.disabled=paused||state.pending||state.paused||state.fenced||state.disposed;if(paused||state.paused||state.disposed)window.SirenDocsContext.close();
   if(!paused){const name=draft.getDocument().title;window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
   if(!paused&&!state.disposed){document.body.dataset.documentReady='true';document.body.dataset.documentId=state.documentId;}
@@ -167,7 +169,7 @@
   if(next&&textSelection){if(next.tagName==='TEXTAREA')next.setSelectionRange(Math.min(textSelection.start,next.value.length),Math.min(textSelection.end,next.value.length));else{const texts=[],walker=document.createTreeWalker(next,4);for(let node=walker.nextNode();node;node=walker.nextNode())texts.push(node);const point=offset=>{for(const node of texts){if(offset<=node.length)return [node,offset];offset-=node.length;}const last=texts.at(-1);return last?[last,last.length]:[next,0];};const range=document.createRange();range.setStart(...point(textSelection.start));range.setEnd(...point(textSelection.end));selection.removeAllRanges();selection.addRange(range);}}
  }
  async function readDocument(){
-  if(disposed)return false;const token=++generation;retry.hidden=true;status.textContent='Opening selected document…';appearance();
+  if(disposed)return false;exportView.reset();const token=++generation;retry.hidden=true;status.textContent='Opening selected document…';appearance();
   try{
    const result=await window.sirenDocsRead.getDocument();if(disposed||paused||token!==generation)return false;
    if(result?.ok!==true||typeof result.readonly!=='boolean')throw Error('Document unavailable');
@@ -181,11 +183,12 @@
  }
  function connect(){
   if(paused||disposed)return Promise.resolve(false);
-  const own=readDocument();pending=own;own.finally(()=>{if(pending===own)pending=null;});return own;
+  const own=readDocument();pending=own;own.finally(()=>{if(pending===own)pending=null;exportView.update();});return own;
  }
  window.sirenViewControl.onPrepare(async()=>{
   paused=true;document.body.inert=true;document.documentElement.style.visibility='hidden';
   window.SirenNativeViewIdentity.clear('docs');
+  await exportView.pause();
   if(pending)await pending;
   if(sourceOpening)await sourceOpening;
   if(draft&&!readonly){const result=await draft.flushView();return {ok:result.ok===true,...(result.ok!==true?{code:result.code}:{})};}
@@ -193,7 +196,7 @@
  });
  window.sirenViewControl.onResume(()=>{
   if(disposed||!paused)return;
-  paused=false;draft?.resumeView();if(draft&&!readonly)paint(draft.getDocument());updateState();document.body.inert=false;document.documentElement.style.visibility='';
+  paused=false;draft?.resumeView();if(draft&&!readonly)paint(draft.getDocument());exportView.resume();updateState();document.body.inert=false;document.documentElement.style.visibility='';
  });
  const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
  const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const result=await draft.save();updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';}else delete document.body.dataset.documentSaveError;};
@@ -203,6 +206,6 @@
  const off=window.sirenDocsEdit.onReferenceChanged(ref=>{if(disposed||paused||readonly||ref.documentId!==draft?.getStatus().documentId||ref.version===draft.getStatus().version||ref.projectRevision<=(latest?.projectRevision??draft.getStatus().projectRevision))return;latest=ref;notice.hidden=false;noticeMessage.textContent='The document changed in another window. Your local changes are retained.';if(!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=null;if(!paused&&!disposed&&!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced)void connect();},250);}});
  theme.addEventListener('change',appearance);media.addEventListener('change',appearance);retry.addEventListener('click',replace);
  window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.isComposing&&!readonly){const key=event.key.toLowerCase();if(key==='s'&&!event.shiftKey){event.preventDefault();if(!event.repeat)void saveCurrent();}else if(content.contains(document.activeElement)&&(key==='z'||key==='y'&&!event.shiftKey)){event.preventDefault();if(!event.repeat)historyAction(key==='y'||event.shiftKey?'redo':'undo');}}});
- window.addEventListener('beforeunload',()=>{disposed=true;generation++;off();clearTimeout(refreshTimer);draft?.dispose();clear();media.removeEventListener('change',appearance);},{once:true});
+ window.addEventListener('beforeunload',()=>{disposed=true;generation++;exportView.dispose();off();clearTimeout(refreshTimer);draft?.dispose();clear();media.removeEventListener('change',appearance);},{once:true});
  window.sirenNativeDocsView=Object.freeze({connect});
 })();

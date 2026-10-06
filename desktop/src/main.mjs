@@ -32,6 +32,7 @@ import {NativeDocsSources} from './windows/docs-sources.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from './windows/diagram-edits.mjs';
 import {NativeDiagramExports} from './windows/diagram-export.mjs';
+import {NativeDocsExports} from './windows/docs-export.mjs';
 import {renderDiagramVector} from './windows/diagram-vector-render.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {invokeHomeWindow} from './windows/home-admission.mjs';
@@ -535,6 +536,7 @@ const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:wor
  render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input,scope});},
  reveal:path=>shell.showItemInFolder(path),
 });
+const docsExports=new NativeDocsExports({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,projects,reveal:path=>shell.showItemInFolder(path)});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
 const deckNavigation=new NativeDeckNavigation({registry:windowRegistry,snapshotFor:()=>snapshot,
@@ -554,7 +556,7 @@ const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:worksp
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();docsExports.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
@@ -571,12 +573,12 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   const capturedPresentation=presentationSession;
   const capturedAnalysis=sourceAnalysis;
   const barrierOwner={
-   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();},
-   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();return sourceDrain;},
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();docsExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();docsExports.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();await docsExports.drain();return sourceDrain;},
    reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
    reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
-   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
-   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&workspaceOwner.isQuiescent(proof),
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle()||!docsExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&docsExports.isIdle()&&workspaceOwner.isQuiescent(proof),
    isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
   };
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
@@ -606,6 +608,7 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
 });
 const retireNativeViews = async () => {
   diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
+  docsExports.pause();if(!docsExports.isIdle())throw Object.assign(Error('Docs export not drained'),{code:'DOCS_EXPORT_NOT_IDLE'});docsExports.resume();
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
   sourceAnalysis?.dispose();sourceAnalysis=null;
@@ -1009,6 +1012,10 @@ ipcMain.handle('siren:diagram-read',async(event,method,payload,flushNonce)=>{
 ipcMain.handle('siren:diagram-export',async(event,method,payload)=>{
  if(pinTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)return {ok:false,code:'ACCESS_REFUSED'};
  const operation=diagramExports.invoke({event,method,payload});writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:docs-export',async(event,method,payload)=>{
+ if(pinTransition||writes.selectionTransition||writes.selectionQuiesced||writes.viewClosing||workspaceBarrier||accountTransition||accountQuiesced||nativeShellFailure)return {ok:false,code:'ACCESS_REFUSED'};
+ const operation=docsExports.invoke({event,method,payload});writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:deck-navigation',async(event,method,payload)=>{const operation=deckNavigation.invoke({event,method,payload});writes.add(operation);try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}});
 const invokeNativeWindow=async (event, method, payload) => {

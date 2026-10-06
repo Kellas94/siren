@@ -17,6 +17,7 @@ const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','s
   ...['bundle-import','manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc','analysis','diff-worker'].map(n=>`src/sources/${n}.mjs`),
   ...['contracts','entries','authority','service','project-copies','source-bundle-copy','source-import','document-create','backup-export','continue','transition-receipts','store','catalog','resolver','ipc','window-labels'].map(n=>`src/navigation/${n}.mjs`),
   ...['readiness','registry','surface','dock-ipc','focus','layout','layout-memory','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','source-analysis','working-sources','code-docs','docs-reads','docs-sources','docs-edits','diagram-reads','diagram-edits','diagram-export','diagram-vector-render','catalog','home-admission','readonly-seals','control','source-barrier','presentation','presentation-deck','presentation-render','presentation-ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs','src/windows/presentation-preload.cjs','src/windows/docs-references.mjs','src/documents/context.mjs','src/documents/presentation-edits.mjs','src/windows/deck-navigation.mjs',
+  'src/documents/export.mjs','src/windows/docs-export.mjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
