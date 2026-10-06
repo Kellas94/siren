@@ -1,3 +1,4 @@
+import {assertImportComplete} from '../src/projects/import-status.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -20,12 +21,12 @@ const between=(a,b)=>{const start=main.indexOf(a),end=main.indexOf(b,start);asse
 async function fixture(){
  const root=await mkdtemp(join(tmpdir(),'siren-main-home-select-')),projects=new ProjectStore(root),primary=new EventEmitter();
  primary.id=200;primary.isDestroyed=()=>false;const wc=primary.webContents=new EventEmitter();Object.assign(wc,{id:201,mainFrame:{url:'siren://app/home.html'},getURL:()=>wc.mainFrame.url,isDestroyed:()=>false,send(){}});
- const context=vm.createContext({createHomeProjectCopy,writerOptions:{},dataRoot:root,join,Buffer,atomicWrite,projects,window:primary,bootstrap:{selectionGeneration:0},selectedId:null,snapshot:null,mode:'normal',nativeReadonly:false,reason:null,pinTransition:false,accountTransition:false,accountQuiesced:false,localPin:{state:()=>({unlocked:true})},writes:new Set(),grants:new Set(),account:{accountId:null,policy:{opened(){}}},nativeShellFailure:false,recovery:{checkpointProject:()=>assert.fail('Normal creation must not manufacture an import checkpoint')},rollbackNativePreparation:async()=>{},prepareNativeWorkspace:()=>assert.fail('No selection has no editor to flush')});
+ const context=vm.createContext({assertImportComplete,createHomeProjectCopy,writerOptions:{},dataRoot:root,join,Buffer,atomicWrite,projects,window:primary,bootstrap:{selectionGeneration:0},selectedId:null,snapshot:null,mode:'normal',nativeReadonly:false,reason:null,pinTransition:false,accountTransition:false,accountQuiesced:false,localPin:{state:()=>({unlocked:true})},writes:new Set(),grants:new Set(),account:{accountId:null,policy:{opened(){}}},nativeShellFailure:false,recovery:{checkpointProject:()=>assert.fail('Normal creation must not manufacture an import checkpoint')},rollbackNativePreparation:async()=>{},prepareNativeWorkspace:()=>assert.fail('No selection has no editor to flush')});
  class IPCRegistry extends WindowRegistry{activateWorkspace(options){return super.activateWorkspace(structuredClone(options));}}
  const registry=new IPCRegistry({authorize:()=>context.selectedId?{projectId:context.selectedId,mode:'normal',access:'write',entityIds:[]}:null,createWindow:()=>assert.fail('No satellite required')});registry.bindWorkspace(primary);
  const authority=new HomeAuthority({workspace:primary,state:()=>({projectId:context.selectedId,mode:context.mode,generation:context.bootstrap.selectionGeneration,unlocked:true})});
  const transitions=new HomeTransitionReceipts({registry,authority,projects});Object.assign(context,{windowRegistry:registry,homeAuthority:authority,homeTransitions:transitions,retireNativeViews:()=>registry.invalidateEpoch({preserveWorkspace:true})});
- vm.runInContext(between('const selected = async next => {','const changeSelection =')+between('const selectHomeProject=','ipcMain.handle(\'siren:home\'')+';globalThis.create=(scope,input)=>selectHomeProject(input,scope,{create:true,desktop:input.format==="desktop"});',context);
+ vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=','ipcMain.handle(\'siren:home\'')+';globalThis.create=(scope,input)=>selectHomeProject(input,scope,{create:true,desktop:input.format==="desktop"});',context);
  const event=()=>({sender:wc,senderFrame:wc.mainFrame});return {root,projects,registry,authority,transitions,context,event,invoke:(format)=>invokeHome({event:event(),method:'createProject',payload:{label:'Actual Home Ș😀',...(format?{format}:{})},authority,transitions,services:{createProject:(input,scope)=>context.create(scope,input)}})};
 }
 test('actual native Home creation selects an owned durable project and acknowledges metadata only',async()=>{

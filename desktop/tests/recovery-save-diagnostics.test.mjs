@@ -26,7 +26,7 @@ function sliceUnique(source, start, end) {
   assert.ok(limit > offset, `Source end marker: ${end}`);
   return source.slice(offset, limit);
 }
-const selectedSource = sliceUnique(main, 'const selected = async next => {', 'const exportBytes =');
+const selectedSource = sliceUnique(main, 'const selected = async (next,{isCurrent}={}) => {', 'const exportBytes =');
 const saveSource = sliceUnique(main, '  saveProject: async request => {', '  exportProject:');
 const restoreSource = sliceUnique(main, '  restoreRecovery: async id => {', '  exportRecovery:');
 const rendererRoot = await mkdtemp(join(tmpdir(), 'siren-recovery-save-renderer-'));

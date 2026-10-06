@@ -17,6 +17,12 @@ import {WindowRegistry} from '../src/windows/registry.mjs';
 import {ProjectStore} from '../src/projects/store.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {atomicWrite} from '../src/projects/atomic.mjs';
+import {readdir} from 'node:fs/promises';
+import {admitImportedProject} from '../src/projects/import-admission.mjs';
+import {assertImportComplete} from '../src/projects/import-status.mjs';
+import {createImportedSourceBundleCopy} from '../src/navigation/source-bundle-copy.mjs';
+import {actualSourceBundle} from './fixtures/source-bundle.mjs';
+import {SourceRepository} from '../src/sources/repository.mjs';
 const main=await readFile(new URL('../src/main.mjs',import.meta.url),'utf8');
 async function fixture({realSelection=false}={}){
  const root=await mkdtemp(join(tmpdir(),'siren-home-import-route-')),file=join(root,'chosen.siren'),rendererRoot=join(root,'generated');await mkdir(rendererRoot);
@@ -28,14 +34,14 @@ async function fixture({realSelection=false}={}){
  const registry=new IPCRegistry({authorize:()=>context?.selectedId?{projectId:context.selectedId,mode:'normal',access:'write',entityIds:[]}:null,createWindow:()=>assert.fail('Import selection creates no satellite')});registry.bindWorkspace(window);
  const transitions=new HomeTransitionReceipts({registry,authority,projects});
  context=vm.createContext({window,nativeReadonly:false,mode:'normal',writes:new Set(),homeAuthority:authority,homeTransitions:transitions,invokeHome:args=>invokeHome({...args,payload:structuredClone(args.payload)}),navigationFields:(...args)=>navigationFields(...args.map((v,i)=>i? v:structuredClone(v))),
-  dialog:{showOpenDialog:async()=>({canceled:false,filePaths:[file]})},rendererRoot,readOwnedBytes,realpath,join,basename,Buffer,validateImportedProject,parseLegacyImport,BrowserWindow:class{},createImportValidator:()=>({validate:async text=>text,dispose:async()=>{disposed=true;}}),
+  dialog:{showOpenDialog:async()=>({canceled:false,filePaths:[file]})},rendererRoot,readOwnedBytes,realpath,join,basename,Buffer,validateImportedProject,parseLegacyImport,admitImportedProject,assertImportComplete,createImportedSourceBundleCopy,writerOptions:{},legacyExportEpoch:0,BrowserWindow:class{},createImportValidator:()=>({validate:async text=>text,dispose:async()=>{disposed=true;}}),
   // Selection is tested separately with the actual ProjectStore/receipt owner.
   selectHomeProject:async(input,scope,options)=>{assert.equal(scope.isCurrent(),true);selected.push({input,options});return {ok:true,epoch:1};},ipcMain:{handle:(name,fn)=>handlers.set(name,fn)}});
  if(realSelection){
   delete context.selectHomeProject;
   Object.assign(context,{dataRoot:root,projects,recovery,atomicWrite,bootstrap:{selectionGeneration:0},selectedId:null,snapshot:null,reason:null,pinTransition:false,accountTransition:false,accountQuiesced:false,localPin:{state:()=>({unlocked})},grants:new Set(),account:{accountId:null,policy:{opened(){}}},nativeShellFailure:false,windowRegistry:registry,retireNativeViews:()=>registry.invalidateEpoch({preserveWorkspace:true}),rollbackNativePreparation:async()=>{},prepareNativeWorkspace:()=>assert.fail('First import has no editor to flush')});
   const between=(a,b)=>{const start=main.indexOf(a),end=main.indexOf(b,start);assert.ok(start>=0&&end>start);return main.slice(start,end);};
-  vm.runInContext(between('const selected = async next => {','const changeSelection =')+between('const selectHomeProject=',"ipcMain.handle('siren:home'"),context);
+  vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=',"ipcMain.handle('siren:home'"),context);
  }
  const start=main.indexOf("ipcMain.handle('siren:home-import'"),end=main.indexOf('const desktopCommand =',start);assert.ok(start>=0&&end>start);vm.runInContext(main.slice(start,end),context);
  return {root,projects,recovery,bytes,file,context,selected,disposed:()=>disposed,lock:()=>{unlocked=false;authority.invalidate();},call:(payload={})=>handlers.get('siren:home-import')({sender:wc,senderFrame:frame},payload)};
@@ -58,4 +64,25 @@ test('Home import cancellation, extra identity fields and Lock during chooser do
   const f=await fixture();if(condition==='cancel')f.context.dialog.showOpenDialog=async()=>({canceled:true});if(condition==='lock')f.context.dialog.showOpenDialog=async()=>{f.lock();return {canceled:false,filePaths:[f.file]};};
   const result=await f.call(condition==='extra'?{path:f.file}:{});assert.equal(result.ok,false);assert.equal(f.selected.length,0);assert.deepEqual(await readFile(f.file),f.bytes);
  }
+});
+test('actual Home door selects a source-bundle copy with exact source bytes and saved checkpoint',async()=>{
+ const f=await fixture({realSelection:true}),source=await actualSourceBundle(f.root);await writeFile(f.file,source.bundle);
+ f.context.recovery=new RecoveryStore(f.root,{sources:new SourceRepository(f.root)});
+ f.context.createImportValidator=()=>({validate:()=>assert.fail('No legacy validation for bundles'),validateBundleMetadata:async text=>text,dispose:async()=>{}});
+ const result=await f.call();assert.equal(result.ok,true);const pointer=JSON.parse(await readFile(join(f.root,'session-selection.json'))),snapshot=await f.projects.readProject(pointer.projectId);
+ assert.equal(snapshot.schema,2);assert.notEqual(snapshot.project.id,source.snapshot.project.id);assert.deepEqual(await source.sources.exportSource({projectId:snapshot.project.id,...snapshot.sourceRefs[0]}),source.bytes);
+ assert.equal(await f.context.recovery.hasSavedSnapshot(snapshot),true);assert.deepEqual(await readFile(f.file),source.bundle);
+});
+test('Home copy cannot adopt a new epoch after Lock and rollback while its own preparation was pending',async()=>{
+ const f=await fixture({realSelection:true}),source=await actualSourceBundle(f.root);await writeFile(f.file,source.bundle);
+ f.context.recovery=new RecoveryStore(f.root,{sources:new SourceRepository(f.root)});f.context.snapshot=source.snapshot;f.context.selectedId=source.snapshot.project.id;
+ f.context.createImportValidator=()=>({validateBundleMetadata:async text=>text,dispose:async()=>{}});
+ const before=await readdir(join(f.root,'Projects'));f.context.prepareNativeWorkspace=async()=>{f.context.legacyExportEpoch+=2;};
+ const result=await f.call();assert.equal(result.ok,false);assert.equal(f.context.selectedId,source.snapshot.project.id);assert.deepEqual(await readdir(join(f.root,'Projects')),before);
+});
+test('actual Home open refuses an incomplete copy even when its selected manifest is readable',async()=>{
+ const f=await fixture({realSelection:true}),project=await f.projects.createProject({label:'Incomplete',json:'{}'});
+ await writeFile(join(f.root,'Projects',project.project.id,'source-import-status.json'),JSON.stringify({schema:1,projectId:project.project.id,state:'incomplete'}));
+ const select=vm.runInContext('selectHomeProject',f.context),result=await select({projectId:project.project.id},{transition:{},isCurrent:()=>true});
+ assert.equal(result.ok,false);assert.equal(f.context.selectedId,null);await assert.rejects(readFile(join(f.root,'session-selection.json')),{code:'ENOENT'});
 });

@@ -2,6 +2,8 @@ import { opendir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { ownedDirectory, ownedFile, validId } from '../projects/paths.mjs';
 import { normalizeRecord } from './contracts.mjs';
+import {ProjectStore} from '../projects/store.mjs';
+import {assertImportComplete} from '../projects/import-status.mjs';
 
 /** Metadata-only Home discovery. Existence is cached availability, never proof
  * of a healthy revision. A chosen project is verified by its domain owner. */
@@ -11,7 +13,8 @@ export class ProjectCatalog {
     try {
       await ownedDirectory(projects);
       const directory=await ownedDirectory(join(projects,projectId));
-      await ownedFile(join(directory,'current.json'));return 'cached';
+      await ownedFile(join(directory,'current.json'));
+      await assertImportComplete(new ProjectStore(this.root),projectId);return 'cached';
     } catch {return 'missing';}
   }
   async list(input) {

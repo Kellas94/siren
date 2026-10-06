@@ -18,7 +18,7 @@ const factory = between('const projects = new ProjectStore(', '\nconst recovery 
 const save = between('  saveProject: async request => {', '\n  exportProject:');
 const login = between('  beginLogin: async () => {', '\n  logout:');
 const readiness = between('let readyRecorded = false;', "\nipcMain.handle('siren:desktop'");
-const selection = between('const selected = async next => {', '\nconst exportBytes =');
+const selection = between('const selected = async (next,{isCurrent}={}) => {', '\nconst exportBytes =');
 
 for (const scenario of [{ packaged: true, mode: 'readonly' }, { packaged: false, mode: 'normal', failReady: true }, { packaged: true, mode: 'normal', failReady: true }]) {
   test(`native safety refuses original writes: ${JSON.stringify(scenario)}`, async () => {

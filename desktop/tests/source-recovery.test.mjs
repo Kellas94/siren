@@ -38,7 +38,7 @@ test('schema 2 refuses old renderer workspace save without changing the source m
 test('selecting schema 2 exposes a read-only legacy view instead of allowing metadata-only edits', async t => {
   const { snapshot } = await fixture(t);
   const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
-  const start = main.indexOf('const selected = async next => {'); const end = main.indexOf('const changeSelection =', start);
+  const start = main.indexOf('const selected = async (next,{isCurrent}={}) => {'); const end = main.indexOf('const changeSelection =', start);
   assert.ok(start >= 0 && end > start);
   const context = vm.createContext({ atomicWrite: async () => {}, join, dataRoot: 'fixture-only', Buffer, selectedId: null, grants: new Set(), snapshot: null,
     account: { accountId: null, policy: { opened() {} } }, mode: 'normal', reason: null, nativeReadonly: false, bootstrap: { selectionGeneration: 0 } });

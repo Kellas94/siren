@@ -5,6 +5,7 @@ import { Script } from 'node:vm';
 import { parse } from 'parse5';
 import { readOwnedBytes } from '../src/projects/io.mjs';
 import {buildPresentationEdits} from './document-context.mjs';
+import {bundleMetadataHelper} from './source-bundle-metadata.mjs';
 
 const baselineHash='5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -104,7 +105,7 @@ export async function buildImportValidation({baselinePath,outputDir}) {
   const presentationEdits=await buildPresentationEdits();
   const startup="document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
   if(html.split(startup).length!==2)throw Error('Frozen import startup marker mismatch');
-  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+presentationEdits+importHelper+domainHelper+`
+  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+presentationEdits+importHelper+domainHelper+bundleMetadataHelper+`
         if (!window.mermaid || typeof window.mermaid.parse !== 'function') throw new Error('Embedded import engine unavailable');
         window.mermaid.initialize({startOnLoad:false,securityLevel:'strict'});
         rendererMode = 'mermaid';

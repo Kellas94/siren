@@ -67,6 +67,17 @@ export async function createImportValidator({BrowserWindow,entryPath,entrySha256
           });
         } finally {busy=false;}
       },
+      validateBundleMetadata:async(text,fileName)=>{
+        if(!live())throw error('IMPORT_ENTRY_REFUSED');
+        if(busy)throw error('IMPORT_BUSY');busy=true;
+        try{
+          return await bounded(async()=>{
+            if(!live())throw error('IMPORT_ENTRY_REFUSED');
+            const result=await wc.executeJavaScript(`window.sirenDesktopValidateBundleMetadata(${JSON.stringify(text)},${JSON.stringify(fileName)})`);
+            if(!live())throw error('IMPORT_ENTRY_REFUSED');return result;
+          });
+        }finally{busy=false;}
+      },
       validatePatch:async input=>{
         if(!live())throw error('IMPORT_ENTRY_REFUSED');
         if(busy)throw error('IMPORT_BUSY');busy=true;

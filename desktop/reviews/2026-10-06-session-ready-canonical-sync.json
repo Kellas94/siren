@@ -1,0 +1,160 @@
+{
+  "author": "/root",
+  "status": "SYNCED_HOSTED_IN_PROGRESS",
+  "capturedAt": "2026-10-06T20:44:51Z",
+  "localDeltaBase": "49e0566beba291b94c78a8c96a4e8aeab20e8738",
+  "localSyncedHead": "708cf2cab7e941fc0c5285c4f57e0e43d4b14e4a",
+  "productSource": "59081e36f00629d6da4c0d474efe5dcb21f1312b",
+  "canonicalParent": "70ad0d0cc0c92a4032eeab42ee238e2642d1f386",
+  "canonicalHead": "63e03994b6e13a88911a61d387d8afc33035baf9",
+  "canonicalTree": "d5cd608cfbd4842db6cf531380d991dfa8943eda",
+  "treeVerification": {
+    "tree": "d5cd608cfbd4842db6cf531380d991dfa8943eda",
+    "blobs": 1589,
+    "newBlobs": 9,
+    "untouched": 1576,
+    "delta": 13
+  },
+  "branch": "feature/portable-foundation-2026-10-02",
+  "pr": "https://github.com/Kellas94/siren/pull/2",
+  "draft": true,
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "gitignore": {
+    "previousSHA": "17ff1a10413ee8a21bcfbbdd209f1e5d0853a4b3",
+    "sha": "bc118702db0810af255c650358b7fbae9ebb3045",
+    "preservedPrefix": true,
+    "newExplicitExceptions": 8
+  },
+  "delta": [
+    {
+      "path": "desktop/reviews/2026-10-06-legacy-export-access-canonical-sync.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "e9b9c01ac8ec9390f111fee7af9725821ca2ce49",
+      "type": "blob",
+      "bytes": 1460
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-concurrency-correction-recheck-independent.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "df88108ac3afc798c637007d66c9a8d3442a8ddc",
+      "type": "blob",
+      "bytes": 6710
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-concurrency-independent.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "8b39e948480ba366fa6ca406a054de5819bec6d6",
+      "type": "blob",
+      "bytes": 11271
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-hosted-adverse-evidence.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4acf34274074243225815462fdeb6f7d27a7ea8f",
+      "type": "blob",
+      "bytes": 1685
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-hosted-adverse-receipt.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "83eae369b4573fee6211db98610db9149243e56a",
+      "type": "blob",
+      "bytes": 7078
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-local-evidence.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4b283db600cca2ef541afe74ae56281f8394b344",
+      "type": "blob",
+      "bytes": 1987
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-session-ready-local-receipt.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "53e7db718f4dc55a6cb662631c16dee7cee24c4b",
+      "type": "blob",
+      "bytes": 4879
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-source-bundle-bounded-scalability-independent.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "ed1905854e7c1e93636cced2313bb242ecc11c60",
+      "type": "blob",
+      "bytes": 8545
+    },
+    {
+      "path": "desktop/src/main.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "d950854d2f9bd5b34c84cde31a9d3f5ec72faec2",
+      "sha": "4aa57213e281a370c77455fffb8060e67b2768f4",
+      "type": "blob",
+      "bytes": 96201
+    },
+    {
+      "path": "desktop/src/recovery/sessions.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "9a30e0d6e67a307a92f4bbdddd57ae4bff110914",
+      "sha": "6163a781d318d8623bf49658ee224718ca96166d",
+      "type": "blob",
+      "bytes": 3915
+    },
+    {
+      "path": "desktop/tests/native/shell.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "722de9608b6cdf55038de510dad2c0df6804f857",
+      "sha": "fcdae09b1005246a9687d2809be3aa8c49f28477",
+      "type": "blob",
+      "bytes": 5129
+    },
+    {
+      "path": "desktop/tests/session-journal-concurrency.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "b44e5cb71f566822b38a1beeef0322b8af17633d",
+      "type": "blob",
+      "bytes": 3996
+    }
+  ],
+  "originalHosted": {
+    "id": 37526593560,
+    "status": "completed",
+    "conclusion": "failure",
+    "artifacts": 5,
+    "native": "20/20 each; no original reclassification",
+    "receipt": "reviews/2026-10-06-session-ready-hosted-adverse-receipt.json"
+  },
+  "newHosted": {
+    "id": 37528726783,
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/Kellas94/siren/actions/runs/37528726783",
+    "head": "63e03994b6e13a88911a61d387d8afc33035baf9"
+  },
+  "nextGuardedSync": {
+    "localBase": "708cf2cab7e941fc0c5285c4f57e0e43d4b14e4a",
+    "canonicalBase": "63e03994b6e13a88911a61d387d8afc33035baf9",
+    "tree": "d5cd608cfbd4842db6cf531380d991dfa8943eda",
+    "blobCount": 1589
+  },
+  "scope": "Draft synchronization only. Local1161/package253/three native/limited independent evidence retained. No fresh hosted qualification, merge, release or installed replacement."
+}

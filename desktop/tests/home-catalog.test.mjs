@@ -43,3 +43,10 @@ test('empty data root has no fabricated project or disk writes',async()=>{
   assert.deepEqual(await catalog.list({schema:1,entries:[]}),[]);
   const {readdir}=await import('node:fs/promises');assert.deepEqual(await readdir(root),[]);
 });
+test('incomplete or corrupt source-import markers cannot advertise a usable project',async()=>{
+ const {root,catalog}=await fixture();
+ for(const [id,status] of [['incomplete',{schema:1,projectId:'incomplete',state:'incomplete'}],['corrupt',{state:'complete'}]]){
+  await project(root,id);await writeFile(join(root,'Projects',id,'source-import-status.json'),JSON.stringify(status));
+ }
+ assert.deepEqual(await catalog.list({schema:1,entries:[]}),[]);
+});

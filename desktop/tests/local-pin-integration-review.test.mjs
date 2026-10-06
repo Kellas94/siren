@@ -23,7 +23,7 @@ const between = (source, start, end) => {
   assert.ok(first >= 0 && last > first, 'Actual integration extraction markers must match');
   return source.slice(first, last);
 };
-const selection = between(main, 'const selected = async next => {', 'const exportBytes =');
+const selection = between(main, 'const selected = async (next,{isCurrent}={}) => {', 'const exportBytes =');
 const prepare = between(main, 'const prepareLocalWorkspace =', 'session.defaultSession');
 const pinServices = between(main, '  getPinState:', '  requestClose:');
 const saveService = between(main, '  saveProject:', '  exportProject:');

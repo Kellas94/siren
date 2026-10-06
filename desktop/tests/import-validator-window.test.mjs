@@ -54,3 +54,21 @@ test('disposal waits for asynchronous native webContents destruction after its w
   w.destroy=()=>{w.destroyed=true;w.emit('closed');setTimeout(()=>{contentsDestroyed=true;w.webContents.emit('destroyed');},10);};
   await validator.dispose();assert.equal(contentsDestroyed,true);assert.equal(w.destroyed,true);
 });
+
+test('dedicated bundle metadata validator uses literal arguments and retains the native frame fence',async()=>{
+  const f=await fixture(),validator=await createImportValidator({...f,BrowserWindow:f.NativeWindow}),w=f.getWindow();let script;
+  w.webContents.executeJavaScript=async code=>{script=code;return '{"metadata":true}';};
+  const text='{"opaque":"\\\"; window.privileged = true; //"}',name='chosen.siren-backup';
+  assert.equal(await validator.validateBundleMetadata(text,name),'{"metadata":true}');
+  assert.equal(script,`window.sirenDesktopValidateBundleMetadata(${JSON.stringify(text)},${JSON.stringify(name)})`);
+  w.webContents.mainFrame={url:pathToFileURL(f.entryPath).href};
+  await assert.rejects(validator.validateBundleMetadata('{}',name),{code:'IMPORT_ENTRY_REFUSED'});await validator.dispose();
+});
+
+test('pending bundle metadata cannot overlap patch validation and timeout destroys its owned validator',async()=>{
+  const f=await fixture(),validator=await createImportValidator({...f,BrowserWindow:f.NativeWindow,timeoutMs:30}),w=f.getWindow();let finish;
+  w.webContents.executeJavaScript=()=>new Promise(resolve=>{finish=resolve;});
+  const pending=validator.validateBundleMetadata('{}','chosen.siren-backup');
+  await assert.rejects(validator.validatePatch({}),{code:'IMPORT_BUSY'});
+  await assert.rejects(pending,{code:'IMPORT_VALIDATION_TIMEOUT'});assert.equal(w.isDestroyed(),true);finish('{}');await validator.dispose();
+});

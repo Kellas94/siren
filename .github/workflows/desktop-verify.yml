@@ -216,6 +216,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json
@@ -422,6 +425,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json
@@ -468,6 +474,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/source-bundle-import.mjs --package $preview.previewRoot --300k --code-only
+          if ($LASTEXITCODE -ne 0) { throw "Packaged source bundle import failed" }
           node tests/native/workspace-appearance.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged shared appearance/navigation failed" }
           node tests/native/ui-personality.mjs --package $preview.previewRoot
@@ -682,6 +690,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json

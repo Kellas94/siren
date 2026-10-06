@@ -63,8 +63,9 @@ import { nativeViewFactory,settleHiddenBounds } from './windows/factory.mjs';
 import {createWorkspaceSurface} from './windows/surface.mjs';
 import { workspaceEntities,workspaceMetadata } from './windows/entities.mjs';
 import { openOwnedSelection } from './projects/selection.mjs';
-import { parseLegacyImport } from './projects/migration.mjs';
-import { validateImportedProject } from './projects/import-validation.mjs';
+import {admitImportedProject} from './projects/import-admission.mjs';
+import {assertImportComplete} from './projects/import-status.mjs';
+import {createImportedSourceBundleCopy} from './navigation/source-bundle-copy.mjs';
 import {validateDomainPatch} from './projects/domain-validation.mjs';
 import { createImportValidator } from './projects/import-validator-window.mjs';
 import { atomicWrite } from './projects/atomic.mjs';
@@ -143,7 +144,7 @@ let selectedId = devArgument('--siren-test-project=') || null;
 if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
 let snapshot = null;
 if (selectedId && mode === 'normal') {
-  try { snapshot = await projects.readProject(selectedId); }
+  try { await assertImportComplete(projects,selectedId);snapshot = await projects.readProject(selectedId); }
   catch { mode = 'recovery'; reason = 'Selected project is damaged; open a verified recovered copy'; }
 }
 if (selectedId) account.policy.opened(selectedId);
@@ -152,14 +153,30 @@ let bootstrap = { mode, reason, snapshot, recoveryProjectId: selectedId, readonl
 const grants = new Set(selectedId ? [selectedId] : []);
 const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
 const writes = new Set();
-const selected = async next => {
-  await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId: next.project.id, accountId: account.accountId })));
+const selected = async (next,{isCurrent}={}) => {
+  const guarded=typeof isCurrent==='function';let accepted=false;
+  const operation=(async()=>{
+  try{await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId: next.project.id, accountId: account.accountId })),guarded?{requirePendingCleanup:true,fault:async phase=>{
+    if(phase==='after-rename'){accepted=true;return;}
+    if(!isCurrent())throw Object.assign(Error('Import selection access changed'),{code:'ACCESS_REFUSED'});
+  }}:{});}catch(cause){
+    if(guarded&&accepted){
+      // The pointer was already published. Do not claim the old selection was
+      // restored; expose an uncertain, write-fenced selection for recovery.
+      selectedId=next.project.id;grants.add(selectedId);snapshot=null;nativeReadonly=true;mode='recovery';reason='Imported project selection could not be confirmed; preserve/export work and reopen a verified copy';
+      bootstrap={mode,reason,snapshot:null,recoveryProjectId:selectedId,readonly:true,localAccess:true,selectionGeneration:(bootstrap.selectionGeneration||0)+1};
+      throw Object.assign(Error('Imported project selection is unconfirmed'),{code:'SELECTION_UNCONFIRMED',cause});
+    }throw cause;
+  }
   selectedId = next.project.id; grants.add(selectedId); snapshot = next;
   account.policy.opened(selectedId);
   mode = nativeReadonly ? 'readonly' : 'normal'; reason = nativeReadonly ? reason : null;
   if (next.schema !== 1) reason = 'Schema 2 sources require the source-aware workspace; the legacy view is read-only';
   bootstrap = { mode, reason, snapshot: next, recoveryProjectId: selectedId, readonly: nativeReadonly || next.schema !== 1, localAccess: true, selectionGeneration: (bootstrap.selectionGeneration || 0) + 1 };
   return next;
+  })();
+  if(guarded)writes.add(operation);
+  try{return await operation;}finally{if(guarded)writes.delete(operation);}
 };
 const changeSelection = async action => {
   if (writes.selectionTransition || accountTransition || pinTransition) return failure('PROJECT_BUSY', 'Wait for the current access or project transition');
@@ -173,6 +190,7 @@ const changeSelection = async action => {
     await retireNativeViews();
     const result = await action(); changed = bootstrap.selectionGeneration !== generation; return result;
   } finally {
+    changed=bootstrap.selectionGeneration!==generation;
     writes.selectionQuiesced = false; writes.selectionTransition = false;
     // A successful selection reloads the renderer; keep that old view frozen.
     if (!changed) {
@@ -293,17 +311,24 @@ const services = {
   restartAndUpdate: async () => failure('HELPER_NOT_QUALIFIED', 'The verified package is staged; installation requires the qualified launcher/helper'),
   pickProject: async () => {
     return changeSelection(async () => {
+    const importEpoch=legacyExportEpoch,importGeneration=bootstrap.selectionGeneration,importProject=selectedId,importMode=mode,importContents=window.webContents,importFrame=importContents.mainFrame;
+    let importRevoked=false;
+    const importCurrent=()=>{let live=false;try{live=legacyExportEpoch===importEpoch&&!window.isDestroyed()&&!importContents.isDestroyed()&&window.webContents===importContents&&importContents.mainFrame===importFrame&&importContents.getURL()==='siren://app/app.html'&&importFrame.url==='siren://app/app.html'&&localPin.state().unlocked&&!pinTransition&&!accountTransition&&!accountQuiesced&&bootstrap.selectionGeneration===importGeneration&&selectedId===importProject&&mode===importMode;}catch{}if(!live)importRevoked=true;return !importRevoked;};
+    const requireImport=()=>{if(!importCurrent())throw Object.assign(Error('Import access changed'),{code:'ACCESS_REFUSED'});};
     const choice = await dialog.showMessageBox({ type: 'question', title: 'SIREN local project', message: 'Choose a desktop project', detail: 'Opening another project replaces this view. Save or export pending work first. Browser data is imported only from a file you choose.', buttons: ['New project', 'Open project folder', 'Import .siren / JSON', 'Cancel'], cancelId: 3, defaultId: 3 });
     if (choice.response === 3) return failure('CANCELLED', 'No project changed');
+    if(choice.response===2&&(nativeReadonly||mode!=='normal'))return failure('ACCESS_REFUSED','Ordinary import requires a writable workspace. Use explicit recovery for damaged projects.');
     if (choice.response === 0) {
       const next = await projects.createProject({ label: 'New project', json: JSON.stringify({ diagrams: [] }) });
       await recovery.checkpointProject({ snapshot: next, kind: 'saved' }); return selected(next);
     }
     const answer = await dialog.showOpenDialog({ title: choice.response === 1 ? 'Choose an owned project folder in this data directory' : 'Import an exported SIREN project', defaultPath: choice.response === 1 ? join(dataRoot, 'Projects') : undefined, properties: [choice.response === 1 ? 'openDirectory' : 'openFile'] });
+    requireImport();
     if (answer.canceled) return failure('CANCELLED', 'No project changed');
     if (choice.response === 1) {
       const id = basename(answer.filePaths[0]);
       if (resolve(answer.filePaths[0]).toLowerCase() !== resolve(dataRoot, 'Projects', id).toLowerCase()) return failure('PROJECT_REFUSED', 'Choose an owned project folder; move data through explicit import');
+      await assertImportComplete(projects,id);requireImport();
       return openOwnedSelection({ projectId: id, projects, grants, selected, recoverySelected: async projectId => {
         await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId, accountId: account.accountId })));
         selectedId = projectId; snapshot = null; mode = 'recovery'; reason = 'The selected project is damaged; open a verified recovered copy';
@@ -314,11 +339,15 @@ const services = {
     // Validate through a hidden isolated entry, retaining frozen sign-off rules
     // without requiring Home to load or execute the workspace application.
     if (input.length > 64 * 1024 * 1024) return failure('IMPORT_TOO_LARGE', 'Desktop import exceeds the 64 MiB foundation limit');
-    const importGeneration=bootstrap.selectionGeneration,importProject=selectedId,importMode=mode,importContents=window.webContents,importFrame=importContents.mainFrame;
-    const importCurrent=()=>!window.isDestroyed() && !importContents.isDestroyed() && window.webContents===importContents && importContents.mainFrame===importFrame && importContents.getURL()==='siren://app/app.html' && importFrame.url==='siren://app/app.html' && localPin.state().unlocked && bootstrap.selectionGeneration===importGeneration && selectedId===importProject && mode===importMode;
+    requireImport();
     const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
-    const validated=await validateImportedProject({bytes:input,fileName:basename(answer.filePaths[0])},{isCurrent:importCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
-    const next = await projects.createProject({ label: basename(answer.filePaths[0]).slice(0, 180), json: parseLegacyImport(Buffer.from(validated)) });
+    const admitted=await admitImportedProject({bytes:input,fileName:basename(answer.filePaths[0])},{isCurrent:importCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
+    if(admitted.kind==='sources'){
+      const copy=await createImportedSourceBundleCopy({root:dataRoot,...admitted,recovery,writerOptions,isCurrent:importCurrent});
+      if(!copy.ok)return failure(copy.code,'Source bundle import was not completed. Existing work is retained.');
+      requireImport();return selected(copy.snapshot,{isCurrent:importCurrent});
+    }
+    const next = await projects.createProject({ label: basename(answer.filePaths[0]).slice(0, 180), json: admitted.json });
     if(!importCurrent())throw Object.assign(new Error('Import access changed'),{code:'ACCESS_REFUSED'});
     await recovery.checkpointProject({ snapshot: next, kind: 'saved' });
     if(!importCurrent())throw Object.assign(new Error('Import access changed'),{code:'ACCESS_REFUSED'});
@@ -642,30 +671,40 @@ const navigateEmptyRecovery=async(scope,entryUrl)=>{
   }catch{return {ok:false,code:'TRANSITION_FAILED'};}
   finally{if(roster)windowRegistry.releaseRoster(roster);nativeNavigationTarget=null;writes.selectionTransition=false;}
 };
-const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migrate=false,sourceImport,documentCreate}={})=>{
+const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migrate=false,sourceImport,documentCreate,sourceBundle}={})=>{
   if(!scope.transition||!scope.isCurrent()||writes.selectionTransition||pinTransition||accountTransition||
     window.webContents.getURL()!=='siren://app/home.html')return {ok:false,code:'ACCESS_REFUSED'};
   if(create&&(nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
   if(migrate&&(!create||snapshot?.schema!==1))return {ok:false,code:'PROJECT_FORMAT_REFUSED'};
   if(sourceImport&&(create||snapshot?.schema!==2||nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
   if(documentCreate&&(create||sourceImport||snapshot?.schema!==2||nativeReadonly||mode!=='normal'))return {ok:false,code:'ACCESS_REFUSED'};
+  if(sourceBundle&&(!create||desktop||migrate||sourceImport||documentCreate))return {ok:false,code:'ACCESS_REFUSED'};
   const contents=window.webContents,frame=contents.mainFrame,generation=bootstrap.selectionGeneration||0,previous=selectedId;
+  let importEpoch=sourceBundle?legacyExportEpoch:null,importRevoked=false;
   const live=()=>!window.isDestroyed()&&!contents.isDestroyed()&&contents===window.webContents&&contents.mainFrame===frame&&
     contents.getURL()==='siren://app/home.html'&&localPin.state().unlocked&&!accountQuiesced&&!pinTransition&&
-    (bootstrap.selectionGeneration||0)===generation&&selectedId===previous;
+    (bootstrap.selectionGeneration||0)===generation&&selectedId===previous&&(!sourceBundle||(!importRevoked&&legacyExportEpoch===importEpoch&&!accountTransition));
   writes.selectionTransition=true;let changed=false;
   try{
+    if(!create)await assertImportComplete(projects,input.projectId);
     let next=create?null:await projects.readProject(input.projectId);
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
     // Do not manufacture a new selection or checkpoint when reopening the
     // current verified project. The existing renderer remains current.
     if(!sourceImport&&!documentCreate&&next?.project.id===selectedId){const grant=windowRegistry.capturePrimary({sender:contents,senderFrame:frame});return grant?{ok:true,epoch:grant.epoch}:{ok:false,code:'ACCESS_REFUSED'};}
-    if(snapshot)await prepareNativeWorkspace('native-home-navigation');
+    if(snapshot){if(sourceBundle)importEpoch++;await prepareNativeWorkspace('native-home-navigation');}
     else{homeAuthority.invalidate();contents.send('siren:home-invalidated');}
     if(!live())return {ok:false,code:'ACCESS_REFUSED'};
     writes.selectionQuiesced=true;await Promise.all([...writes]);await retireNativeViews();
     if(create){
-      if(desktop||migrate){
+      if(sourceBundle){
+        const current=()=>{if(!live()||!writes.selectionTransition||!writes.selectionQuiesced)importRevoked=true;return !importRevoked;};
+        const copy=await createImportedSourceBundleCopy({root:dataRoot,...sourceBundle,recovery,writerOptions,isCurrent:current});
+        if(!copy.ok)return {ok:false,code:copy.code};
+        await selected(copy.snapshot,{isCurrent:current});changed=true;writes.selectionQuiesced=false;
+        windowRegistry.activateWorkspace({entryUrl:'siren://app/home.html'});
+        return await homeTransitions.completeSelection(scope.transition);
+      }else if(desktop||migrate){
         // Preparation may have genuinely saved the legacy editor. Read the
         // selected revision now rather than copying the pre-flush bootstrap.
         const legacySnapshot=migrate?await projects.readProject(previous):undefined;
@@ -691,6 +730,7 @@ const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migra
   }catch{return {ok:false,code:create?'TRANSITION_FAILED':'PROJECT_UNAVAILABLE'};}
   finally{
     writes.selectionQuiesced=false;writes.selectionTransition=false;
+    changed=changed||(bootstrap.selectionGeneration||0)!==generation;
     if(!changed){await rollbackNativePreparation();if(snapshot&&!nativeShellFailure)try{windowRegistry.activateWorkspace({entryUrl:'siren://app/home.html'});}catch{/* Refused activation remains fenced. */}}
     if(!window.isDestroyed())contents.send('siren:view-resume');
   }
@@ -747,16 +787,16 @@ ipcMain.handle('siren:home-import',(event,input)=>{
   if(event.sender!==window.webContents||event.senderFrame!==event.sender.mainFrame||event.senderFrame?.url!=='siren://app/home.html')return {ok:false,code:'SENDER_REFUSED'};
   return invokeHome({event,method:'createProject',payload:{label:'Imported project'},authority:homeAuthority,transitions:homeTransitions,services:{createProject:async(_input,scope)=>{
     if(nativeReadonly||mode!=='normal'||writes.selectionTransition||!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
-    const answer=await dialog.showOpenDialog(window,{title:'Open a SIREN project',properties:['openFile'],filters:[{name:'SIREN projects',extensions:['siren','json']}]});
+    const answer=await dialog.showOpenDialog(window,{title:'Open a SIREN project',properties:['openFile'],filters:[{name:'SIREN projects',extensions:['siren','siren-backup','json']}]});
     if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
     if(answer.canceled)return {ok:false,code:'CANCELLED'};
     if(answer.filePaths?.length!==1)return {ok:false,code:'PROJECT_UNAVAILABLE'};
     try{
       const bytes=await readOwnedBytes(await realpath(answer.filePaths[0]),64*1024*1024);
       const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
-      const validated=await validateImportedProject({bytes,fileName:basename(answer.filePaths[0])},{isCurrent:scope.isCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
+      const admitted=await admitImportedProject({bytes,fileName:basename(answer.filePaths[0])},{isCurrent:scope.isCurrent,createValidator:()=>createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256})});
       if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
-      return selectHomeProject({label:basename(answer.filePaths[0]).slice(0,180)},scope,{create:true,json:parseLegacyImport(Buffer.from(validated))});
+      return selectHomeProject({label:basename(answer.filePaths[0]).slice(0,180)},scope,admitted.kind==='sources'?{create:true,sourceBundle:admitted}:{create:true,json:admitted.json});
     }catch{return {ok:false,code:scope.isCurrent()?'PROJECT_UNAVAILABLE':'ACCESS_REFUSED'};}
   }}});
 });
