@@ -5,15 +5,20 @@ import {createHash} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
 import {pointerExpression,stablePointerExpression} from './pointer.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
+import {AppearanceStore} from '../../src/appearance/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 
 const evidence=resolve('evidence/source-read',new Date().toISOString().replaceAll(':','-'));
 await mkdir(evidence,{recursive:true});const data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
+// Pin the native owner to Dark so this startup assertion does not depend on
+// the runner's OS appearance or accidentally pass with the legacy Light default.
+assert.equal((await new AppearanceStore(data).set({theme:'dark'})).ok,true);
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const paths=['src/sources/repository.mjs','src/sources/manifest.mjs','src/sources/recovery.mjs','src/main.mjs','src/navigation/continue.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/registry.mjs','src/windows/coordinator.mjs','src/windows/source-bridge.mjs','src/windows/source-reads.mjs','src/windows/docs-reads.mjs','src/windows/domain.mjs','src/sources/ipc.mjs','src/sources/read-ipc.mjs','src/ui/windows/code.js','src/ui/windows/docs.js','src/ui/windows/entry.js','src/ui/code/editor.js','src/ui/code/source-client.js','src/ui/code/editor-adapter.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-read.mjs','tests/native/drive.mjs'];
 paths.push('src/windows/catalog.mjs','src/windows/control.mjs','src/windows/source-barrier.mjs','src/windows/readonly-seals.mjs','src/windows/primary.mjs','src/ui/code/view-lifecycle.js','src/ui/storage.js','src/ui/desktop.js','src/ui/desktop.css','generated/app.html');
+paths.push('src/appearance/store.mjs','build/appearance.mjs','src/ui/shared/shell.js','generated/assets/shell.js','generated/assets/shell.css');
 if(process.argv.includes('--owned-source-corruption'))paths.push('tests/native/view-control-rollback.mjs');
 if(process.argv.includes('--owned-home-navigation'))paths.push('tests/native/home-navigation.mjs','tests/native/home-navigation-cases.mjs','generated/home.html',...['authority','service','transition-receipts','store','catalog','resolver','ipc'].map(n=>'src/navigation/'+n+'.mjs'),'src/ui/workspace/home.js','src/ui/workspace/intro.js');
 const capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,hash(await readFile(p))])));
@@ -58,6 +63,7 @@ try{
  await driver.waitFor("!document.getElementById('sirenIntroOverlay')||document.getElementById('sirenIntroOverlay').hidden");
  if(await driver.evaluate("document.getElementById('introOverviewDialog')?.open===true"))await driver.click('#closeIntroOverview');
  await driver.click('#desktopWindows');
+ assert.equal(await driver.evaluate('window.sirenClassicAppearance.current()'),'dark','Legacy startup must retain the accepted native Dark appearance');
  await driver.waitFor("document.querySelectorAll('#desktopWindowLibrary [data-entity-id]').length===4");
  assert.equal(await driver.evaluate("document.querySelector('#desktopWindowsPanel').getAttribute('aria-modal')"),'false');
  const panelColors=await driver.evaluate("(()=>{const s=getComputedStyle(document.querySelector('#desktopWindowsPanel')),c=document.createElement('canvas');c.width=c.height=1;const ctx=c.getContext('2d');const rgba=color=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return Array.from(ctx.getImageData(0,0,1,1).data)};return {background:rgba(s.backgroundColor),text:rgba(s.color),expected:rgba(getComputedStyle(document.body).getPropertyValue('--panel-bg').trim())};})()");

@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {runInNewContext} from 'node:vm';
+test('pointer stability observes a deferred menu position before accepting its rectangle',async()=>{
+ const {stablePointerExpression}=await import('./native/pointer.mjs');let moved=false,frames=0;
+ const element={getBoundingClientRect:()=>({x:moved?530:1500,y:160,width:312,height:400})};
+ const context={document:{querySelector:()=>element},requestAnimationFrame:callback=>{frames++;moved=true;queueMicrotask(callback);}};
+ assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),false);
+ assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),true);assert.equal(frames,4);
+});
 test('native pointer observations intersect the actual scroll clip of a virtualized editor',async()=>{
  const {pointerExpression}=await import('./native/pointer.mjs');
  const scroller={parentElement:null,getBoundingClientRect:()=>({left:0,right:900,top:280,bottom:500}),clientLeft:0,clientTop:0,clientWidth:900,clientHeight:220};

@@ -13,8 +13,8 @@ export function patchClassicAppearance(html){
  if(end<0)throw Error('Classic theme lifecycle boundary missing');
  const body=html.slice(start,end),save='        scheduleSave();',changed='        state.theme = themeName;';
  for(const token of [save,changed])if(body.split(token).length!==2)throw Error('Classic theme preference marker mismatch');
- const bridge=`      window.sirenClassicAppearance=Object.freeze({current:()=>document.body.dataset.theme,apply:id=>{if(!${JSON.stringify(THEME_IDS)}.includes(id))return false;applyTheme(id,true);return true;}});\n`;
- const patched=body.replace(marker,'      function applyTheme(themeName, shouldRender, desktopUser=false) {').replace(save,'        if(!window.sirenShell) scheduleSave();').replace(changed,changed+'\n        document.dispatchEvent(new CustomEvent("siren-classic-appearance",{detail:{theme:themeName,user:desktopUser}}));');
+ const bridge=`      let sirenNativeAppearanceId=null;\n      window.sirenClassicAppearance=Object.freeze({current:()=>document.body.dataset.theme,apply:id=>{if(!${JSON.stringify(THEME_IDS)}.includes(id))return false;sirenNativeAppearanceId=id;if(state.theme!==id||document.body.dataset.theme!==id)applyTheme(id,true);return true;}});\n`;
+ const patched=body.replace(marker,'      function applyTheme(themeName, shouldRender, desktopUser=false) {\n        if(window.sirenShell && sirenNativeAppearanceId && !desktopUser) themeName=sirenNativeAppearanceId;').replace(save,'        if(!window.sirenShell) scheduleSave();').replace(changed,changed+'\n        document.dispatchEvent(new CustomEvent("siren-classic-appearance",{detail:{theme:themeName,user:desktopUser}}));');
  return html.slice(0,start)+bridge+patched+html.slice(end);
 }
 export async function readAppearancePalette(){

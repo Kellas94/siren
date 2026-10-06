@@ -72,3 +72,15 @@ test('classic appearance bridge synchronizes every original theme route without 
  assert.equal(window.sirenClassicAppearance.apply('forged'),false);assert.equal(state.theme,'kpmg');
  document.body.dataset.theme='dark';assert.equal(window.sirenClassicAppearance.current(),'dark');
 });
+test('accepted native appearance survives a later legacy startup theme and user selection can replace the owner',async()=>{
+ const {patchClassicAppearance}=await import('../build/appearance.mjs');
+ const code='      function applyTheme(themeName, shouldRender) {\n        state.theme = themeName;\n        document.body.dataset.theme = themeName;\n        scheduleSave();\n      }\n      function following() {}';
+ const window={sirenShell:{}},state={theme:'light'},document={body:{dataset:{theme:'light'}},dispatchEvent(){}};
+ const context={window,state,document,CustomEvent:class{constructor(type,options){this.detail=options.detail;}},scheduleSave:()=>assert.fail('Native visual change must not save a project')};
+ runInNewContext(patchClassicAppearance(code),context);
+ window.sirenClassicAppearance.apply('dark');context.applyTheme('light',false);
+ assert.equal(state.theme,'dark');assert.equal(document.body.dataset.theme,'dark');
+ context.applyTheme('kpmg',true,true);assert.equal(state.theme,'kpmg');
+ window.sirenClassicAppearance.apply('kpmg');context.applyTheme('light',false);
+ assert.equal(state.theme,'kpmg');assert.equal(document.body.dataset.theme,'kpmg');
+});

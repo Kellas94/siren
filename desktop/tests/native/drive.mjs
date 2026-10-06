@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import assert from 'node:assert/strict';
 import {waitForNativeCondition} from './condition.mjs';
+import {stablePointerExpression} from './pointer.mjs';
 
 // Target discovery identifies the page, not completion of its native preload.
 // Keep authentication separate from this bounded, read-only startup qualification.
@@ -122,6 +123,9 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
         // Hosted displays can be shorter than the owned local window. Bring the
         // control into the real viewport; still refuse covered or absent hits.
         await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control');e.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});})()`);
+        // Existing menus position once immediately and again on the next frame.
+        // Observe that actual rectangle settling; retain the same center/hit oracle.
+        await waitFor(stablePointerExpression(selector));
         const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control'); const r=e.getBoundingClientRect(); const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);return {x,y,hit:r.width>0&&r.height>0&&e.contains(h),cover:h?.id||h?.className||h?.tagName};})()`);
       if (!point.hit) throw new Error('Occluded control: ' + selector + ' by ' + point.cover);
       await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 });
