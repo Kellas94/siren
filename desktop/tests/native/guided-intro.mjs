@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {createHash} from 'node:crypto';
 import { ProjectStore } from '../../src/projects/store.mjs';
 import { launchDesktop, unlockDesktop } from './drive.mjs';
 
@@ -10,6 +11,7 @@ const evidence = resolve('evidence', `guided-intro-${new Date().toISOString().re
 await mkdir(evidence, { recursive: true });
 const build = JSON.parse(await readFile('generated/build.json', 'utf8'));
 const result = { completed: false, build, guided: {}, replay: {}, firstPaint: {}, scope: 'Actual editable development renderer, synthetic project, native pointer/keyboard; no login implementation or packaged activation claim' };
+result.harnessSha256=createHash('sha256').update(await readFile('tests/native/guided-intro.mjs')).digest('hex');
 let driver;
 const save = () => writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2));
 const visible = id => `(()=>{const e=document.getElementById(${JSON.stringify(id)});if(!e)return false;const r=e.getBoundingClientRect();return !e.hidden&&r.width>0&&r.height>0&&getComputedStyle(e).display!=='none'&&Number(getComputedStyle(e).opacity)>0.1;})()`;
@@ -24,6 +26,7 @@ const stopTour = async () => {
 const recordFailure = async error => {
   result.error = String(error.stack || error);
   if (driver) {
+    result.menuTrace = await driver.evaluate('window.__sirenOwnedMenuTrace?.events ?? []').catch(() => []);
     await driver.screenshot(join(evidence, 'failure.png')).catch(() => {});
     result.failureState = await driver.evaluate(`({bootstrap:{mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly},source:document.getElementById('source')?.value,structure:[...document.querySelectorAll('#structureEditor,#structureRows,#codeEditor')].map(e=>({id:e.id,hidden:e.hidden,display:getComputedStyle(e).display,rect:e.getBoundingClientRect().toJSON(),html:e.innerHTML.slice(0,6000)})),intro:document.getElementById('sirenIntroOverlay')?.outerHTML.slice(0,1500),frames:window.__sirenPaintEvidence})`).catch(() => null);
   }
@@ -38,6 +41,16 @@ try {
   await unlockDesktop(driver,{pin:'4826',autoSetup:true});
   await driver.waitFor('document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await stopTour();
+  // Passive observation only: retain the original single-click sequence and
+  // deadlines so an absent/removed menu still fails instead of being retried.
+  await driver.evaluate(`(()=>{
+    const trace=window.__sirenOwnedMenuTrace={events:[]};
+    const record=(kind,detail={})=>{if(trace.events.length<160)trace.events.push({at:performance.now(),kind,...detail,expanded:document.getElementById('headerMoreButton')?.getAttribute('aria-expanded'),controls:document.getElementById('headerMoreButton')?.getAttribute('aria-controls'),menus:[...document.querySelectorAll('.struct-menu')].map(e=>({id:e.id,role:e.getAttribute('role'),text:e.textContent.slice(0,300)}))});};
+    for(const type of ['pointerdown','mousedown','focusin','blur','mouseup','click','keydown','keyup'])document.addEventListener(type,e=>{const t=e.target;if(t?.closest?.('#headerMoreButton,.struct-menu,#structureRows'))record(type,{target:t.id||t.className,key:e.key,isTrusted:e.isTrusted,defaultPrevented:e.defaultPrevented,active:document.activeElement?.id||document.activeElement?.className});},true);
+    new MutationObserver(records=>{for(const r of records){const changed=[...r.addedNodes,...r.removedNodes].filter(n=>n.nodeType===1);if(changed.some(n=>n.matches?.('.struct-menu')||n.querySelector?.('.struct-menu'))||r.target.closest?.('#structureRows')||r.target.id==='headerMoreButton')record('mutation',{target:r.target.id||r.target.className,attribute:r.attributeName,added:[...r.addedNodes].map(n=>n.id||n.className||n.nodeName),removed:[...r.removedNodes].map(n=>n.id||n.className||n.nodeName)});}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['aria-expanded','aria-controls']});
+    record('installed');return true;
+  })()`);
+  if(process.argv.includes('--trace-slow-cpu')){await driver.send('Emulation.setCPUThrottlingRate',{rate:8});result.cpuThrottlingRate=8;}
   assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.readonly'), false);
   await driver.click('#codeModeButton'); await driver.click('#structureModeButton');
   result.guided.source = await driver.evaluate('document.getElementById("source").value');
@@ -94,6 +107,7 @@ try {
   assert.equal(await driver.evaluate('document.getElementById("sirenIntroOverlay").hidden && !document.getElementById("sirenIntroOverlay").classList.contains("is-running")'), true, 'Reduced motion replay must skip animation and retain overview');
   result.reducedMotionReplay = { skippedAnimation: true, overview: true };
   await driver.send('Emulation.setEmulatedMedia', { features: [] });
+  result.menuTrace = await driver.evaluate('window.__sirenOwnedMenuTrace?.events ?? []');
   await writeFile(join(evidence, 'guided-electron.log'), driver.logs()); await driver.close(); driver = null;
 
   // Add a passive frame observer before document scripts, using an owned test entry.
