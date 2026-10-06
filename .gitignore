@@ -334,3 +334,15 @@ WP-001_*.json
 !/desktop/reviews/2026-10-06-guided-focus-hosted-adverse-receipt.json
 !/desktop/reviews/2026-10-06-hosted-adverse-observation-independent.md
 !/desktop/reviews/2026-10-06-native-export-delivery-boundary-analysis.md
+
+# Original export audits, adverse review, correction and hosted observations
+!/desktop/reviews/2026-10-06-legacy-export-access-correction-independent.md
+!/desktop/reviews/2026-10-06-legacy-export-access-local-evidence.md
+!/desktop/reviews/2026-10-06-legacy-export-access-local-receipt.json
+!/desktop/reviews/2026-10-06-legacy-export-drain-correction-independent-recheck.md
+!/desktop/reviews/2026-10-06-native-menu-causal-independent.md
+!/desktop/reviews/2026-10-06-native-menu-success-trace-addendum-independent.md
+!/desktop/reviews/2026-10-06-native-observation-canonical-sync.json
+!/desktop/reviews/2026-10-06-native-observation-hosted-evidence.md
+!/desktop/reviews/2026-10-06-native-observation-hosted-receipt.json
+!/desktop/reviews/2026-10-06-schema2-export-recovery-independent-audit.md

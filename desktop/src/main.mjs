@@ -123,6 +123,9 @@ const localPin = new LocalPinAccess(dataRoot, safeStorage);
 await localPin.initialize();
 let mode = startup.mode; let reason = startup.reason; let nativeReadonly = mode === 'readonly';
 let accountTransition = false; let accountQuiesced = false; let pinTransition = false;
+// A pending Save dialog is not a workspace write and must never hold Lock open.
+// Every preparation permanently revokes prior export jobs, including rollback.
+let legacyExportEpoch = 0;
 const projects = new ProjectStore(dataRoot, { ...writerOptions, canSave: async ({ action, projectId }) => {
   if (accountQuiesced || (['workspace', 'create'].includes(action) && (nativeReadonly || mode !== 'normal'))) return false;
   return localPin.state().unlocked;
@@ -179,11 +182,28 @@ const changeSelection = async action => {
     }
   }
 };
-const exportBytes = async (bytes, suggested) => {
+const captureLegacyExportAccess = () => {
+  const epoch=legacyExportEpoch,contents=window.webContents,frame=contents.mainFrame,generation=bootstrap.selectionGeneration,projectId=selectedId,openedMode=mode;
+  return () => {
+    try { return legacyExportEpoch===epoch&&!window.isDestroyed()&&!contents.isDestroyed()&&window.webContents===contents&&contents.mainFrame===frame&&contents.getURL()==='siren://app/app.html'&&frame.url==='siren://app/app.html'&&localPin.state().unlocked&&!pinTransition&&!accountTransition&&!accountQuiesced&&!writes.selectionTransition&&!writes.viewClosing&&bootstrap.selectionGeneration===generation&&selectedId===projectId&&mode===openedMode; }
+    catch { return false; }
+  };
+};
+const exportBytes = async (bytes, suggested, isCurrent) => {
+  const refused=()=>failure('ACCESS_REFUSED','Export access changed. Unlock and start a new export.');
+  if(typeof isCurrent!=='function'||!isCurrent())return refused();
   const result = await dialog.showSaveDialog({ title: 'Export local SIREN data', defaultPath: suggested });
+  if(!isCurrent())return refused();
   if (result.canceled || !result.filePath) return failure('CANCELLED', 'Export cancelled');
-  await atomicWrite(result.filePath, bytes);
-  return { ok: true };
+  const operation=(async()=>{try{await atomicWrite(result.filePath,bytes,{requirePendingCleanup:true,fault:async phase=>{
+    // Once rename commits, the accepted write must finish its actual readback.
+    // Native Lock/selection drains this tracked write before confirming completion.
+    if(phase!=='after-rename'&&!isCurrent())throw Object.assign(Error('Export access changed'),{code:'ACCESS_REFUSED'});
+  }});return {ok:true};}
+  catch(cause){if(cause.code==='ACCESS_REFUSED')return refused();throw cause;}})();
+  writes.add(operation);
+  try {return await operation;}
+  finally{writes.delete(operation);}
 };
 // Unlock never creates or selects a project. First-use Home requires an
 // explicit New/Open action; PIN success is independent of project creation.
@@ -222,9 +242,10 @@ const services = {
   requestClose: async () => { window.close(); return { ok: true }; },
   goHome:()=>invokeHome({event:{sender:window.webContents,senderFrame:window.webContents.mainFrame},method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateHome(scope)}}),
   exportDiagnostics: async () => {
+    const isCurrent=captureLegacyExportAccess();if(!isCurrent())return failure('ACCESS_REFUSED','Export access changed.');
     const points = await recovery.scan();
     const report = buildDiagnostics({ desktopVersion: app.getVersion(), rendererVersion: '1.131.0', electron: process.versions.electron, chromium: process.versions.chrome, node: process.versions.node, platform: process.platform, arch: process.arch, osRelease: osRelease(), mode, accountState: (await account.getAccess()).state, updatePhase: updates.getUpdate().phase, projectCount: (await projects.listProjects()).length, verifiedPointCount: points.valid.length, damagedPointCount: points.invalid.length });
-    return exportBytes(Buffer.from(JSON.stringify(report, null, 2)), 'SIREN-diagnostics.json');
+    return exportBytes(Buffer.from(JSON.stringify(report, null, 2)), 'SIREN-diagnostics.json',isCurrent);
   },
   getAccess: () => account.getAccess(),
   beginLogin: async () => {
@@ -314,17 +335,20 @@ const services = {
   },
   exportProject: async id => {
     if (!grants.has(id)) return failure('PROJECT_REFUSED', 'Project not selected');
+    const isCurrent=captureLegacyExportAccess();if(!isCurrent())return failure('ACCESS_REFUSED','Export access changed.');
     const snapshot = await projects.readProject(id);
+    if(!isCurrent())return failure('ACCESS_REFUSED','Export access changed.');
     const bytes = snapshot.schema === 2 ? await recovery.exportSourceSnapshot(snapshot) : Buffer.from(snapshot.json);
-    return exportBytes(bytes, `SIREN-${id}.siren-backup`);
+    return exportBytes(bytes, `SIREN-${id}.siren-backup`,isCurrent);
   },
   getRecovery: async id => grants.has(id) ? recoveryAccess.inspect(id) : failure('PROJECT_REFUSED', 'Project not selected'),
   restoreRecovery: async id => {
     return changeSelection(async () => selected(await recoveryAccess.restore(id)));
   },
   exportRecovery: async id => {
+    const isCurrent=captureLegacyExportAccess();if(!isCurrent())return failure('ACCESS_REFUSED','Export access changed.');
     const bytes = await recoveryAccess.export(id);
-    return exportBytes(bytes, `SIREN-recovery-${id}.siren-backup`);
+    return exportBytes(bytes, `SIREN-recovery-${id}.siren-backup`,isCurrent);
   },
 };
 const nativeDisplays=()=>{const primary=screen.getPrimaryDisplay().id;return screen.getAllDisplays().map(d=>({id:d.id,workArea:d.workArea,primary:d.id===primary}));};
@@ -500,6 +524,7 @@ const rollbackNativePreparation=async()=>{
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
+  legacyExportEpoch++;
   homeAuthority.invalidate();window.webContents.send('siren:home-invalidated');
   if(!snapshot){
     if(window.webContents.getURL()==='siren://app/home.html'){

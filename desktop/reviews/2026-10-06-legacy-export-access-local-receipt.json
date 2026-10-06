@@ -1,0 +1,102 @@
+{
+  "author": "/root",
+  "kind": "owner-limited-local-correction-evidence",
+  "status": "COMPLETE",
+  "sourceCommit": "f422c94cf8b5b3ce01a2a272178427cf538a01ea",
+  "changes": [
+    "Pending project/recovery/diagnostic exports are permanently revoked on preparation, Lock, account or selection changes.",
+    "Only the actual publication enters the native writes drain; a pending chooser cannot hold Lock open.",
+    "Clean precommit access cancellation permits Lock; strict cleanup, OS-write and readback errors remain failures.",
+    "Accepted rename finishes real readback before Lock can succeed."
+  ],
+  "inputs": {
+    "src/main.mjs": "da8e340374e032dad4ab240d633d58a3ea403854264418b05e0dd1794c949e36",
+    "src/projects/atomic.mjs": "803eb8c40edd5711bae3a51ade69ab935b779bae7d1ec6e8da5808dbeea77de4",
+    "tests/legacy-export-access.test.mjs": "5cd930270d8986fd5c2647fe9968a5c75bca7f367ec5cb6dcdcc1c3a844094f0"
+  },
+  "red": [
+    {
+      "path": "evidence/workspace-surface/legacy-export-access-red-behavior.log",
+      "tests": 11,
+      "failures": 9,
+      "sha256": "c9c6c607562618cfb4b447e4fd91a9c81d77c3c0ef65da714cee18bcfdd536d2"
+    },
+    {
+      "path": "evidence/workspace-surface/legacy-export-drain-red.log",
+      "tests": 18,
+      "failures": 2,
+      "sha256": "cad237246880115230624eb4e409eddad602298cb18350e0ecd3f7f35f5411ed"
+    }
+  ],
+  "units": {
+    "uniqueTests": 1157,
+    "path": "evidence/workspace-surface/media-tables-final-suite-2026-10-06T20-19-47.239Z/result.json",
+    "sha256": "56844dd8911b0f66910046f4947921e42dd0374a3b89538d32c6c16c940c72e0",
+    "environment": "Exact unchanged suite rerun with approved local access for esbuild TEMP; initial sandbox ACL failure retained.",
+    "initialAdverse": {
+      "path": "evidence/workspace-surface/media-tables-final-suite-2026-10-06T20-15-10.121Z/result.json",
+      "sha256": "c08e63e07934d3436584641386df30948e6b2a6992e4ccbd79d61fe22fe1d374"
+    }
+  },
+  "package": {
+    "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-69ed5b8f-0b30-42ce-aefe-3bf9df502b6c",
+    "archive": {
+      "bytes": 53811307,
+      "sha256": "cb0eaa75cba7f0b47cc4cf80d497e3dd6c6118430ac1d56af987057c7a965336"
+    },
+    "identityPath": "evidence/workspace-surface/export-access-package-identity-2026-10-06T20-24-25.870Z/result.json",
+    "identitySha256": "7dfc52c832a3b0843644d86c1e1008abd4347e843f515fa8aa4e6b79bd28087d",
+    "applicationFiles": 253,
+    "helper": {
+      "path": "native/generated/process-identity.exe",
+      "bytes": 6144,
+      "sha256": "485d4fe26225c75670e2ce425fa0daa816f5b8ef93b1561042b7138e01fed6a3"
+    }
+  },
+  "native": {
+    "path": "evidence/workspace-surface/export-access-native-2026-10-06T20-24-25.964Z/result.json",
+    "sha256": "c02bae7f4b0ece5a606813efd26b4398f21c70845a32f3b3e80b308e89818350",
+    "probes": [
+      {
+        "name": "packaged",
+        "scope": "Actual isolated portable copy",
+        "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/packaged-2026-10-06T20-24-26.114Z/result.json",
+        "sha256": "233bb5a84468de9d8005bed48400970c7215a2e64074ea30936e4ae513e1420a"
+      },
+      {
+        "name": "local-pin",
+        "scope": "Actual development Electron with isolated fixture data",
+        "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/local-pin-2026-10-06T20-24-51.874Z/result.json",
+        "sha256": "c948905de43eae7cb9996043a76ab5d0cbbbc7bb3a1e11e273b6dfa77a13fa2d"
+      },
+      {
+        "name": "import-export",
+        "scope": "Actual development Electron with isolated fixture data",
+        "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/import-export-2026-10-06T20-25-50.267Z/result.json",
+        "sha256": "0d6c5a96964ec4ee3415685f246259b808526ae81d4029786bce7d3a9b36b902"
+      }
+    ]
+  },
+  "independent": [
+    {
+      "path": "reviews/2026-10-06-schema2-export-recovery-independent-audit.md",
+      "sha256": "74b8e85841c26f2c145e1c47a4205f9ce2235398a3e9c1e7dfe19a77df49b520"
+    },
+    {
+      "path": "reviews/2026-10-06-legacy-export-access-correction-independent.md",
+      "sha256": "eb8540fce521f37a3f9128ae4c1d51f136822eed3548f26a4deaa7cc7767225c"
+    },
+    {
+      "path": "reviews/2026-10-06-legacy-export-drain-correction-independent-recheck.md",
+      "sha256": "c67021b5445f12f8cf8f89395544ac1789bc57f8c4b1cf44f160f83a795d98b4"
+    }
+  ],
+  "limits": [
+    "OS Save dialog transitions were controlled adapters in actual-service/real-filesystem regressions, not native chooser UI automation.",
+    "Independent recheck is limited to its 12 own observations and 30 focused tests; not approval of all features or release.",
+    "Current hosted37524176999 success belongs to unchanged fd20 product, not this correction; fresh canonical sync/hosted run still required.",
+    "Cleanup failure is refused and reported; no claim private staging can be removed after an external process moves its parent.",
+    "Source-bundle file import remains an open delivery gap; scalability allocation concern unmeasured.",
+    "No main merge, production release, installed replacement or global PASS."
+  ]
+}

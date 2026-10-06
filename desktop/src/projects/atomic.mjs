@@ -5,7 +5,7 @@ import { ownedDirectory, ownedFile } from './paths.mjs';
 import { readOwnedBytes } from './io.mjs';
 
 export const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-export async function atomicWrite(path, bytes, { fault = async () => {}, selection = false, replace = rename, cleanupPending = false } = {}) {
+export async function atomicWrite(path, bytes, { fault = async () => {}, selection = false, replace = rename, cleanupPending = false, requirePendingCleanup = false } = {}) {
   await ownedDirectory(dirname(path));
   const temporary = join(dirname(path), `pending-${randomUUID()}.tmp`);
   const handle = await open(temporary, 'wx', 0o600);
@@ -28,11 +28,16 @@ export async function atomicWrite(path, bytes, { fault = async () => {}, selecti
     if (!Buffer.from(bytes).equals(readback)) throw new Error('Durable readback mismatch');
     return digest(readback);
   } catch (error) {
-    // Appearance opts in; project/recovery staging semantics stay unchanged.
+    // Appearance/exports opt in; project/recovery staging semantics stay unchanged.
     // Never enumerate stages, delete a destination, or follow a replaced link.
-    if (cleanupPending === true && !committed) {
+    if ((cleanupPending === true || requirePendingCleanup === true) && !committed) {
       try { await ownedDirectory(dirname(path)); await unlink(await ownedFile(temporary)); }
-      catch { /* Preserve the original refusal if exact owned cleanup is unavailable. */ }
+      catch (cleanupError) {
+        // A clean cancelled export may leave the Lock drain normally. If its
+        // private staging bytes could not be removed, that must remain a failure.
+        if (requirePendingCleanup === true) throw Object.assign(new AggregateError([error, cleanupError], 'Pending file cleanup could not be confirmed'), { code: 'PENDING_CLEANUP_FAILED' });
+        // Existing best-effort callers preserve their original failure.
+      }
     }
     throw error;
   }
