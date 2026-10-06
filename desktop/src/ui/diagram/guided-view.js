@@ -9,18 +9,18 @@
    if(choices)for(const choice of choices){const option=make('option',input,choice);option.value=choice;}
    else{input.type='text';input.maxLength=512;}
    input.value=value;button.replaceWith(input);
-   let closed=false;const finish=apply=>{
+   let closed=false;const finish=(apply,restoreFocus=true)=>{
     if(closed)return true;
     if(apply&&input.value!==value){const result=editable()?window.SirenNativeGuided.edit(sourceFor(),{index:row.index,expectedLine:row.text,field,value:input.value}):{ok:false};
      if(result.ok&&onSource(result.source)===true)onStatus('Guided edit · Save explicitly with Ctrl+S');else{input.setAttribute('aria-invalid','true');input.title='Correct this field or press Esc to cancel. Your source is retained.';onStatus('The line changed or cannot be edited. Your current Mermaid source and field are retained.');return false;}
     }
     closed=true;editing=null;
-    paint();host.querySelector('[data-line="'+row.index+'"][data-field="'+field+'"]')?.focus();
+    paint();if(restoreFocus)host.querySelector('[data-line="'+row.index+'"][data-field="'+field+'"]')?.focus();
     return true;
    };
    editing={input,finish};onStatus('Editing Guided field · Enter to apply · Esc to cancel · Ctrl+S to save');
    input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();finish(true);}else if(event.key==='Escape'){event.preventDefault();finish(false);}});
-   input.addEventListener('blur',()=>finish(true));if(choices)input.addEventListener('change',()=>finish(true));input.focus();input.select?.();
+   input.addEventListener('blur',()=>finish(true,false));if(choices)input.addEventListener('change',()=>finish(true));input.focus();input.select?.();
   }
   function chip(container,row,field,value,choices){
    const button=make('button',container,value||'…');button.type='button';button.className='guided-chip';button.dataset.line=String(row.index);button.dataset.field=field;button.disabled=!editable();button.setAttribute('aria-label','Line '+(row.index+1)+' '+field+': '+value);

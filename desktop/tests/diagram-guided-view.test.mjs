@@ -12,21 +12,35 @@ async function fixture(initial){
   append(child){child.parent=this;this.children.push(child);}
   replaceChildren(){this.children=[];}
   replaceWith(child){const index=this.parent.children.indexOf(this);child.parent=this.parent;this.parent.children[index]=child;}
-  setAttribute(name,value){this[name]=value;} addEventListener(name,callback){this.listeners[name]=callback;} focus(){} select(){}
-  querySelector(){return null;}
+  setAttribute(name,value){this[name]=value;} addEventListener(name,callback){this.listeners[name]=callback;} focus(){document.activeElement=this;focused.push(this);} select(){}
+  querySelector(selector){const match=/^\[data-line="(\d+)"\]\[data-field="(\w+)"\]$/.exec(selector);if(!match)return null;const visit=node=>node.dataset.line===match[1]&&node.dataset.field===match[2]?node:node.children.map(visit).find(Boolean);return visit(this);}
  }
- const window={},document={createElement:()=>new Element()},host=new Element();vm.runInNewContext(built.script+'\n'+view,{window,document,TextEncoder});
+ const focused=[],window={},document={createElement:()=>new Element(),activeElement:null},host=new Element();vm.runInNewContext(built.script+'\n'+view,{window,document,TextEncoder});
  let source=initial,editable=true,accept=true;const saved=[],messages=[];
  const controller=window.SirenNativeGuidedView.create({host,sourceFor:()=>source,editable:()=>editable,onSource:value=>{if(!accept)return false;source=value;saved.push(value);return true;},onStatus:value=>messages.push(value)});
  const all=()=>{const result=[];const visit=node=>{result.push(node);node.children.forEach(visit);};visit(host);return result;};controller.paint();
- return {controller,host,all,saved,messages,source:()=>source,setSource:value=>source=value,setEditable:value=>editable=value,setAccept:value=>accept=value,chip:(line,field)=>all().find(node=>node.dataset.line===String(line)&&node.dataset.field===field)};
+ return {controller,host,all,saved,messages,document,focused,source:()=>source,setSource:value=>source=value,setEditable:value=>editable=value,setAccept:value=>accept=value,chip:(line,field)=>all().find(node=>node.dataset.line===String(line)&&node.dataset.field===field)};
 }
+
+test('Guided blur applies once without stealing external control focus; keyboard and explicit commit return focus to the chip',async()=>{
+ for(const action of ['blur','Enter','Escape','commit']){
+  const f=await fixture('flowchart TD\nA[Original]-->B');f.chip(1,'fromLabel').listeners.click();const input=f.document.activeElement;input.value='Context';
+  const outside=f.document.createElement('button');outside.focus();const before=f.focused.length;
+  if(action==='commit')assert.equal(f.controller.commit(),true);
+  else if(action==='blur')input.listeners.blur();
+  else input.listeners.keydown({key:action,preventDefault(){}});
+  assert.equal(f.controller.isEditing(),false);assert.equal(f.saved.length,action==='Escape'?0:1);
+  if(action==='blur'){assert.equal(f.document.activeElement,outside);assert.equal(f.focused.length,before);}
+  else assert.equal(f.document.activeElement,f.chip(1,'fromLabel'));
+  input.listeners.blur();assert.equal(f.saved.length,action==='Escape'?0:1,'retired field cannot apply twice');
+ }
+});
 test('real Guided controller retains invalid, stale and refused fields across repaint/pause; Escape cancels without changing source',async()=>{
  const original='flowchart TD\nA[Original]-->B\nstyle A fill:#ff3366';
  for(const failure of ['invalid','stale','refused']){
   const f=await fixture(original);f.chip(1,'fromId').listeners.click();const input=f.all().find(node=>node.dataset.guidedInput==='fromId');input.value=failure==='invalid'?'bad id':'Valid';
   if(failure==='stale')f.setSource(original.replace('Original','External'));if(failure==='refused')f.setAccept(false);
-  const expected=f.source();assert.equal(f.controller.commit(),false);assert.equal(input['aria-invalid'],'true');assert.match(input.title,/Esc to cancel/);assert.equal(f.controller.isEditing(),true);f.controller.paint();f.controller.pause();assert.ok(f.all().includes(input));assert.equal(input.value,failure==='invalid'?'bad id':'Valid');assert.equal(f.source(),expected);assert.equal(f.saved.length,0);
+  const expected=f.source(),outside=f.document.createElement('button');outside.focus();input.listeners.blur();assert.equal(f.document.activeElement,outside);assert.equal(f.controller.commit(),false);assert.equal(input['aria-invalid'],'true');assert.match(input.title,/Esc to cancel/);assert.equal(f.controller.isEditing(),true);f.controller.paint();f.controller.pause();assert.ok(f.all().includes(input));assert.equal(input.value,failure==='invalid'?'bad id':'Valid');assert.equal(f.source(),expected);assert.equal(f.saved.length,0);
   input.listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(f.controller.isEditing(),false);assert.equal(f.source(),expected);assert.ok(!f.all().includes(input));
  }
 });
