@@ -1,0 +1,169 @@
+{
+  "author": "/root",
+  "kind": "owner-qualified-local-correction-original-hosted-failure-retained",
+  "sourceCommit": "1e3960cfeccb6007508da5b62d8a840d5dd6c3c2",
+  "status": "LOCAL_CORRECTION_QUALIFIED_NEW_HOSTED_PENDING",
+  "changes": [
+    "Correct actual Home guide that falsely described delivered Table cards as unavailable",
+    "Observe actual visible/enabled Home before one Code/Docs navigation click; unchanged30s condition deadline, no mutation retry"
+  ],
+  "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-0db37179-d6e7-464c-a390-ba34f7ed2286",
+  "archive": {
+    "bytes": 53808671,
+    "sha256": "f9e9d0ebcb5863879ce2eca56051a3c4bc85f955ba19d050e551cdcd5a696304"
+  },
+  "packageIdentity": {
+    "files": 253,
+    "path": "evidence/workspace-surface/package-identity-2026-10-06T19-22-30.149Z/result.json"
+  },
+  "portableCopies": {
+    "probes": 7,
+    "cases": 47,
+    "batchPath": "evidence/workspace-surface/media-guidance-package-native-2026-10-06T19-22-35.458Z/result.json",
+    "batchSha256": "f4d1f5f1a655ee2514c708c812826da2be55fc2b74621167b215920a2083e299",
+    "sourceLinkPath": "evidence/source-link/2026-10-06T19-22-06.449Z/result.json",
+    "sourceLinkSha256": "73aa62e6b385a74dcb302e50e31497647b148a9f60fcdccd812ab2b36587423c"
+  },
+  "guideRegression": {
+    "red": "evidence/home-library/2026-10-06T19-20-56.217Z/result.json",
+    "green": "evidence/home-library/2026-10-06T19-25-05.603Z/result.json",
+    "cases": 4,
+    "sha256": "606e8ae75acc82387887260b6f905c11ee0b2d8da5e92e234c11ea595facfbc3"
+  },
+  "review": {
+    "path": "reviews/2026-10-06-home-guide-readiness-correction-independent.md",
+    "sha256": "ab1a3b7abb56ab53778100ada523019572b79fd79335e75cebc40f105bae020c",
+    "scope": "Independent limited correction diff only; own2units/4syntaxchecks. Original whole-media CHANGES REQUESTED preserved."
+  },
+  "originalHosted": {
+    "run": 37517023780,
+    "head": "0afdc0658e31bd2dd2fa72eaf4eece6ba6fb2249",
+    "status": "FAILURE",
+    "jobs": [
+      {
+        "id": 112452480603,
+        "name": "Qualification scope",
+        "conclusion": "success"
+      },
+      {
+        "id": 112452581313,
+        "name": "desktop / windows",
+        "conclusion": "success"
+      },
+      {
+        "id": 112452581530,
+        "name": "launcher / launcher",
+        "conclusion": "success"
+      },
+      {
+        "id": 112452581544,
+        "name": "desktop / Windows packaged workspaces",
+        "conclusion": "failure"
+      },
+      {
+        "id": 112455208640,
+        "name": "desktop / Windows native (desktop)",
+        "conclusion": "success"
+      },
+      {
+        "id": 112455208642,
+        "name": "desktop / Windows native (sources)",
+        "conclusion": "success"
+      },
+      {
+        "id": 112455208669,
+        "name": "desktop / Windows native (diagrams)",
+        "conclusion": "success"
+      },
+      {
+        "id": 112457996767,
+        "name": "desktop / Desktop qualification",
+        "conclusion": "failure"
+      },
+      {
+        "id": 112458079573,
+        "name": "SIREN merge qualification",
+        "conclusion": "failure"
+      }
+    ],
+    "units": 1138,
+    "unitScope": "Original snapshot only:3identity+1135unit; repeatedIO diagnostic not added",
+    "groups": [
+      {
+        "group": "desktop",
+        "probes": 20,
+        "path": "evidence/workspace-surface/ci37517023780/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+        "sha256": "0bafce058c7739bab93c5ee26669cc2bccc688a5df41fa624b708f4aa117fa7f"
+      },
+      {
+        "group": "sources",
+        "probes": 20,
+        "path": "evidence/workspace-surface/ci37517023780/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+        "sha256": "569b3294b8a03f99d2bc9661d401c83ff650b69dfd6ea9f20b58fd6f148d562c"
+      },
+      {
+        "group": "diagrams",
+        "probes": 20,
+        "path": "evidence/workspace-surface/ci37517023780/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+        "sha256": "6bd10b0bd3333ef5ec41ee87f3805ad4fe46525c39e6df7f24aa9e8427333734"
+      }
+    ],
+    "archives": [
+      {
+        "uncompressed": 299419,
+        "files": 5,
+        "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37517023780\\desktop-development-evidence-original.zip",
+        "name": "desktop-development-evidence",
+        "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+        "id": 11437359697,
+        "bytes": 56916,
+        "sha256": "ac2f13e0281b0b6110d4ba93527e96305e4eb4f35f55c8a1b52edcc4cde5935d"
+      },
+      {
+        "id": 11438176094,
+        "uncompressed": 4768137,
+        "bytes": 4443252,
+        "files": 86,
+        "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+        "name": "desktop-packaged-evidence",
+        "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37517023780\\desktop-packaged-evidence-original.zip",
+        "sha256": "0bcf737d60b1fae3ebad0e8b7b9669eab2f9a0563013b4df2f88909c5b7fc513"
+      },
+      {
+        "files": 105,
+        "sha256": "d022e8796068f35ee59806a7ce949d3f32add2fbc9c7165b65afbca9bee588e1",
+        "bytes": 4312371,
+        "id": 11437548064,
+        "name": "desktop-native-desktop-evidence",
+        "uncompressed": 4682124,
+        "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+        "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37517023780\\desktop-native-desktop-evidence-original.zip"
+      },
+      {
+        "bytes": 3209083,
+        "uncompressed": 3529860,
+        "name": "desktop-native-sources-evidence",
+        "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37517023780\\desktop-native-sources-evidence-original.zip",
+        "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+        "sha256": "129e02eaffa681508e1d98db34dc0db23cc8271cc8ffbe3b990684fd9db2fb9b",
+        "id": 11438790550,
+        "files": 86
+      },
+      {
+        "name": "desktop-native-diagrams-evidence",
+        "id": 11438217766,
+        "files": 146,
+        "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+        "uncompressed": 7887339,
+        "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37517023780\\desktop-native-diagrams-evidence-original.zip",
+        "bytes": 7465261,
+        "sha256": "269e3c549f71b6d7638f547c2954a6f2500587482d706444d5201f7b754398ea"
+      }
+    ],
+    "packagedFailure": "source-link navigation ADVERSE0; original ZIP/log/screenshot retained, no recovered PASS or retry"
+  },
+  "limits": [
+    "New correction full hosted suite still pending; no1138-current-correction claim yet",
+    "No merge/release/installed replacement or physical monitor/DPI/IME/accessibility admission"
+  ]
+}

@@ -7,6 +7,7 @@ import {SourceRepository} from '../../src/sources/repository.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
+import {waitForHomeModule} from './home-ready.mjs';
 
 const evidence=resolve('evidence/source-link',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
 const packageAt=process.argv.indexOf('--package'),packageRoot=packageAt<0?null:resolve(process.argv[packageAt+1]||'');
@@ -17,7 +18,7 @@ if(packageRoot){
  const archive=await readFile(join(packageCopy,'App','versions','0.1.0','resources','app.asar'));assert.equal(createHash('sha256').update(archive).digest('hex'),packageReceipt.appArchive.sha256);
 }
 const data=packageCopy?join(packageCopy,'Data'):join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const paths=['src/navigation/window-labels.mjs','src/ui/workspace/home.js','build/workspace.mjs','generated/home.html','src/ui/windows/identity.js','src/windows/source-reads.mjs','src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs'];
+const paths=['src/navigation/window-labels.mjs','src/ui/workspace/home.js','build/workspace.mjs','generated/home.html','src/ui/windows/identity.js','src/windows/source-reads.mjs','src/main.mjs','src/windows/code-docs.mjs','src/windows/docs.mjs','src/windows/working-sources.mjs','src/windows/source-bridge.mjs','src/windows/preload.cjs','src/windows/coordinator.mjs','src/ui/windows/code.js','src/ui/code/docs-links.js','src/ui/windows/docs.js','build/windows.mjs','generated/windows/code.html','generated/windows/docs.html','tests/native/source-link.mjs','tests/native/attach-page.mjs','tests/native/home-ready.mjs','tests/native/condition.mjs'];
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async path=>[path,hash(await readFile(path))]))),inputs=await capture();
 const projects=new ProjectStore(data),sources=new SourceRepository(data),original=await projects.createProject({label:'Explicit native Docs links',json:'{}'}),lineCount=process.argv.includes('--300k')?300000:100000;
 const text=Array.from({length:lineCount},(_,i)=>`value_${i} = ${i} # Python Ș😀`).join('\n')+'\n';
@@ -36,12 +37,12 @@ const refreshShelf=async()=>{
 try{
  driver=await launchDesktop(packageCopy?{executable:join(packageCopy,packageReceipt.appRelativePath),packaged:true}:{extraArgs:[`--siren-test-root=${data}`,`--siren-test-project=${original.project.id}`]});result.ownedPid=driver.pid;
  await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});await driver.waitFor('document.getElementById("homeModule-code")!=null');
- await driver.click('#homeModule-code');await driver.waitFor('document.querySelector(".home-library [data-entity-id]")!=null');await driver.click('.home-library [data-entity-id]');
+ await waitForHomeModule(driver,'code');await driver.click('#homeModule-code');await driver.waitFor('document.querySelector(".home-library [data-entity-id]")!=null');await driver.click('.home-library [data-entity-id]');
  await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.some(v=>v.role==="code")})()');
  let views=(await driver.evaluate('window.sirenWindow.listViews()')).views;const immutable=views.find(view=>view.role==='code');
  const reader=await attachNativePage(driver,'siren://app/windows/code.html?windowId='+immutable.windowId);await reader.waitFor('document.body.dataset.sourceReady==="true"');
  assert.equal(await reader.evaluate('document.title'),'SIREN — ⌘ Code — Agent Ș😀.py · v1 · Read only');
- await driver.click('#homeModule-docs');await driver.waitFor('document.querySelector(".home-library [data-entity-id=doc-a]")!=null');await driver.click('.home-library [data-entity-id=doc-a]');
+ await waitForHomeModule(driver,'docs');await driver.click('#homeModule-docs');await driver.waitFor('document.querySelector(".home-library [data-entity-id=doc-a]")!=null');await driver.click('.home-library [data-entity-id=doc-a]');
  await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.some(v=>v.role==="docs")})()');
  views=(await driver.evaluate('window.sirenWindow.listViews()')).views;const docsView=views.find(view=>view.role==='docs'),docReader=await attachNativePage(driver,'siren://app/windows/docs.html?windowId='+docsView.windowId);
  await docReader.waitFor('document.body.dataset.documentReady==="true"');const beforeDoc=await docReader.evaluate('window.sirenDocsRead.getDocument()');assert.equal(beforeDoc.ok,true);assert.deepEqual(beforeDoc.document,docs[0]);

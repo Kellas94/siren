@@ -314,3 +314,9 @@ WP-001_*.json
 !desktop/tests/docs-images.test.mjs
 !desktop/tests/presentation-tables.test.mjs
 !docs/superpowers/plans/2026-10-06-siren-docs-images-present-tables.md
+
+# Exact Home correction and original failure receipts (2026-10-06)
+!desktop/reviews/2026-10-06-docs-images-present-tables-canonical-sync.json
+!desktop/reviews/2026-10-06-home-guide-readiness-correction-independent.md
+!desktop/reviews/2026-10-06-media-guidance-root-evidence.md
+!desktop/reviews/2026-10-06-media-guidance-root-receipt.json
