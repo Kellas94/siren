@@ -26,7 +26,7 @@ async function fixture(){
  const registry=new IPCRegistry({authorize:()=>context.selectedId?{projectId:context.selectedId,mode:'normal',access:'write',entityIds:[]}:null,createWindow:()=>assert.fail('No satellite required')});registry.bindWorkspace(primary);
  const authority=new HomeAuthority({workspace:primary,state:()=>({projectId:context.selectedId,mode:context.mode,generation:context.bootstrap.selectionGeneration,unlocked:true})});
  const transitions=new HomeTransitionReceipts({registry,authority,projects});Object.assign(context,{windowRegistry:registry,homeAuthority:authority,homeTransitions:transitions,retireNativeViews:()=>registry.invalidateEpoch({preserveWorkspace:true})});
- vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=','ipcMain.handle(\'siren:home\'')+';globalThis.create=(scope,input)=>selectHomeProject(input,scope,{create:true,desktop:input.format==="desktop"});',context);
+ vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=','const exportHomeBackup=')+';globalThis.create=(scope,input)=>selectHomeProject(input,scope,{create:true,desktop:input.format==="desktop"});',context);
  const event=()=>({sender:wc,senderFrame:wc.mainFrame});return {root,projects,registry,authority,transitions,context,event,invoke:(format)=>invokeHome({event:event(),method:'createProject',payload:{label:'Actual Home Ș😀',...(format?{format}:{})},authority,transitions,services:{createProject:(input,scope)=>context.create(scope,input)}})};
 }
 test('actual native Home creation selects an owned durable project and acknowledges metadata only',async()=>{

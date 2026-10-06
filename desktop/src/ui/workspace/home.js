@@ -33,7 +33,7 @@
     }
     holder.append(svg);
   };
-  const errors={ACCESS_REFUSED:'Access changed. Return to the unlocked workspace.',PROJECT_UNAVAILABLE:'This project is unavailable. Its existing data was retained.',ENTITY_UNAVAILABLE:'The saved item is unavailable. Open its project to review it.',SOURCE_VERSION_UNAVAILABLE:'The saved code version is unavailable. Your private draft was retained.',RECOVERY_REQUIRED:'This project needs recovery before it can be opened.',UNAVAILABLE:'This action is not connected in this build.',TRANSITION_FAILED:'The workspace could not change. Your work was retained.'};
+
   const make=(tag,parent,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;parent?.append(node);return node;};
   window.installSirenHomeCommands=({desktop,commands,enabled})=>{
     const allowed=new Set(['desktopPinSettings','desktopLockPin','desktopOpenProject','desktopCheckUpdates','desktopRecovery','desktopGuide','desktopExportProject']);
@@ -49,14 +49,14 @@
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
     const clear=()=>{for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
     const cover=()=>{blocked=true;serial++;clear();container.hidden=true;};
-    const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',DOCUMENT_CREATE_FAILED:'The document could not be created. Review Docs before trying again.',NAVIGATION_LIMIT:'The document catalog has reached its limit. Existing work was retained.',REVISION_CONFLICT:'Your project changed. Refresh Home before trying again.'}[result?.code]||errors[result?.code]||'The action could not complete. Your work was retained.');
+    const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',DOCUMENT_CREATE_FAILED:'The document could not be created. Review Docs before trying again.',NAVIGATION_LIMIT:'The document catalog has reached its limit. Existing work was retained.',REVISION_CONFLICT:'Your project changed. Refresh Home before trying again.'}[result?.code]||window.SirenHomeMessages?.[result?.code]||'The action could not complete. Your work was retained.');
     const button=(parent,text,fn,{disabled=false,className='',id}={})=>{
       const node=make('button',parent,text,className);node.type='button';node.disabled=disabled;if(id)node.id=id;
       listen(node,'click',fn);return node;
     };
     const status=()=>container.querySelector('#homeStatus');
     const say=text=>{const target=status();if(target)target.textContent=text;};
-    const controls=()=>{container.setAttribute('aria-busy',String(busy));for(const node of container.querySelectorAll('button'))node.disabled=busy||node.dataset.unavailable==='true';};
+    const controls=()=>{container.setAttribute('aria-busy',String(busy));for(const node of container.querySelectorAll('button'))node.disabled=busy&&node.id!=='homeLock'||node.dataset.unavailable==='true';};
     const unavailable=(node,value)=>{node.dataset.unavailable=String(value);node.disabled=value;};
     const perform=async(method,payload)=>{
       if(disposed||blocked||busy)return;
@@ -68,6 +68,18 @@
         if(result?.code==='CANCELLED'){say('');return;}
         say(message(result));
       }catch{if(!disposed&&!blocked&&turn===serial)say('The action could not complete. Your work was retained.');}
+      finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
+    };
+    const exportSavedBackup=async()=>{
+      if(disposed||blocked||busy)return;
+      const turn=serial;busy=true;controls();say('Exporting the saved version. Unsaved working copies are excluded.');
+      try{
+        const result=await bridge?.exportSavedBackup?.();
+        if(disposed||blocked||turn!==serial)return;
+        if(result?.ok===true){say(`Saved backup exported · revision ${result.revision}. Unsaved working copies remain in their windows.`);return;}
+
+        say(window.SirenHomeMessages?.[result?.code]||message(result));
+      }catch{if(!disposed&&!blocked&&turn===serial)say('The backup could not be confirmed. Check the chosen destination before trying again.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
     };
     const create=()=>{
@@ -256,7 +268,7 @@
       const open=()=>{if(disposed||blocked)return;if(busy||!state){setTimeout(open,50);return;}
         if(surface==='find')window.SirenProjectSearch.open();else container.querySelector('#homeModule-'+surface)?.click();};open();
     });
-    offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:()=>say('Open Diagrams to export your saved project.')}});
+    offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:exportSavedBackup}});
     return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();}});
   };
   const start=()=>{

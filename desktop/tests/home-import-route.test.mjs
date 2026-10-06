@@ -41,7 +41,7 @@ async function fixture({realSelection=false}={}){
   delete context.selectHomeProject;
   Object.assign(context,{dataRoot:root,projects,recovery,atomicWrite,bootstrap:{selectionGeneration:0},selectedId:null,snapshot:null,reason:null,pinTransition:false,accountTransition:false,accountQuiesced:false,localPin:{state:()=>({unlocked})},grants:new Set(),account:{accountId:null,policy:{opened(){}}},nativeShellFailure:false,windowRegistry:registry,retireNativeViews:()=>registry.invalidateEpoch({preserveWorkspace:true}),rollbackNativePreparation:async()=>{},prepareNativeWorkspace:()=>assert.fail('First import has no editor to flush')});
   const between=(a,b)=>{const start=main.indexOf(a),end=main.indexOf(b,start);assert.ok(start>=0&&end>start);return main.slice(start,end);};
-  vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=',"ipcMain.handle('siren:home'"),context);
+  vm.runInContext(between('const selected = async (next,{isCurrent}={}) => {','const changeSelection =')+between('const selectHomeProject=','const exportHomeBackup='),context);
  }
  const start=main.indexOf("ipcMain.handle('siren:home-import'"),end=main.indexOf('const desktopCommand =',start);assert.ok(start>=0&&end>start);vm.runInContext(main.slice(start,end),context);
  return {root,projects,recovery,bytes,file,context,selected,disposed:()=>disposed,lock:()=>{unlocked=false;authority.invalidate();},call:(payload={})=>handlers.get('siren:home-import')({sender:wc,senderFrame:frame},payload)};

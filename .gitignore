@@ -427,3 +427,23 @@ WP-001_*.json
 !/desktop/tests/pin-worker-boundaries.test.mjs
 !/docs/superpowers/plans/2026-10-07-siren-pin-crash-recovery.md
 
+!/desktop/reviews/2026-10-07-guided-observer-pin-worker-independent.md
+!/desktop/reviews/2026-10-07-home-backup-ci-observer-independent.md
+!/desktop/reviews/2026-10-07-home-backup-export-native-observation.md
+!/desktop/reviews/2026-10-07-home-backup-implementation-independent-recheck.md
+!/desktop/reviews/2026-10-07-home-backup-implementation-independent.md
+!/desktop/reviews/2026-10-07-home-backup-local-qualification.json
+!/desktop/reviews/2026-10-07-home-backup-local-qualification.md
+!/desktop/reviews/2026-10-07-home-saved-backup-boundary-revalidation.md
+!/desktop/reviews/2026-10-07-native-docs-single-export-boundary-analysis.md
+!/desktop/reviews/2026-10-07-pin-crash-hosted-evidence.json
+!/desktop/reviews/2026-10-07-pin-crash-hosted-evidence.md
+!/desktop/reviews/2026-10-07-pin-crash-recovery-canonical-sync.json
+!/desktop/src/navigation/backup-export.mjs
+!/desktop/tests/home-backup-ci.test.mjs
+!/desktop/tests/home-backup-export.test.mjs
+!/desktop/tests/home-backup-publication.test.mjs
+!/desktop/tests/native/home-backup-export.mjs
+!/docs/superpowers/plans/2026-10-07-siren-home-saved-backup.md
+!/docs/superpowers/plans/2026-10-07-siren-native-docs-export.md
+

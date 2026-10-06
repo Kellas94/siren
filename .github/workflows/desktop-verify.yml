@@ -271,12 +271,16 @@ jobs:
       - name: Actual first-session PIN crash recovery
         if: matrix.group == 'desktop'
         run: node tests/native/pin-crash-recovery.mjs
+      - name: Actual Home saved-backup export
+        if: matrix.group == 'desktop'
+        run: node tests/native/home-backup-export.mjs
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-native-${{ matrix.group }}-evidence
           path: |
+            desktop/evidence/home-backup-export-native/*/result.json
             desktop/evidence/native-verification/*.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log

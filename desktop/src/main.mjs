@@ -57,6 +57,7 @@ import {NavigationStore} from './navigation/store.mjs';
 import {ProjectCatalog} from './navigation/catalog.mjs';
 import {createLocationResolver} from './navigation/resolver.mjs';
 import {invokeHome} from './navigation/ipc.mjs';
+import {createHomeBackupExporter} from './navigation/backup-export.mjs';
 import {DomainRepository} from './windows/domain.mjs';
 import { invokeWindow } from './windows/ipc.mjs';
 import { nativeViewFactory,settleHiddenBounds } from './windows/factory.mjs';
@@ -739,6 +740,9 @@ const selectHomeProject=async(input,scope,{create=false,json,desktop=false,migra
     if(!window.isDestroyed())contents.send('siren:view-resume');
   }
 };
+const exportHomeBackup=createHomeBackupExporter({authority:homeAuthority,projects,recovery,publish:exportBytes,
+  ready:()=>!pinTransition&&!accountTransition&&!accountQuiesced&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!nativeShellFailure});
+ipcMain.handle('siren:home-export',(event,input)=>exportHomeBackup(event,input));
 ipcMain.handle('siren:home',(event,method,payload)=>invokeHome({event,method,payload,authority:homeAuthority,services:{
   getHomeState:(input,scope)=>homeService.getHomeState(input,scope),recordLocation:(input,scope)=>homeService.recordLocation(input,scope),
   openProject:(input,scope)=>selectHomeProject(input,scope),createProject:(input,scope)=>selectHomeProject(input,scope,{create:true,desktop:input.format==='desktop'}),

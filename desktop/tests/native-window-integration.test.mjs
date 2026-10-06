@@ -71,7 +71,7 @@ function fixture() {
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
     app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;}},
   });
-  vm.runInContext(slice('const nativeShells =','const desktopCommand =') + '\n' + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
+  vm.runInContext(slice('const nativeShells =','const exportHomeBackup=') + slice("ipcMain.handle('siren:home',",'const desktopCommand =') + '\n' + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
   const event=()=>({sender:owner.webContents,senderFrame:owner.webContents.mainFrame});
   const bootstrap=()=>{const request=event(); handlers.get('siren:bootstrap')(request); return request.returnValue;};
   const invoke=(method,payload,eventOverride=event())=>handlers.get('siren:windows')(eventOverride,method,payload);
