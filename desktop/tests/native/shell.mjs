@@ -13,7 +13,7 @@ const checks = [];
 try {
   driver=await launchDesktop(packaged?.launch??{ extraArgs: [`--siren-test-root=${root}`] });
   await unlockDesktop(driver, { pin: '4826', autoSetup: true });
-  const startup=await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState})');
+  const startup=await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,reason:typeof window.sirenDesktopBootstrap?.reason==="string"?window.sirenDesktopBootstrap.reason.slice(0,180):null,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState})');
   await writeFile(resolve(evidence,'startup.json'),JSON.stringify(startup,null,2));
   assert.equal(startup.mode,'normal','Shell isolation requires actual normal startup; Recovery is not successful shell admission');
   assert.equal(startup.readonly,false);assert.equal(startup.pinUnlocked,true);
@@ -36,7 +36,7 @@ try {
   await writeFile(resolve(evidence, 'result.json'), JSON.stringify({ scope: 'Task1 shell only; no production auth/update or project recovery certification', completed: true, pid: driver.pid, runtime, attack, checks }, null, 2));
   console.log(JSON.stringify({ completed: true, checks: checks.length, evidence }));
 } catch(error){
-  const state=driver?await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState,version:document.getElementById("brandVersion")?.textContent,recoveryOpen:document.getElementById("desktopRecoveryPanel")?.open===true})').catch(()=>({observationUnavailable:true})):null;
+  const state=driver?await driver.evaluate('({mode:window.sirenDesktopBootstrap?.mode,reason:typeof window.sirenDesktopBootstrap?.reason==="string"?window.sirenDesktopBootstrap.reason.slice(0,180):null,readonly:window.sirenDesktopBootstrap?.readonly,pinUnlocked:window.sirenDesktopBootstrap?.pin?.unlocked,url:location.href,readyState:document.readyState,version:document.getElementById("brandVersion")?.textContent,recoveryOpen:document.getElementById("desktopRecoveryPanel")?.open===true})').catch(()=>({observationUnavailable:true})):null;
   await writeFile(resolve(evidence,'failure-state.json'),JSON.stringify({completed:false,checks,error:String(error.stack||error),state},null,2));
   if(driver)await driver.screenshot(resolve(evidence,'failure.png')).catch(()=>{});throw error;
 } finally { if(driver){await writeFile(resolve(evidence, 'electron.log'), driver.logs()); await driver.close();}if(packaged)await packaged.verify(); }

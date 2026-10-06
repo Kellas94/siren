@@ -346,3 +346,13 @@ WP-001_*.json
 !/desktop/reviews/2026-10-06-native-observation-hosted-evidence.md
 !/desktop/reviews/2026-10-06-native-observation-hosted-receipt.json
 !/desktop/reviews/2026-10-06-schema2-export-recovery-independent-audit.md
+
+# Exact readiness correction evidence; no broad review/output admission.
+!/desktop/reviews/2026-10-06-legacy-export-access-canonical-sync.json
+!/desktop/reviews/2026-10-06-session-ready-concurrency-correction-recheck-independent.md
+!/desktop/reviews/2026-10-06-session-ready-concurrency-independent.md
+!/desktop/reviews/2026-10-06-session-ready-hosted-adverse-evidence.md
+!/desktop/reviews/2026-10-06-session-ready-hosted-adverse-receipt.json
+!/desktop/reviews/2026-10-06-session-ready-local-evidence.md
+!/desktop/reviews/2026-10-06-session-ready-local-receipt.json
+!/desktop/reviews/2026-10-06-source-bundle-bounded-scalability-independent.md

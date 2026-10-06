@@ -823,8 +823,10 @@ ipcMain.on('siren:bootstrap', event => {
   event.returnValue = { ...bootstrap, pin: localPin.state() };
 });
 let readyRecorded = false;
+let readyRecording = false;
 ipcMain.on('siren:ready', async event => {
-  if (readyRecorded || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame || !['siren://app/app.html','siren://app/home.html'].includes(event.senderFrame.url)) return;
+  if (readyRecorded || readyRecording || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame || !['siren://app/app.html','siren://app/home.html'].includes(event.senderFrame.url)) return;
+  readyRecording = true;
   try {
     if (processIdentity) await journal.recordSession({ event: 'ready', sessionId, version: app.getVersion(), processIdentity });
     readyRecorded = true;
@@ -832,7 +834,7 @@ ipcMain.on('siren:ready', async event => {
     nativeReadonly = true; mode = 'readonly'; reason = 'Readiness journal could not be confirmed; preserve/export existing work';
     bootstrap = { ...bootstrap, mode, readonly: true, reason };
     if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'safety', mode, readonly: true, reason });
-  }
+  } finally { readyRecording = false; }
 });
 ipcMain.handle('siren:desktop', (event, method, payload) => {
   if ((writes.selectionTransition||writes.viewClosing) && ['pickProject', 'restoreRecovery', 'setupPin', 'unlockPin', 'changePin', 'lockPin', 'beginLogin', 'logout'].includes(method)) return failure('PROJECT_BUSY', 'Wait for the workspace transition before changing access or selection');

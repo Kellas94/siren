@@ -1,0 +1,176 @@
+{
+  "author": "/root",
+  "kind": "owner-original-hosted-adverse-evidence",
+  "status": "ADVERSE",
+  "runId": 37526593560,
+  "runURL": "https://github.com/Kellas94/siren/actions/runs/37526593560",
+  "canonical": "70ad0d0cc0c92a4032eeab42ee238e2642d1f386",
+  "integration": "6e86f46c6f14337438585ff98c08ceba26e367ab",
+  "tree": "03710ae8e5d90ef4dd1ae49c819e24d59a741914",
+  "productSource": "f422c94cf8b5b3ce01a2a272178427cf538a01ea",
+  "jobs": [
+    {
+      "id": 112485044701,
+      "name": "Qualification scope",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112485138454,
+      "name": "launcher / launcher",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112485138484,
+      "name": "desktop / windows",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112485138763,
+      "name": "desktop / Windows packaged workspaces",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 112487708929,
+      "name": "desktop / Windows native (desktop)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112487709025,
+      "name": "desktop / Windows native (diagrams)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112487709040,
+      "name": "desktop / Windows native (sources)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112490702016,
+      "name": "desktop / Desktop qualification",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 112490735335,
+      "name": "SIREN merge qualification",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "units": {
+    "uniqueTests": 1157,
+    "passed": true,
+    "scope": "Serial three identity tests plus 1154 remaining tests, not workflow-policy counts."
+  },
+  "native": [
+    {
+      "group": "desktop",
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "sha256": "b74e17e99894347317e0dd019b65787eecbadb438a01aeb60be9bb54decde601",
+      "executions": 20
+    },
+    {
+      "group": "sources",
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "sha256": "ed030861ddd8cf8d508cf2bd2ffb93f9805bdac6e65881b5fb5c8ae4382a0546",
+      "executions": 20
+    },
+    {
+      "group": "diagrams",
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "sha256": "f0e3e788b9da771b5c92ee6744b7f6026dffbff6a61e1788bdc806d476028745",
+      "executions": 20
+    }
+  ],
+  "packageFailure": {
+    "path": "evidence/workspace-surface/ci37526593560/desktop-packaged-evidence-original/evidence/shell-2026-10-06T20-29-07.717Z/failure-state.json",
+    "sha256": "025afd2c7b4f7c317dee3bc147fa9046553bca52f5363f27b9c2975847106600",
+    "screenshotPath": "evidence/workspace-surface/ci37526593560/desktop-packaged-evidence-original/evidence/shell-2026-10-06T20-29-07.717Z/failure.png",
+    "screenshotSha256": "2c8fac5f2e124ca71f8b4f83f5dbbd0f93d6bd6aebdee6ef36a7df6950646e5e",
+    "mode": "readonly",
+    "publicReasonReadVisuallyByOwner": "Readiness journal could not be confirmed; preserve/export existing work",
+    "scope": "Initial copied shell startup failed before later package functional probes."
+  },
+  "artifacts": [
+    {
+      "id": 11443710334,
+      "name": "desktop-native-sources-evidence",
+      "bytes": 3213250,
+      "sha256": "cf71f5972c112bfbbe0251a603d944480351e949ed177e053d954af2032cec46",
+      "files": 86,
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-sources-evidence-original.zip"
+    },
+    {
+      "id": 11443695524,
+      "name": "desktop-native-diagrams-evidence",
+      "bytes": 7473326,
+      "sha256": "dca1540af566a26aac9d704c0dd27b97ab27dec1986b002e937f4e88c47d408e",
+      "files": 146,
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-diagrams-evidence-original.zip"
+    },
+    {
+      "id": 11443525788,
+      "name": "desktop-native-desktop-evidence",
+      "bytes": 4331737,
+      "sha256": "52fd152e4882a0f2fa61329d63185ce6c491375a06b8022b88b1673930a2e8f7",
+      "files": 105,
+      "path": "evidence/workspace-surface/ci37526593560/desktop-native-desktop-evidence-original.zip"
+    },
+    {
+      "id": 11442901281,
+      "name": "desktop-development-evidence",
+      "bytes": 57600,
+      "sha256": "27110f83d11f0dd9fe10ba17a9b69b6e1789045d26f6e2a2763a42ab0b7567ae",
+      "files": 5,
+      "path": "evidence/workspace-surface/ci37526593560/desktop-development-evidence-original.zip"
+    },
+    {
+      "id": 11442667265,
+      "name": "desktop-packaged-evidence",
+      "bytes": 108472,
+      "sha256": "798b367cee542ece48e80960ddb46e700a20fdbec2c8457582dd05f10157fd8b",
+      "files": 6,
+      "path": "evidence/workspace-surface/ci37526593560/desktop-packaged-evidence-original.zip"
+    }
+  ],
+  "logs": [
+    {
+      "path": "evidence/workspace-surface/ci37526593560/units-original.log",
+      "sha256": "6fa818c557c0acd4031213e4df3447a702dffb5a8a8a65bd32cce0eb954bb30b",
+      "retention": "Decoded API job log; LF normalized. Original artifact ZIP bytes retained separately."
+    },
+    {
+      "path": "evidence/workspace-surface/ci37526593560/packaged-original.log",
+      "sha256": "47020245d4c77a6a327bcae83974a7d0b70a761bc2afeb63c7af6a87b89e2e12",
+      "retention": "Decoded API job log; LF normalized. Original artifact ZIP bytes retained separately."
+    },
+    {
+      "path": "evidence/workspace-surface/ci37526593560/native-desktop-original.log",
+      "sha256": "89b8dc6df27cef261abfdab2c815dff87af680794e6440e84932c7b110623d41",
+      "retention": "Decoded API job log; LF normalized. Original artifact ZIP bytes retained separately."
+    },
+    {
+      "path": "evidence/workspace-surface/ci37526593560/native-sources-original.log",
+      "sha256": "bbd4d717095b1d6c130e0e8462c1f5f12a485bd71326570a3271ab59eb8e850b",
+      "retention": "Decoded API job log; LF normalized. Original artifact ZIP bytes retained separately."
+    },
+    {
+      "path": "evidence/workspace-surface/ci37526593560/native-diagrams-original.log",
+      "sha256": "9b6376386e0aee22ef15bae541c7383d0b9bee2858636d029a30c4b560f21a20",
+      "retention": "Decoded API job log; LF normalized. Original artifact ZIP bytes retained separately."
+    }
+  ],
+  "limits": [
+    "Original screenshot pins the readiness-journal catch; original writer/event ordering is not retained and concurrency is not proven as that execution cause.",
+    "Separately reproduced concurrency correction59081e3 and its local1161 tests/native passes are not included in this original hosted70ad/f422 execution.",
+    "Native group success cannot turn the original package failure or qualification failures into PASS.",
+    "No merge, release, installed replacement or independent approval is claimed."
+  ]
+}

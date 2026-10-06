@@ -5,6 +5,7 @@ import { readOwnedBytes } from '../projects/io.mjs';
 import { RecoveryStore } from './checkpoints.mjs';
 
 export class SessionJournal {
+  #records = Promise.resolve();
   constructor(root, { now = () => Date.now(), inspectProcess = async () => undefined } = {}) { this.root = root; this.now = now; this.inspectProcess = inspectProcess; }
   async path() { return join(await new RecoveryStore(this.root).directory(), 'sessions.json'); }
   async read() {
@@ -15,7 +16,14 @@ export class SessionJournal {
       return journal;
     } catch (error) { if (error.code === 'ENOENT') return { schema: 1, events: [] }; throw error; }
   }
-  async recordSession({ event, sessionId, version, processIdentity }) {
+  recordSession(input) {
+    // Read/update/replace/readback is one transaction. Another ready/close
+    // event may not read stale history or replace a file still being verified.
+    const operation = this.#records.then(() => this.#recordSession(input));
+    this.#records = operation.catch(() => {});
+    return operation;
+  }
+  async #recordSession({ event, sessionId, version, processIdentity }) {
     if (!['opened', 'ready', 'clean-close'].includes(event) || !sessionId || !Number.isSafeInteger(processIdentity?.pid) || typeof processIdentity.path !== 'string' || typeof processIdentity.startedAt !== 'string') throw new Error('Invalid session identity');
     let journal;
     try { journal = await this.read(); }
