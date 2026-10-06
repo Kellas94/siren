@@ -5,6 +5,9 @@
  const button=document.createElement('button');button.id='transferView';button.type='button';button.hidden=true;
  close.before(button);
  let disposed=false,busy=false,refreshing=false,placement=null,windowId=null,timer;
+ let settlePlacement;
+ const initiallyPlaced=new Promise(resolve=>{settlePlacement=resolve;});
+ window.SirenNativeDiagramTransfer=Object.freeze({whenPlaced:()=>initiallyPlaced});
  async function refresh(){
   if(disposed||refreshing)return;refreshing=true;
   try{
@@ -14,10 +17,13 @@
    const result=await window.sirenWindowDock.getShelf();
    if(disposed)return;
    const own=result?.ok&&Array.isArray(result.items)?result.items.find(item=>item.windowId===current.view.windowId&&item.role==='diagram'):null;
-   if(!own){button.hidden=true;windowId=null;return;}
+   if(!own||!['attached','detached'].includes(own.placement)){button.hidden=true;windowId=null;return;}
    windowId=own.windowId;placement=own.placement;document.body.dataset.nativePlacement=placement;
    button.hidden=false;button.textContent=placement==='attached'?'Detach window':'Attach to workspace';
    button.title=placement==='attached'?'Open separately · Ctrl+Alt+D':'Keep this diagram in the workspace · Ctrl+Alt+A';
+   // Finish the first header layout before the editor exposes ready content.
+   // Later transfers preserve the existing renderer and working draft.
+   settlePlacement(true);
   }catch{if(!disposed){button.hidden=true;windowId=null;}}
   finally{refreshing=false;}
  }
@@ -31,5 +37,5 @@
   finally{busy=false;if(!disposed){button.disabled=false;await refresh();}}
  });
  window.sirenWindow.onReady(()=>void refresh());timer=setInterval(()=>void refresh(),1200);void refresh();
- window.addEventListener('unload',()=>{disposed=true;clearInterval(timer);},{once:true});
+ window.addEventListener('unload',()=>{disposed=true;settlePlacement(false);clearInterval(timer);},{once:true});
 })();

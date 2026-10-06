@@ -21,6 +21,15 @@ the helper into `resources`, verifies it, and records the OS-provided runtime
 in the application inventory. The launcher inventories and holds all package
 files, including these resources. No production distribution approval is implied.
 
+Builds reuse an existing owned binary only when the pinned recipe, current
+compiler and exact binary receipt agree. Both missing files permit a first
+compile; partial, aliased or mismatched caches are refused. UI builds therefore
+preserve an unchanged helper instead of creating a new unsigned PE each time.
+This is artifact consistency, not a signing certificate or Windows execution
+approval. OS application-control refusal remains fail-closed; no security policy
+is changed. Production distribution still needs publisher signing and clean-machine
+qualification under the supported Windows policies.
+
 `process-reader-native.test.mjs` cross-checks actual Unicode child identity
 against the former independent `Get-Process` query without rounding timestamps.
 The native deadline test still injects six/twelve seconds of real external

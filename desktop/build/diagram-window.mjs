@@ -13,7 +13,8 @@ export async function buildDiagramWindow({outputDir}){
  const guided=await buildDiagramGuided({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
  const styling=await buildDiagramStyle({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
  const scripts=[await readFile(engine.bundlePath,'utf8'),(await readFile(new URL('../src/ui/windows/identity.js',import.meta.url),'utf8'))+'\n'+guided.script+'\n'+styling.script+'\n'+(await readFile(new URL('../src/ui/diagram/guided-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/style-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/build-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
- scripts.push(await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8'));
+ // Own placement must be available before the controller starts its source read.
+ scripts.splice(1,0,await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8'));
  for(const code of scripts){if(/<\/script/i.test(code))throw Error('Diagram script tag refused');new Script(code);}
  const hashes=scripts.map(code=>"'sha256-"+createHash('sha256').update(code).digest('base64')+"'");
  let template=await readFile(new URL('../src/ui/diagram/window.html',import.meta.url),'utf8');

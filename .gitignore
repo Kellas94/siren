@@ -263,3 +263,16 @@ WP-001_*.json
 !/desktop/tests/process-reader-native.test.mjs
 /desktop/native/generated/
 
+
+# Durable Diagram placement and build ownership qualification
+!/desktop/reviews/2026-10-06-ci37413497183-diagram-placement-independent.md
+!/desktop/reviews/2026-10-06-diagram-initial-placement-design.md
+!/desktop/reviews/2026-10-06-diagram-placement-correction-independent.md
+!/desktop/reviews/2026-10-06-diagram-placement-root-evidence.md
+!/desktop/reviews/2026-10-06-diagram-placement-root-receipt.json
+!/desktop/reviews/2026-10-06-process-reader-build-stability.md
+!/desktop/reviews/2026-10-06-process-reader-cache-correction-independent.md
+!/desktop/reviews/2026-10-06-process-reader-cache-independent.md
+!/desktop/tests/diagram-placement-ready.test.mjs
+!/desktop/tests/process-reader-cache.test.mjs
+

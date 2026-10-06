@@ -65,7 +65,11 @@
   onPreview({svg,targets}){canvas.replaceChildren(svg);styleView.setTargets(targets);buildView.setTargets(targets);const title=$('diagramPreviewTitle'),diagram=draft?.getDiagram();title.textContent=diagram?.diagramTitleTouched?diagram.diagramTitle||'':'';title.hidden=!title.textContent;title.title=title.textContent;viewport.dataset.hasTitle=String(!title.hidden);transform();document.body.dataset.diagramRendered='true';lastError='';updateState();},
   onError(){document.body.dataset.diagramRendered='false';lastError=sourceInput.value.length>50000?'Your source is retained. Preview supports up to 50,000 characters.':'The preview could not render. Your exact source and project data were retained.';updateState();}
  });
- const refresh=()=>{if(!paused&&!disposed)void session.refresh();};
+ const refresh=async()=>{
+  if(paused||disposed||!window.SirenNativeDiagramTransfer)return;
+  const placed=await window.SirenNativeDiagramTransfer.whenPlaced();
+  if(placed&&!paused&&!disposed)void session.refresh();
+ };
  const replace=()=>{if(paused||disposed||draft?.getStatus().pending||!guidedView.commit()||!styleView.commit()||!buildView.commit())return;if(draft?.getStatus().dirty&&!confirm('Discard local Mermaid changes and read the latest saved diagram?'))return;clearTimeout(previewTimer);refresh();};
  const preview=()=>{if(paused||disposed||!draft)return;document.body.dataset.diagramRendered='false';const diagram=draft.getDiagram();void session.renderLocal(diagram.source,diagram);};
  $('diagramStyleToggle').addEventListener('click',()=>{const panel=$('diagramStylePanel');if(!panel.hidden)panel.hidden=true;else{panel.hidden=false;$('diagramBuildPanel').hidden=true;$('diagramBuildToggle').setAttribute('aria-expanded','false');}$('diagramStyleToggle').setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden)styleView.paint();});
@@ -102,7 +106,7 @@
  divider.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();resize(split+(event.key==='ArrowRight'?2:-2));}});
  $('closeView').addEventListener('click',async()=>{const own=await window.sirenWindow.getView();if(own?.ok!==true)return;const result=await window.sirenWindow.closeView({windowId:own.view.windowId});if(!result?.ok)status.textContent='The window could not close. Your saved diagram was retained.';});
  window.sirenViewControl.onPrepare(async()=>{if(exporting||exportReceipt)lastError='';exportReceipt=null;delete document.body.dataset.diagramExportId;$('diagramShowExport').hidden=true;const committed=guidedView.commit()&&styleView.commit()&&buildView.commit();paused=true;window.SirenNativeViewIdentity.clear('diagram');clearTimeout(previewTimer);clearTimeout(refreshTimer);document.body.inert=true;document.documentElement.style.visibility='hidden';guidedView.pause();stop();splitDrag=false;const ready=await session.pause();if(!committed)return {ok:false,code:'GUIDED_EDIT_PENDING'};if(draft&&!readonly){const result=await draft.flushView();return {ok:ready&&result.ok===true,...(!result.ok?{code:result.code}:{})};}return {ok:ready};});
- window.sirenViewControl.onResume(()=>{if(disposed||!paused)return;session.resume();paused=false;draft?.resumeView();if(draft)sourceInput.value=draft.getDiagram().source;document.body.inert=false;document.documentElement.style.visibility='';updateState();if(guidedMode)guidedView.paint();preview();});
+ window.sirenViewControl.onResume(()=>{if(disposed||!paused)return;session.resume();paused=false;draft?.resumeView();if(draft)sourceInput.value=draft.getDiagram().source;document.body.inert=false;document.documentElement.style.visibility='';updateState();if(guidedMode)guidedView.paint();if(draft)preview();else void refresh();});
  window.addEventListener('pagehide',()=>{disposed=true;window.SirenNativeViewIdentity.clear('diagram');off();clearTimeout(previewTimer);clearTimeout(refreshTimer);guidedView.dispose();styleView.dispose();buildView.dispose();draft?.dispose();session.dispose();canvas.replaceChildren();host.replaceChildren();sourceInput.value='';});
  window.sirenWindow.onReady(refresh);appearance();refresh();
 })();
