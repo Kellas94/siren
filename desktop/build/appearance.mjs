@@ -14,7 +14,9 @@ export function patchClassicAppearance(html){
  const body=html.slice(start,end),save='        scheduleSave();',changed='        state.theme = themeName;';
  for(const token of [save,changed])if(body.split(token).length!==2)throw Error('Classic theme preference marker mismatch');
  const bridge=`      let sirenNativeAppearanceId=null;\n      window.sirenClassicAppearance=Object.freeze({current:()=>document.body.dataset.theme,apply:id=>{if(!${JSON.stringify(THEME_IDS)}.includes(id))return false;sirenNativeAppearanceId=id;if(state.theme!==id||document.body.dataset.theme!==id)applyTheme(id,true);return true;}});\n`;
- const patched=body.replace(marker,'      function applyTheme(themeName, shouldRender, desktopUser=false) {\n        if(window.sirenShell && sirenNativeAppearanceId && !desktopUser) themeName=sirenNativeAppearanceId;').replace(save,'        if(!window.sirenShell) scheduleSave();').replace(changed,changed+'\n        document.dispatchEvent(new CustomEvent("siren-classic-appearance",{detail:{theme:themeName,user:desktopUser}}));');
+ let patched=body.replace(marker,'      function applyTheme(themeName, shouldRender, desktopUser=false) {\n        if(window.sirenShell && sirenNativeAppearanceId && !desktopUser) themeName=sirenNativeAppearanceId;').replace(save,'        if(!window.sirenShell) scheduleSave();').replace(changed,changed+'\n        document.dispatchEvent(new CustomEvent("siren-classic-appearance",{detail:{theme:themeName,user:desktopUser}}));');
+ const close='        setThemeMenuOpen(false);';
+ if(body.includes(close)){if(body.split(close).length!==2)throw Error('Classic theme menu marker mismatch');patched=patched.replace(close,'        if(!window.sirenShell || desktopUser || arrivingAt) setThemeMenuOpen(false);');}
  return html.slice(0,start)+bridge+patched+html.slice(end);
 }
 export async function readAppearancePalette(){

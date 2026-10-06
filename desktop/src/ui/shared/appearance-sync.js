@@ -10,8 +10,8 @@
   };
   const choose=async theme=>{
    if(closed)return {ok:false};const own=++generation;writing++;
-   try{apply({ok:true,theme});const result=await set({theme});if(!closed&&!result?.ok&&own===generation)rejected();return result;}
-   catch{if(!closed&&own===generation)rejected();return {ok:false};}
+   try{const result=await set({theme});if(!closed&&own===generation){if(result?.ok)apply(result);else rejected(result);}return result;}
+   catch{if(!closed&&own===generation)rejected({ok:false,code:'OPERATION_FAILED'});return {ok:false};}
    finally{writing--;if(!writing&&!closed)await refresh();}
   };
   return Object.freeze({refresh,choose,dispose(){closed=true;generation++;}});

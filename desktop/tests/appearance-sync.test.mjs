@@ -15,3 +15,10 @@ test('overlapping theme writes defer polling and obsolete errors until the lates
  const old=sync.choose('dark');await sync.choose('light');await sync.refresh();assert.equal(reads,0);release({ok:false});await old;
  assert.equal(errors,0);assert.equal(seen.at(-1),'light');assert.equal(reads,1);sync.dispose();
 });
+
+test('a pending or refused theme choice cannot manufacture native appearance admission',async()=>{
+ const factory=await load();let release;const seen=[],failures=[];
+ const sync=factory.create({get:async()=>({ok:false,code:'ACCESS_REFUSED'}),set:()=>new Promise(resolve=>release=resolve),apply:value=>seen.push(value),rejected:value=>failures.push(value),unavailable(){}});
+ const pending=sync.choose('dark');assert.equal(seen.length,0,'No accepted appearance before native write receipt');
+ release({ok:false,code:'ACCESS_REFUSED'});assert.equal((await pending).ok,false);assert.equal(seen.length,0);assert.equal(failures[0].code,'ACCESS_REFUSED');sync.dispose();
+});

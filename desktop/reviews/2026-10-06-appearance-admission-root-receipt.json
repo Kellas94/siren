@@ -1,0 +1,124 @@
+{
+  "author": "/root",
+  "scope": "Root source/native/copied-package qualification, not independent approval or hosted PASS",
+  "sourceCommit": "0109ff28f80e8cf425e02b6848a3ef93dc1b0670",
+  "full": {
+    "root": "evidence/workspace-surface/full-suite-2026-10-06T01-13-54.299Z",
+    "status": "COMPLETE",
+    "tests": 1082,
+    "changedInputs": [],
+    "logSha256": "a734958829690d8480e50f6b2da0f2d9c2f5864bb3c280a6fb41bc0e502289f6"
+  },
+  "native": {
+    "root": "evidence/workspace-surface/admitted-appearance-native-2026-10-06T01-14-54.905Z",
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "desktop-ui",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "access-screen",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "guided-intro",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "source-read",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "source-map",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": []
+  },
+  "packaged": {
+    "root": "evidence/workspace-surface/package-native-2026-10-06T01-17-37.145Z",
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "packaged",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-reader",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "source-map",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "diagram-dock",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "presentation-windows",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-surface/appearance-hosted-size-v2",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": [],
+    "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e55cc1bb-b2de-46bf-9326-6344041fa34e",
+    "archive": {
+      "bytes": 53647791,
+      "sha256": "a06bea304f2dc5ea421e66f5cf94ddf69ff6cccff4b3348f21bdc55857a2142d"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "releaseAdmitted": false
+  },
+  "independentReview": {
+    "path": "reviews/2026-10-06-shared-workspace-review.md",
+    "author": "/root/shared_workspace_review",
+    "sha256": "441bc4fa1615e9afc33e2b8c89721862389bdf9c0fb687923fbab82b711a611a"
+  },
+  "previousHosted": {
+    "id": 37396637182,
+    "head": "d6f545618e9e3975566c006b23865f3d65f3c135",
+    "conclusion": "failure",
+    "units": "success",
+    "launcher": "success",
+    "diagrams": "17/17",
+    "sources": "19/19",
+    "desktop": "18/20",
+    "packaged": "original portable passed; shared appearance4 then native Dark propagation timeout; main reports theme save refusal"
+  },
+  "open": [
+    "Exact hosted save-refusal cause; new refusal metadata retained on subsequent failure",
+    "Fresh hosted verification of these corrections",
+    "Full rich Docs authoring/image/comments/releases",
+    "Full native Present/Diagram feature access and decorative theme variants",
+    "Physical monitor/DPI/IME/accessibility qualification"
+  ]
+}

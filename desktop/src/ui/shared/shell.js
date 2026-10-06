@@ -7,7 +7,7 @@
  const preference=window.SirenAppearanceSync.create({get:()=>window.sirenShell.getAppearance(),set:value=>window.sirenShell.setAppearance(value),apply:result=>{
   if(!bar||disposed)return;bar.hidden=false;apply(result.theme);if(typeof result.projectName==='string'){caption.textContent=result.projectName||'Local workspace';caption.title=caption.textContent;}
   if(result.warning==='INVALID_APPEARANCE')note.textContent='Theme settings need recovery. Default appearance in use.';
- },rejected:()=>{signature='';if(note)note.textContent='Theme could not be saved.';},unavailable:()=>{if(bar)bar.hidden=true;}});
+ },rejected:result=>{signature='';if(note){const code=['ACCESS_REFUSED','INVALID_APPEARANCE','APPEARANCE_WRITE_FAILED','OPERATION_FAILED','REQUEST_REFUSED'].includes(result?.code)?result.code:'OPERATION_FAILED';note.dataset.appearanceError=code;note.textContent=code==='ACCESS_REFUSED'?'Theme change unavailable while the workspace is changing. Try again when ready.':code==='INVALID_APPEARANCE'?'Theme settings need recovery. Your previous settings were retained.':'Theme change could not be confirmed. Check the current theme before trying again.';}},unavailable:()=>{if(bar)bar.hidden=true;}});
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const navigate=async surface=>{
   if(pending||disposed)return;pending=true;bar.setAttribute('aria-busy','true');
@@ -34,7 +34,7 @@
   const find=make('button',bar,'⌕ Find');find.type='button';find.id='sirenProjectFindButton';find.title='Find saved items by name · Ctrl+Shift+F';find.addEventListener('click',()=>void navigate('find'));bar.insertBefore(find,appearance);
   const label=make('span',appearance,'Theme');label.className='siren-appearance-label';select=make('select',appearance);select.id='sirenAppTheme';select.setAttribute('aria-label','Application theme');
   for(const theme of [{id:'system',name:'System'},...palette]){const option=make('option',select,theme.name);option.value=theme.id;}
-  select.addEventListener('change',async()=>{select.disabled=true;try{const result=await preference.choose(select.value);if(result?.ok)note.textContent='';}finally{select.disabled=false;}});
+  select.addEventListener('change',async()=>{select.disabled=true;try{const result=await preference.choose(select.value);if(result?.ok){note.textContent='';delete note.dataset.appearanceError;}}finally{select.disabled=false;}});
   note=make('span',bar);note.className='siren-navigation-status';note.setAttribute('role','status');
   // Existing light/dark controls remain functional quick choices for the same
   // preference. Programmatic synchronization must never recursively save it.

@@ -53,3 +53,7 @@ Actual37391109232/25f finalFAILURE retained; native owner guard fixes delayed le
 ## First-use correction checkpoint
 
 Final sourcedd1ec00ebe538de9aa879febe440f60cbd3e2583 preserves genuine early Studio theme selection, keeps private navigation hidden before admission and leaves automatic onboarding to Home. Manual Guide tour/replay are actually verified; standalone baseline unchanged. Finalfull1080 and copied7 qualified separately from priornative39 and finalaffected3. Hosted37393614417/f41b finalFAILURE retained; next actualhosted verification pending. Geometry diagnosis remains open until that result, and full rich functional/decorative parity is not admitted by this foundation. Root receipt/report: desktop/reviews/2026-10-06-desktop-onboarding-root-*.
+
+## Native menu and admission checkpoint
+
+Source0109ff28 full1082/native6/copied7 completed with unchanged captures/identities. Actual extracted original theme function reproduced delayed same-owned-theme menu closure; corrected closure retains other palette lifecycle and user/standalone behavior. Shared appearance now requires genuine successful native preference admission before apply; finite refusal metadata clarifies subsequent failures. Prior37396637182 hostedFAILURE retained, exact save-refusal cause stillOPEN; fresh canonical CI required. Original independent review byte-exact and separately authored; root receipt/report separate. Full rich functional/decorative parity remainsOPEN.
