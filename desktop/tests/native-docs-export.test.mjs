@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile,readdir,writeFile,rm,mkdir,rename} from 'node:fs/promises';
+import {readFile,readdir,writeFile,rm,mkdir,rename,realpath} from 'node:fs/promises';
 import {join,dirname,resolve,basename} from 'node:path';
 import {tmpdir} from 'node:os';
 import {sourceReadFixture} from './fixtures/source-read-context.mjs';
@@ -11,19 +11,20 @@ import {DomainRepository} from '../src/windows/domain.mjs';
 import {WorkspaceCoordinator} from '../src/windows/coordinator.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {formatSavedDocument} from '../src/documents/export.mjs';
+import {exportClassAtOwnedFile} from './fixtures/export-await-phase.mjs';
 const module=await import('../src/windows/docs-export.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
-async function fixture(t,format){
+async function fixture(t,format,Service=module.NativeDocsExports){
  const document={id:'doc-a',title:'Exact saved context',blocks:[{id:'p',kind:'prompt',text:'print("Saved Ș😀")'},{id:'k',kind:'knowledge',rows:[{id:'r',name:'agent.py'}]}],opaque:{claim:'IMPORTED_NOT_APPROVED'}};
  const f=await sourceReadFixture({workpapers:[document,{id:'doc-b',title:'FOREIGN_DOC_SECRET'}],unrelated:'UNRELATED_SECRET'});let selected=f.selected;
- t.after(async()=>{assert.equal(dirname(resolve(f.root)),resolve(tmpdir()));assert.match(basename(f.root),/^siren-source-read-bridge-/);await rm(f.root,{recursive:true,force:true});});
+ t.after(async()=>{assert.equal(await realpath(dirname(resolve(f.root))),await realpath(tmpdir()));assert.match(basename(f.root),/^siren-source-read-bridge-/);await rm(f.root,{recursive:true,force:true});});
  const ref=f.refs[0];document.blocks[1].rows[0].sourceRef={sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256};
  assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId:f.selected.project.id,baseRevision:f.selected.revision,sourceRefs:f.refs,metadata:{workpapers:[document,{id:'doc-b',title:'FOREIGN_DOC_SECRET'}],unrelated:'UNRELATED_SECRET'},operationId:'saved-doc-export-fixture'})).ok,true);
  f.selected=selected=await f.projects.readProject(f.selected.project.id);
  const domains=new DomainRepository({projects:()=>new ProjectStore(f.root,{canSave:()=>false}),sources:()=>new SourceRepository(f.root,{canWrite:()=>false}),validatePatch:()=>false});
  const owner=new WorkspaceCoordinator({registry:f.registry,sources:()=>new SourceRepository(f.root,{canWrite:()=>false}),domains,access:(_grant,scope)=>f.isUnlocked()&&scope.action==='read-domain'&&scope.domain==='docs'&&scope.entityId==='doc-a'});
  const reads=new NativeDocsReads({registry:f.registry,owner,documentFor:()=>JSON.parse(selected.json).workpapers.find(d=>d.id==='doc-a')});
- assert.equal(typeof module.NativeDocsExports,'function','Own saved Docs export service must exist');
- const revealed=[],service=new module.NativeDocsExports({registry:f.registry,owner,reads,projects:f.projects,format:format??formatSavedDocument,reveal:path=>revealed.push(path)}),saved=await reads.invoke({event:f.event(1),method:'getDocument'});
+ assert.equal(typeof Service,'function','Own saved Docs export service must exist');
+ const revealed=[],service=new Service({registry:f.registry,owner,reads,projects:f.projects,format:format??formatSavedDocument,reveal:path=>revealed.push(path)}),saved=await reads.invoke({event:f.event(1),method:'getDocument'});
  assert.equal(saved.ok,true);const request={format:'json',expectedVersion:saved.version,expectedSha256:saved.sha256};
  return {...f,document,domains,owner,reads,service,saved,request,revealed,select:value=>selected=value,call:(method='exportSaved',payload=request,event=f.event(1))=>service.invoke({event,method,payload})};
 }
@@ -63,4 +64,9 @@ test('uncertain cleanup after real rename permanently fences exports and refuses
  const pending=f.call();await entered;const directory=join(await f.projects.directory(f.selected.project.id),'exports'),files=await readdir(directory);assert.equal(files.length,1);assert.match(files[0],/\.json$/);
  const output=join(directory,files[0]);await rename(output,join(f.root,'owned-displaced-export.json'));await mkdir(output);f.service.pause();f.owner.pause('Lock');release();assert.equal((await pending).code,'DOCS_EXPORT_FAILED');
  assert.equal(f.service.isIdle(),false);await assert.rejects(f.service.drain(),/DOCS_EXPORT_NOT_IDLE/);f.service.resume();assert.equal((await f.call()).code,'ACCESS_REFUSED');assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
+
+test('Lock during final cleanup refuses stale Docs success, preserving the already retained file without receipt',async t=>{
+ let f,triggered=false;const Service=await exportClassAtOwnedFile('docs',async path=>{if(!triggered&&path.endsWith('.tmp')){triggered=true;f.service.pause();f.owner.pause('Lock');}});f=await fixture(t,undefined,Service);
+ const result=await f.call();assert.equal(triggered,true);assert.equal(result.ok,false,'No stale saved Docs success during final cleanup');await f.service.drain();assert.equal(f.service.isIdle(),true);const files=await readdir(join(await f.projects.directory(f.selected.project.id),'exports'));assert.equal(files.length,1);assert.match(files[0],/\.json$/);f.service.resume();f.owner.resume();assert.equal((await f.call('revealExport',{exportId:files[0].slice('document-'.length,-5)})).ok,false);
 });

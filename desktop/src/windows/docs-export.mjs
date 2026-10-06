@@ -49,17 +49,20 @@ export class NativeDocsExports{
    const saved=await read(),output=await this.#format({format:request.format,projectId:grant.projectId,document:saved.document,version:saved.version,sha256:saved.sha256,projectRevision:saved.projectRevision,exportedAt:new Date().toISOString()},{isCurrent:current,signal:job.controller.signal});
    if(!current())refused();if(!Buffer.isBuffer(output?.bytes)||output.bytes.length<1||output.bytes.length>maximum||output.extension!==extensions[request.format])return fail('EXPORT_FORMAT_REFUSED');
    const bytes=Buffer.from(output.bytes);await read();const parent=await this.#projects.directory(grant.projectId);if(!current())refused();const directory=await childDirectory(parent,'exports',{create:true});if(!current())refused();
-   const exportId=randomUUID(),filename='document-'+exportId+'.'+output.extension,path=join(directory,filename),temporary=join(directory,'pending-'+exportId+'.tmp');let handle,published=false,retained=false;
+   const exportId=randomUUID(),filename='document-'+exportId+'.'+output.extension,path=join(directory,filename),temporary=join(directory,'pending-'+exportId+'.tmp');let handle,published=false,retained=false,outcome;
    try{
     if(!current())refused();handle=await open(temporary,'wx',0o600);if(!current())refused();await handle.writeFile(bytes);if(!current())refused();await handle.sync();await handle.close();handle=null;if(!current())refused();
     await ownedDirectory(directory);if(!current())refused();await rename(temporary,path);published=true;if(!current())refused();const actual=await readOwnedBytes(path,maximum);if(!bytes.equals(actual))throw Error('DOCS_EXPORT_READBACK_FAILED');await read();if(!current())refused();
     const sha256=digest(actual);if(this.#receipts.size>=32)this.#receipts.delete(this.#receipts.keys().next().value);this.#receipts.set(exportId,{windowId:grant.windowId,epoch:grant.epoch,projectId:grant.projectId,path,sha256});retained=true;
-    return Object.freeze({ok:true,exportId,filename,bytes:actual.length,sha256,entityId:saved.document.id,version:saved.version,entitySha256:saved.sha256,projectRevision:saved.projectRevision,format:request.format});
+    outcome=Object.freeze({ok:true,exportId,filename,bytes:actual.length,sha256,entityId:saved.document.id,version:saved.version,entitySha256:saved.sha256,projectRevision:saved.projectRevision,format:request.format});
    }finally{
     let cleanupFailed=false;try{await handle?.close();}catch{cleanupFailed=true;}
     for(const cleanup of [temporary,...(published&&!retained?[path]:[])])try{await unlink(await ownedFile(cleanup));}catch(e){if(e.code!=='ENOENT')cleanupFailed=true;}
     if(cleanupFailed){this.#failed=true;throw Error('DOCS_EXPORT_CLEANUP_FAILED');}
    }
+   // Recheck after asynchronous cleanup, not only before receipt retention.
+   // Already accepted user files survive later revocation; stale receipts do not.
+   try{await read();if(!current())refused();}catch(cause){this.#receipts.delete(exportId);throw cause;}return outcome;
   };
   job.promise=Promise.resolve().then(work).catch(cause=>fail(['DOCUMENT_VERSION_CHANGED','ACCESS_REFUSED','DOCUMENT_BUDGET','EXPORT_BUDGET'].includes(cause.code)?cause.code:'DOCS_EXPORT_FAILED')).finally(()=>this.#pending.delete(job));this.#pending.add(job);return job.promise;
  }

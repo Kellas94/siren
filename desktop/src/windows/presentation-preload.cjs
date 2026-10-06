@@ -3,6 +3,7 @@ if(location.pathname!=='/windows/audience.html')contextBridge.exposeInMainWorld(
 const invoke=(method,payload)=>ipcRenderer.invoke('siren:presentation',method,payload);
 const presentation=Object.fromEntries(['getPresenter','getPreview','navigate','refreshDeck','openAudience','getFrame','acknowledge','getDisplays','setFullscreen'].map(method=>[method,payload=>invoke(method,payload)]));
 if(location.pathname==='/windows/presenter.html')presentation.editDeck=()=>ipcRenderer.invoke('siren:deck-navigation','edit',{});
+if(location.pathname==='/windows/presenter.html')contextBridge.exposeInMainWorld('sirenPresenterExport',Object.freeze(Object.fromEntries(['exportNotes','revealExport'].map(method=>[method,payload=>ipcRenderer.invoke('siren:presenter-export',method,payload)]))));
 presentation.onFrame=callback=>{
  if(typeof callback!=='function')throw TypeError('Expected callback');
  const listener=(_event,value)=>{

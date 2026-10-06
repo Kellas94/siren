@@ -14,7 +14,7 @@ test('actual Docs export main handler tracks the real promise and rejects all tr
 test('actual all-window preparation pauses, drains and checks Docs exporter before issuing quiescence',async()=>{
  const actions=[];let idle=true;const part=name=>({pause:()=>actions.push(name+':pause'),resume:()=>actions.push(name+':resume'),drain:async()=>actions.push(name+':drain'),isIdle:()=>name!=='docs'||idle});
  const owner={...part('owner'),captureQuiescence:()=>{actions.push('proof');return'proof';},isQuiescent:()=>true};
- const context={workspaceOwner:owner,presentationSession:part('present'),sourceAnalysis:part('analysis'),diagramExports:part('diagram'),docsExports:part('docs')};
+ const context={workspaceOwner:owner,presentationSession:part('present'),sourceAnalysis:part('analysis'),diagramExports:part('diagram'),docsExports:part('docs'),presenterExports:part('notes')};
  const actual=runInNewContext('(()=>{'+slice('  const capturedPresentation=presentationSession;','  workspaceBarrier=new NativeAllWorkspaceBarrier')+'return barrierOwner;})()',context);
  actual.pause('Lock');assert.ok(actions.includes('docs:pause'));await actual.drain();assert.ok(actions.includes('docs:drain'));assert.equal(actual.captureQuiescence(),'proof');idle=false;assert.throws(()=>actual.captureQuiescence());assert.equal(actual.isQuiescent('proof'),false);actual.resume();assert.ok(actions.includes('docs:resume'));
 });

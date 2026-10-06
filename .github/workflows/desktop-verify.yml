@@ -277,6 +277,9 @@ jobs:
       - name: Actual Docs saved-document export
         if: matrix.group == 'desktop'
         run: node tests/native/docs-export.mjs
+      - name: Actual Presenter captured-notes export
+        if: matrix.group == 'desktop'
+        run: node tests/native/presenter-notes-export.mjs
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -285,6 +288,7 @@ jobs:
           path: |
             desktop/evidence/home-backup-export-native/*/result.json
             desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/native-verification/*.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
@@ -491,6 +495,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
           node tests/native/docs-export.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Docs saved export failed" }
+          node tests/native/presenter-notes-export.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Presenter notes export failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-bundle-import.mjs --package $preview.previewRoot --300k --code-only
@@ -558,6 +564,7 @@ jobs:
           name: desktop-packaged-evidence
           path: |
             desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json

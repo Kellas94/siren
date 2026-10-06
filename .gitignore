@@ -476,3 +476,31 @@ WP-001_*.json
 !/desktop/tests/native/docs-export.mjs
 !/docs/superpowers/plans/2026-10-07-siren-native-presenter-notes-export.md
 
+
+# Presenter notes and retained qualified batch files
+!desktop/reviews/2026-10-07-docs-export-canonical-sync.json
+!desktop/reviews/2026-10-07-docs-hosted-temp-alias-correction.md
+!desktop/reviews/2026-10-07-native-diagram-parity-next-analysis.json
+!desktop/reviews/2026-10-07-native-diagram-parity-next-analysis.md
+!desktop/reviews/2026-10-07-native-docs-hosted-evidence.json
+!desktop/reviews/2026-10-07-native-docs-hosted-evidence.md
+!desktop/reviews/2026-10-07-native-presenter-export-independent-original.md
+!desktop/reviews/2026-10-07-native-presenter-export-independent-recheck.md
+!desktop/reviews/2026-10-07-presenter-notes-export-native-corrected-observation.md
+!desktop/reviews/2026-10-07-presenter-notes-export-native-observation.md
+!desktop/reviews/2026-10-07-presenter-notes-local-qualification.json
+!desktop/reviews/2026-10-07-presenter-notes-local-qualification.md
+!desktop/src/documents/presentation-notes.mjs
+!desktop/src/ui/presentation/notes-export.js
+!desktop/src/windows/presenter-export.mjs
+!desktop/tests/fixture-temp-alias.test.mjs
+!desktop/tests/fixtures/export-await-phase.mjs
+!desktop/tests/native-presenter-export.test.mjs
+!desktop/tests/native/presenter-notes-export.mjs
+!desktop/tests/presentation-notes-format.test.mjs
+!desktop/tests/presenter-export-ci.test.mjs
+!desktop/tests/presenter-export-main.test.mjs
+!desktop/tests/presenter-export-package.test.mjs
+!desktop/tests/presenter-export-preload.test.mjs
+!desktop/tests/presenter-export-view.test.mjs
+!docs/superpowers/plans/2026-10-07-siren-diagram-history-typography.md
