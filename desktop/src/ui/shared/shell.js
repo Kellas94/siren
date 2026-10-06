@@ -36,9 +36,9 @@
   for(const theme of [{id:'system',name:'System'},...palette]){const option=make('option',select,theme.name);option.value=theme.id;}
   select.addEventListener('change',async()=>{select.disabled=true;try{const result=await preference.choose(select.value);if(result?.ok){note.textContent='';delete note.dataset.appearanceError;}}finally{select.disabled=false;}});
   note=make('span',bar);note.className='siren-navigation-status';note.setAttribute('role','status');
-  // Existing light/dark controls remain functional quick choices for the same
-  // preference. Programmatic synchronization must never recursively save it.
-  for(const key of ['codeTheme','documentTheme','diagramTheme']){const field=document.getElementById(key);if(field){field.title='Quick application theme · More themes in the top bar';field.addEventListener('change',async()=>{
+  // The global chooser owns appearance. Retain legacy fields only for local
+  // renderer synchronization; a second visible choice implies a second store.
+  for(const key of ['codeTheme','documentTheme','diagramTheme']){const field=document.getElementById(key);if(field){field.hidden=true;field.title='Application theme is selected in the top bar';field.addEventListener('change',async()=>{
    if(syncing||disposed)return;await preference.choose(field.value);
   });}}
   document.body.classList.add('siren-shell-open');
@@ -52,6 +52,7 @@
    document.documentElement.style.setProperty('--'+key,value);
    document.documentElement.style.setProperty('--siren-'+aliases[key],value);
   }
+  for(const [key,value] of Object.entries(theme.metrics??{}))document.documentElement.style.setProperty('--siren-'+key,value);
   select.value=id;
   syncing=true;try{for(const key of ['codeTheme','documentTheme','diagramTheme']){const field=document.getElementById(key);if(field){field.value=id==='system'?'system':theme.mode;field.dispatchEvent(new Event('change'));}}}finally{syncing=false;}
   document.dispatchEvent(new CustomEvent('siren-appearance',{detail:{theme:id,mode:theme.mode}}));

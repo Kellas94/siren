@@ -96,9 +96,9 @@ try{
  await pages[0].waitFor(`document.querySelector('.cm-content').textContent.includes(${JSON.stringify(eof)})`);
  assert.ok(await pages[0].evaluate("document.querySelector('.cm-selectionBackground')!=null"));
  await pages[0].click('[data-command=wrap]');assert.equal(await pages[0].evaluate("document.querySelector('[data-command=wrap]').getAttribute('aria-pressed')"),'true');
- await pages[0].evaluate("document.querySelector('#codeTheme').focus()");await pages[0].key('End','End',35);await pages[0].key('Enter');
+ await pages[0].waitFor("document.getElementById('sirenAppNavigation')?.hidden===false&&!document.getElementById('sirenAppTheme').disabled");await pages[0].click('#sirenAppTheme');await pages[0].key('Home','Home',36);await pages[0].key('ArrowDown','ArrowDown',40);await pages[0].key('Enter');
  await pages[0].waitFor("document.querySelector('.siren-code-editor').dataset.theme==='dark'");await pages[0].screenshot(join(evidence,'code-dark-eof.png'));
- await pages[0].evaluate("document.querySelector('#codeTheme').focus()");await pages[0].key('Home','Home',36);await pages[0].key('ArrowDown','ArrowDown',40);await pages[0].key('Enter');
+ await pages[0].waitFor("document.getElementById('sirenAppNavigation')?.hidden===false&&!document.getElementById('sirenAppTheme').disabled");await pages[0].click('#sirenAppTheme');await pages[0].key('Home','Home',36);await pages[0].key('ArrowDown','ArrowDown',40);await pages[0].key('ArrowDown','ArrowDown',40);await pages[0].key('Enter');
  await pages[0].waitFor("document.querySelector('.siren-code-editor').dataset.theme==='light'");await pages[0].screenshot(join(evidence,'code-light-eof.png'));
  await pages[0].click('.cm-content');await pages[0].send('Input.insertText',{text:'FORBIDDEN_NATIVE_READONLY_EDIT'});
  assert.equal(await pages[0].evaluate("document.querySelector('.cm-content').textContent.includes('FORBIDDEN_NATIVE_READONLY_EDIT')"),false);
@@ -111,9 +111,9 @@ try{
  assert.equal(await pages[2].evaluate("document.querySelector('#documentContent img, #documentContent script')!==null||window.__docsInjected===true"),false);
  assert.equal(await pages[2].evaluate("document.body.textContent.includes('OTHER_DOC_PRIVATE_CONTENT')||document.body.textContent.includes('OTHER_SOURCE_PRIVATE_CONTENT')"),false);
  assert.equal((await pages[0].evaluate('window.sirenDocsRead.getDocument()')).code,'ACCESS_REFUSED');
- await pages[2].evaluate("document.querySelector('#documentTheme').focus()");await pages[2].key('Home','Home',36);await pages[2].key('ArrowDown','ArrowDown',40);await pages[2].key('Enter');
+ await pages[2].waitFor("document.getElementById('sirenAppNavigation')?.hidden===false&&!document.getElementById('sirenAppTheme').disabled");await pages[2].click('#sirenAppTheme');await pages[2].key('Home','Home',36);await pages[2].key('ArrowDown','ArrowDown',40);await pages[2].key('ArrowDown','ArrowDown',40);await pages[2].key('Enter');
  await pages[2].waitFor("document.documentElement.style.colorScheme==='light'");await pages[2].screenshot(join(evidence,'docs-light.png'));
- await pages[2].evaluate("document.querySelector('#documentTheme').focus()");await pages[2].key('End','End',35);await pages[2].key('Enter');
+ await pages[2].waitFor("document.getElementById('sirenAppNavigation')?.hidden===false&&!document.getElementById('sirenAppTheme').disabled");await pages[2].click('#sirenAppTheme');await pages[2].key('Home','Home',36);await pages[2].key('ArrowDown','ArrowDown',40);await pages[2].key('Enter');
  await pages[2].waitFor("document.documentElement.style.colorScheme==='dark'");await pages[2].screenshot(join(evidence,'docs-dark.png'));
  await pages[2].click('#retryDocument');await pages[2].waitFor("document.body.dataset.documentReady==='true'");
  result.cases.push({name:'actual scoped native Docs content, outline/lazy agent metadata, literal imported HTML, appearance and Refresh without foreign Docs/source bytes',ok:true});

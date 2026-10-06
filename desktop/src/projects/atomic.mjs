@@ -5,25 +5,37 @@ import { ownedDirectory, ownedFile } from './paths.mjs';
 import { readOwnedBytes } from './io.mjs';
 
 export const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-export async function atomicWrite(path, bytes, { fault = async () => {}, selection = false } = {}) {
+export async function atomicWrite(path, bytes, { fault = async () => {}, selection = false, replace = rename, cleanupPending = false } = {}) {
   await ownedDirectory(dirname(path));
   const temporary = join(dirname(path), `pending-${randomUUID()}.tmp`);
   const handle = await open(temporary, 'wx', 0o600);
+  let committed = false;
   try {
-    await handle.writeFile(bytes);
-    await fault(selection ? 'before-select-flush' : 'before-flush');
-    await handle.sync();
-    await fault(selection ? 'after-select-flush' : 'after-flush');
-  } finally { await handle.close(); }
-  await ownedDirectory(dirname(path));
-  // Existing pointers must be ordinary owned files; never replace a junction/link.
-  try { await ownedFile(path); } catch (e) { if (e.code !== 'ENOENT') throw e; }
-  await fault(selection ? 'before-select' : 'before-rename');
-  await rename(temporary, path);
-  await fault(selection ? 'after-select' : 'after-rename');
-  const readback = await readOwnedBytes(path, bytes.byteLength);
-  if (!Buffer.from(bytes).equals(readback)) throw new Error('Durable readback mismatch');
-  return digest(readback);
+    try {
+      await handle.writeFile(bytes);
+      await fault(selection ? 'before-select-flush' : 'before-flush');
+      await handle.sync();
+      await fault(selection ? 'after-select-flush' : 'after-flush');
+    } finally { await handle.close(); }
+    await ownedDirectory(dirname(path));
+    // Existing pointers must be ordinary owned files; never replace a junction/link.
+    try { await ownedFile(path); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+    await fault(selection ? 'before-select' : 'before-rename');
+    await replace(temporary, path);
+    committed = true;
+    await fault(selection ? 'after-select' : 'after-rename');
+    const readback = await readOwnedBytes(path, bytes.byteLength);
+    if (!Buffer.from(bytes).equals(readback)) throw new Error('Durable readback mismatch');
+    return digest(readback);
+  } catch (error) {
+    // Appearance opts in; project/recovery staging semantics stay unchanged.
+    // Never enumerate stages, delete a destination, or follow a replaced link.
+    if (cleanupPending === true && !committed) {
+      try { await ownedDirectory(dirname(path)); await unlink(await ownedFile(temporary)); }
+      catch { /* Preserve the original refusal if exact owned cleanup is unavailable. */ }
+    }
+    throw error;
+  }
 }
 
 const activeWriters = new Set();

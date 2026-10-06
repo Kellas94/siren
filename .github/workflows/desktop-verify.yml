@@ -119,6 +119,9 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
             desktop/evidence/workspace-appearance/*/result.json
             desktop/evidence/workspace-appearance/*/electron.log
             desktop/evidence/workspace-appearance/*/*.png
@@ -312,6 +315,9 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
             desktop/evidence/workspace-appearance/*/result.json
             desktop/evidence/workspace-appearance/*/electron.log
             desktop/evidence/workspace-appearance/*/*.png
@@ -442,6 +448,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/workspace-appearance.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged shared appearance/navigation failed" }
+          node tests/native/ui-personality.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged UI theme metrics and native controls failed" }
           node tests/native/docs-reader.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged semantic Docs reading failed" }
           node tests/native/source-analysis.mjs --package $preview.previewRoot --300k
@@ -553,6 +561,9 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
             desktop/evidence/workspace-appearance/*/result.json
             desktop/evidence/workspace-appearance/*/electron.log
             desktop/evidence/workspace-appearance/*/*.png

@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {mkdtemp} from './fixtures/temporary.mjs';
 import {AppearanceStore} from '../src/appearance/store.mjs';
 import {invokeShell} from '../src/appearance/ipc.mjs';
-import {readAppearancePalette,addDesktopShell} from '../build/appearance.mjs';
+import {readAppearancePalette,readDesktopShell,addDesktopShell} from '../build/appearance.mjs';
 import {Script,runInNewContext} from 'node:vm';
 import {parse} from 'parse5';
 
@@ -16,6 +16,17 @@ test('original named themes retain their exact chrome colours without importing 
  assert.equal(blue.mode,'light');assert.equal(blue.colors['app-bg'],'#edf2f9');assert.equal(blue.colors.primary,'#00338d');
  assert.equal(new Set(themes.map(t=>t.id)).size,39);
  assert.equal(/url\s*\(|@import|<script/i.test(JSON.stringify(themes)),false);
+});
+test('native appearance carries original angular, rounded and glow metrics through the packed shell',async()=>{
+ const themes=await readAppearancePalette(),byId=id=>themes.find(t=>t.id===id);
+ assert.deepEqual(['xl','lg','md','sm'].map(size=>byId('artdeco').metrics['radius-'+size]),['8px','6px','4px','2px']);
+ assert.deepEqual(['xl','lg','md','sm'].map(size=>byId('cupertino').metrics['radius-'+size]),['30px','24px','17px','13px']);
+ assert.equal(byId('light').metrics['shadow-soft'],'0 8px 24px rgba(68, 51, 38, 0.08)');
+ assert.equal(byId('matrix').metrics.shadow,'0 0 0 1px rgba(0,255,65,.14), 0 0 32px rgba(0,255,65,.10)');
+ assert.equal(byId('cupertino').metrics.shadow.includes('inset'),true);
+ const window={};runInNewContext((await readDesktopShell()).split('\n')[0],{window});
+ assert.deepEqual(JSON.parse(JSON.stringify(window.SirenAppearancePalette)),themes);
+ for(const theme of themes){assert.equal(Object.keys(theme.metrics).length,6);assert.equal(/url\s*\(|@import|var\s*\(|expression|<|>/i.test(JSON.stringify(theme.metrics)),false);}
 });
 test('appearance persists atomically, refuses stale writers and preserves corrupt records',async()=>{
  const root=await mkdtemp(join(tmpdir(),'siren-appearance-'));const store=new AppearanceStore(root);

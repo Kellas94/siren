@@ -5,6 +5,10 @@ import {transform} from 'esbuild';
 import {parse} from 'parse5';
 import {THEME_IDS} from '../src/appearance/contracts.mjs';
 const fields=['app-bg','panel-bg','panel-alt','input-bg','text','muted','border','primary','primary-text','focus-ring'];
+const metricFields=['radius-xl','radius-lg','radius-md','radius-sm','shadow','shadow-soft'];
+// Only literal local shape tokens from the frozen baseline enter native CSS.
+const radius=value=>typeof value==='string'&&value.length<=16&&/^(?:\d{1,2}(?:\.\d+)?)px$/.test(value)&&Number.parseFloat(value)<=64;
+const shadow=value=>typeof value==='string'&&value.length<=512&&value.split(/,(?![^(]*\))/).every(part=>/^(?:inset\s+)?(?:-?(?:\d+(?:\.\d+)?|\.\d+)(?:px)?\s+){2,4}rgba\([\d.,\s]+\)(?:\s+inset)?$/.test(part.trim()));
 /** Keep the frozen Studio's theme lifecycle; the native preference owns persistence. */
 export function patchClassicAppearance(html){
  const marker='      function applyTheme(themeName, shouldRender) {';
@@ -31,14 +35,16 @@ export async function readAppearancePalette(){
   const block=id==='dark'?root:css.match(new RegExp('\\[data-theme="'+id+'"\\]\\s*\\{([^}]+)\\}'))?.[1];if(!block||!labels.has(id))throw Error('Original named palette missing: '+id);
   const values={...defaults,...declarations(block)},colors=Object.fromEntries(fields.map(key=>[key,values['--'+key]]));
   if(Object.values(colors).some(value=>typeof value!=='string'||! /^(?:#[\da-f]{3,8}|rgba?\([\d.,%\s]+\))$/i.test(value)))throw Error('Non-colour palette field refused: '+id);
-  return {id,name:labels.get(id),mode:values['color-scheme']==='light'?'light':'dark',colors};
+  const metrics=Object.fromEntries(metricFields.map(key=>[key,values['--'+key]]));
+  if(metricFields.some(key=>!(key.startsWith('radius-')?radius:shadow)(metrics[key])))throw Error('Non-literal appearance metric refused: '+id);
+  return {id,name:labels.get(id),mode:values['color-scheme']==='light'?'light':'dark',colors,metrics};
  });
 }
 export async function readDesktopShell(){
  const source=(await Promise.all(['workspace/guide.js','shared/appearance-sync.js','shared/search.js','shared/shell.js'].map(path=>readFile(new URL('../src/ui/'+path,import.meta.url),'utf8')))).join('\n');
  const colors=[],index=value=>{let i=colors.indexOf(value);if(i<0){i=colors.length;colors.push(value);}return i;};
- const themes=(await readAppearancePalette()).map(t=>[t.id,t.name,t.mode,...fields.map(key=>index(t.colors[key]))]);
- return 'window.SirenAppearancePalette=(()=>{const c='+JSON.stringify(colors)+';return '+JSON.stringify(themes)+'.map(([id,name,mode,...v])=>({id,name,mode,colors:Object.fromEntries('+JSON.stringify(fields)+'.map((k,i)=>[k,c[v[i]]]))}));})();\n'+source;
+ const themes=(await readAppearancePalette()).map(t=>[t.id,t.name,t.mode,...fields.map(key=>index(t.colors[key])),...metricFields.map(key=>index(t.metrics[key]))]);
+ return 'window.SirenAppearancePalette=(()=>{const c='+JSON.stringify(colors)+';return '+JSON.stringify(themes)+'.map(([id,name,mode,...v])=>({id,name,mode,colors:Object.fromEntries('+JSON.stringify(fields)+'.map((k,i)=>[k,c[v[i]]])),metrics:Object.fromEntries('+JSON.stringify(metricFields)+'.map((k,i)=>[k,c[v[i+'+fields.length+']]]))}));})();\n'+source;
 }
 /** Two exact local resources, with SRI and exact CSP paths; no general asset API. */
 export async function addDesktopShell(html,outputDir){

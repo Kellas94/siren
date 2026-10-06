@@ -1,0 +1,16 @@
+# Guarded appearance replacement — owner qualification
+
+Author: Codex /root. Source 8e16957e35c1a4a8b123f53d6c0bf32d04d8be74. Owner and independent execution scopes remain distinct.
+
+Appearance now retries only the actual replacement operation for EPERM/EBUSY, at most three invocations with20/40ms requested delays. One flushed staging file is reused within the existing root writer queue. Every attempt revalidates the directory, staging/target paths and captured-current/write authority. Phase-hook, validation, unexpected-error and readback refusals are not retried. No destination truncation/deletion or permission fallback is introduced. Exact owned uncommitted staging cleanup is opt-in and best-effort; unrelated UUID stages and generic project/recovery default staging remain intact.
+
+Owner verification: initial external future-contract suite was RED0/10 against the prior implementation; it included an actual held Windows target refusal and cleanup observations. Some RED checks require the newly introduced internal replacement seam and are not claimed as ten separate preexisting defects. Corrected same external10 passed; tracked12 passed, including serialized EBUSY intents and real private-shell store currentness loss. Full1100 subsequently passed with unchanged captured inputs. Three affected original native probes and three distinct exact portable-copy probes completed with unchanged full captures. Exact248-file package identity passed. All generated renderer identities match prior source2c UI qualification; source2c native58/copy7 is not relabeled as newly rerun on8e.
+
+Independent correction review executed37 targeted repository tests and four independently authored actual Windows production-store fixtures with real rename/EPERM: transient release succeeded on2; persistent lock refused on3; retirement/Lock authority changes refused before attempt2. Its original reports retain authors, bytes, own observations and limits. It launched no Electron/package application and claims no hosted/release approval.
+
+- reviews/2026-10-06-ci37405358959-appearance-rename-independent.md SHA256 4f4b9480d86ef9df8018e338db25d9b2d8db0d80c5102dc7029f1da9f7510af6
+- reviews/2026-10-06-appearance-replace-correction-independent.md SHA256 a5a9cab5fead15141792827914b34a76a19c233253b5363507e916c3deea8e5a
+
+Historical hosted37405358959 on8f remains FINAL FAILURE. Its before-rename/EPERM boundary is consistent with a real reproduced rename mechanism but does not establish the exact hosted syscall or locker. The next head-matched strict hosted package probe is pending after guarded synchronization; no UI click retry, deadline increase, pointer-oracle weakening or adverse artifact replacement was used.
+
+Development-only preview path and archive/runtime hashes are in the adjacent receipt. Main, releases, installed application and production account/update configuration are unchanged. Remaining original Docs domain/images/reviews/releases, Present authoring, Diagram/Code command parity and decorative/physical-monitor validation remain open.

@@ -1,0 +1,147 @@
+{
+  "author": "/root",
+  "sourceCommit": "2c9b4461b0283d55516e879f80aa21fe73259d47",
+  "status": "LOCAL_SCOPED_COMPLETE_HOSTED_OLD_HEAD_FAILED",
+  "files": {
+    "full": "evidence/workspace-surface/full-suite-2026-10-06T03-04-29.932Z/result.json",
+    "native": "evidence/workspace-surface/ui-final-native-2026-10-06T03-06-26.206Z/result.json",
+    "copied": "evidence/workspace-surface/ui-final-package-native-2026-10-06T03-18-03.413Z/result.json",
+    "identity": "evidence/workspace-surface/package-identity-2026-10-06T03-06-41.609Z/result.json"
+  },
+  "artifacts": [
+    {
+      "name": "full",
+      "path": "evidence/workspace-surface/full-suite-2026-10-06T03-04-29.932Z/result.json",
+      "sha256": "6c281823e19792d0781d089bf69173da510945be92d707ff31db31e3e3a2abaa"
+    },
+    {
+      "name": "native",
+      "path": "evidence/workspace-surface/ui-final-native-2026-10-06T03-06-26.206Z/result.json",
+      "sha256": "c3f6dfc1fed145a8b5e4a8e4177565d7e5d2f1b1125cd8338da2c80e1c5ef078"
+    },
+    {
+      "name": "copied",
+      "path": "evidence/workspace-surface/ui-final-package-native-2026-10-06T03-18-03.413Z/result.json",
+      "sha256": "2354764a18990a679ed59e6663c77609c18a193d93f2b76eb103e782e3998001"
+    },
+    {
+      "name": "identity",
+      "path": "evidence/workspace-surface/package-identity-2026-10-06T03-06-41.609Z/result.json",
+      "sha256": "4af86d36ac128c68f1adc10ceea4826284df4eac60c88fcd3cbccbdabbbd6de7"
+    }
+  ],
+  "full": {
+    "pass": 1088,
+    "exit": {
+      "code": 0,
+      "signal": null
+    },
+    "changedInputs": []
+  },
+  "native": {
+    "children": [
+      {
+        "group": "desktop",
+        "code": 0,
+        "signal": null,
+        "status": "COMPLETE",
+        "children": 20,
+        "failed": []
+      },
+      {
+        "group": "sources",
+        "code": 0,
+        "signal": null,
+        "status": "COMPLETE",
+        "children": 20,
+        "failed": []
+      },
+      {
+        "group": "diagrams",
+        "code": 0,
+        "signal": null,
+        "status": "COMPLETE",
+        "children": 18,
+        "failed": []
+      }
+    ],
+    "changedInputs": []
+  },
+  "copied": {
+    "children": [
+      {
+        "name": "packaged",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "ui-personality",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-format",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "diagram-style",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-edit",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "source-read",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": []
+  },
+  "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-c3a94a61-924f-4228-a877-1d5ab4964d0b",
+  "archive": {
+    "bytes": 53698566,
+    "sha256": "d852d9a9b93e96dbc0fb2be49ea7dd658d2b1baf5b0af52cf59fc4525ddd08a8"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "reports": [
+    {
+      "path": "reviews/2026-10-06-theme-metrics-independent.md",
+      "sha256": "67e2a2ec416c29363917af0a837b96a7b76d048d092b7d29727a4acf67ad7726"
+    },
+    {
+      "path": "reviews/2026-10-06-ui-metrics-controls-followup-independent.md",
+      "sha256": "0796264e475ed821e943ba6ddec386ffbc0cc591251acf8330b7f9c2b0375677"
+    },
+    {
+      "path": "reviews/2026-10-06-ci37405358959-appearance-rename-independent.md",
+      "sha256": "4f4b9480d86ef9df8018e338db25d9b2d8db0d80c5102dc7029f1da9f7510af6"
+    }
+  ],
+  "hostedPrior": {
+    "run": 37405358959,
+    "head": "8f3b543c3b11631c628aaed7fe90769b7193fcbf",
+    "conclusion": "failure",
+    "artifactId": 11387500962,
+    "artifactSHA256": "1580b87192a31ff7d86126fda364df4e3923deab13164f242589bb6ab2f812e7"
+  },
+  "limits": [
+    "Owner executions are not independent evaluations. Independent report scopes and source cutoffs are retained exactly.",
+    "Original native actual-Code ADVERSE6 on339 and original hosted failures are preserved.",
+    "Minimum native geometry and real Tab prove reachability, not every handler, physical monitors, DPI, IME or complete attached layout qualification.",
+    "No release, main merge or installed application replacement.",
+    "Full remaining Docs domain/image/review controls, Present authoring, Diagram/Code control parity and decoration remain open."
+  ]
+}
