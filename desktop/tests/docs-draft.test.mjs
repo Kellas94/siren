@@ -5,6 +5,18 @@ import {readFile} from 'node:fs/promises';
 import {createHash,webcrypto} from 'node:crypto';
 const fingerprint=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+test('ordinary Docs Save preserves Undo and Redo against the newly saved baseline',async()=>{
+ const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder});
+ const original={id:'saved-history',title:'Before',blocks:[{id:'body',kind:'text',text:'Exact original body'}],agent:{future:'preserved'},releases:[{verdict:'historic'}]};let saved=structuredClone(original),revision=1;
+ const draft=window.SirenNativeDocsDraft.create({context:{ok:true,readonly:false,document:original,version:'1'.repeat(64),sha256:fingerprint(original),projectRevision:revision},bridge:{applyDocument:async request=>{
+  assert.equal(request.action,'replace-content');assert.equal(request.expectedVersion,String(revision).repeat(64));saved={...saved,...structuredClone(request.payload)};revision++;return {ok:true,domain:'docs',entityId:original.id,operationId:request.operationId,version:String(revision).repeat(64),sha256:fingerprint(saved),projectRevision:revision,durability:'committed'};
+ }}});
+ const next=draft.getContent();next.title='After';next.blocks[0].text='Edited body';assert.equal(draft.setContent(next).ok,true);assert.equal((await draft.save()).ok,true);assert.equal(draft.getStatus().dirty,false);
+ assert.equal(draft.getStatus().canUndo,true);assert.equal(draft.undo().ok,true);assert.deepEqual(draft.getContent(),{title:original.title,blocks:original.blocks});assert.equal(draft.getStatus().dirty,true);assert.equal(saved.title,'After');
+ assert.equal(draft.redo().ok,true);assert.equal(draft.getContent().title,'After');assert.equal(draft.getStatus().dirty,false);assert.deepEqual(draft.getDocument().agent,original.agent);assert.deepEqual(draft.getDocument().releases,original.releases);
+ assert.equal(draft.undo().ok,true);assert.equal((await draft.save()).ok,true);assert.equal(saved.title,'Before');assert.equal(saved.blocks[0].text,'Exact original body');assert.equal(draft.getStatus().canRedo,true);
+});
+
 test('local Docs history groups typing, preserves original blocks and metadata, and refuses paused or uncertain edits',async()=>{
  const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};let time=100;
  vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder,Date:{now:()=>time}});

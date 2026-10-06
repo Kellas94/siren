@@ -31,6 +31,7 @@ homeBridge.createDocument=payload=>ipcRenderer.invoke('siren:home-document-creat
 homeBridge.showRecovery=()=>ipcRenderer.invoke('siren:home-recovery',{});
 homeBridge.getCatalog=payload=>ipcRenderer.invoke('siren:windows','getCatalog',payload??{});
 homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',payload);
+homeBridge.editDeck=payload=>ipcRenderer.invoke('siren:deck-navigation','edit',payload);
 homeBridge.focusView=payload=>ipcRenderer.invoke('siren:windows','focusView',payload);
 homeBridge.onInvalidated=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=()=>callback();ipcRenderer.on('siren:home-invalidated',listener);return()=>ipcRenderer.removeListener('siren:home-invalidated',listener);};
 homeBridge.onNavigate=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=(_event,surface)=>{if(['diagrams','docs','code','present','find'].includes(surface))callback(surface);};ipcRenderer.on('siren:shell-module',listener);return()=>ipcRenderer.removeListener('siren:shell-module',listener);};

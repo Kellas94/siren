@@ -10,13 +10,13 @@ import {WindowRegistry} from '../../src/windows/registry.mjs';
 import {WorkspaceCoordinator} from '../../src/windows/coordinator.mjs';
 import {invokeSourceRead} from '../../src/windows/source-bridge.mjs';
 
-export async function sourceReadFixture(){
+export async function sourceReadFixture(metadata={workpapers:[{id:'doc-a',private:'PLANTED_DOCS_PRIVATE_CONTENT'}]}){
   const root=await mkdtemp(join(tmpdir(),'siren-source-read-bridge-')),projects=new ProjectStore(root),sources=new SourceRepository(root);
   const first=await projects.createProject({label:'Read-only native bridge',json:'{}'});
   const refs=[];for(const text of ['exact 😀\r\n','foreign secret\n'])refs.push(await sources.importSource({projectId:first.project.id,bytes:Buffer.from(text)}));
-  assert.equal((await commitManifest({projects,repository:sources,projectId:first.project.id,baseRevision:1,sourceRefs:refs,metadata:{workpapers:[{id:'doc-a',private:'PLANTED_DOCS_PRIVATE_CONTENT'}]},operationId:'initial-read-bridge'})).ok,true);
+  assert.equal((await commitManifest({projects,repository:sources,projectId:first.project.id,baseRevision:1,sourceRefs:refs,metadata,operationId:'initial-read-bridge'})).ok,true);
   const selected=await projects.readProject(first.project.id),windows=[];let serial=1,unlocked=true,factories=0;
-  const registry=new WindowRegistry({authorize:()=>unlocked?{projectId:first.project.id,mode:'readonly',access:'read',entityIds:[...refs.map(ref=>ref.sourceId),'doc-a']}:null,createWindow:async record=>{
+  const registry=new WindowRegistry({authorize:request=>unlocked?{projectId:first.project.id,mode:'readonly',access:request.role==='audience'?'presentation':'read',entityIds:[...refs.map(ref=>ref.sourceId),...(metadata.workpapers??[]).map(v=>v.id),...(metadata.diagrams??[]).map(v=>v.id)]}:null,createWindow:async record=>{
     const window=new EventEmitter();window.id=serial++;let destroyed=false;Object.assign(window,{isDestroyed:()=>destroyed,isMinimized:()=>false,restore(){},focus(){},close:()=>window.destroy(),destroy:()=>{destroyed=true;window.emit('closed');}});
     const wc=window.webContents=new EventEmitter();Object.assign(wc,{id:100+window.id,mainFrame:{url:record.mainFrameUrl},getURL:()=>wc.mainFrame.url,isDestroyed:()=>destroyed});windows.push(window);return window;
   }});

@@ -40,6 +40,8 @@ import {NativeAllViewControl} from './windows/control.mjs';
 import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
 import {PresentationSession} from './windows/presentation.mjs';
 import {NativePresentationDecks} from './windows/presentation-deck.mjs';
+import {NativeDocsReferences} from './windows/docs-references.mjs';
+import {NativeDeckNavigation} from './windows/deck-navigation.mjs';
 import {NativePresentationIPC} from './windows/presentation-ipc.mjs';
 import {renderPresentationPreview} from './windows/presentation-render.mjs';
 import {navigationFields} from './navigation/contracts.mjs';
@@ -467,12 +469,29 @@ const docsSources=new NativeDocsSources({registry:windowRegistry,owner:workspace
  show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Linked source window unavailable');view.webContents.send('siren:view-ready');view.show();},
 });
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
+const docsReferences=new NativeDocsReferences({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,snapshotFor:()=>snapshot,
+ canOpen:grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure&&grant.projectId===selectedId,
+ show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Reference window unavailable');view.webContents.send('siren:view-ready');view.show();},
+});
 const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:workspaceOwner,reads:diagramReads,projects,
  render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input,scope});},
  reveal:path=>shell.showItemInFolder(path),
 });
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
+const deckNavigation=new NativeDeckNavigation({registry:windowRegistry,snapshotFor:()=>snapshot,
+ canOpen:grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure&&grant.projectId===selectedId,
+ canEdit:workingEnabled,
+ openEdit:async(grant,{entityId},scope)=>{
+  let opened;try{
+   if(!scope.isCurrent())throw Error('Deck retired');const existing=windowRegistry.listViews().find(v=>v.role==='diagram'&&v.projectId===grant.projectId&&v.entityId===entityId&&workingDiagrams?.isWorking(windowRegistry.capture({sender:nativeShells.get(v.windowId)?.webContents,senderFrame:nativeShells.get(v.windowId)?.webContents.mainFrame})));
+   if(existing){const view=nativeShells.get(existing.windowId);if(!view||view.isDestroyed()||!scope.isCurrent())throw Error('Deck retired');if(view.isMinimized())view.restore();view.webContents.send('siren:deck-authoring');view.show();view.focus();return {ok:true,view:{windowId:existing.windowId,role:'diagram',entityId,epoch:existing.epoch}};}
+   opened=await windowRegistry.openView({role:'diagram',entityId});if(!scope.isCurrent())throw Error('Deck retired');const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
+   workingDiagrams??=new NativeDiagramEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onReferenceChanged:(own,ref)=>{if(workingDiagrams?.isWorking(own)&&workspaceOwner.canReadDomain(own,'diagram',ref.diagramId))windowRegistry.eventFor(own)?.sender.send('siren:working-diagram-changed',ref);}});
+   const admitted=await workingDiagrams.admit(fresh);if(!admitted.ok||!scope.isCurrent()||!workingDiagrams.isWorking(fresh))throw Error('Working deck refused');view.webContents.send('siren:deck-authoring');view.webContents.send('siren:view-ready');view.show();return {ok:true,view:{windowId:opened.windowId,role:opened.role,entityId,epoch:opened.epoch}};
+  }catch{if(opened&&!await windowRegistry.discardViewAsync(opened.windowId)){nativeShellFailure=true;return {ok:false,code:'WINDOW_DESTROY_FAILED'};}return {ok:false,code:'ACCESS_REFUSED'};}
+ },show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Presenter unavailable');view.webContents.send('siren:view-ready');view.show();},
+});
 const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket),onProgress:progress=>console.info('SIREN_VIEW_PREPARE_STAGE',JSON.stringify(progress))});
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
@@ -884,6 +903,10 @@ ipcMain.handle('siren:docs-sources',async(event,method,payload,flushNonce)=>{
  const operation=docsSources.invoke({event,method,payload,flushNonce});writes.add(operation);
  try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
 });
+ipcMain.handle('siren:docs-references',async(event,method,payload,flushNonce)=>{
+ const operation=docsReferences.invoke({event,method,payload,flushNonce});writes.add(operation);
+ try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
+});
 ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
   if(['openWorkingCopy','openLatest'].includes(method)){
     try{navigationFields(payload??{},[]);}catch{return {ok:false,code:'REQUEST_REFUSED'};}
@@ -912,6 +935,7 @@ ipcMain.handle('siren:diagram-export',async(event,method,payload)=>{
  if(pinTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)return {ok:false,code:'ACCESS_REFUSED'};
  const operation=diagramExports.invoke({event,method,payload});writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
+ipcMain.handle('siren:deck-navigation',async(event,method,payload)=>{const operation=deckNavigation.invoke({event,method,payload});writes.add(operation);try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}});
 const invokeNativeWindow=async (event, method, payload) => {
   if (pinTransition || writes.selectionTransition || writes.viewClosing || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
   if(method==='getCatalog'){

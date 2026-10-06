@@ -12,10 +12,10 @@ async function fixture(){
   setAttribute(name,value){this[name]=value;}
   addEventListener(name,fn){this.listeners[name]=fn;}
  }
- const ids=['viewStatus','publicSlide','viewTitle','slideList','presenterNotes','position','audienceDisplay','closeView','fullscreen','previousSlide','nextSlide','refreshDeck','openAudience'];for(const id of ids)nodes.set(id,new Element());
+ const ids=['editDeck','viewStatus','publicSlide','viewTitle','slideList','presenterNotes','position','audienceDisplay','closeView','fullscreen','previousSlide','nextSlide','refreshDeck','openAudience'];for(const id of ids)nodes.set(id,new Element());
  const body=new Element();body.dataset.role='presenter';
  const state={ok:true,sequence:0,deck:{version:'v1',title:'Actual deck',slides:[{id:'slide-a',title:'Public title',notes:'PRIVATE_CURRENT_NOTES'}]},slideId:'slide-a'};
- const bridge={getPresenter:async()=>state,getDisplays:async()=>({ok:true,displays:[]}),getPreview:async()=>({ok:true,frame:{epoch:1,sequence:calls.length,slideId:'slide-a',deckVersion:'v1',publicSlide:{kind:'text',title:'Public title',body:'Public body'}}}),navigate:async()=>{calls.push('navigate');return{ok:true,slideId:'slide-a'};},refreshDeck:async()=>({ok:true}),openAudience:async()=>({ok:true}),onFrame:fn=>callbacks.frame=fn,onFullscreen:fn=>callbacks.fullscreen=fn};
+ const bridge={editDeck:async()=>({ok:true}),getPresenter:async()=>state,getDisplays:async()=>({ok:true,displays:[]}),getPreview:async()=>({ok:true,frame:{epoch:1,sequence:calls.length,slideId:'slide-a',deckVersion:'v1',publicSlide:{kind:'text',title:'Public title',body:'Public body'}}}),navigate:async()=>{calls.push('navigate');return{ok:true,slideId:'slide-a'};},refreshDeck:async()=>({ok:true}),openAudience:async()=>({ok:true}),onFrame:fn=>callbacks.frame=fn,onFullscreen:fn=>callbacks.fullscreen=fn};
  const document={body,documentElement:{style:{}},getElementById:id=>nodes.get(id),createElement:()=>new Element(),querySelectorAll:()=>['previousSlide','nextSlide','refreshDeck','openAudience','audienceDisplay','fullscreen','closeView'].map(id=>nodes.get(id)),addEventListener:()=>{}};
  vm.runInNewContext(script,{document,window:{sirenPresentation:bridge,sirenWindow:{getView:async()=>({ok:true,view:{role:'presenter',epoch:1,windowId:'owned'}}),onReady:()=>{},closeView:async()=>({ok:true})},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn}}});
  for(let n=0;n<20&&body.dataset.publicReady!=='true';n++)await new Promise(resolve=>setImmediate(resolve));

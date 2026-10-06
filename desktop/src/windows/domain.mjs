@@ -5,6 +5,8 @@ import {verifySnapshot} from '../projects/store.mjs';
 import {commitManifest,selectedManifestHistory} from '../sources/manifest.mjs';
 import {workspaceMetadata,validEntityId} from './entities.mjs';
 import {documentVersion} from './docs.mjs';
+import {normalizeDocumentContext,applyDocumentContext} from '../documents/context.mjs';
+import {normalizePresentationEdits,applyPresentationEdits} from '../documents/presentation-edits.mjs';
 const error=code=>Object.assign(new Error(code),{code});
 const fail=code=>Object.freeze({ok:false,code});
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
@@ -29,12 +31,14 @@ function domainIntent(domain,input) {
  if(!validId(request.operationId)||!validEntityId(request[idKey])||(domain==='docs'?!hash(request.expectedVersion):!Number.isSafeInteger(request.expectedVersion)||request.expectedVersion<1||request.expectedVersion>=Number.MAX_SAFE_INTEGER))throw error('REQUEST_REFUSED');
  let payload;
  if(domain==='docs'&&request.action==='rename'){payload=navigationFields(request.payload,['title']);if(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed())throw error('REQUEST_REFUSED');}
- else if(domain==='docs'&&['replace-blocks','replace-content'].includes(request.action)){
-  payload=navigationFields(request.payload,request.action==='replace-content'?['title','blocks']:['blocks']);
-  if(!Array.isArray(payload.blocks)||payload.blocks.length>300||request.action==='replace-content'&&(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed()))throw error('REQUEST_REFUSED');
+ else if(domain==='docs'&&['replace-blocks','replace-content','replace-context-content'].includes(request.action)){
+  payload=navigationFields(request.payload,request.action==='replace-context-content'?['title','blocks','context']:request.action==='replace-content'?['title','blocks']:['blocks']);
+  if(!Array.isArray(payload.blocks)||payload.blocks.length>300||request.action!=='replace-blocks'&&(typeof payload.title!=='string'||payload.title.length>160||!payload.title.isWellFormed()))throw error('REQUEST_REFUSED');
+  if(request.action==='replace-context-content')payload.context=normalizeDocumentContext(payload.context);
  }
  else if(domain==='diagram'&&['replace-source','update-model'].includes(request.action)){payload=navigationFields(request.payload,['source']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');}
  else if(domain==='diagram'&&request.action==='replace-content'){payload=navigationFields(request.payload,['source',...styleFields],['source']);if(typeof payload.source!=='string'||Object.keys(payload).length<2)throw error('REQUEST_REFUSED');}
+ else if(domain==='diagram'&&request.action==='replace-deck-content'){payload=navigationFields(request.payload,['source','presentationEdits',...styleFields.filter(k=>k!=='presentation')],['source','presentationEdits']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');payload.presentationEdits=normalizePresentationEdits(payload.presentationEdits);}
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');
  const copied=dataCopy(payload);if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
@@ -68,7 +72,7 @@ function envelope(snapshot,workspace) {
  return metadata;
 }
 const receipt=(snapshot,domain,id,durability,operationId)=>Object.freeze({ok:true,domain,entityId:id,version:version(snapshot,domain,id),sha256:fingerprint(selectedEntity(snapshot,domain,id)),projectRevision:snapshot.revision,durability,...(operationId?{operationId}:{})});
-const publicCodes=new Set(['REQUEST_REFUSED','ACCESS_REFUSED','ENTITY_REFUSED','ENTITY_BUDGET','DOMAIN_VALIDATION_FAILED','REVISION_CONFLICT','DOCUMENT_CONFLICT','OPERATION_CONFLICT','DOMAIN_READBACK_FAILED','DOMAIN_VERSION_CHANGED','MANIFEST_WRITE_FAILED','MANIFEST_READBACK_FAILED','WRITER_BUSY','OWNED_PATH_REFUSED','INLINE_SOURCE_REFUSED','UNKNOWN_SOURCE_REFERENCE']);
+const publicCodes=new Set(['REQUEST_REFUSED','ACCESS_REFUSED','ENTITY_REFUSED','ENTITY_BUDGET','DOMAIN_VALIDATION_FAILED','REFERENCE_TARGET_REFUSED','REFERENCE_BUDGET','CONTEXT_REFUSED','REVISION_CONFLICT','DOCUMENT_CONFLICT','OPERATION_CONFLICT','DOMAIN_READBACK_FAILED','DOMAIN_VERSION_CHANGED','MANIFEST_WRITE_FAILED','MANIFEST_READBACK_FAILED','WRITER_BUSY','OWNED_PATH_REFUSED','INLINE_SOURCE_REFUSED','UNKNOWN_SOURCE_REFERENCE']);
 export function projectDomainResult(domain,method,result,request) {
  try {
   if(result?.ok!==true)return fail(publicCodes.has(result?.code)?result.code:'DOMAIN_OPERATION_FAILED');
@@ -105,7 +109,9 @@ export class DomainRepository {
    if(version(current,domain,id)!==request.expectedVersion)throw error(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT');
    if(await this.#validate({domain,action:request.action,payload:dataCopy(request.payload),before:JSON.parse(JSON.stringify(selectedEntity(current,domain,id)))},scope)!==true)throw error('DOMAIN_VALIDATION_FAILED');guard(scope);
    const workspace=workspaceMetadata(current),target=workspace[domain==='docs'?'workpapers':'diagrams'].find(item=>item.id===id);
-   Object.assign(target,request.payload);if(domain==='diagram')target.sirenNativeVersion=request.expectedVersion+1;
+   if(domain==='docs'&&request.action==='replace-context-content')Object.assign(target,applyDocumentContext(target,request.payload.context,{targets:workspace}),{title:request.payload.title,blocks:request.payload.blocks});
+   else if(domain==='diagram'&&request.action==='replace-deck-content')Object.assign(target,Object.fromEntries(Object.entries(request.payload).filter(([k])=>k!=='presentationEdits')),{presentation:applyPresentationEdits(target.presentation,request.payload.presentationEdits)});
+   else Object.assign(target,request.payload);if(domain==='diagram')target.sirenNativeVersion=request.expectedVersion+1;
    const metadata=envelope(current,workspace);metadata.sirenNativeEntityOperation={schema:1,projectId:scope.projectId,domain,entityId:id,requestHash,sha256:fingerprint(target)};
    const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:current.revision,sourceRefs:current.sourceRefs??[],metadata,operationId:request.operationId});guard(scope);if(!saved.ok)return fail(saved.code);
    const reopened=await projects.readProject(scope.projectId);guard(scope);if(reopened.revision!==saved.revision||fingerprint(selectedEntity(reopened,domain,id))!==fingerprint(target))throw error('DOMAIN_READBACK_FAILED');return receipt(reopened,domain,id,saved.durability,request.operationId);

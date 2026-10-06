@@ -8,6 +8,7 @@
   let content={title:document.title??'',blocks:structuredClone(document.blocks??[])},dirty=false,paused=false,fenced=false,disposed=false,pending=null;
   let undo=[],redo=[],group=null,groupAt=0,historyLimited=false;
   const editable=()=>!disposed&&!paused&&!pending&&!fenced&&!context.readonly;
+  const actualDocument=()=>({...((content.context&&window.SirenDocumentContext)?window.SirenDocumentContext.applyDocumentContext(document,content.context):document),title:content.title,blocks:content.blocks});
   const resetHistory=()=>{undo=[];redo=[];group=null;groupAt=0;historyLimited=false;};
   const trimHistory=()=>{while(undo.length+redo.length>60||[...undo,...redo].reduce((n,s)=>n+s.length*2,0)>4*1024*1024){if(undo.length)undo.shift();else redo.shift();}};
   const updateDirty=()=>{dirty=JSON.stringify(content)!==JSON.stringify({title:document.title??'',blocks:document.blocks??[]});};
@@ -22,18 +23,22 @@
    if(disposed||context.readonly||fenced||paused&&!prepare)return fail(fenced?'DOCUMENT_FENCED':'ACCESS_REFUSED');
    if(pending)return pending;if(!dirty)return Object.freeze({ok:true,unchanged:true});
    group=null;
-   const payload=structuredClone(content),request={operationId:operationId(),documentId:document.id,expectedVersion:version,action:'replace-content',payload},expected={...document,...payload};
+   const payload=structuredClone(content),request={operationId:operationId(),documentId:document.id,expectedVersion:version,action:content.context?'replace-context-content':'replace-content',payload},expected=actualDocument();
    const own=(async()=>{
     let receipt;try{receipt=await bridge.applyDocument(request);}catch{fenced=true;return fail('DOCUMENT_SAVE_FAILED');}
     if(disposed)return fail('VIEW_DISPOSED');
-    if(receipt?.ok===false&&receipt.code==='DOMAIN_VALIDATION_FAILED')return fail(receipt.code);
+    if(receipt?.ok===false&&['DOMAIN_VALIDATION_FAILED','REFERENCE_TARGET_REFUSED','REFERENCE_BUDGET','CONTEXT_REFUSED'].includes(receipt.code))return fail(receipt.code);
     let verified=false;try{verified=await accepted(receipt,request,true,expected);}catch{/* Unknown commit cannot grant retry authority. */}
     if(!verified){fenced=true;return fail(receipt?.ok===false&&typeof receipt.code==='string'?receipt.code:'DOCUMENT_RESULT_REFUSED');}
-    if(disposed)return fail('VIEW_DISPOSED');document=expected;version=receipt.version;sha256=receipt.sha256;projectRevision=receipt.projectRevision;dirty=false;return receipt;
+    if(disposed)return fail('VIEW_DISPOSED');document=expected;content={title:document.title??'',blocks:structuredClone(document.blocks??[])};version=receipt.version;sha256=receipt.sha256;projectRevision=receipt.projectRevision;dirty=false;if(payload.context)resetHistory();return receipt;
    })();pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
   }
   return Object.freeze({
-   getStatus:status,getContent:()=>structuredClone(content),getDocument:()=>structuredClone({...document,...content}),
+   getStatus:status,getContent:()=>structuredClone(content),getDocument:()=>structuredClone(actualDocument()),
+   setContext(patch){
+    if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let delta;try{delta=window.SirenDocumentContext.documentContextDelta(document,window.SirenDocumentContext.applyDocumentContext(actualDocument(),patch));}catch{return fail('INVALID_CONTEXT');}
+    const next=structuredClone(content);if(Object.keys(delta).length)next.context=delta;else delete next.context;return this.setContent(next,{historyGroup:'context:'+Object.keys(patch).join(',')});
+   },
    setContent(value,{historyGroup=null}={}){
     if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let next,nextJSON;try{next=structuredClone(value);nextJSON=JSON.stringify(next);}catch{return fail('INVALID_CONTENT');}
     const previous=JSON.stringify(content);if(previous===nextJSON)return Object.freeze({ok:true});

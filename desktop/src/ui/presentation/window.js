@@ -1,6 +1,7 @@
 (() => {
  'use strict';
  const bridge=window.sirenPresentation,role=document.body.dataset.role,status=document.getElementById('viewStatus'),surface=document.getElementById('publicSlide');
+ if(role==='presenter')document.getElementById('editDeck').addEventListener('click',async()=>{if(busy||covered||!state)return;const turn=serial;busy=true;controls();try{const result=await bridge.editDeck();if(!covered&&turn===serial)status.textContent=result?.ok?'Deck editor opened · Playback keeps this saved version until Refresh.':'Deck editor unavailable. Your presentation is retained.';}catch{if(!covered&&turn===serial)status.textContent='Deck editor unavailable.';}finally{if(turn===serial){busy=false;controls();}}});
  let grant=null,state=null,sequence=0,serial=0,busy=false,covered=false,last=0,connecting=null;
  const controls=()=>{for(const e of document.querySelectorAll('button,select'))e.disabled=covered||busy;};
  const blank=()=>{surface.replaceChildren();last=0;document.body.dataset.publicReady='false';};

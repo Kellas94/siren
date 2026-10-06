@@ -17,6 +17,8 @@ import {SourceRepository} from '../src/sources/repository.mjs';
 import {RecoveryStore} from '../src/recovery/checkpoints.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {NativeDocsSources} from '../src/windows/docs-sources.mjs';
+import {NativeDocsReferences} from '../src/windows/docs-references.mjs';
+import {NativeDeckNavigation} from '../src/windows/deck-navigation.mjs';
 import {NativeDiagramReads} from '../src/windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from '../src/windows/diagram-edits.mjs';
 import {NativeDiagramExports} from '../src/windows/diagram-export.mjs';
@@ -64,7 +66,7 @@ function fixture() {
   const dataRoot=resolve('evidence/native-window-context');
   const nativeLayoutMemory=new NativeLayoutMemory({store:new WindowLayoutStore(dataRoot),displays:()=>[{id:1,primary:true,workArea:{x:0,y:40,width:1280,height:800}}]});
   const context = vm.createContext({ nativeLayoutMemory,WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
-    AppearanceStore,invokeShell,NativeDocsSources,NativeWindowFocus,bindNativeWindowFocusKeys,NativeWindowLayout,bindNativeDisplayRecovery,screen:Object.assign(new EventEmitter(),{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]}),
+    AppearanceStore,invokeShell,NativeDocsSources,NativeDocsReferences,NativeDeckNavigation,NativeWindowFocus,bindNativeWindowFocusKeys,NativeWindowLayout,bindNativeDisplayRecovery,screen:Object.assign(new EventEmitter(),{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]}),
     localPin:{state:()=>({unlocked})},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,accountTransition:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
     app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;}},

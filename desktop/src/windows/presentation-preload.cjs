@@ -2,6 +2,7 @@ const {contextBridge,ipcRenderer}=require('electron');
 if(location.pathname!=='/windows/audience.html')contextBridge.exposeInMainWorld('sirenShell',Object.freeze(Object.fromEntries(['getAppearance','setAppearance','navigate'].map(method=>[method,payload=>ipcRenderer.invoke('siren:shell',method,payload)]))));
 const invoke=(method,payload)=>ipcRenderer.invoke('siren:presentation',method,payload);
 const presentation=Object.fromEntries(['getPresenter','getPreview','navigate','refreshDeck','openAudience','getFrame','acknowledge','getDisplays','setFullscreen'].map(method=>[method,payload=>invoke(method,payload)]));
+if(location.pathname==='/windows/presenter.html')presentation.editDeck=()=>ipcRenderer.invoke('siren:deck-navigation','edit',{});
 presentation.onFrame=callback=>{
  if(typeof callback!=='function')throw TypeError('Expected callback');
  const listener=(_event,value)=>{

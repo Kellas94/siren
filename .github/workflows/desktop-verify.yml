@@ -156,6 +156,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log
@@ -356,6 +362,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log
@@ -490,6 +502,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram docking failed" }
           node tests/native/diagram-build.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-context.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs context failed" }
+          node tests/native/presentation-authoring.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged presentation authoring failed" }
           node tests/native/docs-structured.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { throw "Packaged structured Docs failed" }
           node tests/native/home-library-search.mjs --package $preview.previewRoot
@@ -606,6 +622,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log

@@ -21,6 +21,15 @@ test('native App catalog lists readonly Docs and exact selected Code versions wi
  assert.equal(JSON.stringify(result).includes('PLANTED_DOCS_PRIVATE_CONTENT'),false);assert.equal(JSON.stringify(result).includes('foreign secret'),false);
  assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
 });
+test('explicit Docs register details and bounded filters expose facts without private bodies or agent instructions',async()=>{
+ const f=await fixture();f.select({...f.selected,json:JSON.stringify({workpapers:[
+  {id:'doc-a',title:'Agent notes',type:'agent-spec',status:'draft',owner:'Ș Reviewer',agent:{agentId:'AG-7',agentVersion:'2',instructions:'PRIVATE'},links:[{kind:'diagram',diagramId:'diag-a'}],blocks:[{html:'PRIVATE_BODY'}]},
+  {id:'doc-b',title:'Other',type:'note',status:'approved',owner:'Someone',links:[]}
+ ]})});
+ const result=await f.call({role:'docs',details:true,filters:{type:'agent-spec',status:'draft',owner:'reviewer',links:'linked'}});assert.equal(result.ok,true,JSON.stringify(result));assert.equal(result.total,1);assert.deepEqual(result.items[0].context,{type:'agent-spec',status:'draft',owner:'Ș Reviewer',agentId:'AG-7',agentVersion:'2',referenceCount:1});assert.equal(JSON.stringify(result).includes('PRIVATE'),false);
+ const unlinked=await f.call({role:'docs',details:true,filters:{links:'unlinked'}});assert.equal(unlinked.total,1);assert.equal(unlinked.items[0].entityId,'doc-b');
+ for(const payload of [{role:'code',filters:{type:'note'}},{role:'docs',filters:{status:'invented'}},{role:'docs',filters:{body:'PRIVATE'}},{role:'docs',details:'yes'}])assert.equal((await f.call(payload)).code,'REQUEST_REFUSED');
+});
 test('native Home catalog retains imported uppercase and underscore Docs/Diagram identities as literal metadata',async()=>{
  const f=await fixture();f.select({...f.selected,json:JSON.stringify({workpapers:[{id:'_AgentNotes',title:'Imported notes'}],diagrams:[{id:'Flow-A',name:'Imported flow',source:'flowchart TD\nA-->B'}]})});
  const result=await f.call();assert.equal(result.ok,true);assert.ok(result.items.some(i=>i.role==='docs'&&i.entityId==='_AgentNotes'));assert.ok(result.items.some(i=>i.role==='diagram'&&i.entityId==='Flow-A'));

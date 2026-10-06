@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { Script } from 'node:vm';
 import { parse } from 'parse5';
 import { readOwnedBytes } from '../src/projects/io.mjs';
+import {buildPresentationEdits} from './document-context.mjs';
 
 const baselineHash='5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -12,7 +13,19 @@ export const domainHelper = `
           const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
           const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
           if(domain==='docs'&&action==='rename')return typeof payload.title==='string'&&payload.title.length<=160;
+          if(domain==='docs'&&action==='update-context'){
+            return Object.entries(payload).every(([key,value])=>{
+              if(key==='type')return normalizeWorkpaperType(value)===value;
+              if(key==='owner')return typeof value==='string'&&value.length<=80;
+              if(key==='references')return Object.entries(value).every(([operation,list])=>['add','remove'].includes(operation)&&Array.isArray(list)&&list.length<=60&&list.every(ref=>['diagram','document'].includes(ref.kind)&&typeof ref.id==='string'&&/^[A-Za-z0-9_-]{1,120}$/.test(ref.id)));
+              if(key!=='agent')return false;const clean=sanitizeAgentMeta(value);
+              return Object.entries(value).every(([field,v])=>['oversight','data'].includes(field)?Object.entries(v).every(([name,item])=>same(clean[field]?.[name],item)):same(clean[field],v));
+            });
+          }
           if(domain==='diagram'&&['replace-source','update-model'].includes(action))return typeof payload.source==='string';
+          if(domain==='diagram'&&action==='edit-presentation'){
+            try{return same(window.SirenPresentationEdits.applyPresentationEdits(before?.presentation,payload.edits),payload.presentation);}catch{return false;}
+          }
           if(domain==='docs'&&action==='replace-blocks') {
             const existing=new Set((before?.blocks||[]).map(block=>JSON.stringify(canonical(block))));
             // Native linked rows carry immutable references that the frozen web
@@ -83,9 +96,10 @@ export async function buildImportValidation({baselinePath,outputDir}) {
   const bytes=await readFile(baselinePath);
   if(digest(bytes)!==baselineHash)throw Error('Frozen import baseline SHA-256 mismatch');
   let html=bytes.toString('utf8');
+  const presentationEdits=await buildPresentationEdits();
   const startup="document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
   if(html.split(startup).length!==2)throw Error('Frozen import startup marker mismatch');
-  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+importHelper+domainHelper+`
+  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+presentationEdits+importHelper+domainHelper+`
         if (!window.mermaid || typeof window.mermaid.parse !== 'function') throw new Error('Embedded import engine unavailable');
         window.mermaid.initialize({startOnLoad:false,securityLevel:'strict'});
         rendererMode = 'mermaid';

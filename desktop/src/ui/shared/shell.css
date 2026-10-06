@@ -40,5 +40,14 @@ body[data-theme=blueprint]{background-image:linear-gradient(#ffffff05 1px,transp
 #sirenProjectFind{border-radius:var(--siren-radius-xl,22px);box-shadow:var(--siren-shadow,0 24px 80px #0004)}
 .document-rich-input,.document-reader,.document-colour-options{border-radius:var(--siren-radius-md,12px)}
 .document-colour-options{box-shadow:var(--siren-shadow-soft,0 8px 24px #0002)}
+body.siren-shell-open .siren-context-sheet{background:var(--siren-panel);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-xl,22px);box-shadow:var(--siren-shadow,0 24px 80px #0004);font-family:var(--siren-font)}
+body.siren-shell-open .siren-context-sheet .context-actions{background:var(--siren-panel)}
+body.siren-shell-open .siren-context-sheet :is(input,select,textarea){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-sm,8px)}
+body.siren-shell-open .siren-context-sheet button{font:inherit;font-size:12px;padding:8px 12px;background:var(--siren-alt);color:var(--siren-ink);border:1px solid var(--siren-line);border-radius:var(--siren-radius-sm,8px);cursor:pointer}
+body.siren-shell-open #diagramPresentationPanel{background:var(--siren-panel);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-lg,16px)}
+body.siren-shell-open #diagramPresentationPanel :is(input,textarea){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-sm,8px)}
+body.siren-shell-open #diagramPresentationPanel button{background:var(--siren-alt);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-sm,8px)}
+body.siren-shell-open #diagramPresentationPanel .deck-list [aria-current=true]{background:var(--siren-alt);border-color:var(--siren-accent);color:var(--siren-accent)}
+body.siren-shell-open :is(.siren-context-sheet,#diagramPresentationPanel) :is(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--siren-focus);outline-offset:2px}
 @media(max-width:900px){#sirenAppNavigation{gap:6px;padding:8px 10px}.siren-appearance-label{display:none}#sirenAppNavigation button{padding:7px 8px}#sirenAppNavigation .siren-wordmark{font-size:15px}#sirenAppNavigation select{max-width:130px}}
 @media(max-width:760px){#sirenAppNavigation .siren-module-navigation{display:none}#sirenAppNavigation .siren-module-jump{display:block;flex:1;min-width:0;max-width:140px;border-color:var(--siren-line);background:var(--siren-alt)}#sirenAppNavigation .siren-wordmark{font-size:13px}#sirenAppNavigation .siren-project-caption{max-width:96px}#sirenAppNavigation .siren-appearance select{max-width:108px}.siren-navigation-status{position:absolute;top:54px;right:8px;max-width:300px;background:var(--siren-panel);padding:8px;border-radius:8px}}

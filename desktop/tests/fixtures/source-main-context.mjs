@@ -18,6 +18,8 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {NativeDocsReads} from '../../src/windows/docs-reads.mjs';
 import {NativeDocsSources} from '../../src/windows/docs-sources.mjs';
+import {NativeDocsReferences} from '../../src/windows/docs-references.mjs';
+import {NativeDeckNavigation} from '../../src/windows/deck-navigation.mjs';
 import {NativeDiagramReads} from '../../src/windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from '../../src/windows/diagram-edits.mjs';
 import {NativeDiagramExports} from '../../src/windows/diagram-export.mjs';
@@ -38,7 +40,7 @@ export async function nativeSourceContext(){
  const f=await sourceReadFixture(),handlers=new Map();
  class IPCRealmCoordinator extends WorkspaceCoordinator{invoke(grant,intent,...rest){return super.invoke(grant,structuredClone(intent),...rest);}}
  const context=vm.createContext({WorkspaceCoordinator:IPCRealmCoordinator,PrimaryPersistence,ProjectStore,SourceRepository,RecoveryStore,invokeSourceRead,invokeSourceMutation,NativeWorkingSources,NativeDocsEdits,NativeCodeDocs,DocsLinkService,NativeSourceReads,selectedSourceReference,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativeWindowCatalog,DomainRepository,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,workspaceEntities,workspaceMetadata,
-  NativeDocsSources,windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
+  NativeDocsSources,NativeDocsReferences,NativeDeckNavigation,windowRegistry:f.registry,localPin:{state:()=>({unlocked:f.isUnlocked()})},dataRoot:f.root,writerOptions:{},projects:f.projects,recovery:new RecoveryStore(f.root),
   snapshot:f.selected,selectedId:f.selected.project.id,mode:'readonly',nativeReadonly:true,pinTransition:false,accountQuiesced:false,nativeShellFailure:false,writes:new Set(),bootstrap:{snapshot:f.selected},
   failure,console,NativeSourceAnalysis,join,nativeShells:new Map(f.registry.listViews().map((record,i)=>[record.windowId,f.windows[i]])),rendererRoot:fileURLToPath(new URL('../../generated',import.meta.url)),readOwnedBytes:(path)=>readFile(path),ipcMain:{handle:(channel,handler)=>handlers.set(channel,handler)},
  });

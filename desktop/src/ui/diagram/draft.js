@@ -6,9 +6,11 @@
   if(context?.ok!==true||typeof context.readonly!=='boolean'||!context.diagram?.id||typeof context.diagram.source!=='string'||!Number.isSafeInteger(context.version)||context.version<1||!hash(context.sha256))throw TypeError('Exact native Diagram required');
   let diagram=structuredClone(context.diagram),source=diagram.source,stylePatch={},version=context.version,sha256=context.sha256,projectRevision=context.projectRevision??0;
   let dirty=false,paused=false,fenced=false,disposed=false,pending=null;
+  let presentationEdits=[];
+  const actualDiagram=()=>({...diagram,source,...stylePatch,...(presentationEdits.length?{presentation:window.SirenPresentationEdits.applyPresentationEdits(diagram.presentation,presentationEdits)}:{})});
   const status=()=>Object.freeze({diagramId:diagram.id,version,sha256,projectRevision,dirty,paused,fenced,disposed,pending:pending!==null,readonly:context.readonly});
   const changed=()=>{try{onChange(status());}catch{/* Observers do not grant save authority. */}};
-  const reconcile=()=>{dirty=source!==diagram.source||Object.keys(stylePatch).length>0;};
+  const reconcile=()=>{dirty=source!==diagram.source||Object.keys(stylePatch).length>0||presentationEdits.length>0;};
   const fonts=['Inter','Arial','Tahoma','Verdana','Georgia','Trebuchet MS','Courier New','Times New Roman'],weights=[400,500,600,700,800];
   function styleCopy(input){
    if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid style');
@@ -36,18 +38,19 @@
   async function save(preparing=false){
    if(disposed||context.readonly||fenced||paused&&!preparing)return fail(fenced?'DIAGRAM_FENCED':'ACCESS_REFUSED');
    if(pending)return pending;if(!dirty)return Object.freeze({ok:true,unchanged:true});
-   const request={diagramId:diagram.id,expectedVersion:version,operationId:operationId(),action:Object.keys(stylePatch).length?'replace-content':'replace-source',payload:{source,...stylePatch}},expected={...diagram,source,...stylePatch,sirenNativeVersion:version+1};
+   const request={diagramId:diagram.id,expectedVersion:version,operationId:operationId(),action:presentationEdits.length?'replace-deck-content':Object.keys(stylePatch).length?'replace-content':'replace-source',payload:{source,...stylePatch,...(presentationEdits.length?{presentationEdits:structuredClone(presentationEdits)}:{})}},expected={...actualDiagram(),sirenNativeVersion:version+1};
    const own=(async()=>{
     let receipt;try{receipt=await bridge.applyDiagram(request);}catch{fenced=true;return fail('DIAGRAM_SAVE_FAILED');}
     if(disposed)return fail('VIEW_DISPOSED');
     if(receipt?.ok===false&&receipt.code==='DOMAIN_VALIDATION_FAILED')return fail(receipt.code);
     let verified=false;try{verified=await accepted(receipt,request,true,expected);}catch{/* Uncertain commit cannot grant retry authority. */}
     if(!verified){fenced=true;return fail(receipt?.ok===false&&typeof receipt.code==='string'?receipt.code:'DIAGRAM_RESULT_REFUSED');}
-    if(disposed)return fail('VIEW_DISPOSED');diagram=expected;stylePatch={};version=receipt.version;sha256=receipt.sha256;projectRevision=receipt.projectRevision;dirty=false;return receipt;
+    if(disposed)return fail('VIEW_DISPOSED');diagram=expected;stylePatch={};presentationEdits=[];version=receipt.version;sha256=receipt.sha256;projectRevision=receipt.projectRevision;dirty=false;return receipt;
    })();pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
   }
   return Object.freeze({
-   getStatus:status,getDiagram:()=>structuredClone({...diagram,source,...stylePatch}),
+   getStatus:status,getDiagram:()=>structuredClone(actualDiagram()),
+   editPresentation(input){if(disposed||paused||pending||fenced||context.readonly)return fail('DIAGRAM_NOT_EDITABLE');let next;try{const op=window.SirenPresentationEdits.normalizePresentationEdits([input])[0];next=structuredClone(presentationEdits);const last=next.at(-1);if(last?.action==='update'&&op.action==='update'&&last.id===op.id)last.changes={...last.changes,...op.changes};else next.push(op);const result=window.SirenPresentationEdits.applyPresentationEdits(diagram.presentation,next);if(JSON.stringify(result)===JSON.stringify(diagram.presentation))next=[];}catch{return fail('PRESENTATION_EDIT_REFUSED');}presentationEdits=next;reconcile();changed();return Object.freeze({ok:true});},
    setSource(value){if(disposed||paused||pending||fenced||context.readonly)return fail('DIAGRAM_NOT_EDITABLE');if(typeof value!=='string'||!value.isWellFormed())return fail('INVALID_SOURCE');source=value;reconcile();changed();return Object.freeze({ok:true});},
    setStyle(input){if(disposed||paused||pending||fenced||context.readonly)return fail('DIAGRAM_NOT_EDITABLE');let patch;try{patch=styleCopy(input);}catch{return fail('INVALID_STYLE');}for(const [key,value]of Object.entries(patch)){if(JSON.stringify(value)===JSON.stringify(diagram[key]))delete stylePatch[key];else stylePatch[key]=value;}reconcile();changed();return Object.freeze({ok:true});},
    save:()=>save(),

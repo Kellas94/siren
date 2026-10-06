@@ -276,3 +276,27 @@ WP-001_*.json
 !/desktop/tests/diagram-placement-ready.test.mjs
 !/desktop/tests/process-reader-cache.test.mjs
 
+
+# Native Docs context and Diagram-owned presentation authoring
+!desktop/build/document-context.mjs
+!desktop/reviews/2026-10-06-diagram-placement-hosted-evidence.md
+!desktop/reviews/2026-10-06-diagram-placement-hosted-receipt.json
+!desktop/reviews/2026-10-06-docs-deck-batch-independent.md
+!desktop/reviews/2026-10-06-docs-deck-correction-independent.md
+!desktop/reviews/2026-10-06-docs-deck-root-evidence.md
+!desktop/reviews/2026-10-06-docs-deck-root-receipt.json
+!desktop/src/documents/context.mjs
+!desktop/src/documents/presentation-edits.mjs
+!desktop/src/ui/diagram/presentation-view.js
+!desktop/src/ui/docs/context.js
+!desktop/src/windows/deck-navigation.mjs
+!desktop/src/windows/docs-references.mjs
+!desktop/tests/deck-navigation.test.mjs
+!desktop/tests/diagram-presentation-draft.test.mjs
+!desktop/tests/docs-context-draft.test.mjs
+!desktop/tests/docs-context.test.mjs
+!desktop/tests/docs-references.test.mjs
+!desktop/tests/native/docs-context.mjs
+!desktop/tests/native/presentation-authoring.mjs
+!desktop/tests/presentation-authoring.test.mjs
+!docs/superpowers/plans/2026-10-06-siren-docs-present-authoring.md

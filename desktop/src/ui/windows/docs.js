@@ -3,6 +3,7 @@
  const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
  let generation=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null,sourceOpening=null;const media=matchMedia('(prefers-color-scheme: dark)');
  const working=document.getElementById('openWorkingDocument'),save=document.getElementById('saveDocument'),notice=document.getElementById('documentChangesNotice'),noticeMessage=document.getElementById('documentChangesMessage');
+ const contextButton=document.getElementById('documentContext');contextButton.addEventListener('click',()=>{if(paused||disposed||pending||!draft)return;const own=draft;window.SirenDocsContext.open({draft:own,canEdit:()=>draft===own&&!readonly&&!paused&&!disposed&&!own.getStatus().paused&&!own.getStatus().pending&&!own.getStatus().fenced,onChange:()=>{if(draft===own&&!paused&&!disposed){paint(own.getDocument());updateState();}}});});
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
  const appearance=()=>{document.documentElement.style.colorScheme=theme.value==='system'?(media.matches?'dark':'light'):theme.value;};
@@ -97,6 +98,7 @@
  };
  function updateState(){
   if(!draft||disposed)return;const state=draft.getStatus();
+  contextButton.disabled=paused||state.pending||state.paused||state.fenced||state.disposed;if(paused||state.paused||state.disposed)window.SirenDocsContext.close();
   if(!paused){const name=draft.getDocument().title;window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
   if(!paused&&!state.disposed){document.body.dataset.documentReady='true';document.body.dataset.documentId=state.documentId;}
   const historyNotice=content.querySelector('[data-document-history-limit]');if(historyNotice)historyNotice.hidden=!state.historyLimited;
