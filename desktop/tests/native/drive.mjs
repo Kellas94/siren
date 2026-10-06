@@ -126,8 +126,8 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
         // Existing menus position once immediately and again on the next frame.
         // Observe that actual rectangle settling; retain the same center/hit oracle.
         await waitFor(stablePointerExpression(selector));
-        const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control'); const r=e.getBoundingClientRect(); const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);return {x,y,hit:r.width>0&&r.height>0&&e.contains(h),cover:h?.id||h?.className||h?.tagName};})()`);
-      if (!point.hit) throw new Error('Occluded control: ' + selector + ' by ' + point.cover);
+        const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw new Error('Missing control'); const r=e.getBoundingClientRect(); const x=r.x+r.width/2,y=r.y+r.height/2;const h=document.elementFromPoint(x,y);return {x,y,hit:r.width>0&&r.height>0&&e.contains(h),cover:h?.id||h?.className||h?.tagName,rectangle:{x:r.x,y:r.y,width:r.width,height:r.height},viewport:{width:innerWidth,height:innerHeight},scroll:{x:scrollX,y:scrollY},ancestors:Array.from((function*(n){for(;n;n=n.parentElement)yield n;})(e)).slice(0,12).map(n=>({id:n.id,className:n.className,transform:getComputedStyle(n).transform,animation:getComputedStyle(n).animationName,rect:{x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y}}))};})()`);
+      if (!point.hit) throw new Error('Occluded control: ' + selector + ' by ' + point.cover + ' · ' + JSON.stringify(point));
       await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 });
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 });
     };

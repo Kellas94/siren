@@ -8,6 +8,14 @@ test('pointer stability observes a deferred menu position before accepting its r
  assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),false);
  assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),true);assert.equal(frames,4);
 });
+test('stable rectangles wait for finite opening animations but not perpetual theme effects',async()=>{
+ const {stablePointerExpression}=await import('./native/pointer.mjs');let endTime=160,state='running';
+ const element={parentElement:null,getBoundingClientRect:()=>({x:530,y:160,width:312,height:400}),getAnimations:()=>[{playState:state,effect:{getComputedTiming:()=>({endTime})}}]};
+ const context={document:{querySelector:()=>element},requestAnimationFrame:callback=>queueMicrotask(callback)};
+ assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),false);
+ state='finished';assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),true);
+ state='running';endTime=Infinity;assert.equal(await runInNewContext(stablePointerExpression('#themeMenu'),context),true);
+});
 test('native pointer observations intersect the actual scroll clip of a virtualized editor',async()=>{
  const {pointerExpression}=await import('./native/pointer.mjs');
  const scroller={parentElement:null,getBoundingClientRect:()=>({left:0,right:900,top:280,bottom:500}),clientLeft:0,clientTop:0,clientWidth:900,clientHeight:220};

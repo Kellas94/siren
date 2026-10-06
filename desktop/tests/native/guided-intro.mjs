@@ -66,6 +66,13 @@ try {
   await driver.screenshot(join(evidence, 'guided-edited.png'));
   await driver.click('#headerMoreButton'); await driver.click('.struct-menu-item:nth-child(2)');
   await driver.waitFor('document.getElementById("guideDialog").open');
+  await driver.click('#startTourButton');
+  await driver.waitFor('!!document.querySelector(".tour-card")');
+  assert.equal(await driver.evaluate('document.querySelector(".tour-card").textContent.includes("Local desktop workspace")'),true,'Explicit Guide tour retains the desktop feature introduction');
+  await driver.click('.tour-card .tour-actions .ghost');
+  await driver.click('#headerMoreButton');await driver.click('.struct-menu-item:nth-child(2)');
+  await driver.waitFor('document.getElementById("guideDialog").open');
+  result.explicitTour={available:true};
   await driver.click('#replayIntroButton');
   result.replay.reducedMotion = await driver.evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches');
   if (!result.replay.reducedMotion) {

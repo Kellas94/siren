@@ -7,7 +7,7 @@
  const preference=window.SirenAppearanceSync.create({get:()=>window.sirenShell.getAppearance(),set:value=>window.sirenShell.setAppearance(value),apply:result=>{
   if(!bar||disposed)return;bar.hidden=false;apply(result.theme);if(typeof result.projectName==='string'){caption.textContent=result.projectName||'Local workspace';caption.title=caption.textContent;}
   if(result.warning==='INVALID_APPEARANCE')note.textContent='Theme settings need recovery. Default appearance in use.';
- },rejected:()=>{signature='';note.textContent='Theme could not be saved.';},unavailable:()=>{if(bar)bar.hidden=true;}});
+ },rejected:()=>{signature='';if(note)note.textContent='Theme could not be saved.';},unavailable:()=>{if(bar)bar.hidden=true;}});
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const navigate=async surface=>{
   if(pending||disposed)return;pending=true;bar.setAttribute('aria-busy','true');
@@ -16,7 +16,7 @@
   finally{pending=false;bar.setAttribute('aria-busy','false');}
  };
  function build(){
-  bar=make('nav',document.body);bar.id='sirenAppNavigation';bar.setAttribute('aria-label','SIREN workspace');
+  bar=make('nav',document.body);bar.id='sirenAppNavigation';bar.hidden=true;bar.setAttribute('aria-label','SIREN workspace');
   const brand=make('button',bar,'S I R Ξ N');brand.type='button';brand.className='siren-wordmark';brand.title='Home';brand.addEventListener('click',()=>void navigate('home'));
   caption=make('small',brand,'Local workspace');caption.className='siren-project-caption';
   const modules=make('div',bar);modules.className='siren-module-navigation';
@@ -59,8 +59,8 @@
  const refresh=()=>preference.refresh();
  const start=()=>{build();void refresh();timer=setInterval(()=>void refresh(),1200);offResume=window.sirenViewControl?.onResume(()=>void refresh());offReady=window.sirenWindow?.onReady?.(()=>void refresh());};
  document.addEventListener('siren-classic-appearance',async event=>{
-  if(syncing||disposed||!bar||event.detail?.user!==true||!palette.some(t=>t.id===event.detail.theme))return;
-  const result=await preference.choose(event.detail.theme);if(result?.ok)note.textContent='';
+  if(syncing||disposed||event.detail?.user!==true||!palette.some(t=>t.id===event.detail.theme))return;
+  const result=await preference.choose(event.detail.theme);if(result?.ok&&note)note.textContent='';
  });
  media.addEventListener('change',()=>{signature='';void refresh();});
  document.addEventListener('keydown',event=>{if(!event.repeat&&(event.ctrlKey||event.metaKey)&&event.shiftKey&&event.key.toLowerCase()==='f'&&!event.altKey){event.preventDefault();void navigate('find');}});

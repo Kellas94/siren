@@ -49,3 +49,7 @@ Reference: desktop/reviews/2026-10-06-ui-reference-parity-analysis.md. Preserve 
 ## Hosted startup correction
 
 Actual37391109232/25f finalFAILURE retained; native owner guard fixes delayed legacy theme overwrite, with meaningful committed RED/corrected GREEN and forced-Dark native panel assertion. Driver observes menu rectangle stability without weakening hit tests; timing remains a hypothesis pending hosted qualification. Sourcee8b0e6d3ff7ca7aa0f954f7b42556a2e203ff148 full1076/1076 + affectedSources19/19 unchanged. Fresh separate development7121c9fd exact248 files/ASARcee0b69c and seven isolated copied probes completed with unchanged identities. Root reports are separate from unchanged original independent review. New hosted qualification pending after guarded sync; rich functional/decorative parity remainsOPEN.
+
+## First-use correction checkpoint
+
+Final sourcedd1ec00ebe538de9aa879febe440f60cbd3e2583 preserves genuine early Studio theme selection, keeps private navigation hidden before admission and leaves automatic onboarding to Home. Manual Guide tour/replay are actually verified; standalone baseline unchanged. Finalfull1080 and copied7 qualified separately from priornative39 and finalaffected3. Hosted37393614417/f41b finalFAILURE retained; next actualhosted verification pending. Geometry diagnosis remains open until that result, and full rich functional/decorative parity is not admitted by this foundation. Root receipt/report: desktop/reviews/2026-10-06-desktop-onboarding-root-*.

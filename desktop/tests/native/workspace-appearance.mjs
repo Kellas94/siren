@@ -66,7 +66,7 @@ try{
  await driver.click('#themeMenuButton');await driver.click('#themeMenu [data-theme-value="kpmg"]');
  await driver.waitFor('(async()=>{const r=await window.sirenShell.getAppearance();return r.theme==="kpmg"&&document.getElementById("themePreset").value==="kpmg"&&document.getElementById("sirenAppTheme").value==="kpmg"&&document.body.dataset.theme==="kpmg";})()');
  await driver.click('#sirenAppTheme');await keys(driver,'Home','Home',36);await keys(driver,'ArrowDown','ArrowDown',40);await keys(driver,'Enter','Enter',13);
- await driver.waitFor('window.sirenClassicAppearance.current()==="dark"&&document.getElementById("themePreset").value==="dark"&&document.getElementById("sirenAppTheme").value==="dark"');
+ await driver.waitFor('(async()=>{const r=await window.sirenShell.getAppearance();return r.theme==="dark"&&window.sirenClassicAppearance.current()==="dark"&&document.getElementById("themePreset").value==="dark"&&document.getElementById("sirenAppTheme").value==="dark";})()');
  assert.equal(JSON.parse(await readFile(join(data,'UI/appearance.json'),'utf8')).theme,'dark');
  await driver.screenshot(join(evidence,'studio-shared-theme.png'));
  await driver.click('#sirenAppNavigation [data-surface="home"]');await driver.waitFor('location.href==="siren://app/home.html"&&document.getElementById("homeLock")!=null&&!document.body.inert');await waitForWorkspaceAdmission(driver);

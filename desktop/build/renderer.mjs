@@ -12,6 +12,7 @@ import { buildWorkspaceEntrypoint } from './workspace.mjs';
 import { importHelper, buildImportValidation } from './import-validation.mjs';
 import {readDesktopChrome} from './chrome.mjs';
 import {addDesktopShell,patchClassicAppearance} from './appearance.mjs';
+import {patchDesktopTour} from './onboarding.mjs';
 
 export const BASELINE_SHA256 = '5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -220,6 +221,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
         ` + palette);
     const tour = '      const TOUR_STEPS = [';
     if (html.split(tour).length !== 2) throw new Error('Desktop tour marker mismatch');
+    html=patchDesktopTour(html);
     html = html.replace(tour, tour + `
         ...(window.sirenDesktop ? [{sel:'#desktopOptions',title:'Local desktop workspace',text:'Desktop holds local project import, saved backups, account status, signed update checks and Disaster Recovery. Recovery opens a new copy and preserves the original. Code drafts stay private until Save to Docs. This development build has no production account service or update installation.'}] : []),`);
     const tourCard = '        tourCard.replaceChildren();';

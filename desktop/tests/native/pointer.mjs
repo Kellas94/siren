@@ -13,5 +13,6 @@ export const pointerExpression=selector=>`(()=>{
 export const stablePointerExpression=selector=>`(async()=>{
  const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing native control');
  const before=e.getBoundingClientRect();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ for(let node=e;node;node=node.parentElement)if((node.getAnimations?.()??[]).some(animation=>['running','pending'].includes(animation.playState)&&Number.isFinite(animation.effect?.getComputedTiming().endTime)))return false;
  const after=e.getBoundingClientRect();return ['x','y','width','height'].every(key=>Math.abs(before[key]-after[key])<.1);
 })()`;
