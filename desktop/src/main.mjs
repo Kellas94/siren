@@ -78,6 +78,7 @@ import { publisherConfig } from './publisher-config.mjs';
 import { CredentialStore } from './account/credentials.mjs';
 import { AccountService } from './account/service.mjs';
 import { LocalPinAccess } from './account/local-pin.mjs';
+import { PinProtector } from './account/pin-protection.mjs';
 import { readOwnedBytes } from './projects/io.mjs';
 import { UpdateService } from './updates/service.mjs';
 import { buildDiagnostics } from './recovery/diagnostics.mjs';
@@ -120,7 +121,8 @@ if (processIdentity) await journal.recordSession({ event: 'opened', sessionId, v
 const writerOptions = { ownerIdentity: processIdentity, inspectProcess: inspectWindowsProcess };
 const account = new AccountService({ config: publisherConfig.account, credentials: new CredentialStore(dataRoot, safeStorage), openBrowser: url => shell.openExternal(url) });
 await account.getAccess();
-const localPin = new LocalPinAccess(dataRoot, safeStorage);
+const pinProtector = new PinProtector(dataRoot, { executable: app.getPath('exe'), application: app.getAppPath(), packaged: app.isPackaged });
+const localPin = new LocalPinAccess(dataRoot, safeStorage, { protector: pinProtector });
 await localPin.initialize();
 let mode = startup.mode; let reason = startup.reason; let nativeReadonly = mode === 'readonly';
 let accountTransition = false; let accountQuiesced = false; let pinTransition = false;
@@ -242,6 +244,8 @@ const services = {
     if (pinTransition || accountTransition) return failure('PIN_BUSY', 'Local access is changing.');
     pinTransition = true;
     try {
+      localPin.cancelPending();
+      await localPin.drain();
       await prepareNativeWorkspace();
       accountQuiesced = true;
       await Promise.all([...writes]);
@@ -1106,9 +1110,10 @@ let closing = false; let closeRequested = false;
 window.on('close', event => {
   if (closing) return;
   event.preventDefault();
-  if(writes.selectionTransition||writes.viewClosing||accountTransition||pinTransition){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
+  if(writes.selectionTransition||writes.viewClosing||accountTransition||pinTransition||localPin.busy){dialog.showErrorBox('SIREN — Close delayed','Wait for the current workspace or access transition to finish before closing. Your work was retained.');return;}
   if (closeRequested) return;
   closeRequested = true;
+  pinTransition = true; localPin.cancelPending();
   const closeStarted=Date.now();let closeStage='prepare';
   const closeProgress=stage=>{closeStage=stage;console.info('SIREN_CLOSE_STAGE',JSON.stringify({stage,elapsedMs:Date.now()-closeStarted,pendingWrites:writes.size,hasProcessIdentity:!!processIdentity}));};
   (async () => {
@@ -1116,6 +1121,7 @@ window.on('close', event => {
     if(localPin.state().unlocked)await prepareNativeWorkspace();
     else await window.webContents.executeJavaScript('window.sirenDesktopRequestClose?.()');
     closeProgress('write-join');
+    await localPin.drain();
     await Promise.all([...writes]);
     closeProgress('retire-views');
     await retireNativeViews();
@@ -1127,6 +1133,7 @@ window.on('close', event => {
   })().catch(cause => {
     console.warn('SIREN_CLOSE_FAILURE',JSON.stringify({stage:closeStage,elapsedMs:Date.now()-closeStarted,code:typeof cause?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(cause.code)?cause.code:'CLOSE_FAILED'}));
     closeRequested = false;
+    pinTransition = false;
     void rollbackNativePreparation();
     try { windowRegistry.activateWorkspace(); } catch { /* Failed native destruction remains fenced. */ }
     dialog.showErrorBox('SIREN — Close delayed', 'Save/recovery did not complete. Export live work before forcing close.');

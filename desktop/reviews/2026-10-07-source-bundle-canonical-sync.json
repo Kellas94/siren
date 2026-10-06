@@ -1,0 +1,62 @@
+{
+  "author": "/root",
+  "kind": "guarded-canonical-sync",
+  "localSyncedCheckpoint": "ca14246bc407a4702928d49ba4780189704dac22",
+  "localProduct": "153f760d7b7cf72e06532a57b8537ee7103d0e7c",
+  "previousLocalSyncedCheckpoint": "708cf2cab7e941fc0c5285c4f57e0e43d4b14e4a",
+  "previousCanonical": "63e03994b6e13a88911a61d387d8afc33035baf9",
+  "canonical": "11ff847bafc3b5a2caa1a3b06ea9fa8d08cf962e",
+  "tree": "aef6828ac3ecf4611a3541ff104e06bde234b122",
+  "previousBlobs": 1589,
+  "blobs": 1627,
+  "untouched": 1570,
+  "delta": 57,
+  "added": 38,
+  "preservedIgnorePrefix": true,
+  "canonicalIgnore": {
+    "sha": "07a1c48d128b10fe1e81e33b7e68da0925cf6b5f",
+    "previousSha": "bc118702db0810af255c650358b7fbae9ebb3045",
+    "prefixPreserved": true,
+    "exactNewExceptions": 38
+  },
+  "integration": {
+    "sha": "f725c18254443873d343b3c6ae41a156a3f374f7",
+    "tree": "aef6828ac3ecf4611a3541ff104e06bde234b122",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "11ff847bafc3b5a2caa1a3b06ea9fa8d08cf962e"
+    ]
+  },
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {
+    "url": "https://github.com/Kellas94/siren/pull/2",
+    "draft": true,
+    "state": "open",
+    "merged": false
+  },
+  "previousRun": {
+    "id": 37528726783,
+    "status": "completed",
+    "conclusion": "success",
+    "scope": "Previous readiness candidate only; retained originals, not approval of later batch"
+  },
+  "newRun": {
+    "id": 37534183640,
+    "status": "in_progress",
+    "conclusion": null,
+    "scope": "Actual run observed after guarded push; final outcome pending"
+  },
+  "localQualification": {
+    "units": 1220,
+    "applicationFiles": 257,
+    "packageArchiveSha256": "597794624087f13731d42e135ac5f5a58ac414caf9d69abd2e17b6db824607ac",
+    "receipt": "desktop/reviews/2026-10-07-source-bundle-local-receipt.json"
+  },
+  "openFollowups": [
+    "Forced-firstlaunch PIN crash now reproduced in six disjoint profiles; no root cause or correction claimed.",
+    "Original hosted failures remain adverse."
+  ],
+  "limits": [
+    "No merge, release, installed replacement or author-authentication claim."
+  ]
+}

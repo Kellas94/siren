@@ -70,6 +70,8 @@ jobs:
             desktop/evidence/*/failure-state.json
             desktop/evidence/shell-*/startup.json
             desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -266,6 +268,9 @@ jobs:
         run: node scripts/build-process-reader.mjs
       - name: Actual development renderer and protected storage
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
+      - name: Actual first-session PIN crash recovery
+        if: matrix.group == 'desktop'
+        run: node tests/native/pin-crash-recovery.mjs
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -279,6 +284,8 @@ jobs:
             desktop/evidence/*/failure-state.json
             desktop/evidence/shell-*/startup.json
             desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -470,6 +477,8 @@ jobs:
           $packageJson = node scripts/package.mjs $sourceCommit
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $preview = $packageJson | ConvertFrom-Json
+          node tests/native/pin-crash-recovery.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged first-session PIN crash recovery failed" }
           node tests/native/shell.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
           node tests/native/packaged.mjs $preview.previewRoot
@@ -544,6 +553,8 @@ jobs:
             desktop/evidence/*/failure-state.json
             desktop/evidence/shell-*/startup.json
             desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json

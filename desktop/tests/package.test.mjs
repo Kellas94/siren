@@ -21,7 +21,7 @@ test('package source allowlist refuses credentials, tests, development issuer, o
   for (const path of ['src/account/test-oidc.mjs', 'tests/fixtures/issuer.mjs', 'baseline/R78.html', 'Data/credentials.bin', '.env', 'node_modules/jose/dist/index.js.map', 'node_modules/electron/dist/electron.exe', 'source/secret.mjs', 'src/account/secret.mjs', 'src/../account/secret.mjs']) assert.equal(allowedAppFile(path, new Set(['jose'])), false, path);
 });
 
-test('every relative native module reachable from main is admitted by the package allowlist',async()=>{
+test('every relative native module reachable from the actual startup entry is admitted by the package allowlist',async()=>{
   const {allowedAppFile}=await import('../scripts/package.mjs');
   const root=new URL('../',import.meta.url),seen=new Set();
   async function visit(url){
@@ -31,7 +31,10 @@ test('every relative native module reachable from main is admitted by the packag
     const text=await readFile(url,'utf8');
     for(const match of text.matchAll(/\b(?:from\s*|import\s*(?:\(\s*)?)['"](\.[^'"]+)['"]/g))await visit(new URL(match[1],url));
   }
-  await visit(new URL('../src/main.mjs',import.meta.url));
+  const identity=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
+  await visit(new URL('../'+identity.main,import.meta.url));
+  assert.ok(seen.has('src/account/pin-worker.mjs'));
+  assert.ok(seen.has('src/account/pin-protection.mjs'));
   assert.ok(seen.has('src/sources/readers.mjs'));
 });
 

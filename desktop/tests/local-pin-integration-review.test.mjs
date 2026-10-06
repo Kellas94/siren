@@ -100,6 +100,10 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   window.webContents = { executeJavaScript: async text => vm.runInContext(text, context) };
   vm.runInContext(factory + '\nconst services={\n' + pinServices + saveService + '\n};globalThis.services=services;', context);
   installPrimaryOwner(context);
+  let admittedPreparation;
+  const preparationStarted = new Promise(resolve => { admittedPreparation = resolve; });
+  const prepareWorkspace = context.prepareNativeWorkspace;
+  context.prepareNativeWorkspace = (...args) => { const pending = prepareWorkspace(...args); admittedPreparation(); return pending; };
   window.sirenDesktop = context.services; window.sirenDesktopBootstrap = context.bootstrap;
   vm.runInContext(await readFile(new URL('../src/ui/storage.js', import.meta.url), 'utf8'), context);
   const store = window.createSirenDesktopStore({ workspaceKey: 'workspace' });
@@ -109,6 +113,7 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   vm.runInContext(transition, context);
   const draft = store.setWithBackup('workspace', '{}', 'siren-code-drafts-v1', 'owned private draft bytes'); await paused;
   const locking = context.services.lockPin();
+  await preparationStarted;
   assert.equal(body.inert, true); assert.equal(localPin.state().unlocked, true, 'Pending private bytes must not be abandoned by early native lock');
   assert.equal((await context.services.unlockPin({ pin: '4826' })).code, 'PIN_BUSY');
   release(); const written = await draft; const result = await locking;

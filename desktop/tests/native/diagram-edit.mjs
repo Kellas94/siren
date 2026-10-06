@@ -32,7 +32,29 @@ try{
  await driver.waitFor('document.getElementById("homeDiagramWindows")!=null');await driver.click('#homeDiagramWindows');await driver.waitFor('document.querySelector(".home-library [data-entity-id=flow]")!=null');await driver.click('.home-library [data-entity-id=flow]');await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.some(v=>v.role==="diagram")})()');
  const firstView=(await driver.evaluate('window.sirenWindow.listViews()')).views.find(v=>v.role==='diagram'),reader=await attach(firstView),otherReader=await open('diagram','other'),code=await open('code',ref.sourceId),docs=await open('docs','doc-a');await reader.page.waitFor('document.getElementById("openWorkingDiagram").hidden===false');
  assert.equal((await reader.page.evaluate('window.sirenDiagramEdit.applyDiagram({})')).ok,false);assert.equal((await code.page.evaluate('window.sirenDiagramEdit.openWorkingCopy()')).ok,false);assert.equal((await docs.page.evaluate('window.sirenDiagramEdit.openWorkingCopy()')).ok,false);
- const openWorking=async own=>{const before=(await driver.evaluate('window.sirenWindow.listViews()')).views.map(v=>v.windowId);await own.page.click('#openWorkingDiagram');await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.length>'+before.length+'})()');const view=(await driver.evaluate('window.sirenWindow.listViews()')).views.find(v=>!before.includes(v.windowId)),opened=await attach(view);await opened.page.waitFor('document.body.dataset.diagramReadonly==="false"');return opened;};
+ // Passive diagnostics preserve the original single click, roster-growth oracle
+ // and deadlines. Extra observations can affect scheduling; a local pass is not
+ // proof of the original hosted failure's cause or correction.
+ const openWorkingObservations=result.openWorkingObservations=[];
+ const openWorking=async own=>{
+  const before=(await driver.evaluate('window.sirenWindow.listViews()')).views.map(v=>v.windowId);
+  const observation={callerWindowId:own.view.windowId,before,stages:[]};openWorkingObservations.push(observation);
+  await own.page.evaluate(`(()=>{if(window.__sirenDiagramOpenObservation)return;const state=window.__sirenDiagramOpenObservation={events:[]};for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,event=>{if(!event.target.closest?.('#openWorkingDiagram'))return;state.events.push({type,isTrusted:event.isTrusted,at:performance.now(),bodyInert:document.body.inert,visibility:document.documentElement.style.visibility,hidden:document.getElementById('openWorkingDiagram').hidden,disabled:document.getElementById('openWorkingDiagram').disabled});if(state.events.length>16)state.events.shift();},{capture:true,passive:true});})()`);
+  const observe=async stage=>{
+   try{
+    const page=await own.page.evaluate(`(()=>{const e=document.getElementById('openWorkingDiagram'),r=e?.getBoundingClientRect(),hit=r?document.elementFromPoint(r.x+r.width/2,r.y+r.height/2):null;return {url:location.href,bodyInert:document.body.inert,visibility:document.documentElement.style.visibility,ready:document.body.dataset.diagramReady,readonly:document.body.dataset.diagramReadonly,button:e?{hidden:e.hidden,disabled:e.disabled,rectangle:{x:r.x,y:r.y,width:r.width,height:r.height},hit:e.contains(hit),cover:hit?.id||hit?.tagName}:null,status:document.getElementById('viewStatus')?.textContent.slice(0,200),events:window.__sirenDiagramOpenObservation?.events.slice(-16)};})()`);
+    const roster=await driver.evaluate('(async()=>{const r=await window.sirenWindow.listViews();return {ok:r?.ok===true,code:r?.code,views:r?.views?.slice(0,32).map(v=>({windowId:v.windowId,role:v.role,entityId:v.entityId,state:v.state}))};})()');
+    observation.stages.push({stage,page,roster});
+   }catch{observation.stages.push({stage,observationUnavailable:true});}
+  };
+  await observe('before-click');
+  try{
+   await own.page.click('#openWorkingDiagram');await observe('after-click');
+   await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.length>'+before.length+'})()');
+   const view=(await driver.evaluate('window.sirenWindow.listViews()')).views.find(v=>!before.includes(v.windowId)),opened=await attach(view);
+   await opened.page.waitFor('document.body.dataset.diagramReadonly==="false"');observation.openedWindowId=view.windowId;await observe('working-ready');return opened;
+  }catch(error){await observe('failure');throw error;}
+ };
  const a=await openWorking(reader),stale=await openWorking(reader),b=await openWorking(otherReader),local='flowchart TD\nA[Unsaved local 😀]-->B';await replace(stale.page,local);
  assert.equal(await a.page.evaluate('document.getElementById("diagramViewport").getBoundingClientRect().height>innerHeight*.6'),true,'Diagram preview must fill the remaining window, not collapse into an auto grid row');
  const sourceA='flowchart TD\nA[Saved A 😀]-->B[Context]\nstyle A fill:#ff3366,color:#ffffff',sourceB='sequenceDiagram\nAlice->>Bob: Saved B';await replace(a.page,sourceA);await a.page.waitFor('document.body.dataset.diagramRendered==="true"&&Array.from(document.querySelectorAll("#diagramCanvas text")).some(t=>t.textContent.includes("Saved A"))');
