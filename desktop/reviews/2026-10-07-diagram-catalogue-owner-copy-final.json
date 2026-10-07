@@ -1,0 +1,58 @@
+{
+  "author": "/root",
+  "status": "SCOPED_LOCAL_COPY_QUALIFIED_HOSTED_PENDING",
+  "packageSourceCommit": "fee26e64ff165375ed7e9a4cff4dfb8b0c7e34f1",
+  "ownerQualification": {
+    "path": "reviews/2026-10-07-diagram-catalogue-owner-copy.json",
+    "bytes": 30634,
+    "sha256": "e5540cfc7eb9ba43681cecc7364e0d0f19af5f6a2c0bd4e7a25866cd98c55edd"
+  },
+  "transportIndependent": {
+    "path": "reviews/2026-10-07-diagram-pan-held-button-independent.json",
+    "bytes": 13351,
+    "sha256": "81539fc9a56e40da2b7cdc845ae7a9e40f889bc2e75d471ec6883ccf2b19acc4"
+  },
+  "transportIndependentMarkdown": {
+    "path": "reviews/2026-10-07-diagram-pan-held-button-independent.md",
+    "bytes": 2304,
+    "sha256": "027e54a0016b96e4a3b3b233421592c3fd2c7f243182b7c0de9aeb2695c2c84d"
+  },
+  "amendedDevelopment": {
+    "path": "evidence/diagram-pan-release/2026-10-07T10-36-33.071Z/result.json",
+    "bytes": 6463,
+    "sha256": "6ad795a1e01fe0bf90b25a9899177aab74429c4615437ea33bc30554868dde24"
+  },
+  "amendedCopied": {
+    "name": "diagram-pan-release",
+    "evidence": {
+      "path": "evidence\\diagram-pan-release\\2026-10-07T10-32-43.906Z\\result.json",
+      "bytes": 6811,
+      "sha256": "bd8a41e21dd20a3a2daac2e26a02f2270aaca48229a0b2adc0ac46da17684d9b"
+    },
+    "cases": 5,
+    "checks": null,
+    "copies": 1,
+    "harnessSha256": "811af80e54cc063ebe0ec6cada8ae28e0cf37369aae5edb78d50dd19131367ff"
+  },
+  "focusedChecks": {
+    "path": "evidence/workspace-surface/diagram-pan-held-button-owner-check.json",
+    "bytes": 230,
+    "sha256": "e1e4ab6df0baddcae4cf44b16cc2a702d06f3aba3e8767eade2175e1b6db3d90"
+  },
+  "freshRemotePreflight": {
+    "path": "evidence/workspace-surface/diagram-catalogue-remote-live-preflight.json",
+    "bytes": 686735,
+    "sha256": "4592a9e0142ce5931993a44d828789133e675e84010364b4c0424d7c9c031571"
+  },
+  "reporterOriginalFailure": {
+    "path": "evidence/workspace-surface/catalogue-copy-owner-first-adverse.json",
+    "bytes": 647,
+    "sha256": "4ab4d49ab7cf0231a85100450fe41b485aab8f5a0c30e1c2eb9d6f7221a326ae"
+  },
+  "reporterCorrection": "Only absolute/relative recorder path comparison normalized through resolve; original script and transcribed failure retained. No native evidence/product change.",
+  "scope": "Additive final checkpoint. Independent transport review received after original owner-copy report was written; original reports remain unmodified. Actual development5 and copied5 amended native results are separate. Package product/source byte identities remain fee26; no new hosted pass.",
+  "remaining": [
+    "New hosted verification pending; historical pan/Save-to-Attach causes OPEN.",
+    "Full desktop functional/decorative parity, physical monitor/DPI/IME/maxima and production activation/update/release remain OPEN."
+  ]
+}

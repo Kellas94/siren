@@ -4,6 +4,7 @@ import { normalizeDocsLink, normalizeDocsCreation, projectDocsReceipt, projectDo
 import { randomUUID } from 'node:crypto';
 import {normalizeDomainRequest,projectDomainResult} from './domain.mjs';
 import {normalizeWorkspaceSave,projectWorkspaceResult,MAX_WORKSPACE_BYTES} from './primary.mjs';
+import {normalizeCatalogueCreation,projectCatalogueCreationReceipt} from './diagram-create.mjs';
 
 const fail=code=>Object.freeze({ok:false,code});
 const error=code=>Object.assign(new Error(code),{code});
@@ -50,6 +51,22 @@ export class WorkspaceCoordinator {
   #currentWorkspace(grant,payload) {
     try{return this.#registry.isCurrent(grant)&&grant.role==='workspace'&&grant.projectId===payload.projectId&&
       this.#access(grant,{action:payload.purpose,projectId:payload.projectId})===true;}catch{return false;}
+  }
+  #currentCatalogue(grant){
+    try{return this.#registry.isCurrent(grant)&&
+      (grant.role==='diagram'&&grant.entityIds.length===1||grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'&&grant.entityIds.length===0)&&
+      this.#access(grant,{action:'create-catalogue-diagram'})===true;}catch{return false;}
+  }
+  // Main-only fence covering persistence AND the later native admission.
+  // A completed pause/resume or roster rollback cannot revive this capture.
+  captureCatalogueGuard(grant){
+    const generation=this.#pauseGeneration,admission=this.#registry.captureAdmissionGuard?.(grant);let revoked=false;
+    const isCurrent=()=>{
+      if(revoked)return false;
+      if(this.#paused||generation!==this.#pauseGeneration||admission?.isCurrent()!==true||!this.#currentCatalogue(grant)){revoked=true;return false;}
+      return true;
+    };
+    return isCurrent()?Object.freeze({isCurrent}):null;
   }
   // Main-only issuance. The control transport may disclose the nonce solely to
   // its captured frame. It grants finite draining of existing source authority,
@@ -123,6 +140,7 @@ export class WorkspaceCoordinator {
       const input=navigationFields(intent,['kind','method','payload']);
       kind=input.kind;method=input.method;
       if(kind==='source')payload=normalizeSourceRequest(method,input.payload);
+      else if(kind==='catalogue'&&method==='appendDiagram'&&typeof this.#domains?.appendCatalogueDiagram==='function')payload=normalizeCatalogueCreation(input.payload);
       else if(kind==='docs' && method==='commitCodeToDocs' && this.#docs)payload=normalizeDocsLink(input.payload);
       else if(kind==='docs' && method==='createCodeToDocs' && typeof this.#docs?.createCodeToDocs==='function')payload=normalizeDocsCreation(input.payload);
       else if(['docs','diagram'].includes(kind) && this.#domains)payload=normalizeDomainRequest(kind,method,input.payload);
@@ -138,9 +156,15 @@ export class WorkspaceCoordinator {
     if(this.#readonly?.isReadonly(grant)&&!(kind==='source'?['getMetrics','readRange'].includes(method):['docs','diagram'].includes(kind)&&method.startsWith('read')))return Promise.resolve(fail('ACCESS_REFUSED'));
     let ticket;
     const primaryOperation=kind==='workspace';
-    const domainOperation=!primaryOperation && kind!=='source' && !['commitCodeToDocs','createCodeToDocs'].includes(method);
-    const current=()=> (primaryOperation?this.#currentWorkspace(grant,payload):kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload)) &&
-      (!ticket || this.#flushCurrent(grant,ticket));
+    const catalogueOperation=kind==='catalogue';
+    if(catalogueOperation&&flushNonce!==undefined)return Promise.resolve(fail('FLUSH_REFUSED'));
+    const domainOperation=!primaryOperation && !catalogueOperation && kind!=='source' && !['commitCodeToDocs','createCodeToDocs'].includes(method);
+    const generation=this.#pauseGeneration,admission=catalogueOperation?this.#registry.captureAdmissionGuard?.(grant):null;let revoked=false;
+    const current=()=>{
+      if(catalogueOperation&&revoked)return false;
+      const live=(catalogueOperation?this.#currentCatalogue(grant)&&!this.#paused&&generation===this.#pauseGeneration&&admission?.isCurrent()===true:primaryOperation?this.#currentWorkspace(grant,payload):kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload))&&(!ticket||this.#flushCurrent(grant,ticket));
+      if(catalogueOperation&&!live)revoked=true;return Boolean(live);
+    };
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
     if(flushNonce!==undefined) {
       ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
@@ -155,7 +179,7 @@ export class WorkspaceCoordinator {
       if(!current())return fail('ACCESS_REFUSED');
       const event=this.#registry.eventFor(grant);
       if(!event)return fail('ACCESS_REFUSED');
-      const receipt=primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
+      const receipt=catalogueOperation?projectCatalogueCreationReceipt(await this.#domains.appendCatalogueDiagram(payload,{projectId:grant.projectId,isCurrent:current}),payload):primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
         access:(_caller,scope)=>current() && this.#access(grant,scope)===true,onNativeFailure:this.#onNativeFailure}):
         domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         method==='createCodeToDocs'?projectDocsCreationReceipt(await this.#docs.createCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload):projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);

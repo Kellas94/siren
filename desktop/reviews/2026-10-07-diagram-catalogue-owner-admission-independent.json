@@ -1,0 +1,264 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "role": "Independent adversarial review of frozen finite creation contracts; this author did not implement them",
+  "utc": "2026-10-07T09:12:46.986Z",
+  "status": "ADVERSE_THREE_INDEPENDENT_NEGATIVES",
+  "scope": "Finite Node contract tests with real owned repositories/FIFO/registry/admission and simulated native handles. No GUI, build, main/preload integration, product-source or original-test edit, git mutation, hosted rerun or release approval.",
+  "inputs": {
+    "src/windows/diagram-create.mjs": {
+      "bytes": 9929,
+      "sha256": "38b048f04324ac7269870b2cd41408a45b18f92319404103fe21b730089c94b9"
+    },
+    "src/windows/diagram-catalogue.mjs": {
+      "bytes": 7153,
+      "sha256": "8b6b61224c57a8369019b539b0fca1093ffe51ac24596504a77f5d3b50eb6feb"
+    },
+    "src/windows/coordinator.mjs": {
+      "bytes": 30433,
+      "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+    },
+    "src/windows/registry.mjs": {
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    "src/windows/domain.mjs": {
+      "bytes": 17411,
+      "sha256": "a9de1dcf8de5b5dfd17593b66c1ec4b68d16f21f22d7970a78b9977f5caadd41"
+    },
+    "src/sources/manifest.mjs": {
+      "bytes": 14796,
+      "sha256": "d49f1eaa8387f1ed0e257640bc2d325797a71c397b092a68e272c0d991c1f234"
+    },
+    "tests/diagram-catalogue-append.test.mjs": {
+      "bytes": 13308,
+      "sha256": "d42bfa3ec8ec20ee851635693c3f339f160e471de11789a6f013ce2f43d142b6"
+    },
+    "tests/diagram-catalogue-owner.test.mjs": {
+      "bytes": 8357,
+      "sha256": "15e87afaec11d4d7b6da6c4cdc30db000031ebc3136e053e8e8d81e0629ac4e6"
+    },
+    "tests/diagram-catalogue-admission.test.mjs": {
+      "bytes": 7388,
+      "sha256": "208c364da29c47a45811cc59f2ed6c4edff6972eec790eb4aa9df8486be7efd7"
+    },
+    "tests/fixtures/catalogue-context.mjs": {
+      "bytes": 4072,
+      "sha256": "b50b29b379ae757cb27c8fa1614ee62e40f3ab3ff3954e405ca9cb7d30ff9f33"
+    }
+  },
+  "afterInputs": {
+    "src/windows/diagram-create.mjs": {
+      "bytes": 9929,
+      "sha256": "38b048f04324ac7269870b2cd41408a45b18f92319404103fe21b730089c94b9"
+    },
+    "src/windows/diagram-catalogue.mjs": {
+      "bytes": 7153,
+      "sha256": "8b6b61224c57a8369019b539b0fca1093ffe51ac24596504a77f5d3b50eb6feb"
+    },
+    "src/windows/coordinator.mjs": {
+      "bytes": 30433,
+      "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+    },
+    "src/windows/registry.mjs": {
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    "src/windows/domain.mjs": {
+      "bytes": 17411,
+      "sha256": "a9de1dcf8de5b5dfd17593b66c1ec4b68d16f21f22d7970a78b9977f5caadd41"
+    },
+    "src/sources/manifest.mjs": {
+      "bytes": 14796,
+      "sha256": "d49f1eaa8387f1ed0e257640bc2d325797a71c397b092a68e272c0d991c1f234"
+    },
+    "tests/diagram-catalogue-append.test.mjs": {
+      "bytes": 13308,
+      "sha256": "d42bfa3ec8ec20ee851635693c3f339f160e471de11789a6f013ce2f43d142b6"
+    },
+    "tests/diagram-catalogue-owner.test.mjs": {
+      "bytes": 8357,
+      "sha256": "15e87afaec11d4d7b6da6c4cdc30db000031ebc3136e053e8e8d81e0629ac4e6"
+    },
+    "tests/diagram-catalogue-admission.test.mjs": {
+      "bytes": 7388,
+      "sha256": "208c364da29c47a45811cc59f2ed6c4edff6972eec790eb4aa9df8486be7efd7"
+    },
+    "tests/fixtures/catalogue-context.mjs": {
+      "bytes": 4072,
+      "sha256": "b50b29b379ae757cb27c8fa1614ee62e40f3ab3ff3954e405ca9cb7d30ff9f33"
+    }
+  },
+  "changedInputs": [],
+  "existingTests": {
+    "exitCode": 0,
+    "tests": 38,
+    "pass": 38,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "reporter": "Node default spec; the initial runner TAP-only summary array is empty, so the original retained spec output is authoritative."
+  },
+  "ownProbes": {
+    "command": "node --test --test-reporter=tap --test-timeout=15000 evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs",
+    "exitCode": 1,
+    "tests": [
+      {
+        "number": 1,
+        "title": "refuse altered birth requestHash while opening is suspended at factory",
+        "status": "FAIL"
+      },
+      {
+        "number": 2,
+        "title": "refuse altered birth requestHash while opening is suspended at admission",
+        "status": "FAIL"
+      },
+      {
+        "number": 3,
+        "title": "refuse altered birth requestHash while opening is suspended at show",
+        "status": "FAIL"
+      },
+      {
+        "number": 4,
+        "title": "concurrent same operation from Home and working Diagram admits exactly one native window",
+        "status": "PASS"
+      },
+      {
+        "number": 5,
+        "title": "same operation with a conflicting title cannot share the authentic opening promise",
+        "status": "PASS"
+      },
+      {
+        "number": 6,
+        "title": "cloned frame identity cannot browse or create even with exact sender native object",
+        "status": "PASS"
+      },
+      {
+        "number": 7,
+        "title": "completed pause and roster rollback during admission cannot restore the captured creation authority",
+        "status": "PASS"
+      },
+      {
+        "number": 8,
+        "title": "failed shared opening with authentic caller revoked exposes no sibling identity to that caller",
+        "status": "PASS"
+      }
+    ],
+    "pass": 5,
+    "fail": 3,
+    "cancelled": 0,
+    "skipped": 0,
+    "source": {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs",
+      "bytes": 6259,
+      "sha256": "9a52d6cb7b7eeaf8f28a2b7b67ae894e5a8f36b8ff3cbd2842cdcacb8c16f563"
+    }
+  },
+  "findings": [
+    {
+      "id": "CATALOGUE_OPEN_BIRTH_MARKER_REBIND",
+      "priority": "P2",
+      "status": "REPRODUCED",
+      "file": "src/windows/diagram-catalogue.mjs",
+      "lines": [
+        24,
+        28,
+        34,
+        37,
+        39,
+        42,
+        43,
+        82
+      ],
+      "title": "Opening after an await accepts a changed creation marker because only four marker fields are compared",
+      "trigger": "After valid append receipt, a separate valid manifest commit changes created-b.sirenNativeCatalogueCreation.requestHash to f*64 while preserving action/projectId/operationId/entityId. Supply the actual new selected schema2 snapshot to service.snapshotFor. Probe at factory await, admission await, and show boundary.",
+      "expected": "The creation is durably acknowledged, but opening must refuse or return unavailable and must not authorize a newly rebound birth identity. Legitimate later source/metadata edits with the original marker unchanged remain allowed.",
+      "actual": "All three corrected independent negatives return opening.ok:true and show an admitted working Diagram. Receipt.current still describes pre-mutation revision3 while service sees actual revision4. The append replay layer availability() compares the whole marker; service #available() compares action, projectId, operationId, entityId only.",
+      "evidence": {
+        "path": "evidence/workspace-surface/catalogue-owner-admission-independent/own-probes-corrected-original.txt",
+        "bytes": 7972,
+        "sha256": "94c876b588c66231718051396cb88dcc7298fbfaa68fa9468c2d05e4e2e60630"
+      },
+      "cause": "Marker schema/requestHash/catalogueVersion/referenceSha256/entryId/sourceSha256/entitySha256 are not bound by #available across awaits. This is creation consistency and wrong-identity admission, not a claim that imported metadata alone grants sender authority.",
+      "recommendation": "Derive or retain a main-owned exact expected birth marker from normalized request, trusted catalogue entry and created UUID; compare the entire marker at every post-await/pre-show/return boundary. Do not expose the birth marker in renderer receipts. Preserve historical birth vs current version separation, and allow same-marker later edits."
+    }
+  ],
+  "verifiedControls": [
+    "Real append preserves opaque existing entities/envelopes and sourceRefs, independent existing suite38/38",
+    "Selected ancestry replay, conflict and removed-entity behavior covered by existing passing contract tests; no new GUI claim",
+    "Post-FIFO genuine admission completes without deadlock in own valid concurrent controls",
+    "Concurrent same operation from Home and working Diagram creates one native window; conflicting title returns OPERATION_CONFLICT",
+    "Cloned senderFrame cannot browse/create despite authentic sender object",
+    "Pause/resume and roster rollback during admission permanently revoke captured operation and clean up new surface while preserving durable append",
+    "First caller revocation exposes no creation receipt to that caller; separate valid Home caller can retain/reopen the same persisted creation without duplicate append"
+  ],
+  "staticBudgetAssessment": {
+    "servicePending": "Synchronous #pending>=64 admission and finally decrement bound simultaneous createDiagram invocations through append plus opening; #opening keys are a subset of those held invocations. Existing owner queue/byte budget tests pass.",
+    "registry": "This review does not claim a newly enforced global registry native-window limit. Existing NativeDiagramEdits admission has its own64-working-view guard. No64-concurrent-opening stress/GUI run was performed.",
+    "callerConcurrency": "The same-operation opening promise uses the first caller current closure, so its revocation can legitimately force cleanup/refusal while another caller retries. Own control accepts an authentic second caller success or temporary opening refusal, but requires no private receipt to the revoked caller and no duplicate persisted diagram."
+  },
+  "setupIssues": [
+    {
+      "attempt": "own-probes-original.txt",
+      "result": "First7 cases reported passing, final case manually interrupted through its owned unified session. These results are not accepted as marker-binding proof.",
+      "reason": "Mutation operation ID concatenated requestHash with uppercase H; validId refused it and a fixture assertion was caught as OPEN_UNAVAILABLE. Last test reused the same unreleased gate for a later legitimate retry factory."
+    },
+    {
+      "attempt": "own-probes-bounded-original.txt",
+      "result": "8 tests,7pass,0fail,1cancelled,exit1 at15s timeout",
+      "reason": "Diagnostic output identified the same fixture-only uppercase operation ID and repeat factory gate. No product defect inferred from this timeout."
+    },
+    {
+      "attempt": "own-probes-corrected-original.txt",
+      "result": "8 tests,5pass,3genuinefail,0cancelled,exit1",
+      "corrections": "Only ignored probes changed: lowercase mutation operation ID; one-shot factory gate; second valid caller permitted temporary refusal or success with matching registry-count invariant. Original files and earlier outputs preserved."
+    }
+  ],
+  "records": [
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent-probes.test.mjs",
+      "bytes": 5926,
+      "sha256": "3944cac7603c3f93d4477a3bee31e443f4537a4a0504b8dcf0072ee06a50e9d3"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent-probes-bounded.test.mjs",
+      "bytes": 6197,
+      "sha256": "f271c6712fc46597c053fa53b9252bd0b8f4362dfda754a4573d28e5a02a8f82"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs",
+      "bytes": 6259,
+      "sha256": "9a52d6cb7b7eeaf8f28a2b7b67ae894e5a8f36b8ff3cbd2842cdcacb8c16f563"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent/existing-tests-original.txt",
+      "bytes": 4177,
+      "sha256": "5d5b009e92b76a8a22ff40e6c466cbd51852b69db9e249954dbd9e92cc589516"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent/existing-tests-original.json",
+      "bytes": 3591,
+      "sha256": "c725881bd1d2dcb824fd159bb9449bb507437985c76ae7db2f9d04ac660d642b"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent/own-probes-original.txt",
+      "bytes": 1675,
+      "sha256": "5cd313389ec3f5ee6fde89314da21f1d5d552d27b04f8b75b8b8563c826edf55"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent/own-probes-bounded-original.txt",
+      "bytes": 3710,
+      "sha256": "d193e41c8cf5388c98a1eb602cb7ef5ed7a8e6c719d7afbcbf95188ff152ddc4"
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-owner-admission-independent/own-probes-corrected-original.txt",
+      "bytes": 7972,
+      "sha256": "94c876b588c66231718051396cb88dcc7298fbfaa68fa9468c2d05e4e2e60630"
+    }
+  ],
+  "limits": [
+    "No overall PASS; the three own negatives remain adverse despite38 existing tests passing.",
+    "No product-source/original-test correction by this reviewer. Root correction and a separately authored recheck remain pending.",
+    "No native GUI, physical multi-monitor, IME, main/preload integration, hosted CI or release qualification."
+  ]
+}

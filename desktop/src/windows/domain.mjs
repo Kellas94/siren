@@ -8,6 +8,8 @@ import {documentVersion} from './docs.mjs';
 import {normalizeDocumentContext,applyDocumentContext} from '../documents/context.mjs';
 import {normalizePresentationEdits,applyPresentationEdits} from '../documents/presentation-edits.mjs';
 import {createDiagramMetadataContract} from '../documents/diagram-metadata.mjs';
+import {randomUUID} from 'node:crypto';
+import {appendCatalogueDiagram} from './diagram-create.mjs';
 const error=code=>Object.assign(new Error(code),{code});
 const fail=code=>Object.freeze({ok:false,code});
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
@@ -92,12 +94,17 @@ export function projectDomainResult(domain,method,result,request) {
  * adapter, not a renderer answer. It may refuse a patch but may not silently
  * normalize it. Sources, historic releases and unrelated entities are retained. */
 export class DomainRepository {
- #projects;#sources;#recovery;#validate;
- constructor({projects,sources,recovery,validatePatch}) {
+ #projects;#sources;#recovery;#validate;#allocateDiagramId;
+ constructor({projects,sources,recovery,validatePatch,allocateDiagramId=randomUUID}) {
   if(typeof projects!=='function'||typeof sources!=='function'||typeof validatePatch!=='function')throw TypeError('Native domain adapters required');
   this.#projects=projects;this.#sources=sources;this.#recovery=recovery;this.#validate=validatePatch;
+  if(typeof allocateDiagramId!=='function')throw TypeError('Native diagram identity allocator required');this.#allocateDiagramId=allocateDiagramId;
  }
  #adapters(scope){guard(scope);const canWrite=()=>scope.isCurrent()===true;return {projects:this.#projects({scope,canWrite}),repository:this.#sources({scope,canWrite})};}
+ async appendCatalogueDiagram(input,scope){
+  try{return await appendCatalogueDiagram({...this.#adapters(scope),recovery:this.#recovery,validatePatch:this.#validate,allocateDiagramId:this.#allocateDiagramId},input,scope);}
+  catch(cause){return fail(cause.code??'CATALOGUE_CREATION_FAILED');}
+ }
  async read(domain,input,scope) {
   try{if(!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');const {entityId}=navigationFields(input,['entityId']);if(!validEntityId(entityId))throw error('REQUEST_REFUSED');const {projects}=this.#adapters(scope),snapshot=await projects.readProject(scope.projectId);guard(scope);verifySnapshot(snapshot);const entity=selectedEntity(snapshot,domain,entityId);if(Buffer.byteLength(JSON.stringify(entity))>8*1024*1024)throw error('ENTITY_BUDGET');return Object.freeze({...receipt(snapshot,domain,entityId,'committed'),entity:JSON.parse(JSON.stringify(entity))});}
   catch(cause){return fail(cause.code??'DOMAIN_READ_FAILED');}

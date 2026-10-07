@@ -1,0 +1,377 @@
+{
+  "schema": 1,
+  "date": "2026-10-07",
+  "author": "/root/hosted_resume_retention",
+  "kind": "independent-original-integration-review",
+  "verdict": "ADVERSE",
+  "claimScope": "finite Node/VM probes and static review only",
+  "finding": {
+    "observed": [
+      {
+        "allowed": true,
+        "included": false,
+        "path": "generated/assets/home-workspace.js",
+        "exists": true,
+        "requiredByHome": true
+      },
+      {
+        "allowed": true,
+        "included": false,
+        "path": "generated/assets/diagram-catalogue.css",
+        "exists": true,
+        "requiredByHome": true
+      }
+    ],
+    "priority": "P1",
+    "id": "CATALOGUE_HOME_ASSETS_NOT_COLLECTED",
+    "line": 44,
+    "sourceSha256": "2396eb839e62a58e810adc798b8afdd3afca4723981eb4e9a7dac99c2d9f9c03",
+    "path": "scripts/package.mjs"
+  },
+  "runs": [
+    {
+      "log": "evidence/workspace-surface/catalogue-integration-independent/collector-original.log",
+      "fail": 1,
+      "exitCode": 1,
+      "kind": "own actual collector",
+      "pass": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    {
+      "log": "evidence/workspace-surface/catalogue-integration-independent/focused-existing.log",
+      "fail": 0,
+      "exitCode": 0,
+      "kind": "existing finite focus/main/view/startup",
+      "pass": 30,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    {
+      "log": "evidence/workspace-surface/catalogue-integration-independent/integration-own-original.log",
+      "fail": 0,
+      "exitCode": 0,
+      "kind": "own finite integration snapshots",
+      "pass": 6,
+      "skipped": 0,
+      "cancelled": 0
+    }
+  ],
+  "inputsBefore": [
+    {
+      "sha256": "c8d6924f229c8149cd77aa32afdcaaa8e7ed6af98ee91fc14a604330a755517a",
+      "path": "src/main.mjs",
+      "bytes": 106313
+    },
+    {
+      "missing": true,
+      "path": "src/preload-home.cjs"
+    },
+    {
+      "missing": true,
+      "path": "src/preload-diagram.cjs"
+    },
+    {
+      "sha256": "d29e7f58dea377a574180ba558a7ed14a59d5dd494f1b600c3b863e8c6010e18",
+      "path": "build/diagram-window.mjs",
+      "bytes": 5467
+    },
+    {
+      "sha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44",
+      "path": "build/workspace.mjs",
+      "bytes": 2960
+    },
+    {
+      "sha256": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2",
+      "path": "build/home-catalogue.mjs",
+      "bytes": 2113
+    },
+    {
+      "sha256": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+      "path": "src/protocol.mjs",
+      "bytes": 1854
+    },
+    {
+      "sha256": "2396eb839e62a58e810adc798b8afdd3afca4723981eb4e9a7dac99c2d9f9c03",
+      "path": "scripts/package.mjs",
+      "bytes": 11283
+    },
+    {
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "path": "src/ui/windows/diagram.js",
+      "bytes": 28613
+    },
+    {
+      "sha256": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+      "path": "src/ui/workspace/home.js",
+      "bytes": 33858
+    },
+    {
+      "sha256": "73a70fb0e1f98c20222f1face1f256fc2509905d32981e776af895d899c5fd67",
+      "path": "src/ui/diagram/catalogue-focus.js",
+      "bytes": 2074
+    },
+    {
+      "sha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+      "path": "src/ui/diagram/catalogue-view.js",
+      "bytes": 14744
+    },
+    {
+      "sha256": "9c39906cf12925ce646cc845b49eac473e2363fa084a3a427bcfa1fd198a7dff",
+      "path": "src/ui/diagram/catalogue.css",
+      "bytes": 5770
+    },
+    {
+      "sha256": "9a3f0828e4046166f76a1a2465eafa66fd9725d88ee5b86e9dd5b947a3fc389c",
+      "path": "src/ui/diagram/catalogue-integration.css",
+      "bytes": 932
+    },
+    {
+      "sha256": "9e13db97bffbd0571c36ba46069205fa54e2768d4ecbd50cc579fe22e8e8e8a6",
+      "path": "generated/home.html",
+      "bytes": 42542
+    },
+    {
+      "sha256": "63eec36f830b33831f9c39827ece60d3c4d400b6022bea36a7f9fc6eb57ef89a",
+      "path": "generated/assets/home-workspace.js",
+      "bytes": 34146
+    },
+    {
+      "sha256": "b973a43460d0cde0c4bc199391ce56e61d0b1f34a5cf17789c6b7db7074b9ba7",
+      "path": "generated/assets/diagram-catalogue.css",
+      "bytes": 6659
+    },
+    {
+      "bytes": 7352,
+      "sha256": "906f300cb814d752eb2e559b1e218508f76e7428f0b522c607e2e5018edb420f",
+      "path": "src/preload.cjs"
+    },
+    {
+      "bytes": 10432,
+      "sha256": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+      "path": "src/windows/preload.cjs"
+    },
+    {
+      "bytes": 3173,
+      "sha256": "e243a0e7a2ba4314b63e37a1b89f49c83c09826f3862984b37e8138538309a79",
+      "path": "tests/diagram-catalogue-focus.test.mjs"
+    },
+    {
+      "bytes": 19304,
+      "sha256": "1063f91290502bd2b6a5616053a89b40948edadc1ff6298b3ad9e356d6b3f21f",
+      "path": "tests/diagram-catalogue-view.test.mjs"
+    },
+    {
+      "bytes": 3004,
+      "sha256": "8afd4fe38aa68c69f2648e88e3d8037b849e8a07ed923fd5d9ff71243f743214",
+      "path": "tests/diagram-catalogue-main.test.mjs"
+    },
+    {
+      "bytes": 7171,
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0",
+      "path": "src/windows/diagram-catalogue.mjs"
+    },
+    {
+      "bytes": 10556,
+      "sha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa",
+      "path": "src/windows/diagram-create.mjs"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "originalSha256": "c8d6924f229c8149cd77aa32afdcaaa8e7ed6af98ee91fc14a604330a755517a",
+      "unchanged": true,
+      "sha256": "c8d6924f229c8149cd77aa32afdcaaa8e7ed6af98ee91fc14a604330a755517a",
+      "bytes": 106313,
+      "path": "src/main.mjs"
+    },
+    {
+      "originalSha256": "d29e7f58dea377a574180ba558a7ed14a59d5dd494f1b600c3b863e8c6010e18",
+      "unchanged": true,
+      "sha256": "d29e7f58dea377a574180ba558a7ed14a59d5dd494f1b600c3b863e8c6010e18",
+      "bytes": 5467,
+      "path": "build/diagram-window.mjs"
+    },
+    {
+      "originalSha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44",
+      "unchanged": true,
+      "sha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44",
+      "bytes": 2960,
+      "path": "build/workspace.mjs"
+    },
+    {
+      "originalSha256": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2",
+      "unchanged": true,
+      "sha256": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2",
+      "bytes": 2113,
+      "path": "build/home-catalogue.mjs"
+    },
+    {
+      "originalSha256": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+      "unchanged": true,
+      "sha256": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+      "bytes": 1854,
+      "path": "src/protocol.mjs"
+    },
+    {
+      "originalSha256": "2396eb839e62a58e810adc798b8afdd3afca4723981eb4e9a7dac99c2d9f9c03",
+      "unchanged": true,
+      "sha256": "2396eb839e62a58e810adc798b8afdd3afca4723981eb4e9a7dac99c2d9f9c03",
+      "bytes": 11283,
+      "path": "scripts/package.mjs"
+    },
+    {
+      "originalSha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "unchanged": true,
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "bytes": 28613,
+      "path": "src/ui/windows/diagram.js"
+    },
+    {
+      "originalSha256": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+      "unchanged": true,
+      "sha256": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+      "bytes": 33858,
+      "path": "src/ui/workspace/home.js"
+    },
+    {
+      "originalSha256": "73a70fb0e1f98c20222f1face1f256fc2509905d32981e776af895d899c5fd67",
+      "unchanged": true,
+      "sha256": "73a70fb0e1f98c20222f1face1f256fc2509905d32981e776af895d899c5fd67",
+      "bytes": 2074,
+      "path": "src/ui/diagram/catalogue-focus.js"
+    },
+    {
+      "originalSha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+      "unchanged": true,
+      "sha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+      "bytes": 14744,
+      "path": "src/ui/diagram/catalogue-view.js"
+    },
+    {
+      "originalSha256": "9c39906cf12925ce646cc845b49eac473e2363fa084a3a427bcfa1fd198a7dff",
+      "unchanged": true,
+      "sha256": "9c39906cf12925ce646cc845b49eac473e2363fa084a3a427bcfa1fd198a7dff",
+      "bytes": 5770,
+      "path": "src/ui/diagram/catalogue.css"
+    },
+    {
+      "originalSha256": "9a3f0828e4046166f76a1a2465eafa66fd9725d88ee5b86e9dd5b947a3fc389c",
+      "unchanged": true,
+      "sha256": "9a3f0828e4046166f76a1a2465eafa66fd9725d88ee5b86e9dd5b947a3fc389c",
+      "bytes": 932,
+      "path": "src/ui/diagram/catalogue-integration.css"
+    },
+    {
+      "originalSha256": "9e13db97bffbd0571c36ba46069205fa54e2768d4ecbd50cc579fe22e8e8e8a6",
+      "unchanged": true,
+      "sha256": "9e13db97bffbd0571c36ba46069205fa54e2768d4ecbd50cc579fe22e8e8e8a6",
+      "bytes": 42542,
+      "path": "generated/home.html"
+    },
+    {
+      "originalSha256": "63eec36f830b33831f9c39827ece60d3c4d400b6022bea36a7f9fc6eb57ef89a",
+      "unchanged": true,
+      "sha256": "63eec36f830b33831f9c39827ece60d3c4d400b6022bea36a7f9fc6eb57ef89a",
+      "bytes": 34146,
+      "path": "generated/assets/home-workspace.js"
+    },
+    {
+      "originalSha256": "b973a43460d0cde0c4bc199391ce56e61d0b1f34a5cf17789c6b7db7074b9ba7",
+      "unchanged": true,
+      "sha256": "b973a43460d0cde0c4bc199391ce56e61d0b1f34a5cf17789c6b7db7074b9ba7",
+      "bytes": 6659,
+      "path": "generated/assets/diagram-catalogue.css"
+    },
+    {
+      "originalSha256": "906f300cb814d752eb2e559b1e218508f76e7428f0b522c607e2e5018edb420f",
+      "unchanged": true,
+      "sha256": "906f300cb814d752eb2e559b1e218508f76e7428f0b522c607e2e5018edb420f",
+      "bytes": 7352,
+      "path": "src/preload.cjs"
+    },
+    {
+      "originalSha256": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+      "unchanged": true,
+      "sha256": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+      "bytes": 10432,
+      "path": "src/windows/preload.cjs"
+    },
+    {
+      "originalSha256": "e243a0e7a2ba4314b63e37a1b89f49c83c09826f3862984b37e8138538309a79",
+      "unchanged": true,
+      "sha256": "e243a0e7a2ba4314b63e37a1b89f49c83c09826f3862984b37e8138538309a79",
+      "bytes": 3173,
+      "path": "tests/diagram-catalogue-focus.test.mjs"
+    },
+    {
+      "originalSha256": "1063f91290502bd2b6a5616053a89b40948edadc1ff6298b3ad9e356d6b3f21f",
+      "unchanged": true,
+      "sha256": "1063f91290502bd2b6a5616053a89b40948edadc1ff6298b3ad9e356d6b3f21f",
+      "bytes": 19304,
+      "path": "tests/diagram-catalogue-view.test.mjs"
+    },
+    {
+      "originalSha256": "8afd4fe38aa68c69f2648e88e3d8037b849e8a07ed923fd5d9ff71243f743214",
+      "unchanged": true,
+      "sha256": "8afd4fe38aa68c69f2648e88e3d8037b849e8a07ed923fd5d9ff71243f743214",
+      "bytes": 3004,
+      "path": "tests/diagram-catalogue-main.test.mjs"
+    },
+    {
+      "originalSha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0",
+      "unchanged": true,
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0",
+      "bytes": 7171,
+      "path": "src/windows/diagram-catalogue.mjs"
+    },
+    {
+      "originalSha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa",
+      "unchanged": true,
+      "sha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa",
+      "bytes": 10556,
+      "path": "src/windows/diagram-create.mjs"
+    }
+  ],
+  "presentInputCount": 22,
+  "allPresentInputsUnchanged": true,
+  "artifacts": [
+    {
+      "sha256": "9e834a47b601c45dad6afb042e7bc537c96f32fbf76f525f156c0909cb50ce55",
+      "bytes": 1195,
+      "path": "evidence/workspace-surface/catalogue-integration-independent/collector-probe.test.mjs"
+    },
+    {
+      "sha256": "5ab6dc90632a72c92374111aca2b617f3b46d85070e3556924ae07f8a65e4b32",
+      "bytes": 13756,
+      "path": "evidence/workspace-surface/catalogue-integration-independent/integration-probes.test.mjs"
+    },
+    {
+      "sha256": "ac046bffad77881730bfef11345744bcd6969bb16d30f1998a5e4b258e6f8cb0",
+      "bytes": 1947,
+      "path": "evidence/workspace-surface/catalogue-integration-independent/collector-original.log"
+    },
+    {
+      "sha256": "93269c2aaf4504a7e731258052f85c785b66deb3a60de711589ac75509d792d1",
+      "bytes": 3470,
+      "path": "evidence/workspace-surface/catalogue-integration-independent/focused-existing.log"
+    },
+    {
+      "sha256": "a33a1a40cb62d357b5aa646af0bd93ddde08ddce348c438ad91de9561a1b0cbe",
+      "bytes": 874,
+      "path": "evidence/workspace-surface/catalogue-integration-independent/integration-own-original.log"
+    }
+  ],
+  "notProved": [
+    "GUI/native focus/IME/multi-monitor",
+    "actual package or ASAR startup",
+    "all application bugs",
+    "release or independent GUI admission",
+    "hosted pan historical cause"
+  ],
+  "reviewerSourceChanges": false,
+  "reviewerBuildExecuted": false,
+  "reviewerGuiExecuted": false,
+  "reviewerPackageExecuted": false,
+  "originalEvidenceRetained": true
+}

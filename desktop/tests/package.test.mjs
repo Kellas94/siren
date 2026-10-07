@@ -12,7 +12,7 @@ test('staged application includes the actual cold Home entry and every finite ge
   const root = await mkdtemp(join(tmpdir(), 'siren-package-entry-'));
   await mkdir(join(root, 'src'));
   const inputs = await collectApplicationInputs(root, new Set());
-  for (const entry of ['generated/home.html', 'generated/app.html', 'generated/import-validation.html', 'generated/windows/code.html', 'generated/windows/docs.html','generated/code-analysis-worker.cjs','generated/diagram-vector.html']) assert.ok(inputs.includes(entry), 'Cannot boot or navigate the packaged application without ' + entry);
+  for (const entry of ['generated/home.html', 'generated/assets/home-workspace.js','generated/assets/diagram-catalogue.css','generated/app.html', 'generated/import-validation.html', 'generated/windows/code.html', 'generated/windows/docs.html','generated/code-analysis-worker.cjs','generated/diagram-vector.html']) assert.ok(inputs.includes(entry), 'Cannot boot or navigate the packaged application without ' + entry);
 });
 
 test('package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps', async () => {

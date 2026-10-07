@@ -5,11 +5,12 @@ import {Script} from 'node:vm';
 import {transform} from 'esbuild';
 import {readDesktopChrome} from './chrome.mjs';
 import {addDesktopShell} from './appearance.mjs';
+import {addHomeCatalogue} from './home-catalogue.mjs';
 
 /** Standalone, data-free build. Production entry/route admission is separate. */
 export async function buildWorkspaceEntrypoint({outputDir}) {
   const ui=new URL('../src/ui/',import.meta.url);
-  const scripts=await Promise.all(['workspace/intro.js','workspace/home.js','pin.js','windows/shelf.js'].map(async name=>{
+  const scripts=await Promise.all(['workspace/intro.js','pin.js','windows/shelf.js'].map(async name=>{
     const source=(await readFile(new URL(name,ui),'utf8')).replaceAll('\r\n','\n');
     if(/<\/script/i.test(source))throw Error('Home script boundary refused');
     return (await transform(source,{minify:true,target:'es2022',charset:'utf8',legalComments:'inline'})).code;
@@ -25,7 +26,7 @@ export async function buildWorkspaceEntrypoint({outputDir}) {
 <div id="sirenIntroOverlay" class="home-opening" aria-label="SIREN opening"><div class="home-opening-lines" aria-hidden="true"><i></i><i></i><i></i></div><div class="home-opening-word">SIREN</div><p>Ideas. Connected.</p></div>
 <div id="sirenLockVault" class="home-vault" hidden aria-label="Locking SIREN"><div class="home-vault-door"><span>S</span></div></div>
 <main id="homeRoot" hidden></main><script>${scripts.join('</script><script>')}</script></body></html>`;
-  const bytes=Buffer.from(await addDesktopShell(html,outputDir));if(bytes.length>=64*1024)throw Error('Home entry budget exceeded: '+bytes.length);
+  const bytes=Buffer.from(await addDesktopShell(await addHomeCatalogue(html,outputDir),outputDir));if(bytes.length>=64*1024)throw Error('Home entry budget exceeded: '+bytes.length);
   await mkdir(outputDir,{recursive:true});await writeFile(join(outputDir,'home.html'),bytes);
   return Object.freeze({sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,scriptCount:scripts.length});
 }

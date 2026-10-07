@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('sirenDiagramCatalogue',Object.freeze(Object.fromEntries(['getPage','createDiagram'].map(method=>[method,payload=>ipcRenderer.invoke('siren:diagram-catalogue',method,payload)]))));
 let deckAuthoring=false;const deckListeners=new Set();ipcRenderer.on('siren:deck-authoring',()=>{deckAuthoring=true;for(const callback of deckListeners)callback();});
 contextBridge.exposeInMainWorld('sirenDeckNavigation',Object.freeze({play:payload=>ipcRenderer.invoke('siren:deck-navigation','play',payload),edit:payload=>ipcRenderer.invoke('siren:deck-navigation','edit',payload),onAuthoring:callback=>{if(typeof callback!=='function')throw TypeError('Expected callback');deckListeners.add(callback);if(deckAuthoring)callback();return()=>deckListeners.delete(callback);}}));
 contextBridge.exposeInMainWorld('sirenShell',Object.freeze(Object.fromEntries(['getAppearance','setAppearance','navigate'].map(method=>[method,payload=>ipcRenderer.invoke('siren:shell',method,payload)]))));

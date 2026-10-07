@@ -1,0 +1,191 @@
+{
+  "verdict": "SCOPED_INDEPENDENT_RECHECK_PASS",
+  "kind": "independent-keyboard-entry-correction-recheck",
+  "exactOnlyCancelFocus": true,
+  "ownFixedRun": {
+    "fail": 0,
+    "tests": 9,
+    "exitCode": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "pass": 9
+  },
+  "existingViewRun": {
+    "fail": 0,
+    "tests": 21,
+    "exitCode": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "pass": 21
+  },
+  "details": {
+    "schema": 1,
+    "author": "/root/hosted_resume_retention",
+    "date": "2026-10-07",
+    "finding": "CATALOGUE_KEYBOARD_ENTRY_FOCUS",
+    "priority": "P2",
+    "originalSourceSha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+    "fixedSourceSha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167",
+    "probeSha256": "709b2a5bfda814bb2c31c167f3a21f3ce437b74df485abeff522a30bc0a37487",
+    "probeUnchanged": true,
+    "originalOwnRun": {
+      "fail": 4,
+      "tests": 9,
+      "exitCode": 1,
+      "skipped": 0,
+      "cancelled": 0,
+      "pass": 5
+    },
+    "ownerRed": {
+      "pass": 20,
+      "fail": 1,
+      "tests": 21
+    },
+    "ownerNativeEvidenceAdopted": false,
+    "nativeFullEventOrderingProved": false,
+    "originalAdversePreserved": true,
+    "inputCount": 8,
+    "allInputsUnchanged": true,
+    "inputsBefore": [
+      {
+        "sha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167",
+        "bytes": 14759,
+        "path": "src/ui/diagram/catalogue-view.js"
+      },
+      {
+        "sha256": "a07b435f965b98915d8b2308d06888b8dad6ba405d70109e9e23d3f0fe0b13bf",
+        "bytes": 19862,
+        "path": "tests/diagram-catalogue-view.test.mjs"
+      },
+      {
+        "sha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+        "bytes": 14744,
+        "path": "evidence/workspace-surface/catalogue-integration-independent/original/src/ui/diagram/catalogue-view.js"
+      },
+      {
+        "sha256": "2a141fbf57b543980aba7e980386910ea726ca09e6ca680b2e4d0669448b940d",
+        "bytes": 192,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-red.json"
+      },
+      {
+        "sha256": "3aa274439090efb2045f0fc3767f6de62425994f1cb25ce4e3c03570933d3b96",
+        "bytes": 23191,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-red.txt"
+      },
+      {
+        "sha256": "6fa7e5857dce4168dcebb118ad178a6c14fe91cc474aacd0b95c134271f75b57",
+        "bytes": 283,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-green.json"
+      },
+      {
+        "sha256": "c679bb60e457a84c7cf6daf8c29ae1669562d8453068afc0ef8f6fb24f9c06c0",
+        "bytes": 9541,
+        "path": "evidence/diagram-catalogue/2026-10-07T09-42-50.130Z/result.json"
+      },
+      {
+        "sha256": "cd6fa339a08ce043246f7a792bd882308e2c069eefcffc7d30378a867c66076f",
+        "bytes": 9861,
+        "path": "evidence/diagram-catalogue/2026-10-07T09-49-19.426Z/result.json"
+      }
+    ],
+    "inputsAfter": [
+      {
+        "unchanged": true,
+        "path": "src/ui/diagram/catalogue-view.js",
+        "beforeSha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167",
+        "sha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167"
+      },
+      {
+        "unchanged": true,
+        "path": "tests/diagram-catalogue-view.test.mjs",
+        "beforeSha256": "a07b435f965b98915d8b2308d06888b8dad6ba405d70109e9e23d3f0fe0b13bf",
+        "sha256": "a07b435f965b98915d8b2308d06888b8dad6ba405d70109e9e23d3f0fe0b13bf"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/workspace-surface/catalogue-integration-independent/original/src/ui/diagram/catalogue-view.js",
+        "beforeSha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904",
+        "sha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-red.json",
+        "beforeSha256": "2a141fbf57b543980aba7e980386910ea726ca09e6ca680b2e4d0669448b940d",
+        "sha256": "2a141fbf57b543980aba7e980386910ea726ca09e6ca680b2e4d0669448b940d"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-red.txt",
+        "beforeSha256": "3aa274439090efb2045f0fc3767f6de62425994f1cb25ce4e3c03570933d3b96",
+        "sha256": "3aa274439090efb2045f0fc3767f6de62425994f1cb25ce4e3c03570933d3b96"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/workspace-surface/diagram-catalogue-keyboard-entry-owner-green.json",
+        "beforeSha256": "6fa7e5857dce4168dcebb118ad178a6c14fe91cc474aacd0b95c134271f75b57",
+        "sha256": "6fa7e5857dce4168dcebb118ad178a6c14fe91cc474aacd0b95c134271f75b57"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/diagram-catalogue/2026-10-07T09-42-50.130Z/result.json",
+        "beforeSha256": "c679bb60e457a84c7cf6daf8c29ae1669562d8453068afc0ef8f6fb24f9c06c0",
+        "sha256": "c679bb60e457a84c7cf6daf8c29ae1669562d8453068afc0ef8f6fb24f9c06c0"
+      },
+      {
+        "unchanged": true,
+        "path": "evidence/diagram-catalogue/2026-10-07T09-49-19.426Z/result.json",
+        "beforeSha256": "cd6fa339a08ce043246f7a792bd882308e2c069eefcffc7d30378a867c66076f",
+        "sha256": "cd6fa339a08ce043246f7a792bd882308e2c069eefcffc7d30378a867c66076f"
+      }
+    ],
+    "guiExecuted": false,
+    "buildExecuted": false,
+    "packageExecuted": false,
+    "fullsuiteExecuted": false,
+    "reviewerSourceTestChanges": false,
+    "nativeHarnessQualified": false,
+    "historicalHostedPanClosed": false,
+    "artifacts": [
+      {
+        "bytes": 7578,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/probes.test.mjs",
+        "sha256": "709b2a5bfda814bb2c31c167f3a21f3ce437b74df485abeff522a30bc0a37487"
+      },
+      {
+        "bytes": 14744,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/original-view.js.txt",
+        "sha256": "389ab38bb9737f7f6cf2745f90a2f7bdd31782fec9bfc665cf8c5cf6d35f9904"
+      },
+      {
+        "bytes": 14759,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/fixed-view.js.txt",
+        "sha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167"
+      },
+      {
+        "bytes": 121705,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/original-own-adverse.log",
+        "sha256": "f6be9a6a27aae7ef779610890c0479c558195a4c6d22aa060551d98bf2563aa1"
+      },
+      {
+        "bytes": 1035,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/fixed-own-recheck.log",
+        "sha256": "72448923e0e5c36abd852da6275bd83e639c67c922c254294f1b7d48b83d5596"
+      },
+      {
+        "bytes": 2622,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/existing-view-recheck.log",
+        "sha256": "e630f8ec4fcef5a163d88cf9418e7577b4df216f0e48627e1c5e4a20c94b602b"
+      },
+      {
+        "bytes": 159,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/execution.json",
+        "sha256": "5aeff0fb8fcbde03241a61fb64667d1a1ef17c2420c8d7ad6e0981dae308b0b2"
+      },
+      {
+        "bytes": 111,
+        "path": "evidence/workspace-surface/catalogue-keyboard-entry-independent/validation.json",
+        "sha256": "814bc6e4f22b04773393723adcded71e54ae7b8eb798cb59d72d3030100cad52"
+      }
+    ]
+  }
+}

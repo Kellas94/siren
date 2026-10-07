@@ -18,11 +18,12 @@ const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','s
   ...['contracts','entries','authority','service','project-copies','source-bundle-copy','source-import','document-create','backup-export','continue','transition-receipts','store','catalog','resolver','ipc','window-labels'].map(n=>`src/navigation/${n}.mjs`),
   ...['readiness','registry','surface','dock-ipc','focus','layout','layout-memory','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','source-analysis','source-context','working-sources','code-docs','docs-reads','docs-sources','docs-edits','diagram-reads','diagram-edits','diagram-export','diagram-vector-render','catalog','home-admission','readonly-seals','control','source-barrier','presentation','presentation-deck','presentation-render','presentation-ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs','src/windows/presentation-preload.cjs','src/windows/docs-references.mjs','src/documents/context.mjs','src/documents/presentation-edits.mjs','src/windows/deck-navigation.mjs',
   'src/documents/export.mjs','src/windows/docs-export.mjs','src/documents/diagram-metadata.mjs',
+  'src/documents/diagram-catalogue.mjs','src/windows/diagram-create.mjs','src/windows/diagram-catalogue.mjs',
   'src/documents/presentation-notes.mjs','src/windows/presenter-export.mjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
   if (sourceFiles.has(path)) return true;
-  if(['generated/assets/shell.js','generated/assets/shell.css'].includes(path))return true;
+  if(['generated/assets/shell.js','generated/assets/shell.css','generated/assets/home-workspace.js','generated/assets/diagram-catalogue.css'].includes(path))return true;
   if (typeof path !== 'string' || path.split('/').some(p => !p || p === '.' || p === '..') || path.includes('\\') || /(?:\.map|\.d\.ts|\.log|\.pem|\.key)$/.test(path) || /(?:^|\/)(?:\.env[^/]*|credentials[^/]*|test-[^/]*|[^/]*\.test\.[^/]*)$/.test(path)) return false;
   if (path === 'package.json' || path === 'generated/app.html' || path === 'generated/home.html' || path === 'generated/build.json' || path === 'generated/import-validation.html' || path==='generated/presentation-render.html' || path==='generated/diagram-vector.html' || path==='generated/code-analysis-worker.cjs' || ['generated/windows/code.html','generated/windows/docs.html','generated/windows/diagram.html','generated/windows/presenter.html','generated/windows/audience.html'].includes(path)) return true;
   if (path.startsWith('src/')) return false;
@@ -40,7 +41,7 @@ async function walk(directory, prefix = '') {
 }
 export async function collectApplicationInputs(desktopRoot, production) {
   const candidates = ['package.json','generated/app.html','generated/home.html','generated/build.json','generated/import-validation.html','generated/presentation-render.html','generated/diagram-vector.html','generated/code-analysis-worker.cjs','generated/windows/code.html','generated/windows/docs.html','generated/windows/diagram.html','generated/windows/presenter.html','generated/windows/audience.html', ...(await walk(join(desktopRoot, 'src'))).map(p => 'src/' + p)];
-  candidates.push('generated/assets/shell.js','generated/assets/shell.css');
+  candidates.push('generated/assets/shell.js','generated/assets/shell.css','generated/assets/home-workspace.js','generated/assets/diagram-catalogue.css');
   for (const packageName of production) candidates.push(...(await walk(join(desktopRoot, 'node_modules', packageName))).map(p => `node_modules/${packageName}/` + p));
   return candidates.filter(path => allowedAppFile(path, production));
 }

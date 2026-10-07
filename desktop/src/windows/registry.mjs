@@ -582,6 +582,18 @@ export class WindowRegistry {
     return Boolean(current && ['windowId','role','projectId','epoch','webContentsId','mainFrameUrl'].every(key=>current[key]===grant[key]) && grant.entityIds.every(id=>current.entityIds.includes(id)));
   }
 
+  // Main-only monotonic admission fence. Freeze/rollback cannot revive an
+  // already queued creation, even if its original native frame remains live.
+  captureAdmissionGuard(grant){
+    if(!this.isCurrent(grant)||this.#roster||this.#workspaceNavigation||this.#destructionFailed)return null;
+    const epoch=this.#epoch,generation=this.#admissionGeneration;let revoked=false;
+    return Object.freeze({isCurrent:()=>{
+      if(revoked)return false;
+      if(epoch!==this.#epoch||generation!==this.#admissionGeneration||this.#roster||this.#workspaceNavigation||this.#destructionFailed||!this.isCurrent(grant)){revoked=true;return false;}
+      return true;
+    }});
+  }
+
   // Trusted native adapters only; no preload or IPC exposes captured handles.
   eventFor(grant) {return this.isCurrent(grant)?this.#captures.get(grant):null;}
   // Main-only lookup of the exact owned shell, including pending/retired

@@ -32,6 +32,7 @@ import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeDocsSources} from './windows/docs-sources.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
 import {NativeDiagramEdits} from './windows/diagram-edits.mjs';
+import {NativeDiagramCatalogue} from './windows/diagram-catalogue.mjs';
 import {NativeDiagramExports} from './windows/diagram-export.mjs';
 import {NativeDocsExports} from './windows/docs-export.mjs';
 import {NativePresenterExports} from './windows/presenter-export.mjs';
@@ -464,6 +465,9 @@ let workingSources=null;let workingDocs=null;let workingDiagrams=null;
 const workingEnabled=grant=>localPin.state().unlocked&&!nativeReadonly&&mode==='normal'&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure&&snapshot?.schema===2&&grant?.projectId===selectedId;
 const canOpenWorkingDocs=grant=>workingEnabled(grant)&&grant?.role==='docs'&&windowRegistry.isCurrent(grant)&&grant.entityIds.length===1&&workspaceEntities(snapshot).docs.includes(grant.entityIds[0]);
 const canOpenWorkingDiagram=grant=>workingEnabled(grant)&&grant?.role==='diagram'&&windowRegistry.isCurrent(grant)&&grant.entityIds.length===1&&workspaceEntities(snapshot).diagram.includes(grant.entityIds[0]);
+const canBrowseDiagramCatalogue=grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure&&grant?.projectId===selectedId;
+const canCreateCatalogueDiagram=grant=>canBrowseDiagramCatalogue(grant)&&workingEnabled(grant)&&
+ (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'&&grant.entityIds.length===0||grant.role==='diagram'&&workingDiagrams?.isWorking(grant)===true);
 const canOpenWorking=grant=>Boolean(workingEnabled(grant)&&grant.role==='code'&&windowRegistry.isCurrent(grant)&&snapshot.sourceRefs.some(ref=>ref.sourceId===windowRegistry.sourceScope(grant)?.sourceId));
 const sourceReferenceFor=(grant,request)=>workingSources?.isWorking(grant)?workingSources.referenceFor(grant,request):selectedSourceReference(snapshot,windowRegistry,grant,request);
 const canLinkCodeDocs=grant=>workingSources?.isWorking(grant)===true&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing;
@@ -479,7 +483,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   readonlyViews,
   onNativeFailure:info=>console.warn('SIREN_SOURCE_NATIVE_FAILURE',JSON.stringify(info)),
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
-    (grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
+    (scope.action==='create-catalogue-diagram'?canCreateCatalogueDiagram(grant):grant.role==='workspace'&&grant.mainFrameUrl==='siren://app/home.html'?scope.action==='readonly':scope.action==='read'
       ? (!pinTransition||workspaceBarrier&&workingSources?.isWorking(grant)) && !nativeShellFailure && snapshot?.schema===2 && snapshot.sourceRefs?.some(ref=>ref.sourceId===scope.sourceId)
       : scope.action==='read-domain'
         ? (!pinTransition||workspaceBarrier&&(workingDocs?.isWorking(grant)||workingDiagrams?.isWorking(grant))) && !nativeShellFailure && ['docs','diagram'].includes(scope.domain) && workspaceEntities(snapshot)[scope.domain].includes(scope.entityId)
@@ -489,6 +493,17 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:{
     read:(...args)=>new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}).read(...args),
+    async appendCatalogueDiagram(input,scope){
+      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
+        validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
+      const result=await repository.appendCatalogueDiagram(input,scope);
+      if(result.ok&&scope.isCurrent()){
+        const current=await projects.readProject(scope.projectId);
+        if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};
+        snapshot=current;bootstrap={...bootstrap,snapshot:current};
+      }
+      return result;
+    },
     async apply(kind,input,scope){
       if(!['docs','diagram'].includes(kind))return {ok:false,code:'ACCESS_REFUSED'};
 
@@ -530,6 +545,16 @@ const docsSources=new NativeDocsSources({registry:windowRegistry,owner:workspace
  show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Linked source window unavailable');view.webContents.send('siren:view-ready');view.show();},
 });
 const diagramReads=new NativeDiagramReads({registry:windowRegistry,owner:workspaceOwner,diagramFor:(_grant,entityId)=>workspaceMetadata(snapshot).diagrams?.find(diagram=>diagram.id===entityId),readonlyFor:grant=>!workingDiagrams?.isWorking(grant),editingState:canOpenWorkingDiagram});
+const diagramCatalogue=new NativeDiagramCatalogue({registry:windowRegistry,owner:workspaceOwner,
+ canBrowse:canBrowseDiagramCatalogue,canCreate:canCreateCatalogueDiagram,snapshotFor:()=>snapshot,windowFor:id=>nativeShells.get(id),
+ admit:async grant=>{
+  workingDiagrams??=new NativeDiagramEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onReferenceChanged:(own,ref)=>{if(workingDiagrams?.isWorking(own)&&workspaceOwner.canReadDomain(own,'diagram',ref.diagramId))windowRegistry.eventFor(own)?.sender.send('siren:working-diagram-changed',ref);}});
+  return workingDiagrams.admit(grant);
+ },isWorking:grant=>workingDiagrams?.isWorking(grant)===true,
+ show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Created Diagram unavailable');if(view.isMinimized())view.restore();view.webContents.send('siren:view-ready');view.show();view.focus();},
+ onCreated:()=>{if(!window.isDestroyed()&&window.webContents.getURL()==='siren://app/home.html')window.webContents.send('siren:home-catalogue-changed');},
+ onNativeFailure:()=>{nativeShellFailure=true;},
+});
 const docsReferences=new NativeDocsReferences({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,snapshotFor:()=>snapshot,
  canOpen:grant=>localPin.state().unlocked&&!pinTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure&&grant.projectId===selectedId,
  show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Reference window unavailable');view.webContents.send('siren:view-ready');view.show();},
@@ -1015,6 +1040,11 @@ ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
 ipcMain.handle('siren:diagram-read',async(event,method,payload,flushNonce)=>{
   const operation=diagramReads.invoke({event,method,payload,flushNonce});writes.add(operation);
   try{const result=await operation;if(!result.ok&&workspaceBarrier){const grant=windowRegistry.capture(event);console.warn('SIREN_DIAGRAM_READ_FAILURE',JSON.stringify({code:result.code,privateTicket:typeof flushNonce==='string',working:workingDiagrams?.isWorking(grant)===true,readable:grant?workspaceOwner.canReadDomain(grant,'diagram',grant.entityIds[0],flushNonce):false}));}return result;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:diagram-catalogue',async(event,method,payload,flushNonce)=>{
+ if(flushNonce!==undefined)return {ok:false,code:'FLUSH_REFUSED'};
+ const operation=diagramCatalogue.invoke({event,method,payload});writes.add(operation);
+ try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:diagram-export',async(event,method,payload)=>{
  if(pinTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)return {ok:false,code:'ACCESS_REFUSED'};

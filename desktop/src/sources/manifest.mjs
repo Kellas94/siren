@@ -115,12 +115,14 @@ async function verifiedSources(repository, projectId, sourceRefs, materialize) {
   }
 }
 
-async function ancestry(projects, directory, current) {
+async function ancestry(projects, directory, current, maxRecords) {
   const selected = [current];
   if (current.schema !== 2 || !current.parentRequestHash) return selected;
   const revisions = await childDirectory(directory, 'revisions');
   const records = [];
-  for (const name of await readdir(revisions)) {
+  const names=await readdir(revisions);
+  if(maxRecords!==undefined){let count=0;for(const name of names)if(/^[0-9]+-[a-f0-9-]{36}\.json$/.test(name)&&++count>maxRecords)throw error('MANIFEST_HISTORY_BUDGET');}
+  for (const name of names) {
     if (!/^[0-9]+-[a-f0-9-]{36}\.json$/.test(name)) continue;
     // A damaged retained file cannot prove an ancestor. Never ACK an orphan.
     try {
@@ -143,9 +145,16 @@ async function ancestry(projects, directory, current) {
 }
 
 // Native selected ancestry only; orphan revisions never prove an operation.
-export async function selectedManifestHistory(projects, projectId) {
+export async function selectedManifestHistory(projects, projectId, options) {
+  let maxRecords;
+  if(options!==undefined){
+    if(!record(options)||![Object.prototype,null].includes(Object.getPrototypeOf(options)))throw error('MANIFEST_HISTORY_BUDGET');
+    const fields=Object.getOwnPropertyDescriptors(options);
+    if(Reflect.ownKeys(fields).length!==1||!Object.hasOwn(fields,'maxRecords')||!Object.hasOwn(fields.maxRecords,'value')||!Number.isSafeInteger(fields.maxRecords.value)||fields.maxRecords.value<1||fields.maxRecords.value>32768)throw error('MANIFEST_HISTORY_BUDGET');
+    maxRecords=fields.maxRecords.value;
+  }
   const current = await projects.readProject(projectId);
-  return ancestry(projects, await projects.directory(projectId), current);
+  return ancestry(projects, await projects.directory(projectId), current, maxRecords);
 }
 
 async function durability(snapshot, recovery) {

@@ -1,0 +1,398 @@
+{
+  "author": "/root",
+  "executor": "/root",
+  "status": "SCOPED_PRECOMMIT_QUALIFIED_COPY_PENDING",
+  "uniqueUnitTests": 1570,
+  "suite": {
+    "path": "evidence/workspace-surface/diagram-catalogue-full-suite-2026-10-07T09-57-56.892Z/result.json",
+    "bytes": 128749,
+    "sha256": "f577cd9b01a742e4ad0beff5958207e6b4a8f2a0429101117cc1729f1d4b6fb1"
+  },
+  "native": {
+    "path": "evidence/diagram-catalogue/2026-10-07T09-56-27.533Z/result.json",
+    "bytes": 10095,
+    "sha256": "214dc6e39845bcd8654d01f1e2d1ef9ab9d77ef8a62cc0be1526966c605bd545",
+    "cases": 7,
+    "captureCount": 34,
+    "sourceInputs": {
+      "src/main.mjs": "c8d6924f229c8149cd77aa32afdcaaa8e7ed6af98ee91fc14a604330a755517a",
+      "src/preload.cjs": "906f300cb814d752eb2e559b1e218508f76e7428f0b522c607e2e5018edb420f",
+      "src/windows/preload.cjs": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+      "src/windows/diagram-create.mjs": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa",
+      "src/windows/diagram-catalogue.mjs": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0",
+      "src/windows/coordinator.mjs": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1",
+      "src/windows/domain.mjs": "a9de1dcf8de5b5dfd17593b66c1ec4b68d16f21f22d7970a78b9977f5caadd41",
+      "src/windows/registry.mjs": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197",
+      "src/sources/manifest.mjs": "d49f1eaa8387f1ed0e257640bc2d325797a71c397b092a68e272c0d991c1f234",
+      "src/documents/diagram-catalogue.mjs": "3d78de0f361754e5715ddfea7060e6dbc1fe04450b3c1227e95feb127b609906",
+      "src/ui/windows/diagram.js": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "src/ui/diagram/catalogue-focus.js": "13d343bd0dceda87d77e983aa0e0bdc14ba8b304ff98a3f59ac836154e2a2fac",
+      "src/ui/diagram/catalogue-view.js": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167",
+      "src/ui/diagram/catalogue.css": "9c39906cf12925ce646cc845b49eac473e2363fa084a3a427bcfa1fd198a7dff",
+      "src/ui/diagram/catalogue-integration.css": "9a3f0828e4046166f76a1a2465eafa66fd9725d88ee5b86e9dd5b947a3fc389c",
+      "src/ui/diagram/guided-view.js": "8e5970ecedaeccf302f79d1e25ffc727b741ecd2932ebf5a8ba12921b58db21d",
+      "src/ui/diagram/style-view.js": "301c067b09597b7c7e3487a3962ce65f8fb6b6c5c532aed197f7ca875dbf236e",
+      "src/ui/workspace/home.js": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+      "src/protocol.mjs": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+      "scripts/package.mjs": "05dc6020dbbaf1845c7588d452010ac9c1625e9a7b80fcd7ccf9c9596c03a164",
+      "build/home-catalogue.mjs": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2",
+      "build/workspace.mjs": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44",
+      "build/diagram-window.mjs": "d29e7f58dea377a574180ba558a7ed14a59d5dd494f1b600c3b863e8c6010e18",
+      "generated/home.html": "b13b730b55e1d3b38b9b90f9e001a9a24299ffaefe38a42cd0b8f8ce684cecdd",
+      "generated/windows/diagram.html": "7b306cd37efb1838e6547caaef23b2a60249b3e4335ecf6aca6792eee7a90364",
+      "generated/assets/home-workspace.js": "74b3a7a012bc303115c837275b19c8178ad3be86a4575efa656c39fd40e07fd7",
+      "generated/assets/diagram-catalogue.css": "b973a43460d0cde0c4bc199391ce56e61d0b1f34a5cf17789c6b7db7074b9ba7",
+      "generated/build.json": "077d51b012cf9e9dd159bafd2de66c43bc07c4e830e555adb7b4e574073daf33",
+      "tests/native/diagram-catalogue.mjs": "14ef2218f4a79d1028c0fbe3435d6cf6ceb753b6996d533fcd17c5aa469d255d",
+      "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+      "tests/native/attach-page.mjs": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb",
+      "tests/native/pointer.mjs": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d",
+      "tests/native/condition.mjs": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4",
+      "tests/native/native-keyboard.mjs": "51966a4884cf8f6ff22ebf5f55a2ee3dffa787050ddfe4d8a5d3373cc248f963"
+    },
+    "narrowGeometry": {
+      "width": 704,
+      "height": 655,
+      "left": 24,
+      "right": 680,
+      "bottom": 631,
+      "cancelBottom": 168.890625
+    },
+    "nativeBounds": {
+      "focused": true,
+      "fullScreen": false,
+      "maximized": false,
+      "minimized": false,
+      "visible": true,
+      "bounds": {
+        "x": 100,
+        "y": 100,
+        "width": 720,
+        "height": 720
+      },
+      "normalBounds": {
+        "x": 100,
+        "y": 100,
+        "width": 720,
+        "height": 720
+      }
+    },
+    "themeObservations": [
+      {
+        "choice": "light",
+        "effective": "light",
+        "background": "rgb(255, 253, 248)",
+        "color": "rgb(47, 41, 36)",
+        "opacity": "1"
+      },
+      {
+        "choice": "dark",
+        "effective": "dark",
+        "background": "rgb(17, 25, 35)",
+        "color": "rgb(244, 247, 251)",
+        "opacity": "1"
+      }
+    ]
+  },
+  "originalRegressions": {
+    "path": "evidence/workspace-surface/pan-lease-regressions-2026-10-07T10-02-12.986Z/result.json",
+    "bytes": 57826,
+    "sha256": "b38e824596d389270794e1cec8a05d0d5aabb1baf2657c0fa7b764d5f4cf9c9e",
+    "programs": 9,
+    "results": [
+      {
+        "name": "diagram-preview",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-preview\\2026-10-07T10-02-13.096Z",
+          "status": "COMPLETE",
+          "cases": 4
+        },
+        "receipt": {
+          "path": "evidence\\diagram-preview\\2026-10-07T10-02-13.096Z\\result.json",
+          "bytes": 5134,
+          "sha256": "2b1f61a3c34cd299d69bb78351b93e21c5e20e2b6e3b95f60d3e7f431b5181f3"
+        }
+      },
+      {
+        "name": "diagram-guided",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-guided\\2026-10-07T10-02-31.004Z",
+          "status": "COMPLETE",
+          "cases": 4
+        },
+        "receipt": {
+          "path": "evidence\\diagram-guided\\2026-10-07T10-02-31.004Z\\result.json",
+          "bytes": 5587,
+          "sha256": "da99ca668694cd641c42f025c3d4bf664bdd8def7c9deb8dd68a73d8b005830b"
+        }
+      },
+      {
+        "name": "diagram-style",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-style\\2026-10-07T10-02-46.498Z",
+          "status": "COMPLETE",
+          "cases": 6
+        },
+        "receipt": {
+          "path": "evidence\\diagram-style\\2026-10-07T10-02-46.498Z\\result.json",
+          "bytes": 9475,
+          "sha256": "a6a450593c3020bfd7786de09865b1148f38118d1151515333fba065c3a50bd0"
+        }
+      },
+      {
+        "name": "diagram-edit",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-edit\\2026-10-07T10-03-05.584Z",
+          "status": "COMPLETE",
+          "cases": 4
+        },
+        "receipt": {
+          "path": "evidence\\diagram-edit\\2026-10-07T10-03-05.584Z\\result.json",
+          "bytes": 48981,
+          "sha256": "a53ea89d1dc6705c0169bb520bc104ac60e431e33107a120355f1473ee55001d"
+        }
+      },
+      {
+        "name": "diagram-build",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-build\\2026-10-07T10-03-28.620Z",
+          "status": "COMPLETE",
+          "cases": 7
+        },
+        "receipt": {
+          "path": "evidence\\diagram-build\\2026-10-07T10-03-28.620Z\\result.json",
+          "bytes": 17745,
+          "sha256": "0a4b42459820ba504ae9a980e75281705499da68e6e70c550e126739b5a0efcc"
+        }
+      },
+      {
+        "name": "diagram-walkthrough",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-walkthrough-native\\2026-10-07T10-03-52.013Z",
+          "status": "COMPLETE",
+          "cases": 8,
+          "changedInputs": []
+        },
+        "receipt": {
+          "path": "evidence\\diagram-walkthrough-native\\2026-10-07T10-03-52.013Z\\result.json",
+          "bytes": 165775,
+          "sha256": "f1dc91fa2e965a5dc32ce72c607f8b4079e4cf0856493c93f64ce7f737673e99"
+        }
+      },
+      {
+        "name": "diagram-history-typography",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-history-typography-native\\2026-10-07T10-04-15.954Z",
+          "status": "COMPLETE",
+          "cases": 8,
+          "changedInputs": []
+        },
+        "receipt": {
+          "path": "evidence\\diagram-history-typography-native\\2026-10-07T10-04-15.954Z\\result.json",
+          "bytes": 162122,
+          "sha256": "ab1d3bda94aa729d70721a52a2671a1e660c5cb5311c69aa694ab8d6b7080eaa"
+        }
+      },
+      {
+        "name": "diagram-annotations",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-annotations-native\\2026-10-07T10-04-41.740Z",
+          "status": "COMPLETE",
+          "cases": 8,
+          "changedInputs": []
+        },
+        "receipt": {
+          "path": "evidence\\diagram-annotations-native\\2026-10-07T10-04-41.740Z\\result.json",
+          "bytes": 141560,
+          "sha256": "2198d1b05d5be22509159d2afbc408875ee0c85d19738b000947054db2792f6c"
+        }
+      },
+      {
+        "name": "diagram-dock",
+        "code": 0,
+        "summary": {
+          "evidence": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\diagram-dock\\2026-10-07T10-05-01.782Z",
+          "status": "COMPLETE",
+          "cases": 5
+        },
+        "receipt": {
+          "path": "evidence\\diagram-dock\\2026-10-07T10-05-01.782Z\\result.json",
+          "bytes": 5487,
+          "sha256": "5d6256d977696f6c714d3f6ea5ff7031a02765f2ba95652ca6b68ed3963dc7c3"
+        }
+      }
+    ]
+  },
+  "matrix": {
+    "path": "evidence/workspace-surface/catalogue-render-matrix-2026-10-07T10-05-25.216Z/result.json",
+    "bytes": 19414,
+    "sha256": "0157ae694a375eec006df69f92fc1c9e1ebaf2b4e2440d303622ea6c384927a5",
+    "literalSources": 28,
+    "projectUnchanged": true
+  },
+  "reviews": [
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-append-transaction-preflight.md",
+      "bytes": 12385,
+      "sha256": "884a4dc1cd52c4dad6e26614ac3db1e75ac519d6bd433662c75e2ffbcf7f58f0"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-early-focus-independent-recheck.json",
+      "bytes": 7763,
+      "sha256": "6eb714712d903ff2b1e2e5ec9caac12a495fb8ed111f7c18cf65808b8d1dad14"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-early-focus-independent-recheck.md",
+      "bytes": 2628,
+      "sha256": "9dc0f46ab9eed5970f1328f9c046d1d9d8c1b9cfd729b2fe8190b22cd63dd88c"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-early-focus-independent.json",
+      "bytes": 7429,
+      "sha256": "620bfd47e454c5928191fc4f1fedd223ace93f705d06f4ba5aa361e09e4bfe3c"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-early-focus-independent.md",
+      "bytes": 3007,
+      "sha256": "fa030ae4f5ba8ff1c274779cc4d209d04ad969b9865cae6e872fb423ee345d14"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-entity-marker-preflight.md",
+      "bytes": 9721,
+      "sha256": "782a574284c4b91180d9e9e8d52e73c741e7a787c5cd9f4206617de2927c242e"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-integration-independent-recheck.json",
+      "bytes": 6473,
+      "sha256": "5a5aec1d74bd4197595c65a4488d0a79b48703ed8ab9c8261771a7b6255ef306"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-integration-independent-recheck.md",
+      "bytes": 2344,
+      "sha256": "8205d79332a2a035b581e94449fbb036ac584c5a0f3754e8a51e3f69ef731a91"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-integration-independent.json",
+      "bytes": 13507,
+      "sha256": "859229b8bea0a65b169e188553c6dbcb492c1f1f6ceadc370f164ac5d781d4a6"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-integration-independent.md",
+      "bytes": 9308,
+      "sha256": "7e4fc76d6056785e4558759f0841fec58d0ae402d4b297a6cd5dcd014cae7a39"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-keyboard-entry-independent-recheck.json",
+      "bytes": 7742,
+      "sha256": "fe5d1c88dab5d251ec499e81109a9a6f727b96de9c73c8ffa7f0665b5aa9ddca"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-keyboard-entry-independent-recheck.md",
+      "bytes": 2453,
+      "sha256": "86f10eb5c1e8479c739b58151177d9bdb3366ed5c0f3cc71cf74ac5f5f394e1b"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-keyboard-entry-independent.json",
+      "bytes": 7409,
+      "sha256": "28362adb20ce1e0da3388323381a3e9cc2cb78775145b1f86f3aea0941704df8"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-keyboard-entry-independent.md",
+      "bytes": 2704,
+      "sha256": "f31f9c5d20c305dec83abd71e45707dbc3d199987c3c972057c7e90c740f6620"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-model-independent-review.md",
+      "bytes": 5703,
+      "sha256": "a7430e8b419b3422f1d978d214f5cd168d439438bda83d2d48527122ad52779b"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-native-harness-independent-recheck.json",
+      "bytes": 27267,
+      "sha256": "86146dad192664ed5316fae2e23a4a98de6aef7b55f8caaf30c1e68d767f683d"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-native-harness-independent-recheck.md",
+      "bytes": 3482,
+      "sha256": "fd89fa0667dc586e0ac05efa624a772e025296cc494468e0c16e1e651b996e3f"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-native-harness-independent.json",
+      "bytes": 10069,
+      "sha256": "f1efd0a5b86772f22cbb222a8e43db7a616b38d22e77d86c05d03956404abe7e"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-native-harness-independent.md",
+      "bytes": 12549,
+      "sha256": "aede91168b3fe6c99ff848bdaae32eb3d060f3d078c07ef75e5b8f1d5af04a3f"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent-recheck.json",
+      "bytes": 11521,
+      "sha256": "7b1d5449ca27f20260b490e81ca6a3344cc9ba7661359513762a034c8de842be"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent-recheck.md",
+      "bytes": 2434,
+      "sha256": "c557ec3a773e24077ff16b55b4a38cc0de15c810133cbfcd5d0245950d87733e"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.json",
+      "bytes": 13185,
+      "sha256": "43464739955463c149195def2744ce98710a5d9a9e2a7d86cc208d89f0b3fee5"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.md",
+      "bytes": 3274,
+      "sha256": "445482f9daf0d091af4e3e1487d060c17628f6d824d8e1c407ff35f03a5337dc"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-view-implementation.json",
+      "bytes": 56216,
+      "sha256": "0b3354111c7cf17511add16385d23fd6d2c1c2ce154eb60dafae3ba896ed3aed"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-view-implementation.md",
+      "bytes": 4247,
+      "sha256": "bda2c5a3ce258d30fb49b27e7f471eab45bc889f2b2642c6fa9b2979a05d6dfa"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-vm-fixture-independent-recheck.json",
+      "bytes": 2958,
+      "sha256": "cae628ca531a7931378f25728b8aa8616e80a96722d4101dde432457d9a27a00"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-vm-fixture-independent-recheck.md",
+      "bytes": 3124,
+      "sha256": "ae3f34f3f2f8b123a0d2a2a3f0dc96b3d9ac0d0c2abdc95a4bf75dfa3bd82fe1"
+    }
+  ],
+  "originalFullSuiteAdverse": {
+    "path": "evidence/workspace-surface/pan-lease-full-suite-2026-10-07T09-35-22.777Z/result.json",
+    "bytes": 128525,
+    "sha256": "60073c729c3cf7cfd24254d31ccdf4ded94a0d8c2a3d730b5e645bf122e03786"
+  },
+  "hostedOwnerReadback": {
+    "path": "reviews/2026-10-07-diagram-pan-lease-hosted-owner-readback.json",
+    "bytes": 162144,
+    "sha256": "30d98eccd63e0aa388352e91432be38b866265841752203f3425c72a2a3dba7b"
+  },
+  "limits": [
+    "Original independent owner/admission marker and integration packaging findings preserved with separate genuine rechecks",
+    "Original fullsuite8 fixture failures preserved; correction adds real class import/context only, separately independently rechecked",
+    "Original harness and later failed attempts remain; two real focus defects have original RED, minimal corrections and independent rechecks",
+    "Native executor is /root; independent reviewers performed finite Node/VM/static checks, not GUI approval",
+    "Native720x720 bounds yield704x655 viewport; rectangle+Cancel checked, no full480/560breakpoint or all-control/physical monitor/IME/maxima claim",
+    "Success return-focus checked before clicking origin field; sibling OS focus immediately after opening not separately asserted",
+    "Separate package/archive/postcopy verification and copied execution still pending",
+    "Hosted37591120593 remainsFAILURE; historical pan/Save-to-Attach causes remainOPEN; no main merge, production release or installed replacement"
+  ]
+}

@@ -12,10 +12,10 @@
     });return()=>{if(disposed)return;disposed=true;off?.();};
   };
   window.renderSirenHome=({container,bridge,desktop,bootstrap})=>{
-    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off,offCommands,offNavigation;
+    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off,offCommands,offNavigation,offCatalog,catalogue=null,catalogueChanged=false;
     const events=[];
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
-    const clear=()=>{for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
+    const clear=()=>{catalogue?.dispose();catalogue=null;for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
     const cover=()=>{blocked=true;serial++;clear();container.hidden=true;};
     const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',DOCUMENT_CREATE_FAILED:'The document could not be created. Review Docs before trying again.',NAVIGATION_LIMIT:'The document catalog has reached its limit. Existing work was retained.',REVISION_CONFLICT:'Your project changed. Refresh Home before trying again.'}[result?.code]||window.SirenHomeMessages?.[result?.code]||'The action could not complete. Your work was retained.');
     const button=(parent,text,fn,{disabled=false,className='',id}={})=>{
@@ -93,6 +93,15 @@
       listen(dialog,'close',()=>dialog.remove());return dialog;
     };
     const done=dialog=>button(dialog,'Done',()=>dialog.close(),{className:'home-secondary'});
+    const createDiagram=()=>{
+      if(blocked||busy||disposed||state?.projectFormat!=='desktop'||!window.SirenDiagramCatalogueView||!window.sirenDiagramCatalogue)return;
+      const dialog=infoDialog('Types & templates','homeNewDiagram');if(!dialog)return;
+      dialog.classList.add('home-diagram-catalogue');const host=make('section',dialog);
+      let own;own=window.SirenDiagramCatalogueView.create({host,bridge:window.sirenDiagramCatalogue,enabled:()=>!disposed&&!blocked&&catalogue===own,onClose:()=>{if(dialog.open)dialog.close();}});catalogue=own;
+      listen(dialog,'cancel',event=>{event.preventDefault();own.close({restoreFocus:true});});
+      listen(dialog,'close',()=>{own.dispose();if(catalogue===own)catalogue=null;if(catalogueChanged&&!disposed&&!blocked){catalogueChanged=false;void refresh();}});
+      dialog.showModal();void own.open();
+    };
     const createDocument=()=>{
       if(blocked||busy||disposed||state?.projectFormat!=='desktop'||state.mode!=='normal')return;
       const dialog=infoDialog('New document','homeNewDocument');if(!dialog)return;
@@ -160,6 +169,7 @@
       if(value.projectFormat==='classic'){const upgrade=button(start,'Create desktop copy…',convert,{id:'homeConvertProject',className:'home-secondary'});unavailable(upgrade,value.mode!=='normal'||typeof bridge?.convertProject!=='function');}
       const moduleHeading=make('div',content,undefined,'home-section-heading');make('h2',moduleHeading,'Explore your project');make('span',moduleHeading,'One context. Four perspectives.');
       const diagramWindow=button(moduleHeading,'Open diagram window…',()=>library('diagram'),{id:'homeDiagramWindows'});unavailable(diagramWindow,value.selectedProjectId===null||typeof bridge?.getCatalog!=='function');
+      if(value.projectFormat==='desktop'&&window.SirenDiagramCatalogueView&&window.sirenDiagramCatalogue){const newDiagram=button(moduleHeading,'New diagram',createDiagram,{id:'homeCreateDiagram',className:'home-secondary'});unavailable(newDiagram,value.selectedProjectId===null);}
       const grid=make('div',content,undefined,'home-module-grid');
       for(const [surface,title,description] of modules){const enabled=value.selectedProjectId!==null&&value.capabilities[surface]===true&&typeof bridge?.openModule==='function';
         const card=button(grid,'',()=>surface==='present'?library('presenter'):['code','docs'].includes(surface)?library(surface):surface==='diagrams'&&value.projectFormat==='desktop'?library('diagram'):perform('openModule',{surface}),{className:'home-module',id:'homeModule-'+surface});
@@ -233,12 +243,13 @@
       };listen(search,'submit',event=>{event.preventDefault();if(loading||opening||blocked||disposed||turn!==serial||!active)return;query=queryInput.value.trim();cursor=found=0;clearRows();void loadPage();});await loadPage();
     };
     if(typeof bridge?.onInvalidated==='function')off=bridge.onInvalidated(cover);
+    if(typeof bridge?.onCatalogChanged==='function')offCatalog=bridge.onCatalogChanged(()=>{if(disposed||blocked)return;catalogueChanged=true;if(!busy&&!catalogue?.isOpen()){catalogueChanged=false;void refresh();}});
     offNavigation=bridge?.onNavigate?.(surface=>{
       const open=()=>{if(disposed||blocked)return;if(busy||!state){setTimeout(open,50);return;}
         if(surface==='find')window.SirenProjectSearch.open();else container.querySelector('#homeModule-'+surface)?.click();};open();
     });
     offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:exportSavedBackup}});
-    return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();}});
+    return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();offCatalog?.();}});
   };
   const start=()=>{
     const boot=window.sirenDesktopBootstrap;

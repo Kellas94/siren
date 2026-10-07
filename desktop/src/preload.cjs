@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('sirenDesktop', Object.freeze(bridge));
 const bootstrap = ipcRenderer.sendSync('siren:bootstrap');
 contextBridge.exposeInMainWorld('sirenDesktopBootstrap', bootstrap);
 contextBridge.exposeInMainWorld('sirenDesktopReady', () => ipcRenderer.send('siren:ready'));
+contextBridge.exposeInMainWorld('sirenDiagramCatalogue',Object.freeze(Object.fromEntries(['getPage','createDiagram'].map(method=>[method,payload=>ipcRenderer.invoke('siren:diagram-catalogue',method,payload)]))));
 const homeBridge=Object.fromEntries(['getHomeState','continueWork','openProject','createProject','recordLocation'].map(method=>[method,payload=>ipcRenderer.invoke('siren:home',method,payload??{})]));
 homeBridge.openModule=payload=>ipcRenderer.invoke('siren:home-route',payload);
 homeBridge.importProject=()=>ipcRenderer.invoke('siren:home-import',{});
@@ -35,6 +36,7 @@ homeBridge.openView=payload=>ipcRenderer.invoke('siren:windows','openView',paylo
 homeBridge.editDeck=payload=>ipcRenderer.invoke('siren:deck-navigation','edit',payload);
 homeBridge.focusView=payload=>ipcRenderer.invoke('siren:windows','focusView',payload);
 homeBridge.onInvalidated=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=()=>callback();ipcRenderer.on('siren:home-invalidated',listener);return()=>ipcRenderer.removeListener('siren:home-invalidated',listener);};
+homeBridge.onCatalogChanged=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=()=>callback();ipcRenderer.on('siren:home-catalogue-changed',listener);return()=>ipcRenderer.removeListener('siren:home-catalogue-changed',listener);};
 homeBridge.onNavigate=callback=>{if(typeof callback!=='function')throw new TypeError('Expected callback');const listener=(_event,surface)=>{if(['diagrams','docs','code','present','find'].includes(surface))callback(surface);};ipcRenderer.on('siren:shell-module',listener);return()=>ipcRenderer.removeListener('siren:shell-module',listener);};
 contextBridge.exposeInMainWorld('sirenHome',Object.freeze(homeBridge));
 const admitted=bootstrap?.navigationPending===true?new Promise(resolve=>ipcRenderer.once('siren:workspace-admitted',()=>resolve())):Promise.resolve();
