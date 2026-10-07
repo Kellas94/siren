@@ -45,7 +45,7 @@
         const result=await bridge?.exportSavedBackup?.();
         if(disposed||blocked||turn!==serial)return;
         if(result?.ok===true){say(`Saved backup exported · revision ${result.revision}. Unsaved working copies remain in their windows.`);return;}
-        if(result?.code==='CANCELLED'){say(window.SirenHomeMessages.CANCELLED);return;}
+
         say(window.SirenHomeMessages?.[result?.code]||message(result));window.SirenHelpWorkspace?.explain(status(),{namespace:'project',operation:'backup',code:result?.code});
       }catch{if(!disposed&&!blocked&&turn===serial)say('The backup could not be confirmed. Check the chosen destination before trying again.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}

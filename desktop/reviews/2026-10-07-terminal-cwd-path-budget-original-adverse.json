@@ -1,0 +1,50 @@
+{
+  "author": "/root/terminal_foundation_review",
+  "scope": "Pure bounded worker probe, no filesystem/dialog/host/native shell execution; provider returns malformed zero-ancestor DATA evidence.",
+  "before": {
+    "src/terminal/cwd.mjs": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948",
+    "src/terminal/profiles.mjs": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8",
+    "tests/terminal-cwd.test.mjs": "d77af1c9d95513482ce93bd35ee0405b2c91c76cc0715d12648fa6714c90efc3",
+    "tests/terminal-profiles.test.mjs": "76551c8911618ee95597f0b87accd8375ad27bd641e1555aeeae410c7fa98c9f"
+  },
+  "after": {
+    "src/terminal/cwd.mjs": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948",
+    "src/terminal/profiles.mjs": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8",
+    "tests/terminal-cwd.test.mjs": "d77af1c9d95513482ce93bd35ee0405b2c91c76cc0715d12648fa6714c90efc3",
+    "tests/terminal-profiles.test.mjs": "76551c8911618ee95597f0b87accd8375ad27bd641e1555aeeae410c7fa98c9f"
+  },
+  "changed": [],
+  "heapLimitMiB": 64,
+  "deadlineMs": 10000,
+  "results": [
+    {
+      "components": 3,
+      "observed": [
+        {
+          "phase": "inspection",
+          "components": 3,
+          "pathLength": 8
+        },
+        {
+          "code": "CWD_REFUSED",
+          "message": "CWD_REFUSED"
+        }
+      ],
+      "status": "EXIT",
+      "exitCode": 0
+    },
+    {
+      "components": 8192,
+      "observed": [
+        {
+          "phase": "inspection",
+          "components": 8192,
+          "pathLength": 16386
+        }
+      ],
+      "status": "WORKER_ERROR",
+      "code": "ERR_WORKER_OUT_OF_MEMORY",
+      "message": "Worker terminated due to reaching memory limit: JS heap out of memory"
+    }
+  ]
+}

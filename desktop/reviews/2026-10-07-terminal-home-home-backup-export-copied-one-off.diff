@@ -1,0 +1,78 @@
+--- home-backup-export-base-99d8109c.mjs
++++ home-backup-export-copied-one-off.mjs
+@@ -5,16 +5,19 @@
+ import {createHash} from 'node:crypto';
+ import {setTimeout as delay} from 'node:timers/promises';
++import {ProjectStore} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/projects/store.mjs';
++import {SourceRepository} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/repository.mjs';
++import {RecoveryStore} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/recovery/checkpoints.mjs';
++import {commitManifest} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/manifest.mjs';
++import {parseSourceBundle} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/bundle-import.mjs';
++import {launchDesktop,unlockDesktop} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/drive.mjs';
++import {reserveInspectorPort} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/native-keyboard.mjs';
++import {copiedPackageContext} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/package-context.mjs';
++import {fileURLToPath} from 'node:url';
+-import {ProjectStore} from '../../src/projects/store.mjs';
+-import {SourceRepository} from '../../src/sources/repository.mjs';
+-import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
+-import {commitManifest} from '../../src/sources/manifest.mjs';
+-import {parseSourceBundle} from '../../src/sources/bundle-import.mjs';
+-import {launchDesktop,unlockDesktop} from './drive.mjs';
+-import {reserveInspectorPort} from './native-keyboard.mjs';
+ 
+ // Actual native menu/input -> Home command -> preload -> main exporter. Only
+ // the OS destination chooser is adapted in this PID-checked owned process.
+ // No product IPC, authority, PIN, crypto or storage operation is replaced.
++const root="C:\\Claude\\SIREN_WORK\\portable\\desktop",evidence=resolve(root,'evidence/workspace-surface/home-backup-neutral-cancel/runs',new Date().toISOString().replaceAll(':','-'));
++assert.ok(process.argv.includes('--package'),'This one-off requires an explicit development preview --package root');
+-const root=resolve('.'),evidence=resolve('evidence/home-backup-export-native',new Date().toISOString().replaceAll(':','-'));
+ await mkdir(evidence,{recursive:true});
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+@@ -24,5 +27,5 @@
+  async function walk(path){const entry=await lstat(path);assert.equal(entry.isSymbolicLink(),false,'No linked qualification inputs');if(entry.isDirectory()){for(const name of (await readdir(path)).sort())await walk(join(path,name));}else if(entry.isFile())paths.push(path);}
+  for(const name of ['src','build','generated','tests','baseline','package.json','package-lock.json'])await walk(join(root,name));
++ paths.push(join(root,'node_modules/electron/dist/electron.exe'),fileURLToPath(import.meta.url));
+- paths.push(join(root,'node_modules/electron/dist/electron.exe'));
+  return Object.fromEntries(await Promise.all(paths.sort().map(async path=>[relative(root,path).replaceAll('\\','/'),await hashFile(path)])));
+ }
+@@ -46,9 +49,14 @@
+  };
+ }
++const result={status:'ADVERSE',author:'/root/hosted_resume_retention',executionOwner:'/root',originalFixtureAuthor:'/root/media_batch_review',scope:'One-off owned copied development-preview probe prepared by /root/hosted_resume_retention for execution by ROOT; not independent approval. Actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. Requires --package, copied Data and verified ASAR/runtime/process-reader before and after actual exit. No manual OS chooser, readonly native mode, physical monitor, release or maximum-capacity qualification.',cases:[],startedAt:new Date().toISOString()};
++let driver,chooser,packaged;
+-const result={status:'ADVERSE',author:'/root/media_batch_review',scope:'Development Electron only; actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. No manual OS chooser, packaged application, readonly native mode, physical monitor or maximum-capacity qualification.',cases:[],startedAt:new Date().toISOString()};
+-let driver,chooser;
+ try{
+  result.inputs=await capture();
++ result.probe={path:fileURLToPath(import.meta.url),sha256:hash(await readFile(fileURLToPath(import.meta.url))),baseSha256:'99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0'};
++ result.packageRequest={preview:resolve(process.argv[process.argv.indexOf('--package')+1]),expectedCopy:join(evidence,'Pachet-Știință-UI')};
++ packaged=await copiedPackageContext(evidence);assert.ok(packaged,'Copied package context required');
++ result.package={sourceCommit:packaged.receipt.sourceCommit,copy:packaged.copy,archive:packaged.receipt.appArchive,runtime:packaged.receipt.runtimeBinary,processReader:packaged.receipt.processReader};
++ await packaged.verify();result.packageVerifiedBefore=true;
++ const data=packaged.data,outputs=join(evidence,'outputs');await mkdir(data,{recursive:true});assert.deepEqual(await readdir(data),[],'Copied fixture Data must begin empty');await mkdir(outputs);
+- const data=join(evidence,'owned-data'),outputs=join(evidence,'outputs');await mkdir(data);await mkdir(outputs);
+  const projects=new ProjectStore(data),sources=new SourceRepository(data),recovery=new RecoveryStore(data,{sources});
+  const first=await projects.createProject({label:'Owned Home backup 100k',json:'{}'}),lineCount=100000;
+@@ -60,5 +68,5 @@
+  await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:first.project.id}));
+  result.fixture={projectId:first.project.id,revision:original.revision,lineCount,sourceBytes:sourceBytes.length,sourceSha256:hash(sourceBytes),expectedBundleBytes:expected.length,expectedBundleSha256:hash(expected)};
++ const port=await reserveInspectorPort();driver=await launchDesktop({...packaged.launch,extraArgs:[`--inspect=127.0.0.1:${port}`]});result.ownedPid=driver.pid;
+- const port=await reserveInspectorPort();driver=await launchDesktop({extraArgs:[`--siren-test-root=${data}`,`--inspect=127.0.0.1:${port}`]});result.ownedPid=driver.pid;
+  chooser=await attachChooser({port,pid:driver.pid});await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});
+  const ready=()=>driver.waitFor(`location.href==='siren://app/home.html'&&window.sirenHomeView!=null&&document.getElementById('homeRoot')?.getAttribute('aria-busy')==='false'`);
+@@ -93,9 +101,13 @@
+  assert.ok(result.chooser.calls.every(call=>call.defaultPath===`SIREN-${first.project.id}.siren-backup`&&call.delivered));
+  await chooser.close();chooser=null;
++ await driver.evaluate('window.sirenDesktop.requestClose()').catch(()=>{});await driver.waitForExit();result.exitObserved=true;await driver.close();driver=null;
+- await driver.evaluate('window.sirenDesktop.requestClose()').catch(()=>{});await driver.waitForExit();await driver.close();driver=null;
+  result.status='COMPLETE';
+ }catch(cause){result.error={message:cause.message,stack:cause.stack};try{result.chooser=await chooser?.observations();await driver?.screenshot(join(evidence,'failure.png'));result.runtimeLog=driver?.logs().slice(-6000);result.observed=await driver?.evaluate(`({url:location.href,mode:window.sirenDesktopBootstrap?.mode,busy:document.getElementById('homeRoot')?.getAttribute('aria-busy'),status:document.getElementById('homeStatus')?.textContent})`);}catch{}}
+ finally{
++ try{await chooser?.close();}catch{}
++ if(driver){try{await driver.close();await driver.waitForExit();result.exitObserved=true;}catch(cause){result.status='ADVERSE';result.exitError=cause.message;}}
++ if(packaged){try{assert.equal(result.exitObserved,true,'Actual owned copied process exit must precede post-hash verification');await packaged.verify();result.packageUnchanged=true;}catch(cause){result.packageUnchanged=false;result.status='ADVERSE';result.packageError=cause.message;}}
++ if(result.status==='COMPLETE'&&(!packaged||result.packageVerifiedBefore!==true||result.packageUnchanged!==true||result.exitObserved!==true))result.status='ADVERSE';
++ result.afterInputs=await capture();result.changedInputs=Object.keys({...result.inputs,...result.afterInputs}).filter(path=>result.inputs?.[path]!==result.afterInputs[path]);if(result.changedInputs.length)result.status='ADVERSE';result.endedAt=new Date().toISOString();await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,changedInputs:result.changedInputs,copy:packaged?.copy,packageUnchanged:result.packageUnchanged,exitObserved:result.exitObserved,error:result.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;
+- try{await chooser?.close();}catch{}await driver?.close();result.afterInputs=await capture();result.changedInputs=Object.keys({...result.inputs,...result.afterInputs}).filter(path=>result.inputs?.[path]!==result.afterInputs[path]);if(result.changedInputs.length)result.status='ADVERSE';result.endedAt=new Date().toISOString();await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,changedInputs:result.changedInputs,error:result.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;
+ }
+ 

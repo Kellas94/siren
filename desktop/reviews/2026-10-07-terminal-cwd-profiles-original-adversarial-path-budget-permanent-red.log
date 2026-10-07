@@ -1,0 +1,115 @@
+✔ exact ten Terminal methods accept only their complete typed request and normalize an immutable copy (2.5814ms)
+✔ Terminal requests reject unsafe identifiers, numeric coercion, omitted fields and dimension overflow (0.3302ms)
+✔ prototype-bearing, accessor, symbol and hidden payload fields are refused without executing getters (0.2126ms)
+✔ terminal input is bounded by exact UTF-8 bytes and refuses malformed UTF-16 without partial normalization (1.9476ms)
+✔ invalid Terminal payload is refused before dispatch and valid dispatch receives only the immutable copy (0.627ms)
+✔ frozen Terminal default budgets equal the approved finite limits (0.1277ms)
+✔ cwd defaults refuse authority before invoking picker or filesystem (4.1507ms)
+✔ cwd returns only immutable public grant and resolves same-project eligible peer (2.2889ms)
+✔ cwd literal native paths preserve drive roots Unicode and shell punctuation (2.0468ms)
+✔ cwd cancellation and empty or multiple picker results never choose a fallback (0.5729ms)
+✔ cwd denies malformed path namespaces components and invalid Unicode (1.5703ms)
+✔ cwd refuses protected root equality descendants case aliases and normalized traversal (0.6351ms)
+✔ cwd refuses redirected leaf or reparse ancestors without trusting canonical label (1.2488ms)
+✔ cwd revalidates selected identity and every ancestor instead of silently retargeting (1.2884ms)
+✔ cwd missing inaccessible or file directory provider never returns an alternate path (0.3826ms)
+✔ cwd guards reject copied foreign stale and disallowed role grants (0.5901ms)
+✔ cwd locked readonly recovery and nonwritable views cannot select or resolve (1.1557ms)
+✔ cwd picker completion cannot survive admission rollback or revoke (0.3675ms)
+✔ cwd admission is rechecked after each protected-root and selected-directory await (0.3463ms)
+✔ cwd resolve rechecks authority after every filesystem await (1.0366ms)
+✔ cwd revoke and dispose invalidate old tokens and in-flight work permanently (0.4243ms)
+✔ cwd bounded tokens never evict live authority and concurrent picker capacity is finite (0.7897ms)
+✔ cwd stale completion after revoke cannot consume the new generation capacity (0.354ms)
+✔ cwd provider getters and asynchronous truthy authority are refused (0.3223ms)
+✔ cwd missing protection or inspection provider never grants a token (0.2072ms)
+✔ cwd final authorization cannot revoke the scope and then return a late token (0.2609ms)
+✔ cwd final resolve guard cannot dispose authority and still deliver a path (0.7813ms)
+✔ cwd current guard cannot reentrantly revoke admission on the final return check (0.3345ms)
+✔ cwd native device aliases are outside the admitted local pathname policy (0.2458ms)
+✔ cwd rejected inspections redact provider exceptions and retain capacity (0.2554ms)
+✔ cwd malformed provider reflection cannot leak private exceptions as receipts (0.2085ms)
+✔ cwd hard grant capacity is finite and unknown forged ids never resolve (5.8874ms)
+✖ cwd bounds path prefix expansion before malformed evidence can exhaust64MiB (282.6406ms)
+✔ Terminal policy defaults to refusing sender identity; matching plain fields never mint native authority (0.6495ms)
+✔ workspace may configure/list/create/stop, but only terminal role may attach/input/resize/ACK/detach (0.6626ms)
+✔ PIN and epoch are checked on every call, including passive session metadata (0.1218ms)
+✔ readonly and recovery expose only passive eligible metadata; unknown modes refuse everything (0.1079ms)
+✔ native session, project and current attachment identity are required for leased operations (0.129ms)
+✔ failed or asynchronous authority providers cannot authorize a synchronous input fence (0.1777ms)
+✔ normal app mode never upgrades a current read-only view to shell execution (0.1523ms)
+✔ profile defaults do not discover files or issue a usable executable (1.7294ms)
+✔ profile list is immutable and exposes no native executable argv or environment (1.3331ms)
+✔ profile resolver returns absolute fixed interactive PowerShell envelope without commands (1.2865ms)
+✔ profile missing native OS root or executable remains unavailable without PATH fallback (0.8617ms)
+✔ profile unknown optional ids and caller startup arguments cannot select a shell (0.3593ms)
+✔ profile revalidates pinned executable and directory identities after discovery (1.3014ms)
+✔ profile refuses native file evidence with missing ancestry identity or accessor fields (0.5152ms)
+✔ profile environment strips injection keys without mutating native OS snapshot (0.409ms)
+✔ profile refuses duplicate case-folded environment variables and non-data snapshots (1.2242ms)
+✔ profile total environment budget refuses oversized aggregate without silent truncation (0.5475ms)
+✔ profile scope is checked after OS-directory and executable awaits on list (0.2226ms)
+✔ profile scope is checked after each resolve await including environment snapshot (0.67ms)
+✔ profile revoke never revives an old asynchronous discovery and dispose is permanent (0.2749ms)
+✔ profile concurrent operations are bounded without permanently consuming capacity on failure (0.2594ms)
+✔ profile asynchronous truthy or throwing authorization cannot discover a shell (0.2283ms)
+✔ usable native profile envelope never becomes a renderer supplied create authority (0.3628ms)
+✔ profile final scope check cannot reentrantly revoke and deliver executable or env (0.3515ms)
+✔ profile final native guard cannot dispose and still return a usable envelope (0.4663ms)
+✔ profile replacement during environment await is rechecked before returning envelope (0.5241ms)
+✔ profile concurrent discovery never accepts two different pinned native identities (0.307ms)
+✔ profile missing required OS variables or malformed private-key policy refuses (0.5288ms)
+✔ profile discovery refuses native device aliases before trusting executable evidence (0.2446ms)
+✔ profile malformed provider reflection never leaks private errors through list or resolve (0.374ms)
+✔ profile final executable check is fenced after its own native await (0.172ms)
+✖ profiles bounds path prefix expansion before malformed evidence can exhaust64MiB (275.4746ms)
+ℹ tests 65
+ℹ suites 0
+ℹ pass 63
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 398.4645
+
+✖ failing tests:
+
+test at tests\terminal-cwd.test.mjs:51:1
+✖ cwd bounds path prefix expansion before malformed evidence can exhaust64MiB (282.6406ms)
+  AssertionError [ERR_ASSERTION]: {"status":"WORKER_ERROR","code":"ERR_WORKER_OUT_OF_MEMORY","observed":[]}
+  + actual - expected
+  
+  + 'WORKER_ERROR'
+  - 'EXIT'
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:76:77)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'WORKER_ERROR',
+    expected: 'EXIT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\terminal-profiles.test.mjs:37:1
+✖ profiles bounds path prefix expansion before malformed evidence can exhaust64MiB (275.4746ms)
+  AssertionError [ERR_ASSERTION]: {"status":"WORKER_ERROR","code":"ERR_WORKER_OUT_OF_MEMORY","observed":[]}
+  + actual - expected
+  
+  + 'WORKER_ERROR'
+  - 'EXIT'
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-profiles.test.mjs:62:77)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'WORKER_ERROR',
+    expected: 'EXIT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

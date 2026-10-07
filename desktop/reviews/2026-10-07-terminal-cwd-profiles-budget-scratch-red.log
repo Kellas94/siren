@@ -1,0 +1,54 @@
+✖ cwd rejects malformed shallow and 8192-component evidence within 64MiB (280.5975ms)
+✔ cwd admits exact128 ancestry and refuses129 without changing depth budget (52.7453ms)
+✖ profiles rejects malformed shallow and 8192-component evidence within 64MiB (263.6219ms)
+✔ profiles admits exact128 ancestry and refuses129 without changing depth budget (54.118ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 714.0189
+
+✖ failing tests:
+
+test at evidence\workspace-surface\terminal-path-budget-fixup-regression.test.mjs:31:2
+✖ cwd rejects malformed shallow and 8192-component evidence within 64MiB (280.5975ms)
+  AssertionError [ERR_ASSERTION]: {"status":"WORKER_ERROR","code":"ERR_WORKER_OUT_OF_MEMORY","message":"Worker terminated due to reaching memory limit: JS heap out of memory","observed":[]}
+  + actual - expected
+  
+  + 'WORKER_ERROR'
+  - 'EXIT'
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/terminal-path-budget-fixup-regression.test.mjs:31:177)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'WORKER_ERROR',
+    expected: 'EXIT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at evidence\workspace-surface\terminal-path-budget-fixup-regression.test.mjs:31:2
+✖ profiles rejects malformed shallow and 8192-component evidence within 64MiB (263.6219ms)
+  AssertionError [ERR_ASSERTION]: {"status":"WORKER_ERROR","code":"ERR_WORKER_OUT_OF_MEMORY","message":"Worker terminated due to reaching memory limit: JS heap out of memory","observed":[]}
+  + actual - expected
+  
+  + 'WORKER_ERROR'
+  - 'EXIT'
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/terminal-path-budget-fixup-regression.test.mjs:31:177)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'WORKER_ERROR',
+    expected: 'EXIT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

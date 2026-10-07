@@ -1,0 +1,16 @@
+{
+  "author": "/root",
+  "before": "356618535ad39bc9b45518ae36ab4dba3a02356c",
+  "commit": "7cb9d2c5ab121d3a4a31feaa2390f03720cd14dd",
+  "paths": [
+    "desktop/src/ui/workspace/home.js",
+    "desktop/tests/help-view.test.mjs",
+    "desktop/tests/native/home-backup-export.mjs"
+  ],
+  "fixed": {
+    "src/ui/workspace/home.js": "25ce00b7a723620aa12b2f11d1c5804459b37e592b71ee5f782a79da983f5770",
+    "tests/help-view.test.mjs": "4a98484f1119c1767734e67a6d9320a5c2d4268d7f65d39c5a837243683034cf",
+    "tests/native/home-backup-export.mjs": "99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0"
+  },
+  "scope": "Cancellation neutral early return; real failure Help retained. Full and actual development native complete; copied preview and independent final record remain separately qualified."
+}

@@ -1,0 +1,376 @@
+{
+  "author": "/root/catalogue_view",
+  "reviewedAt": "2026-10-07T16:24:14.121Z",
+  "status": "NO_BLOCKER_IDENTIFIED_FOR_BOUNDED_HOME_FIX",
+  "scope": "Independent read-only Node VM/fake-DOM canaries plus 17 existing pure tests and byte-identity readback. No independent GUI/native/browser/build/package/hosted execution. No product/test changes.",
+  "finding": {
+    "originalPriority": "P3",
+    "originalUX": "Normal cancellation appended Explain error because Home sent every non-success to shared Help.",
+    "fix": "Home returns after neutral CANCELLED text before error Help; native test retains exact whole-text equality and adds no error-button assertion.",
+    "currentProductFindings": []
+  },
+  "independent": {
+    "firstRun": {
+      "path": "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-first-original-result.json",
+      "status": "COMPLETE",
+      "totalScenarios": 8,
+      "originalAdverseReproduction": 1,
+      "fixedSourceScenarios": 7,
+      "cases": [
+        {
+          "name": "Original bytes reproduce strict neutral-status failure and misleading Help control",
+          "ok": true,
+          "text": "Backup export cancelled.Explain error",
+          "buttons": [
+            "Explain error"
+          ],
+          "busy": "false"
+        },
+        {
+          "name": "Fresh cancellation is exact neutral text, no CTA and idle; next explicit request is accepted",
+          "ok": true,
+          "bridgeCalls": 2
+        },
+        {
+          "name": "Real mapped backup failures retain Help; cancellation detaches stale CTA and keeps manual searchable",
+          "ok": true,
+          "genuineCodes": [
+            "BACKUP_BUDGET",
+            "BACKUP_UNAVAILABLE",
+            "BACKUP_WRITE_FAILED",
+            "EXPORT_BUSY",
+            "EXPORT_COMMITTED"
+          ]
+        },
+        {
+          "name": "Busy export suppresses duplicate commands then recovers without automatic retry",
+          "ok": true,
+          "bridgeCallsBeforeRetry": 1,
+          "bridgeCallsAfterExplicitRetry": 2
+        },
+        {
+          "name": "Cover retires pending cancellation and genuine-error results without repaint or Help",
+          "ok": true,
+          "lateCodes": [
+            "CANCELLED",
+            "BACKUP_WRITE_FAILED"
+          ]
+        },
+        {
+          "name": "Dispose retires pending result, removes native handler once, and refuses later commands",
+          "ok": true,
+          "offCalls": 1
+        },
+        {
+          "name": "Lock command remains available during export and stale completion stays retired",
+          "ok": true,
+          "lockCalls": 1
+        },
+        {
+          "name": "Rejected export keeps bounded unconfirmed-write message and clears busy state",
+          "ok": true
+        }
+      ],
+      "changedInputs": []
+    },
+    "pure": {
+      "path": "evidence/workspace-surface/home-backup-neutral-cancel/independent-pure-tests.log",
+      "tests": 17,
+      "pass": 17,
+      "fail": 0,
+      "files": [
+        "tests/home-commands.test.mjs",
+        "tests/help-catalog.test.mjs",
+        "tests/help-resolve.test.mjs"
+      ]
+    },
+    "additionalOracleAdverse": {
+      "path": "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-strengthened-adverse-result.json",
+      "status": "ADVERSE",
+      "passed": 7,
+      "failed": [
+        {
+          "name": "Known backup errors keep scoped Help and unmapped receipts keep generic Help; cancellation detaches old CTA",
+          "ok": false,
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /cannot identify the exact cause/. Input:\n\n'Backup saved before access changedThe backup was committed before access changed; the final receipt no longer has the original access scope.What this meansThe backup was committed before access changed; the final receipt no longer has the original access scope.Possible causesThe receipt alone does not identify the exact cause.What to checkInspect the destination you explicitly selected for the backup.Your next stepKeep the committed backup. Do not assume that a second export is needed just because the final result was not a normal success.Your work and saved dataThis code means a backup was saved. It must not be interpreted as no file was created.Technical detailsThis explanation covers the named SIREN operation only, not arbitrary dependency exceptions.project / backup / EXPORT_COMMITTEDReference: src/navigation/backup-export.mjsAn error without a known explanation'\n\n    at file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/home-backup-neutral-cancel/independent-canary.mjs:58:233\n    at async probe (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/home-backup-neutral-cancel/independent-canary.mjs:46:51)\n    at async file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/home-backup-neutral-cancel/independent-canary.mjs:56:1"
+        }
+      ],
+      "explanation": "My strengthened test-only oracle incorrectly expected project/backup/EXPORT_COMMITTED to resolve to unknown-error. Actual catalog.mjs line54 explicitly maps it to backup-saved-transition, with committed-save guidance. No product defect is inferred from that incorrect oracle. Exact adverse helper/result/log retained; no rerun after owner requested finalization. This adverse is not counted as green."
+    },
+    "changedSinceCanary": [],
+    "freezeMatches": true
+  },
+  "originals": {
+    "hostedRun": "37647458513",
+    "hostedStatus": "FINAL FAILURE",
+    "hostedReceipt": "evidence/workspace-surface/ci37647458513/desktop-native-desktop-evidence-original/evidence/home-backup-export-native/2026-10-07T16-04-13.697Z/result.json",
+    "observed": {
+      "status": "ADVERSE",
+      "expected": "Backup export cancelled.",
+      "observed": {
+        "text": "Backup export cancelled.Explain error",
+        "buttons": [
+          "Explain error"
+        ],
+        "busy": "false"
+      },
+      "source": {
+        "bytes": 34393,
+        "sha256": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7"
+      }
+    },
+    "identity": [
+      {
+        "source": "src/ui/workspace/home.js",
+        "path": "evidence/workspace-surface/home-backup-neutral-cancel/home-original.js",
+        "bytes": 34393,
+        "sha256": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7",
+        "hostedInputSha256": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7",
+        "matchesHosted": true
+      },
+      {
+        "source": "tests/native/home-backup-export.mjs",
+        "path": "evidence/workspace-surface/home-backup-neutral-cancel/home-backup-native-original.mjs",
+        "bytes": 14323,
+        "sha256": "8128dc7ab8dd188c1ae3bc77587ab7b146d51dd83230dde8ceecf2d18f961834",
+        "hostedInputSha256": "8128dc7ab8dd188c1ae3bc77587ab7b146d51dd83230dde8ceecf2d18f961834",
+        "matchesHosted": true
+      },
+      {
+        "source": "tests/help-view.test.mjs",
+        "path": "evidence/workspace-surface/home-backup-neutral-cancel/help-view-original.test.mjs",
+        "bytes": 12316,
+        "sha256": "28d8b7a4b2595025ad42df63079aae85913a85ac64b2994b7b684bb5e6884b98",
+        "hostedInputSha256": "28d8b7a4b2595025ad42df63079aae85913a85ac64b2994b7b684bb5e6884b98",
+        "matchesHosted": true
+      }
+    ],
+    "priorOriginalReportsUnmodified": true
+  },
+  "ownerEvidence": {
+    "native": {
+      "path": "evidence/home-backup-export-native/2026-10-07T16-15-05.222Z/result.json",
+      "receiptDeclaredAuthor": "/root/media_batch_review",
+      "actualExecution": "Supplied by owner; not independently executed by reviewer",
+      "status": "COMPLETE",
+      "scope": "Development Electron only; actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. No manual OS chooser, packaged application, readonly native mode, physical monitor or maximum-capacity qualification.",
+      "cases": [
+        {
+          "name": "Actual native menu -> Home exports exact saved source bundle",
+          "ok": true,
+          "bytes": 3187531,
+          "sha256": "0f115e4503944d40d7f3a957f12f9b44a2939266ffc07587618ece6be899e9de",
+          "sourceSha256": "176539d1f7d883c886e2db508f9946b96f64f00de6c9b608a01a72dd17a8d99c"
+        },
+        {
+          "name": "Actual Ctrl+Alt+E cancellation produces no output or pending stage",
+          "ok": true
+        },
+        {
+          "name": "Second actual Home bridge request is EXPORT_BUSY, only one destination chooser",
+          "ok": true,
+          "receipt": {
+            "ok": false,
+            "code": "EXPORT_BUSY"
+          }
+        },
+        {
+          "name": "Real common Lock permanently revokes pending chooser after unlock; fresh export works",
+          "ok": true
+        }
+      ],
+      "inputCount": 663,
+      "changedInputs": [],
+      "independentReadback": {
+        "members": 663,
+        "missing": [],
+        "changed": [],
+        "receiptDisagreements": []
+      }
+    },
+    "full": {
+      "path": "evidence/workspace-surface/terminal-authorities-full-2026-10-07T16-15-25.520Z/result.json",
+      "author": "/root",
+      "baseCommit": "3a49e3a04e9ee453f4694885998c33d2232da595",
+      "workingTree": true,
+      "status": "COMPLETE",
+      "results": [
+        {
+          "name": "identity",
+          "code": 0,
+          "signal": null,
+          "counts": {
+            "tests": 4,
+            "pass": 4,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "name": "units",
+          "code": 0,
+          "signal": null,
+          "counts": {
+            "tests": 1719,
+            "pass": 1719,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          }
+        }
+      ],
+      "inputCount": 667,
+      "changedInputs": [],
+      "independentReadback": {
+        "members": 667,
+        "missing": [],
+        "changed": [],
+        "receiptDisagreements": []
+      }
+    },
+    "redGreen": {
+      "red": "evidence/workspace-surface/home-backup-neutral-cancel/red.log",
+      "original14Pass1Fail": true,
+      "green": "evidence/workspace-surface/home-backup-neutral-cancel/green.log",
+      "ownerFocused39Pass": true
+    }
+  },
+  "inputs": {
+    "src/ui/workspace/home.js": {
+      "bytes": 34480,
+      "sha256": "25ce00b7a723620aa12b2f11d1c5804459b37e592b71ee5f782a79da983f5770"
+    },
+    "src/ui/workspace/guide.js": {
+      "bytes": 8500,
+      "sha256": "1e36e72074b897b9239c1ce251e7aa288cffdf310f4237a2991ee5d21c7d919b"
+    },
+    "src/ui/shared/help.js": {
+      "bytes": 8566,
+      "sha256": "4ee3615a4ace31d90df280dc791e2a536f3130b0785f06696234c3a118f557b7"
+    },
+    "src/ui/shared/help-workspace.js": {
+      "bytes": 3325,
+      "sha256": "f2ac3279b8fbe2d10d93e8cb395bdd0fda7d53684d328dd30a1efa572b9e4a26"
+    },
+    "src/help/catalog.mjs": {
+      "bytes": 16890,
+      "sha256": "a420ccca79919af4f7c520429f9c202476f1b0af7c465ab5177b0cbf84138b80"
+    },
+    "src/help/resolve.mjs": {
+      "bytes": 2278,
+      "sha256": "1f4fb1d20623851c19af39c5e7e9ed03e4ce348f323c55d8aa2d02d037f4bb3f"
+    },
+    "tests/native/home-backup-export.mjs": {
+      "bytes": 14487,
+      "sha256": "99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0"
+    },
+    "tests/help-view.test.mjs": {
+      "bytes": 14205,
+      "sha256": "4a98484f1119c1767734e67a6d9320a5c2d4268d7f65d39c5a837243683034cf"
+    },
+    "tests/home-commands.test.mjs": {
+      "bytes": 4263,
+      "sha256": "9a2ac7f9df6edd4f7ef6797f1578161a71be23f3968461e116e727038f0e7d92"
+    },
+    "generated/home.html": {
+      "bytes": 42542,
+      "sha256": "1a9788d7d69db447916895a7b2581ec176c0acfb79b81f8f83da23b2ed51b969"
+    },
+    "generated/assets/home-workspace.js": {
+      "bytes": 34706,
+      "sha256": "62db739b9ba477506d82c422c873202a9314aeaf559216f0c678f608c343ad27"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/home-original.js": {
+      "bytes": 34393,
+      "sha256": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/home-backup-native-original.mjs": {
+      "bytes": 14323,
+      "sha256": "8128dc7ab8dd188c1ae3bc77587ab7b146d51dd83230dde8ceecf2d18f961834"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/help-view-original.test.mjs": {
+      "bytes": 12316,
+      "sha256": "28d8b7a4b2595025ad42df63079aae85913a85ac64b2994b7b684bb5e6884b98"
+    },
+    "evidence/home-backup-export-native/2026-10-07T16-15-05.222Z/result.json": {
+      "bytes": 143723,
+      "sha256": "694c260ea091f2995fbbc57c611df9dd39fa101ea0d2590a3b81daa8d6f0e97e"
+    },
+    "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\independent-canary.mjs": {
+      "bytes": 12024,
+      "sha256": "02f35bd3a161bdc0f3f0e45d7010a8b0724df78046aaa69dccd09b145d72ac8f"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-first-original-result.json": {
+      "bytes": 7862,
+      "sha256": "dc967c00138a98a5f1a7ea39ce3f473f31c73417c2f3b5d537614d0470001157"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-strengthened-adverse-result.json": {
+      "bytes": 9156,
+      "sha256": "13ad761cc4c1ca3ff4f54bdd6bccb09c26336e4dbc303d3728f50483a13c10c4"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-first.log": {
+      "bytes": 2107,
+      "sha256": "1c23940ace229d34ded1bb9fba2d27df25f2e99a5ce37502441e8cfeb63dd448"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-first-original.mjs": {
+      "bytes": 11872,
+      "sha256": "1c6cd81cf24cd9d4111554e6a2740425f2210245c9be36597d5304c45cafe43f"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-strengthened-adverse-original.mjs": {
+      "bytes": 12024,
+      "sha256": "02f35bd3a161bdc0f3f0e45d7010a8b0724df78046aaa69dccd09b145d72ac8f"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-canary-strengthened.log": {
+      "bytes": 3395,
+      "sha256": "61805aeced76d0b39942a14bfa213cf0cb113cc41324babadd87e5511f614a64"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/independent-pure-tests.log": {
+      "bytes": 1782,
+      "sha256": "4ec178be8dc56ff96ce8ae30c6175de03c56ce433f3606f17ca944a4ca681ab3"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/red.log": {
+      "bytes": 2459,
+      "sha256": "c6d0134d24844726e08f23e19c5f99e1b10dd9102d499645fbcd8cac42f26c22"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/green.log": {
+      "bytes": 4286,
+      "sha256": "b0f741a717d73f430f368e6d229982edf5c94bb89ece146f0341dcf912a2b1e7"
+    },
+    "evidence/workspace-surface/home-backup-neutral-cancel/build.log": {
+      "bytes": 1366,
+      "sha256": "494455bfbd40eaf32e10faae11f0bb44c00960cc542c0a89bf0329b0f5c7e837"
+    },
+    "evidence/workspace-surface/terminal-authorities-full-2026-10-07T16-15-25.520Z/result.json": {
+      "bytes": 142849,
+      "sha256": "1e7ffff1768a85b759e43df67189d401853b426f54a1d0101433a6a37c379f15"
+    },
+    "evidence/workspace-surface/ci37647458513/desktop-native-desktop-evidence-original/evidence/home-backup-export-native/2026-10-07T16-04-13.697Z/result.json": {
+      "bytes": 143116,
+      "sha256": "26c68a3ec1292ebd58ad548eecff3916f1face3b62535953f54dea0a1c8f7507"
+    },
+    "reviews/2026-10-07-home-backup-cancellation-preflight.md": {
+      "bytes": 5711,
+      "sha256": "d278e1be1565f66425e62b8e382aaa9fa2514d4dc0bd81b4c2612bb7b6808a90"
+    },
+    "reviews/2026-10-07-home-backup-cancellation-preflight.json": {
+      "bytes": 14957,
+      "sha256": "0fadf89f03257e443baf4c685bd640a0e7ef92f48518ebb19fc811ee6b1ebb3a"
+    },
+    "reviews/2026-10-07-python-map-hosted-evidence.md": {
+      "bytes": 10472,
+      "sha256": "395da23e6d86421b8ab8965cefb75a275a810b28e33eb3dc8c21954aa6ac8eaf"
+    },
+    "reviews/2026-10-07-python-map-hosted-evidence.json": {
+      "bytes": 4062801,
+      "sha256": "60c9a0160f03d9ca8379921950b2bb20c064c7a2a08de94fbb8862a470d6e6fb"
+    }
+  },
+  "limits": [
+    "VM uses declarative ESM import/export removal and a finite fake DOM; it cannot prove Electron rendering or OS chooser behavior.",
+    "Independent first canary includes one original-adverse reproduction, not eight fixed-product success tests.",
+    "Additional stronger oracle remains an explicitly retained test-only ADVERSE.",
+    "Owner actual development native four-case receipt and full 1723-test receipt are read back, not reauthored as independent execution.",
+    "No copied/installed/release/new-hosted qualification from this review. Hosted37647458513 original remains FAILURE."
+  ]
+}

@@ -69,7 +69,6 @@ try{
  result.cases.push({name:'Actual native menu -> Home exports exact saved source bundle',ok:true,...await verifyOutput(saved)});
  await chooser.configure('cancel');await chooser.command('Export saved backup…',true);
  await driver.waitFor(`document.getElementById('homeStatus')?.textContent==='Backup export cancelled.'&&document.getElementById('homeRoot')?.getAttribute('aria-busy')==='false'`);
- assert.equal(await driver.evaluate(`document.querySelector('#homeStatus .siren-help-error')===null`),true,'Normal cancellation must not be labelled as an error');
  assert.deepEqual((await readdir(outputs)).sort(),['saved.siren-backup']);result.cases.push({name:'Actual Ctrl+Alt+E cancellation produces no output or pending stage',ok:true});
  await chooser.configure('pending');await chooser.command('Export saved backup…');
  await driver.waitFor(`document.getElementById('homeRoot')?.getAttribute('aria-busy')==='true'&&document.getElementById('homeStatus')?.textContent.startsWith('Exporting the saved version.')`);

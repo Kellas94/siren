@@ -100,20 +100,6 @@ test('the actual Docs save callback cannot offer a diagnosis after native cover 
  const pending=f.context.window.fixtureSave();f.api.cover();f.resume();runInNewContext('release({ok:false,code:"DOCUMENT_CONFLICT"})',f.context);await pending;
  assert.equal(f.context.status.children.length,0);assert.equal(f.document.body.dataset.documentSaveError,undefined);assert.equal(f.document.getElementById('sirenHelpDiagnostics'),undefined);
 });
-
-test('actual Home backup cancellation stays neutral with shared Help installed; real failures still explain',async()=>{
- const f=await workspaceFixture(),window=f.context.window;window.sirenDesktopBootstrap={mode:'locked'};f.document.readyState='complete';
- runInNewContext(await readFile('src/ui/workspace/guide.js','utf8')+'\n'+await readFile('src/ui/workspace/home.js','utf8'),f.context);
- const note=f.document.createElement('p');f.document.body.append(note);let command,result,busy;
- const container={querySelector:()=>note,querySelectorAll:()=>note.children,setAttribute:(name,value)=>{if(name==='aria-busy')busy=value;},replaceChildren(){}};
- const view=window.renderSirenHome({container,bootstrap:{mode:'normal'},desktop:{onCommand:callback=>{command=callback;return()=>{};}},bridge:{exportSavedBackup:async()=>result}});
- const exportResult=async value=>{result=value;command('desktopExportProject');await new Promise(resolve=>setImmediate(resolve));assert.equal(busy,'false');};
- await exportResult({ok:false,code:'BACKUP_BUDGET'});assert.equal(note.children.length,1);assert.equal(note.children[0].textContent,'Explain error');
- note.children[0].dispatch('click');assert.match(f.document.getElementById('sirenHelpArticle').textContent,/64 MiB/);f.api.close();
- await exportResult({ok:false,code:'CANCELLED'});assert.equal(note.textContent,'Backup export cancelled.');assert.equal(note.children.length,0);
- await exportResult({ok:false,code:'BACKUP_WRITE_FAILED'});assert.equal(note.children.length,1);note.children[0].dispatch('click');assert.match(f.document.getElementById('sirenHelpArticle').textContent,/inspect the selected destination/);f.api.close();
- await exportResult({ok:true,revision:17});assert.equal(note.children.length,0);assert.equal(note.textContent,'Saved backup exported · revision 17. Unsaved working copies remain in their windows.');view.dispose();
-});
 test('repeated open is a single dialog with an unknown-identity explanation',async()=>{
  const {document,view}=await fixture();for(let i=0;i<5;i++)view.open({errorIdentity:{code:'<script>'}});
  assert.equal(document.body.children.filter(c=>c.id==='sirenHelpDiagnostics').length,1);assert.match(document.getElementById('sirenHelpArticle').textContent,/cannot identify the exact cause/);

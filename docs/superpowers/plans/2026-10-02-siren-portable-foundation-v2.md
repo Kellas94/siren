@@ -268,3 +268,17 @@ storage region, retention/deletion procedures, privacy information, EULA/license
 terms and appropriate legal review. No account service, data collection or legal
 compliance is claimed by the local-PIN implementation. Cross-Windows-account
 PIN recovery/reset needs a separately approved data-preserving design.
+
+## Cerință viitoare: SIREN Data, 7 octombrie 2026
+
+Utilizatorul a cerut consemnarea unui modul **Data** distinct, cu builder vizual
+de transformări pentru baze/seturi mari de date, joins/curățare/agregări/pivot,
+cod generat inspectabil în Code și rulare explicită a unei versiuni finalizate.
+Clarificarea include modelare de risc financiar și automatizare de fluxuri,
+cu țintă de benchmark **100M+ rânduri**, nu capacitate actuală sau promisă.
+Detaliile și criteriile viitoare sunt în
+[SIREN Data — roadmap](2026-10-07-siren-data-module-roadmap.md).
+**USER_REQUESTED_FUTURE_NOT_IMPLEMENTED**: cerințe de produs, nu plan de
+implementare aprobat, funcție livrată sau paritate Alteryx verificată. Alegerea
+motorului, conectorilor, limitelor și autorității de execuție rămâne pentru
+research/design separat; această adăugare nu modifică istoricul fundației.

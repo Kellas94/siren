@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "phase": "fixed-green",
+  "startedAt": "2026-10-07T16:12:30.397Z",
+  "finishedAt": "2026-10-07T16:12:30.718Z",
+  "runtime": "v24.16.0",
+  "heapOldMiB": 64,
+  "heapYoungMiB": 8,
+  "workerDeadlineMs": 10000,
+  "workerModules": "current source",
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "before": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "bytes": 8773,
+      "sha256": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "bytes": 8192,
+      "sha256": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "bytes": 17128,
+      "sha256": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "bytes": 16825,
+      "sha256": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-independent-original.mjs",
+      "bytes": 8710,
+      "sha256": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-profiles-independent-original.mjs",
+      "bytes": 8165,
+      "sha256": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-implementation.json",
+      "bytes": 22217,
+      "sha256": "482267044afda772da0a26307cf483596e632be0afe7542df5d1bd178791c0f2"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-implementation.md",
+      "bytes": 6850,
+      "sha256": "3d795dcb5f189518aad5fa89113946f0e4735479e862f243839d806bc02f68de"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-path-budget-original-adverse.json",
+      "bytes": 1778,
+      "sha256": "6a8b7811ea40cb52389b7241976a2426ac2f3d4b3704ee73e62b47c313c7bf5a"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-profiles-path-budget-original-adverse.json",
+      "bytes": 1776,
+      "sha256": "48df20d61388cd0e14f70283ac427b0f09855f351e755f5fe11b6a84a520b560"
+    }
+  ],
+  "after": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "bytes": 8773,
+      "sha256": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "bytes": 8192,
+      "sha256": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "bytes": 17128,
+      "sha256": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "bytes": 16825,
+      "sha256": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-independent-original.mjs",
+      "bytes": 8710,
+      "sha256": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-profiles-independent-original.mjs",
+      "bytes": 8165,
+      "sha256": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-implementation.json",
+      "bytes": 22217,
+      "sha256": "482267044afda772da0a26307cf483596e632be0afe7542df5d1bd178791c0f2"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-implementation.md",
+      "bytes": 6850,
+      "sha256": "3d795dcb5f189518aad5fa89113946f0e4735479e862f243839d806bc02f68de"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-path-budget-original-adverse.json",
+      "bytes": 1778,
+      "sha256": "6a8b7811ea40cb52389b7241976a2426ac2f3d4b3704ee73e62b47c313c7bf5a"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-profiles-path-budget-original-adverse.json",
+      "bytes": 1776,
+      "sha256": "48df20d61388cd0e14f70283ac427b0f09855f351e755f5fe11b6a84a520b560"
+    }
+  ],
+  "changedInputs": []
+}

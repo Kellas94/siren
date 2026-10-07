@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "phase": "adversarial-provider-redaction-green",
+  "startedAt": "2026-10-07T15:59:51.267Z",
+  "finishedAt": "2026-10-07T15:59:51.436Z",
+  "runtime": "v24.16.0",
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--test",
+    "tests/terminal-cwd.test.mjs",
+    "tests/terminal-profiles.test.mjs",
+    "tests/terminal-policy.test.mjs",
+    "tests/terminal-contracts.test.mjs"
+  ],
+  "before": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "bytes": 8710,
+      "sha256": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "bytes": 8165,
+      "sha256": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "bytes": 13867,
+      "sha256": "d77af1c9d95513482ce93bd35ee0405b2c91c76cc0715d12648fa6714c90efc3"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "bytes": 13524,
+      "sha256": "76551c8911618ee95597f0b87accd8375ad27bd641e1555aeeae410c7fa98c9f"
+    },
+    {
+      "path": "src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115"
+    },
+    {
+      "path": "src/terminal/session-state.mjs",
+      "bytes": 7026,
+      "sha256": "bdaccf7b0246d1b8d5429674f615b8bb648b3da03e3cfa9c6020bf823eac61b7"
+    },
+    {
+      "path": "src/windows/registry.mjs",
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 108344,
+      "sha256": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619"
+    },
+    {
+      "path": "src/protocol.mjs",
+      "bytes": 1854,
+      "sha256": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f"
+    },
+    {
+      "path": "src/ipc.mjs",
+      "bytes": 3197,
+      "sha256": "1f33543d72438a8ce3c2198db1d5999bb90d54111de6cb37e4626dea1946f34a"
+    },
+    {
+      "path": "src/preload.cjs",
+      "bytes": 7624,
+      "sha256": "5c48fc6e29f1bfe967d9cc4300f07cfe360b0686facf3db3d764b413e47475c1"
+    },
+    {
+      "path": "../docs/superpowers/plans/2026-10-03-siren-terminal.md",
+      "bytes": 23094,
+      "sha256": "ac170002abb32c51d4379cd5704f4f0852b92004e9c4e931910f3b84ed23c974"
+    },
+    {
+      "path": "../docs/research/2026-10-07-terminal-atomic-ownership.md",
+      "bytes": 5705,
+      "sha256": "85e6f21bdfe6c474f68d80e8519d117e4d51d60b63ce13a80abaf4ee94379704"
+    }
+  ],
+  "after": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "bytes": 8710,
+      "sha256": "2d4454097da8c0093a1b4ff7e6040a90b97a9602d2eb848ebcdbceec5e53c948"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "bytes": 8165,
+      "sha256": "af028b9b8542ce290541e75b185ff33b5a89b45ccf39f7fc70ffc71d20c2efa8"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "bytes": 13867,
+      "sha256": "d77af1c9d95513482ce93bd35ee0405b2c91c76cc0715d12648fa6714c90efc3"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "bytes": 13524,
+      "sha256": "76551c8911618ee95597f0b87accd8375ad27bd641e1555aeeae410c7fa98c9f"
+    },
+    {
+      "path": "src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115"
+    },
+    {
+      "path": "src/terminal/session-state.mjs",
+      "bytes": 7026,
+      "sha256": "bdaccf7b0246d1b8d5429674f615b8bb648b3da03e3cfa9c6020bf823eac61b7"
+    },
+    {
+      "path": "src/windows/registry.mjs",
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 108344,
+      "sha256": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619"
+    },
+    {
+      "path": "src/protocol.mjs",
+      "bytes": 1854,
+      "sha256": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f"
+    },
+    {
+      "path": "src/ipc.mjs",
+      "bytes": 3197,
+      "sha256": "1f33543d72438a8ce3c2198db1d5999bb90d54111de6cb37e4626dea1946f34a"
+    },
+    {
+      "path": "src/preload.cjs",
+      "bytes": 7624,
+      "sha256": "5c48fc6e29f1bfe967d9cc4300f07cfe360b0686facf3db3d764b413e47475c1"
+    },
+    {
+      "path": "../docs/superpowers/plans/2026-10-03-siren-terminal.md",
+      "bytes": 23094,
+      "sha256": "ac170002abb32c51d4379cd5704f4f0852b92004e9c4e931910f3b84ed23c974"
+    },
+    {
+      "path": "../docs/research/2026-10-07-terminal-atomic-ownership.md",
+      "bytes": 5705,
+      "sha256": "85e6f21bdfe6c474f68d80e8519d117e4d51d60b63ce13a80abaf4ee94379704"
+    }
+  ],
+  "changedInputs": []
+}
