@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "role": "Owner guarded canonical synchronization; not independent approval",
+  "observedUtc": "2026-10-07 01:23:47 UTC",
+  "localBase": "8f92618c210f9f9f8abf530485d9d5637d6aaf1c",
+  "qualifiedLocalCheckpoint": "4f8d4a0e57425be4f16a6df325b1ac40c2a4b630",
+  "productSource": "e5d05be2f067b818b443de9858b96401c8dc21cd",
+  "previousCanonical": "d26f7c3b61d2a0ba66c038b8dba93877c6080498",
+  "canonical": {
+    "sha": "df7acd653ce431480d6001b7e920a8e1b8d142c4",
+    "tree": "34664e8919cf1417c8799f1499c44c59a372a3ef",
+    "parents": [
+      "d26f7c3b61d2a0ba66c038b8dba93877c6080498"
+    ]
+  },
+  "integration": {
+    "sha": "a0eb68ee3cf3b7bfe43683fc26b68d8bcd0a171c",
+    "tree": "34664e8919cf1417c8799f1499c44c59a372a3ef",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "df7acd653ce431480d6001b7e920a8e1b8d142c4"
+    ]
+  },
+  "tree": {
+    "sha": "34664e8919cf1417c8799f1499c44c59a372a3ef",
+    "blobs": 1776,
+    "patchedEntries": 56,
+    "newFiles": 29,
+    "untouchedBlobs": 1720
+  },
+  "ignore": {
+    "sha": "d334939db312e1cf33116830ef52599d7727ed83",
+    "bytes": 28034,
+    "prefixBytes": 26086,
+    "additions": 29
+  },
+  "main": {
+    "sha": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+    "unchanged": true
+  },
+  "pr": {
+    "number": 2,
+    "url": "https://github.com/Kellas94/siren/pull/2",
+    "state": "open",
+    "draft": true,
+    "mergedAt": null,
+    "title": "Unify desktop workspaces and harden portable persistence"
+  },
+  "hostedAtObservation": {
+    "id": 37556787785,
+    "status": "queued",
+    "conclusion": null,
+    "head": "df7acd653ce431480d6001b7e920a8e1b8d142c4"
+  },
+  "limits": [
+    "Hosted run observed queued; no final verdict claimed",
+    "Prior hosted37552477003 FINAL FAILURE and Diagram pointer cause remain OPEN",
+    "No main merge, release, installed-app replacement or force update",
+    "Existing unrelated1720blobs and26086B ignore prefix preserved",
+    "Next sync local base must qualifiedLocalCheckpoint4f8d, not this later metadata commit"
+  ]
+}

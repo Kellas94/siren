@@ -5,6 +5,11 @@ import {runInNewContext} from 'node:vm';
 const implementation=await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8').catch(error=>{if(error.code!=='ENOENT')throw error;return '';});
 function create(options){const window={};runInNewContext(implementation,{window});assert.equal(typeof window.SirenNativeDiagramSession?.create,'function');return window.SirenNativeDiagramSession.create(options);}
 const context=source=>({ok:true,readonly:true,diagram:{id:'diagram-a',name:'Exact colour',source},version:1,sha256:'a'.repeat(64),projectRevision:2});
+
+test('edit-intent invalidation fences an old in-flight render before a debounced replacement starts',async()=>{
+ let release;const painted=[],session=create({read:async()=>context('saved'),render:async value=>{if(value.source==='old')await new Promise(done=>release=done);return value.source;},onSource(){},onPreview:value=>painted.push(value),onError(){}});
+ await session.refresh();const pending=session.renderLocal('old');assert.equal(session.invalidate(),true);release();assert.equal(await pending,false);assert.deepEqual(painted,['saved']);assert.equal(session.context.diagram.source,'saved');assert.equal(await session.renderLocal('new'),true);assert.deepEqual(painted,['saved','new']);session.dispose();assert.equal(session.invalidate(),false);
+});
 test('fresh/local preview receives exact corresponding metadata without changing the saved context',async()=>{
  const actual={...context('saved'),diagram:{...context('saved').diagram,nodeStyles:{A:{fill:'#ff3366'}}}},renders=[];
  const session=create({read:async()=>actual,render:async value=>{renders.push(value);return value.source;},onSource(){},onPreview(){},onError(){}});

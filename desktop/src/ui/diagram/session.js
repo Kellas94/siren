@@ -21,6 +21,6 @@
    const token=++generation,operation=(async()=>{try{const preview=await render({source,diagram:diagram??{...context.diagram,source},token,isCurrent:()=>current(token)});if(!current(token))return false;onPreview(preview);return true;}catch{if(current(token))onError();return false;}})();
    pending.add(operation);operation.finally(()=>pending.delete(operation));return operation;
   }
-  return Object.freeze({refresh,renderLocal,get context(){return context;},async pause(){paused=true;++generation;await Promise.allSettled([...pending]);return !disposed&&context!==null;},resume(){if(!disposed)paused=false;},dispose(){disposed=true;paused=true;++generation;context=null;}});
+  return Object.freeze({refresh,renderLocal,invalidate(){if(paused||disposed)return false;++generation;return true;},get context(){return context;},async pause(){paused=true;++generation;await Promise.allSettled([...pending]);return !disposed&&context!==null;},resume(){if(!disposed)paused=false;},dispose(){disposed=true;paused=true;++generation;context=null;}});
  }});
 })();

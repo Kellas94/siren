@@ -5,19 +5,20 @@ import {runInNewContext} from 'node:vm';
 const transfer=await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8');
 const controller=await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8');
 const historyView=await readFile(new URL('../src/ui/diagram/history-view.js',import.meta.url),'utf8');
+const walkthrough=await readFile(new URL('../src/ui/diagram/walkthrough.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(){
  const elements=new Map(),created=[],events=new Map(),intervals=[];let shelfResolve,shelfCalls=0,refreshes=0,prepare,resume;
- const element=()=>{const node={style:{},dataset:{},hidden:false,addEventListener(){},before(){},append(){},replaceChildren(){},setAttribute(){}};created.push(node);return node;};
+ const element=()=>{const node={style:{},dataset:{},hidden:false,addEventListener(){},removeEventListener(){},before(){},append(){},replaceChildren(){},setAttribute(){}};created.push(node);return node;};
  const get=id=>{const dynamic=created.find(node=>node.id===id);if(dynamic)return dynamic;if(!elements.has(id))elements.set(id,element());return elements.get(id);};
  const view={windowId:'12345678-1234-4234-8234-123456789abc',role:'diagram'},shelf=new Promise(resolve=>{shelfResolve=resolve;});
  const part=()=>({paint(){},commit:()=>true,isEditing:()=>false,pause(){},dispose(){}});
  const document={getElementById:get,createElement:element,body:{dataset:{}},documentElement:{style:{}}};
  const window={SirenPresentationAuthoring:{create:()=>({paint(){},reset(){},dispose(){}})},sirenDeckNavigation:{onAuthoring:()=>()=>{}},sirenWindow:{getView:async()=>({ok:true,view}),onReady(){}},sirenWindowDock:{getShelf:()=>{shelfCalls++;return shelf;}},addEventListener:(name,fn)=>events.set(name,fn),
-  SirenNativeDiagramStyleView:{create:part},SirenNativeDiagramBuildView:{create:part},SirenNativeGuidedView:{create:part},SirenNativeDiagramSession:{create:()=>({refresh(){refreshes++;return Promise.resolve(true);},pause:async()=>false,resume(){},dispose(){}})},
+  SirenNativeDiagramStyleView:{create:part},SirenNativeDiagramBuildView:{create:part},SirenNativeGuidedView:{create:part},SirenNativeDiagramSession:{create:()=>({invalidate(){},refresh(){refreshes++;return Promise.resolve(true);},pause:async()=>false,resume(){},dispose(){}})},
   SirenNativeViewIdentity:{clear(){}},sirenDiagramRead:{},sirenDiagramEdit:{onReferenceChanged:()=>()=>{}},sirenViewControl:{onPrepare(fn){prepare=fn;},onResume(fn){resume=fn;}}};
- const context={window,document,setInterval:fn=>{intervals.push(fn);return 1;},clearInterval(){},clearTimeout(){},matchMedia:()=>({matches:false,addEventListener(){}})};
- runInNewContext(transfer,context);runInNewContext(historyView+'\n'+controller,context);
+ const context={window,document,setInterval:fn=>{intervals.push(fn);return 1;},clearInterval(){},clearTimeout(){},matchMedia:()=>({matches:false,addEventListener(){}}),ResizeObserver:class{observe(){}disconnect(){}}};
+ runInNewContext(transfer,context);runInNewContext(historyView+'\n'+walkthrough+'\n'+controller,context);
  return {window,document,get,view,events,intervals,prepare:()=>prepare(),resume:()=>resume(),refreshes:()=>refreshes,shelfCalls:()=>shelfCalls,resolve:value=>shelfResolve(value)};
 }
 test('actual Diagram controller waits for its native placement before reading or exposing content',async()=>{

@@ -32,7 +32,7 @@ Review focus: exact-version links versus earlier-version associations; same-name
 
 - [x] Freeze inputs and obtain genuinely authored independent review; fix validated findings with separate evidence.
 - [x] Fresh build, appropriate full suite, native development scenarios and copied-package identity/native scenarios; state all limits.
-- [ ] Commit product and separate qualification, update resume records, then synchronize canonical PR only after the current hosted run is final. Keep original hosted evidence and main unchanged.
+- [x] Commit product and separate qualification, update resume records, then synchronize canonical PR only after the current hosted run is final. Keep original hosted evidence and main unchanged.
 
 Not covered: a persistent in-Code project explorer, arbitrary language interpreters, live unsaved-draft comparison, new dependencies, physical multi-monitor certification or a new maximum-size claim.
 
@@ -47,3 +47,5 @@ That Lock failure is a clean working window remaining at saved v5 while another 
 - [x] Independent review of commit replay and unchanged original-harness native rerun; copied-package and final source qualification.
 
 Qualified local checkpoint: source e5d05be2f067b818b443de9858b96401c8dc21cd; final source/unit suite 1,361 tests (isolated identity 3 + units 1,358), no failures/skips/cancellations, unchanged captured inputs. Unchanged native original six scenarios COMPLETE in development and an actual portable copy after separate multiline/replay corrections. All 296 packaged files and fixed helper match; copied shell/core/300k import complete. Owner qualification MD/JSON retain original adverse records and actual authors. Hosted qualification remains pending; this is not release approval.
+
+Canonical synchronization: df7acd653ce431480d6001b7e920a8e1b8d142c4 / tree 34664e8919cf1417c8799f1499c44c59a372a3ef; PR2 remains open draft and main unchanged. Actual new hosted run 37556787785 observed queued; original final outcome retention is assigned separately. See owner canonical-sync MD/JSON. Next local sync base is qualified checkpoint 4f8d4a0e57425be4f16a6df325b1ac40c2a4b630.
