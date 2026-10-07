@@ -18,6 +18,8 @@ internal static partial class TerminalJobListProbe {
     [DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)] static extern IntPtr OpenJobObjectW(uint rights,bool inherit,string name);
     static readonly JavaScriptSerializer ConptyJson=new JavaScriptSerializer{MaxJsonLength=262144,RecursionLimit=32};
     static readonly Dictionary<uint,bool[]> ConptyMembership=new Dictionary<uint,bool[]>();
+    sealed class ConptyHeldIdentity { public uint pid;public long created;public string image; }
+    static readonly Dictionary<IntPtr,ConptyHeldIdentity> ConptyIdentities=new Dictionary<IntPtr,ConptyHeldIdentity>();
     sealed class ConsoleLease {
         public IntPtr console,input,output;public ProcessInfo root;
         public void Close() {
@@ -63,10 +65,17 @@ internal static partial class TerminalJobListProbe {
             uint pid=GetProcessId(handle),code=0;Require(pid>0&&GetExitCodeProcess(handle,out code),"CONPTY_HELD_EXIT");
             uint wait=WaitForSingleObject(handle,0);Require(wait==0||wait==258,"CONPTY_HELD_WAIT");
             long created,exited,kernel,user;Require(GetProcessTimes(handle,out created,out exited,out kernel,out user),"CONPTY_HELD_TIME");
-            var image=new StringBuilder(32768);uint length=32768;Require(QueryFullProcessImageNameW(handle,0,image,ref length),"CONPTY_HELD_IMAGE");
-            if(capture)ConptyMembership.Add(pid,new[]{Member(handle,a),Member(handle,b)});
+            // Query the image while the held process is live. Windows can refuse
+            // that query after termination (original hosted cleanup error31).
+            // Keep the actual handle and recheck PID/creation time on every read;
+            // only the immutable image is cached, never wait/exit observations.
+            if(capture){Require(wait==258,"CONPTY_CAPTURE_NOT_LIVE");var image=new StringBuilder(32768);uint length=32768;
+                Require(QueryFullProcessImageNameW(handle,0,image,ref length),"CONPTY_HELD_IMAGE");
+                ConptyIdentities.Add(handle,new ConptyHeldIdentity{pid=pid,created=created,image=image.ToString()});
+                ConptyMembership.Add(pid,new[]{Member(handle,a),Member(handle,b)});}
+            ConptyHeldIdentity identity;Require(ConptyIdentities.TryGetValue(handle,out identity)&&identity.pid==pid&&identity.created==created,"CONPTY_HELD_IDENTITY_CHANGED");
             var membership=ConptyMembership[pid];
-            rows.Add(new Dictionary<string,object>{{"pid",pid},{"image",image.ToString()},{"createdFileTime",created.ToString()},{"alive",wait==258},{"exitCode",code},{"inA",membership[0]},{"inB",membership[1]}});
+            rows.Add(new Dictionary<string,object>{{"pid",pid},{"image",identity.image},{"createdFileTime",created.ToString()},{"alive",wait==258},{"exitCode",code},{"inA",membership[0]},{"inB",membership[1]}});
         }return rows.ToArray();
     }
     static uint[] ConptyFixtures(string directory) {
