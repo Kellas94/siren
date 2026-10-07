@@ -14,6 +14,8 @@
 
 ## Global Constraints
 
+**Implementation checkpoint, 7 October:** pure `session-state.mjs`, `credits.mjs` and `policy.mjs` are implemented and locally qualified: focused40/40, full suite1610/1610 with644 captured inputs unchanged, independent23 tests plus10 separately authored probes. The original host-loss P2 and writable-authority regression were reproduced and repaired; original adverse reports remain intact. See `desktop/reviews/2026-10-07-terminal-foundation-{owner,independent}.{md,json}`. This is partial Tasks2/3 infrastructure only: no native host/registry/PTY/xterm/package integration, no task checkbox is completed, and native execution remains NOT_ADMITTED. Atomic startup/Job containment next steps are researched in `docs/research/2026-10-07-terminal-atomic-ownership.md`. The independent review captured the plan before this progress-only annotation; source/test bytes are unchanged.
+
 - A shell has the user's OS rights. PIN/host isolation is not an execution sandbox. Local PIN remains active; no account backend or AI work is added.
 - Gate input synchronously before Lock drain/await/ACK; never interrupt, pause, kill, Ctrl+C or close stdin for Lock. Existing commands/pipelines continue; prompts wait Unlock.
 - Renderer has no Node, arbitrary spawn/path/argv/env or direct host port. Every call checks registered caller, frame/URL/role, project, epoch, mode, PIN, session and current lease.

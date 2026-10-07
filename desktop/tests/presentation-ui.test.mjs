@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const script=await readFile(new URL('../src/ui/presentation/notes-export.js',import.meta.url),'utf8')+'\n'+await readFile(new URL('../src/ui/presentation/window.js',import.meta.url),'utf8');
+const tick=async()=>{for(let n=0;n<15;n++)await new Promise(resolve=>setImmediate(resolve));};
 async function fixture(){
  const nodes=new Map(),callbacks={},calls=[];
  class Element{
@@ -19,10 +20,27 @@ async function fixture(){
  const bridge={editDeck:async()=>({ok:true}),getPresenter:async()=>state,getDisplays:async()=>({ok:true,displays:[]}),getPreview:async()=>({ok:true,frame:{epoch:1,sequence:calls.length,slideId:'slide-a',deckVersion:'v1',publicSlide:{kind:'text',title:'Public title',body:'Public body'}}}),navigate:async()=>{calls.push('navigate');return{ok:true,slideId:'slide-a'};},refreshDeck:async()=>({ok:true}),openAudience:async()=>({ok:true}),onFrame:fn=>callbacks.frame=fn,onFullscreen:fn=>callbacks.fullscreen=fn};
  const document={body,documentElement:{style:{}},getElementById:id=>nodes.get(id),createElement:()=>new Element(),querySelectorAll:()=>['previousSlide','nextSlide','refreshDeck','openAudience','audienceDisplay','fullscreen','closeView'].map(id=>nodes.get(id)),addEventListener:(name,fn)=>callbacks[name]=fn};
  const exportBridge={exportNotes:async request=>{calls.push(request);return{ok:true,exportId:'00000000-0000-4000-8000-000000000001',filename:'presentation-notes-00000000-0000-4000-8000-000000000001.txt',bytes:123,sha256:'c'.repeat(64),deckId:'deck-a',deckVersion:state.deck.version};},revealExport:async()=>({ok:true})};
- vm.runInNewContext(script,{document,window:{sirenPresenterExport:exportBridge,sirenPresentation:bridge,sirenWindow:{getView:async()=>({ok:true,view:{role:'presenter',epoch:1,windowId:'owned'}}),onReady:()=>{},closeView:async()=>({ok:true})},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn}}});
+ vm.runInNewContext(script,{document,window:{addEventListener:(name,fn)=>callbacks[name]=fn,SirenAppearancePalette:[{id:'kpmg',mode:'light'},{id:'matrix',mode:'dark'},{id:'dark',mode:'dark'},{id:'light',mode:'light'}],sirenPresenterExport:exportBridge,sirenPresentation:bridge,sirenWindow:{getView:async()=>({ok:true,view:{role:'presenter',epoch:1,windowId:'owned'}}),onReady:()=>{},closeView:async()=>({ok:true})},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn}}});
  for(let n=0;n<20&&body.dataset.publicReady!=='true';n++)await new Promise(resolve=>setImmediate(resolve));
  assert.equal(body.dataset.publicReady,'true');return{nodes,body,bridge,exportBridge,callbacks,calls,state};
 }
+
+test('Presenter theme changes coalesce while busy, use latest slide and leave deck immutable',async()=>{
+ const f=await fixture(),before=JSON.stringify(f.state),requests=[];let release;
+ f.bridge.navigate=async request=>{requests.push(request);if(requests.length===1)await new Promise(resolve=>release=resolve);return {ok:true,slideId:request.slideId};};
+ const change=(theme,mode)=>f.callbacks['siren-appearance']({detail:{theme,mode}});
+ change('kpmg','light');await tick();assert.equal(requests.length,1);
+ change('matrix','dark');change('kpmg','light');change('matrix','dark');assert.equal(requests.length,1);release();await tick();assert.equal(requests.length,2);assert.equal(requests[1].sequence,requests[0].sequence+1);assert.equal(requests[1].slideId,'slide-a');assert.equal(JSON.stringify(f.state),before);
+ change('matrix','dark');change('unknown','light');change('matrix','light');await tick();assert.equal(requests.length,2);
+});
+
+test('failed appearance render is not retried and Lock retires queued appearance work',async()=>{
+ const f=await fixture();let count=0;f.bridge.navigate=async()=>{count++;return {ok:false};};const change=(theme,mode)=>f.callbacks['siren-appearance']({detail:{theme,mode}});
+ change('kpmg','light');await tick();assert.equal(count,1);change('kpmg','light');await tick();assert.equal(count,1);
+ let release;f.bridge.navigate=async()=>{count++;await new Promise(resolve=>release=resolve);return {ok:true,slideId:'slide-a'};};change('matrix','dark');await tick();change('kpmg','light');await f.callbacks.prepare();release();await tick();assert.equal(count,2);assert.equal(f.body.dataset.publicReady,'false');
+});
+
+test('pagehide retires theme refresh without another native navigation',async()=>{const f=await fixture(),before=f.calls.length;f.callbacks.pagehide();f.callbacks['siren-appearance']({detail:{theme:'matrix',mode:'dark'}});await tick();assert.equal(f.calls.length,before);});
 test('real Presenter UI retains visible notes/slide and releases controls on thrown refresh or Audience transport',async()=>{
  for(const [id,method]of [['refreshDeck','refreshDeck'],['openAudience','openAudience']]){
   const f=await fixture(),slide=f.nodes.get('publicSlide').children[0];f.bridge[method]=async()=>{throw Error('Owned transport unavailable');};

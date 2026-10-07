@@ -1,0 +1,911 @@
+{
+  "schema": 1,
+  "date": "2026-10-07",
+  "authorAgent": "/root/catalogue_view",
+  "type": "independent-read-only-terminal-native-admission-preflight",
+  "status": "NATIVE_OWNERSHIP_NOT_ADMITTED",
+  "admitted": false,
+  "scope": {
+    "readOnly": true,
+    "productWrites": false,
+    "installation": false,
+    "download": false,
+    "nativeExecution": false,
+    "build": false,
+    "fakeOwnershipQualification": false,
+    "rootPureManagerWorkSeparate": true
+  },
+  "currentEvidence": {
+    "at": "2026-10-07T12:06:06.765Z",
+    "status": "READ_ONLY_ARTIFACT_ASSERTIONS_COMPLETE",
+    "verifiedArtifactCount": 42,
+    "verifiedOwnerManifestCount": 11,
+    "packages": [
+      {
+        "name": "@xterm/addon-fit",
+        "version": "0.11.0",
+        "integrity": "sha512-jYcgT6xtVYhnhgxh3QgYDnnNMYTcf8ElbxxFzX0IZo+vabQqSPAjC3c1wJrKB5E19VwQei89QCiZZP86DCPF7g==",
+        "resolved": "https://registry.npmjs.org/@xterm/addon-fit/-/addon-fit-0.11.0.tgz"
+      },
+      {
+        "name": "@xterm/addon-search",
+        "version": "0.16.0",
+        "integrity": "sha512-9OeuBFu0/uZJPu+9AHKY6g/w0Czyb/Ut0A5t79I4ULoU4IfU5BEpPFVGQxP4zTTMdfZEYkVIRYbHBX1xWwjeSA==",
+        "resolved": "https://registry.npmjs.org/@xterm/addon-search/-/addon-search-0.16.0.tgz"
+      },
+      {
+        "name": "@xterm/xterm",
+        "version": "6.0.0",
+        "integrity": "sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==",
+        "resolved": "https://registry.npmjs.org/@xterm/xterm/-/xterm-6.0.0.tgz"
+      },
+      {
+        "name": "node-addon-api",
+        "version": "7.1.1",
+        "integrity": "sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==",
+        "resolved": "https://registry.npmjs.org/node-addon-api/-/node-addon-api-7.1.1.tgz"
+      },
+      {
+        "name": "node-pty",
+        "version": "1.1.0",
+        "integrity": "sha512-20JqtutY6JPXTUnL0ij1uad7Qe1baT46lyolh2sSENDd4sTzKZ4nmAFkeAARDKwmlLjPx6XKRlwRUxwjOy+lUg==",
+        "resolved": "https://registry.npmjs.org/node-pty/-/node-pty-1.1.0.tgz"
+      }
+    ],
+    "currentProbeMatchesFinalInventory": true,
+    "nativeProbeSourceSha256": "d0b08b123d60c24abbd5921771d31b3f0cf39123f8ba3265e2390fbece5a5afe",
+    "finalInventoryProbeSourceSha256": "57d575585de9c4258f933d89ed22a0a63880024d4697b91b2706aee09c55cf6c",
+    "identities": [
+      {
+        "path": "../docs/superpowers/specs/2026-10-03-siren-terminal-design.md",
+        "bytes": 25066,
+        "sha256": "eb7d3ff43defc73026207faf7f1d6f53dce037be8d66ff205ff9106cf0d2f1d5"
+      },
+      {
+        "path": "../docs/superpowers/plans/2026-10-03-siren-terminal.md",
+        "bytes": 22213,
+        "sha256": "509d19c2c04ace952406551a2e745965db0f38d3eebf520412606795c814c045"
+      },
+      {
+        "path": "reviews/2026-10-03-terminal-candidate.md",
+        "bytes": 12969,
+        "sha256": "15ecfe341f14ed76c8d93dd9e038aa935e5a81ab7736d165fb4519a0105cc71d"
+      },
+      {
+        "path": "reviews/2026-10-03-terminal-owner-readiness.md",
+        "bytes": 17335,
+        "sha256": "d7329ba4161649d62172124cb69573747e13e23cacba45b4acc691c955335971"
+      },
+      {
+        "path": "reviews/2026-10-03-terminal-readiness.md",
+        "bytes": 3688,
+        "sha256": "9c38b94c633f90bfc9b8947611940cc0586831ca8fc43270ff840c6faea086ec"
+      },
+      {
+        "path": "reviews/2026-10-03-windows-terminal-foundation-root-evidence.md",
+        "bytes": 3361,
+        "sha256": "f53c7f9479967ddcd559988c70af36186b84380c3e7aefe0e7d07ab022d62874"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-59-34.517Z/inventory.json",
+        "bytes": 14163,
+        "sha256": "6b47eb1d6b1f67ccda82b4c90968ff066c3af36816336658be169242469e8e7f"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-57-33.264Z/inventory.json",
+        "bytes": 216213,
+        "sha256": "14710fafa818c3175b1fb50cc833f9cdc2f9da28159bbd0a3b49a28dedefd81c"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-57-33.264Z/native-result.json",
+        "bytes": 188032,
+        "sha256": "73fffa4590a970e9c7ccfa012be07e085358da024c3031ace31128d6dcf6cb0c"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-57-33.264Z/host-result.json",
+        "bytes": 13553,
+        "sha256": "d3f8b40068320b6e455ce87345213f70f5e61ae762be99a54eb829be143071d2"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-57-33.264Z/native-entry/host.mjs",
+        "bytes": 9886,
+        "sha256": "af460258046880a866c310164add7faf416b59897a2b018ae54eac3ecd77e754"
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-57-33.264Z/native-entry/main.mjs",
+        "bytes": 4602,
+        "sha256": "0d07d035371fd60a162fbce9a4ebc8dcf6390a75f87fba0d4026f584bd2dd288"
+      },
+      {
+        "path": "evidence/terminal-candidate-cleanup.json",
+        "bytes": 417,
+        "sha256": "2c3895f233d6c99c9fa396d26e2238fa55392a4f2d78de2aaa65f8d81488d8be"
+      },
+      {
+        "path": "evidence/terminal-candidate-dependencies/package-lock.json",
+        "bytes": 1989,
+        "sha256": "2ab2c10ae92ebcf8b581f833139499bce2e47ef7a134a154c58f7f8179c458ba"
+      },
+      {
+        "path": "tests/native/terminal-candidate.mjs",
+        "bytes": 20921,
+        "sha256": "57d575585de9c4258f933d89ed22a0a63880024d4697b91b2706aee09c55cf6c"
+      },
+      {
+        "path": "evidence/terminal-candidate-dependencies/node_modules/node-pty/src/win/conpty.cc",
+        "bytes": 19746,
+        "sha256": "52c893b689ab3210c0961e2a6aa805a82350003767b21069b164926b5becd4e2"
+      },
+      {
+        "path": "src/windows/registry.mjs",
+        "bytes": 36262,
+        "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+      },
+      {
+        "path": "src/windows/coordinator.mjs",
+        "bytes": 30433,
+        "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+      },
+      {
+        "path": "src/sources/repository.mjs",
+        "bytes": 23261,
+        "sha256": "ce4ba2ff620af9961b0b389b28c258491b5f13423ce32e1bd298ebf8d047b2e4"
+      },
+      {
+        "path": "src/terminal/contracts.mjs",
+        "bytes": 4172,
+        "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+      },
+      {
+        "path": "src/terminal/output.mjs",
+        "bytes": 8810,
+        "sha256": "13617af44f8b0023cd8dff735c90638c780671e58ae0840c7e2bf9108b0c1baf"
+      },
+      {
+        "path": "package.json",
+        "bytes": 1079,
+        "sha256": "3c0bf4d8fa257852a8c438f261bcaf77f032175f9f1c3457fbd1e78717d3b434"
+      }
+    ],
+    "verifiedArtifacts": [
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-fit\\lib\\addon-fit.js",
+        "bytes": 1521,
+        "sha256": "ba3ea256ce0620a0992a197d6c9baea64823fc93d8da07a9e366ca9943c18527"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-fit\\lib\\addon-fit.mjs",
+        "bytes": 1967,
+        "sha256": "2d87e1bddc73be9111de8beee5370c3bb7aac9c94e18e6f245f02ca741ef1769"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-fit\\LICENSE",
+        "bytes": 1103,
+        "sha256": "e256f01188af527e4d06d21d06fbf785ae9c50d4b328bf03cbe0ba7f0aa4228f"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-search\\lib\\addon-search.js",
+        "bytes": 78826,
+        "sha256": "7bc1b8c7b3549411f6f6f779524c4ded6ca621fd80d64b40a70ae7c78aefbf55"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-search\\lib\\addon-search.mjs",
+        "bytes": 39031,
+        "sha256": "3ea90162233f867b938cd29b8ad98f589643436bbb5445bd11b825dc99ff0c04"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\addon-search\\LICENSE",
+        "bytes": 1103,
+        "sha256": "689ceb10716bd7a87a804c14951d7c2b818cbd60aab83d540902470ce3b13444"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\xterm\\css\\xterm.css",
+        "bytes": 7112,
+        "sha256": "854a7c0fb70e8b1a083c16797ab827299fb18744f5ad34f227b48337e33293c6"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\xterm\\lib\\xterm.js",
+        "bytes": 488663,
+        "sha256": "14903579ff54664cd72f8e8699e6961a6272c21863ec1c3b118cdc8af5d4a972"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\xterm\\lib\\xterm.mjs",
+        "bytes": 344970,
+        "sha256": "b336ec65a086c056d4804b3d4c2347da5663d3f23c3f25be866467bd8857ad59"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\@xterm\\xterm\\LICENSE",
+        "bytes": 1261,
+        "sha256": "b569f629d00f2626a8100df2a1798210535621e42164dfd426a6fe5aac7b0ccd"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-addon-api\\LICENSE.md",
+        "bytes": 1150,
+        "sha256": "89024017b88a9f2b763f79b941a4f2db3b4428edfcacdc0b23866b2da633ad0c"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\deps\\winpty\\LICENSE",
+        "bytes": 1085,
+        "sha256": "c39e428064b4f3e4fe81a975bf0fd3b845922b431bc4d9a7ffc8bfb091981836"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\conpty_console_list_agent.js",
+        "bytes": 721,
+        "sha256": "0d010879bb6680a0253d44363183d53e631f42972594eb6dcb1fb842c8c85e52"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\shared\\conout.js",
+        "bytes": 348,
+        "sha256": "6ae3b0532616da11aa2a11b4506bb89b0d40be005a9ea9fb369fb59eefdbda47"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\utils.js",
+        "bytes": 1548,
+        "sha256": "f75ad341c13fbf1a9a6605d7ee42dff5bbc5d43b7b381e413fb97eb1b8300beb"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\windowsConoutConnection.js",
+        "bytes": 6119,
+        "sha256": "1440f70908fb1f55911ac8e936a1230f68a9c00c03096fcef6788eac6aad9d62"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\windowsPtyAgent.js",
+        "bytes": 12388,
+        "sha256": "8636d16b38266112204061a22b135734177c242837982fd3a4055be726efa64a"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\windowsTerminal.js",
+        "bytes": 7852,
+        "sha256": "c3a65716f53fed0135a8a633373d5f9c2ab092544d651f27ef0a67096dd3bcd9"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\lib\\worker\\conoutSocketWorker.js",
+        "bytes": 848,
+        "sha256": "3e4bac095ac3870c3248a7302f5d10217de625f30c32b7000fe48a34788e47ac"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\LICENSE",
+        "bytes": 3326,
+        "sha256": "a3d60eaf32d2fb09c9d82ef39f14bd6e2c0f3ca7de30daa827486c0d6f8b6e9f"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\darwin-arm64\\pty.node",
+        "bytes": 85496,
+        "sha256": "e6457d66f45af3facd02920a5b212164e80fe0bb758afe6e6eab1eceeba3fc9a"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\darwin-x64\\pty.node",
+        "bytes": 52864,
+        "sha256": "edab585d5c5c7bf35143a7a53b7d72652e90723b5f9635dfd55b2333f7069198"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty\\conpty.dll",
+        "bytes": 106528,
+        "sha256": "b6cca5f1081111f59e5255eec043d924ebd11a86d09986c0d121b680540b3380"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty\\OpenConsole.exe",
+        "bytes": 1194024,
+        "sha256": "b7763ba27e80d5e84f9e60d1368ec2ddb25dfd10283336c0c9f3f252d35cb2f8"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty.node",
+        "bytes": 302592,
+        "sha256": "25a06916c5cb1a3aac7acc401424d8e6a6a9e8eea441a3604cd657a0619555cd"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\conpty_console_list.node",
+        "bytes": 122368,
+        "sha256": "fda76b16afb3bf9a4de085c943b5fb4138ecbeb08e8254c09d5555ea5426bd4e"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\pty.node",
+        "bytes": 293376,
+        "sha256": "eae1266e3c34f4c7b67a756a6ff342b699847deaf29c944b7a6bed190ec61982"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty-agent.exe",
+        "bytes": 286720,
+        "sha256": "9a5f66fbe444728988f51e8099d0d84c515945a1873dbbbec65aec6e07eac50a"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-arm64\\winpty.dll",
+        "bytes": 236032,
+        "sha256": "0247b4d007fcb8059cc2221ec41d736fa548246ce1e10256c15c96d1ef6f2e9c"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\conpty.dll",
+        "bytes": 109600,
+        "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\OpenConsole.exe",
+        "bytes": 1148448,
+        "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.node",
+        "bytes": 312320,
+        "sha256": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.node",
+        "bytes": 134656,
+        "sha256": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.node",
+        "bytes": 303104,
+        "sha256": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.exe",
+        "bytes": 307712,
+        "sha256": "0c4834a0ab2a4f8c855a2f1db9b21fa6e5fc324ae8e3c82addd53d503d999825"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.dll",
+        "bytes": 256000,
+        "sha256": "e1cb26d868c954ba26817bedf3e4a5744e4ca2030adf51a7156e5ff2fadb881b"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\scripts\\post-install.js",
+        "bytes": 2573,
+        "sha256": "b15bb24cd3388b05392eeb200aa805e2827356818d111b93847e1b0f6a6ada46"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\scripts\\prebuild.js",
+        "bytes": 1172,
+        "sha256": "7e604b10f7769d7dc95947d3481c00513b9e3bb6c561d5264506350a16a0381a"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\third_party\\conpty\\1.23.251008001\\win10-arm64\\conpty.dll",
+        "bytes": 106528,
+        "sha256": "b6cca5f1081111f59e5255eec043d924ebd11a86d09986c0d121b680540b3380"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\third_party\\conpty\\1.23.251008001\\win10-arm64\\OpenConsole.exe",
+        "bytes": 1194024,
+        "sha256": "b7763ba27e80d5e84f9e60d1368ec2ddb25dfd10283336c0c9f3f252d35cb2f8"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\third_party\\conpty\\1.23.251008001\\win10-x64\\conpty.dll",
+        "bytes": 109600,
+        "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+      },
+      {
+        "path": "evidence\\terminal-candidate-dependencies\\node_modules\\node-pty\\third_party\\conpty\\1.23.251008001\\win10-x64\\OpenConsole.exe",
+        "bytes": 1148448,
+        "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+      }
+    ],
+    "originals": [
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-54-11.969Z/native-result.json",
+        "bytes": 40601,
+        "sha256": "26dfb41fba97683775be6b5ce1f60bf218362af061d74ae48b0efe1168f06ee2",
+        "admitted": false,
+        "keys": [
+          "runtime",
+          "admitted",
+          "metrics",
+          "xterm",
+          "hostPid",
+          "host",
+          "hostLogs",
+          "utilityExitRequested"
+        ]
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-54-11.969Z/host-result.json",
+        "bytes": 3443,
+        "sha256": "ea0c4fed16b6e37bbfb2d61d279339085852b3c855473a19b37012424099aabb",
+        "admitted": false,
+        "completed": false,
+        "error": "Error: Native output deadline: SIREN_READY\n    at wait (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-54-11.969Z/native-entry/host.mjs:11:230)\n    at async file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-54-11.969Z/native-entry/host.mjs:29:7\n    at async phase (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-54-11.969Z/native-entry/host.mjs:13:135)\n    at async hostProbe (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-54-11.969Z/native-entry/host.mjs:18:5)",
+        "keys": [
+          "runtime",
+          "admitted",
+          "phases",
+          "lockGateIsModelOnly",
+          "ringBudget",
+          "rootExited",
+          "resolvedPty",
+          "nativeExportNames",
+          "shellPid",
+          "cwd",
+          "shell",
+          "peakRingBytes",
+          "error",
+          "completed",
+          "exitEvent",
+          "receivedUtf8Bytes",
+          "retainedBytes",
+          "droppedUtf8Bytes",
+          "peakHostRssBytes",
+          "cleanup"
+        ]
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-55-59.837Z/native-result.json",
+        "bytes": 1357,
+        "sha256": "e693a8161abb4ff1d647a4a93f29285bba15022bc8b9b46ca9a865faea4a1ed4",
+        "admitted": false,
+        "error": "Error: An object could not be cloned.\n    at IpcRendererInternal.send (node:electron/js2c/sandbox_bundle:2:93706)\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:93414)",
+        "keys": [
+          "runtime",
+          "admitted",
+          "metrics",
+          "xterm",
+          "error"
+        ]
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-56-15.495Z/native-result.json",
+        "bytes": 41390,
+        "sha256": "34c1da644afe6aa7c88c1a357bb24b6353241cec6fe28eabdf08bf3366957a37",
+        "admitted": false,
+        "keys": [
+          "runtime",
+          "admitted",
+          "metrics",
+          "xterm",
+          "hostPid",
+          "protocolReplyCount",
+          "host",
+          "hostLogs",
+          "utilityExitRequested"
+        ]
+      },
+      {
+        "path": "evidence/terminal-candidate-2026-10-02T21-56-15.495Z/host-result.json",
+        "bytes": 4203,
+        "sha256": "abc5ea0805ceb1fa136079c3fc2d193b0f18223b0d473f3fc954306a2e3c7e47",
+        "admitted": false,
+        "completed": false,
+        "error": "Error: Native output deadline: PS \n    at wait (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-56-15.495Z/native-entry/host.mjs:11:230)\n    at async file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-56-15.495Z/native-entry/host.mjs:30:7\n    at async phase (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-56-15.495Z/native-entry/host.mjs:14:135)\n    at async hostProbe (file:///C:/Claude/SIREN_WORK/portable/desktop/evidence/terminal-candidate-2026-10-02T21-56-15.495Z/native-entry/host.mjs:19:5)",
+        "keys": [
+          "runtime",
+          "admitted",
+          "phases",
+          "lockGateIsModelOnly",
+          "ringBudget",
+          "rootExited",
+          "resolvedPty",
+          "nativeExportNames",
+          "shellPid",
+          "cwd",
+          "shell",
+          "peakRingBytes",
+          "error",
+          "completed",
+          "exitEvent",
+          "receivedUtf8Bytes",
+          "retainedBytes",
+          "droppedUtf8Bytes",
+          "peakHostRssBytes",
+          "outputTail",
+          "cleanup"
+        ]
+      }
+    ],
+    "host": {
+      "runtime": {
+        "versions": {
+          "node": "24.21.0",
+          "acorn": "8.18.0",
+          "ada": "4.0.0",
+          "amaro": "1.1.11",
+          "ares": "1.34.8",
+          "brotli": "1.2.0",
+          "cldr": "48.0",
+          "icu": "78.2",
+          "llhttp": "9.4.3",
+          "merve": "1.2.2",
+          "modules": "149",
+          "napi": "10",
+          "nbytes": "0.1.4",
+          "ncrypto": "0.0.1",
+          "nghttp2": "1.70.0",
+          "nghttp3": "",
+          "ngtcp2": "",
+          "openssl": "0.0.0",
+          "simdjson": "4.6.7",
+          "simdutf": "7.7.0",
+          "sqlite": "3.53.4",
+          "tz": "2025c",
+          "undici": "7.29.1",
+          "unicode": "17.0",
+          "uv": "1.52.1",
+          "uvwasi": "0.0.23",
+          "v8": "15.2.124.28-electron.0",
+          "zlib": "1.3.2.1-motley",
+          "zstd": "1.6.0",
+          "electron": "44.5.1",
+          "chrome": "152.0.7977.130"
+        },
+        "arch": "x64",
+        "platform": "win32",
+        "osRelease": "10.0.26200",
+        "pid": 1656
+      },
+      "admitted": false,
+      "completed": true,
+      "phases": [
+        {
+          "name": "native-addon-load",
+          "at": 1790978253708,
+          "result": {
+            "loaded": true
+          },
+          "status": "completed",
+          "ms": 6
+        },
+        {
+          "name": "powershell-conpty-start",
+          "at": 1790978253715,
+          "result": {
+            "pid": 36672,
+            "args": [
+              "-NoLogo",
+              "-NoProfile"
+            ],
+            "inboxConpty": true
+          },
+          "status": "completed",
+          "ms": 383
+        },
+        {
+          "name": "unicode-roundtrip",
+          "at": 1790978254098,
+          "result": {
+            "expected": "U_șă😀漢字_E",
+            "outputExact": true
+          },
+          "status": "completed",
+          "ms": 32
+        },
+        {
+          "name": "native-resize",
+          "at": 1790978254130,
+          "result": {
+            "observed": "SIZE_IS_132x38"
+          },
+          "status": "completed",
+          "ms": 69
+        },
+        {
+          "name": "locked-completion-and-model-input-gate",
+          "at": 1790978254200,
+          "result": {
+            "completedWhileLocked": true,
+            "newInputRefused": true,
+            "productLockQualified": false
+          },
+          "status": "completed",
+          "ms": 1606
+        },
+        {
+          "name": "interactive-prompt-through-model-lock",
+          "at": 1790978255807,
+          "result": {
+            "inputWaitedUntilModelUnlock": true,
+            "productPinOrLockQualified": false
+          },
+          "status": "completed",
+          "ms": 611
+        },
+        {
+          "name": "bounded-pause-resume",
+          "at": 1790978256420,
+          "result": {
+            "pausedMs": 100,
+            "explicitProbeOnly": true,
+            "lockDoesNotPause": true
+          },
+          "status": "completed",
+          "ms": 150
+        },
+        {
+          "name": "60-second-flood-drains-with-model-view-locked",
+          "at": 1790978256570,
+          "result": {
+            "elapsedMinimumMs": 60000,
+            "utf8Received": 36670832,
+            "retainedBytes": 4194304,
+            "droppedBytes": 32765438,
+            "ptyPausedForViewLock": false,
+            "gateModelOnly": true
+          },
+          "status": "completed",
+          "ms": 60072
+        },
+        {
+          "name": "owned-child-stop-observation",
+          "at": 1790978316643,
+          "result": {
+            "rootExitObserved": true,
+            "childAliveAtStop": true,
+            "childGoneAfterFiniteFixtureDeadline": true,
+            "nativeJobGuardImplemented": false
+          },
+          "status": "completed",
+          "ms": 12259
+        }
+      ],
+      "childAliveAfterPtyExit": true,
+      "childEventuallyGone": true,
+      "cleanup": {
+        "rootExitObserved": true,
+        "allDescendantOwnershipQualified": false,
+        "nativeJobGuardImplemented": false
+      },
+      "lockGateIsModelOnly": true
+    },
+    "productTerminalFiles": [
+      "contracts.mjs",
+      "output.mjs"
+    ],
+    "nativeGuardExists": false,
+    "productDependencyInstalled": false,
+    "electron": {
+      "path": "node_modules/electron/dist/electron.exe",
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    }
+  },
+  "toolDiscovery": {
+    "at": "2026-10-07T12:05:06.5630006Z",
+    "commands": [
+      {
+        "name": "cl.exe",
+        "paths": []
+      },
+      {
+        "name": "clang-cl.exe",
+        "paths": []
+      },
+      {
+        "name": "lld-link.exe",
+        "paths": []
+      },
+      {
+        "name": "link.exe",
+        "paths": []
+      },
+      {
+        "name": "MSBuild.exe",
+        "paths": []
+      },
+      {
+        "name": "cmake.exe",
+        "paths": []
+      },
+      {
+        "name": "ninja.exe",
+        "paths": []
+      },
+      {
+        "name": "python.exe",
+        "paths": [
+          "C:\\Program Files\\Python312\\python.exe"
+        ]
+      }
+    ],
+    "paths": [
+      {
+        "path": "C:/Program Files/Microsoft Visual Studio/Installer/vswhere.exe",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files/Microsoft Visual Studio",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files (x86)/Microsoft Visual Studio",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files/LLVM",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files (x86)/Windows Kits/10",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files/Windows Kits/10",
+        "exists": false
+      },
+      {
+        "path": "C:/Program Files/dotnet/sdk",
+        "exists": false
+      },
+      {
+        "path": "C:/Windows/Microsoft.NET/Framework64/v4.0.30319/MSBuild.exe",
+        "exists": true
+      },
+      {
+        "path": "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
+        "exists": true
+      },
+      {
+        "path": "C:/Program Files/Python312/python.exe",
+        "exists": true
+      },
+      {
+        "path": "C:/Users/Taras/AppData/Local/node-gyp/Cache",
+        "exists": false
+      },
+      {
+        "path": "C:/Users/Taras/.electron-gyp",
+        "exists": false
+      },
+      {
+        "path": "D:/LLVM",
+        "exists": false
+      },
+      {
+        "path": "D:/BuildTools",
+        "exists": false
+      },
+      {
+        "path": "D:/SIREN",
+        "exists": false
+      }
+    ],
+    "registry": [
+      {
+        "key": "HKLM:/SOFTWARE/Microsoft/VisualStudio/SxS/VS7",
+        "exists": false
+      },
+      {
+        "key": "HKLM:/SOFTWARE/WOW6432Node/Microsoft/VisualStudio/SxS/VS7",
+        "exists": false
+      },
+      {
+        "key": "HKLM:/SOFTWARE/Microsoft/Windows Kits/Installed Roots",
+        "exists": false
+      },
+      {
+        "key": "HKLM:/SOFTWARE/WOW6432Node/Microsoft/Windows Kits/Installed Roots",
+        "exists": false
+      }
+    ],
+    "Droot": [
+      "SIREN_Archive",
+      "SteamLibrary"
+    ]
+  },
+  "staticFindings": [
+    {
+      "id": "TERMINAL-NATIVE-01",
+      "severity": "admission-blocker",
+      "summary": "No native terminal-ownership source/build/binary exists in inspected native tree; exact candidate child survives PTY Stop.",
+      "evidence": "host-result.json admitted:false, childAliveAfterPtyExit:true, nativeJobGuardImplemented:false. Phase completed means observation finished, not ownership passed."
+    },
+    {
+      "id": "TERMINAL-NATIVE-02",
+      "severity": "admission-blocker",
+      "summary": "Exact node-pty 1.1.0 conpty.cc source creates the shell before a later adoptSession can attach its session Job.",
+      "source": "evidence/terminal-candidate-dependencies/node_modules/node-pty/src/win/conpty.cc:393",
+      "facts": [
+        "Attribute list count1, PSEUDOCONSOLE only",
+        "CreateProcessW EXTENDED_STARTUPINFO_PRESENT|CREATE_UNICODE_ENVIRONMENT",
+        "No PROC_THREAD_ATTRIBUTE_JOB_LIST, CREATE_SUSPENDED or AssignProcessToJobObject in this source"
+      ],
+      "consequence": "Building a separate main-only guard without spawn integration does not solve the early descendant/per-session race. Input gating and -NoProfile are not atomic process-family admission."
+    },
+    {
+      "id": "TERMINAL-NATIVE-03",
+      "severity": "build-blocker",
+      "summary": "Fresh bounded discovery found no usable C/C++ compiler/linker, VC SDK or Electron header cache.",
+      "facts": [
+        "Python and npm node-gyp 12.3.0 exist",
+        "Two .NET Framework MSBuild executables exist; no VC toolchain found",
+        "Saved upstream metadata and digests are not acquired payloads",
+        "No installed product node-pty or @electron/rebuild identified; a rebuild wrapper would not supply missing compiler/CRT/SDK"
+      ]
+    },
+    {
+      "id": "TERMINAL-NATIVE-04",
+      "severity": "remaining-qualification",
+      "summary": "Candidate-only real shell evidence does not qualify product PIN/Lock, ownership, native packaging or multi-session budgets.",
+      "facts": [
+        "Lock gate explicitly model-only",
+        "All42 retained artifacts intact, but inventory includes unselected winpty/bundledConPTY artifacts",
+        "Native helper log AttachConsole failed remains retained",
+        "No product Terminal native/helper ASAR/unpacked contract exists"
+      ]
+    },
+    {
+      "id": "TERMINAL-NATIVE-05",
+      "severity": "documentation-drift",
+      "summary": "Old readiness prerequisites about single-window URL-only IPC and absent source authority are outdated.",
+      "facts": [
+        "Current WindowRegistry.caller validates registered webContents/mainFrame/exact URL/live policy/project/epoch scope",
+        "Current SourceRepository exists",
+        "Current registry roles exclude terminal; product terminal role, bridge and manager integration still required",
+        "Query-only process-reader helper does not provide Job handles, waits or termination authority"
+      ]
+    }
+  ],
+  "nextSteps": [
+    {
+      "order": 1,
+      "action": "Freeze isolated native-admission inputs and write an explicit creation/lifetime design delta before compiling.",
+      "acceptance": "Cover atomic session membership at shell creation and utility host pre-adoption interval; preserve current 42-member inventory and original failures. No renderer-supplied handles/env/argv or post-spawn adoption presented as atomic."
+    },
+    {
+      "order": 2,
+      "action": "Prepare concrete workspace-only C++ toolchain acquisition/build envelope, resolving publisher terms and exact selected payloads. Alternatively qualify an isolated build in the existing Windows CI lane.",
+      "acceptance": "Prior pinned LLVM 21.1.8+xwin 0.10.0+Microsoft CRT/SDK+Electron 44.5.1 header/node.lib metadata is available locally; verify actual acquired payload hashes/signatures/notices. Old1,530,664,915-byte envelope is historical conservative metadata, not a fresh resolver/download measurement. No installation/acquisition done in this preflight."
+    },
+    {
+      "order": 3,
+      "action": "Build a minimal guard addon using explicit compiler/CRT/SDK/Electron headers and Electron import library.",
+      "acceptance": "Record source/tool/header/sysroot/linker/PE import hashes and Windows delay-load hook; actual Electron 44.5.1 x64 load/ABI149 NAPI10 required, development-Node load insufficient."
+    },
+    {
+      "order": 4,
+      "action": "Implement isolated native host/session ownership and atomic spawn integration before new shell-family runs.",
+      "acceptance": "Main-owned non-inheritable kill-on-close root Job; held validated handles; native host/root waits; session Job membership before execution, e.g. reviewed pinned ConPTY native patch combining JOB_LIST and PSEUDOCONSOLE. Qualify host early helper interval separately; if unresolved, no admission. No breakaway/PID tree/name fallback. Guard-only post-spawn adopt is insufficient."
+    },
+    {
+      "order": 5,
+      "action": "Run finite actual containment matrix with independently fixed child identities and bounded external evidence.",
+      "acceptance": "Early child/grandchild/detached child, two-session Stop isolation, natural root exit, abrupt host/main loss with JS stalled, duplicated handle leak, nested-Job refusal, helper failure, identity/PID reuse and 10,000ms cleanup deadline. Require authoritative accounting plus held-handle exit proof; preserve all adverses."
+    },
+    {
+      "order": 6,
+      "action": "Define positive selected native/helper/license package inventory and repeat actual portable load/ownership tests.",
+      "acceptance": "Keep upstream helper relative paths, explicit ASAR unpack placement, hash every native/helper artifact; omit unselected bundled binaries or resolve their independent notices. Unicode/spaces copy without compiler runtime requirement. Unchanged ASAR alone is insufficient."
+    },
+    {
+      "order": 7,
+      "action": "Continue pure manager/policy/lease/output work independently, then integrate terminal role and ten typed IPC methods only after native admission.",
+      "acceptance": "Current registered-caller/source authority can be reused; explicit cwd/profile, readonly/PIN/epoch checks, own dock/satellite preload, synchronous Lock input fence and credited bounded output remain required. Fake transport tests never change native admitted:false."
+    }
+  ],
+  "observerErrors": [
+    {
+      "error": "TypeError: r.hostLogs?.filter is not a function",
+      "scope": "Inline read-only observer assumed array; retained hostLogs is string.",
+      "resolution": "Corrected only observer to string inspection; AttachConsole failure confirmed in unchanged original receipt. No native rerun or product change."
+    },
+    {
+      "error": "rg ../.github/workflows/*.yml: invalid filename syntax on Windows",
+      "scope": "Read-only glob observer only.",
+      "resolution": "Corrected to directory plus -g '*.yml'; inspected existing workflow labels and build recipe. No workflow launched or edited."
+    }
+  ],
+  "limitations": [
+    "Current discovery is scoped to PATH, explicit conventional tool/header locations, registry roots and D-drive top-level names; not an exhaustive scan of every arbitrary disk directory.",
+    "Prior metadata URLs/digests were read from retained local evidence. No live upstream version, availability, signature, license acceptance or new download verification is claimed.",
+    "Product source is being changed by ROOT for pure manager work concurrently; productTerminalFiles describes exact12:06Z snapshot, not a frozen final source manifest.",
+    "Retained native evidence belongs to the original agent; reviewer ran no GUI, shell-family fixture, compiled binary, downloaded code or package.",
+    "Spec/plan requirements are approved project contracts; native feasibility beyond the exact source observations remains unqualified.",
+    "No release, updater, account backend, full-application Lock or production Terminal approval."
+  ],
+  "existingWindowsCILane": {
+    "observed": "Existing windows-latest jobs, including Rust x86_64-pc-windows-msvc launcher build. This is a candidate native build lane, not actual C++/SDK qualification.",
+    "identities": [
+      {
+        "path": "../.github/workflows/launcher-verify.yml",
+        "bytes": 5204,
+        "sha256": "8a99b2ea173e9161c5efa376784271fb846b6dd19040dc44c1aca3be794812a6"
+      },
+      {
+        "path": "../.github/workflows/desktop-verify.yml",
+        "bytes": 46437,
+        "sha256": "2270f65d2cd4a393e7d2b2de87c5ff34b49b7ff222ef93b2da30bf2a9a531e67"
+      }
+    ],
+    "nextStep": "Inspect actual runner VC/SDK/clang/node-gyp/Electron-header identities, then use an isolated guard build job with complete provenance. Do not infer a current ready C++ compiler from the runner label or successful Rust recipe. No CI launched here.",
+    "advantage": "Could avoid the prior large local LLVM+xwin acquisition while still requiring native load/ownership qualification in the actual target Electron runtime."
+  }
+}

@@ -1,3 +1,4 @@
+import {createRenderAppearanceContract} from '../src/appearance/render.mjs';
 import {buildDiagramMetadata} from '../build/diagram-metadata.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,11 +16,12 @@ function fixture(){
  const get=id=>{const dynamic=created.find(node=>node.id===id);if(dynamic)return dynamic;if(!elements.has(id))elements.set(id,element());return elements.get(id);};
  const view={windowId:'12345678-1234-4234-8234-123456789abc',role:'diagram'},shelf=new Promise(resolve=>{shelfResolve=resolve;});
  const part=()=>({paint(){},commit:()=>true,isEditing:()=>false,pause(){},dispose(){}});
- const document={getElementById:get,createElement:element,body:{dataset:{}},documentElement:{style:{}}};
- const window={SirenPresentationAuthoring:{create:()=>({paint(){},reset(){},dispose(){}})},sirenDeckNavigation:{onAuthoring:()=>()=>{}},sirenWindow:{getView:async()=>({ok:true,view}),onReady(){}},sirenWindowDock:{getShelf:()=>{shelfCalls++;return shelf;}},addEventListener:(name,fn)=>events.set(name,fn),
+ const document={getElementById:get,createElement:element,body:{dataset:{}},documentElement:{style:{},dataset:{}}};
+ const window={SirenNativeDiagramStyle:{appearance:createRenderAppearanceContract()},SirenPresentationAuthoring:{create:()=>({paint(){},reset(){},dispose(){}})},sirenDeckNavigation:{onAuthoring:()=>()=>{}},sirenWindow:{getView:async()=>({ok:true,view}),onReady(){}},sirenWindowDock:{getShelf:()=>{shelfCalls++;return shelf;}},addEventListener:(name,fn)=>events.set(name,fn),
   SirenNativeDiagramStyleView:{create:part},SirenNativeDiagramBuildView:{create:part},SirenNativeGuidedView:{create:part},SirenNativeDiagramSession:{create:()=>({invalidate(){},refresh(){refreshes++;return Promise.resolve(true);},pause:async()=>false,resume(){},dispose(){}})},
   SirenNativeViewIdentity:{clear(){}},sirenDiagramRead:{},sirenDiagramEdit:{onReferenceChanged:()=>()=>{}},sirenViewControl:{onPrepare(fn){prepare=fn;},onResume(fn){resume=fn;}}};
  const context={window,document,setInterval:fn=>{intervals.push(fn);return 1;},clearInterval(){},clearTimeout(){},matchMedia:()=>({matches:false,addEventListener(){}}),ResizeObserver:class{observe(){}disconnect(){}}};
+ get('diagramTheme').value='system';
  runInNewContext(transfer,context);runInNewContext(annotations+'\n'+historyView+'\n'+walkthrough+'\n'+controller,context);
  return {window,document,get,view,events,intervals,prepare:()=>prepare(),resume:()=>resume(),refreshes:()=>refreshes,shelfCalls:()=>shelfCalls,resolve:value=>shelfResolve(value)};
 }

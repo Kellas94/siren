@@ -1,0 +1,88 @@
+{
+  "author": "/root",
+  "status": "LOCAL_SOURCE_QUALIFIED_PENDING_PORTABLE_COPY",
+  "createdUtc": "2026-10-07T13:06:40.840Z",
+  "baseCommit": "3aa96580d6e773e1232157e1ca12a098ca5e5615",
+  "releaseAdmitted": false,
+  "nativeTerminalExecutionAdmitted": false,
+  "fullSuite": {
+    "path": "evidence/workspace-surface/render-appearance-full-suite-2026-10-07T12-57-44.515Z/result.json",
+    "sha256": "1ba67a4034e8ff771ec39ce85a45fa6c380ca3abf9352ca473f5e5a27dac6640",
+    "tests": 1619,
+    "pass": 1619,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "capturedInputs": 649,
+    "changedDuringRun": [],
+    "laterFixtureAmendment": {
+      "path": "tests/native/workspace-appearance.mjs",
+      "beforeSha256": "359360527b48af58426e914606759223795cccd20975734d21935a4b8bcf0b93",
+      "currentSha256": "80267cd607b4a3b3f30ecb0627cd2b387f512629adfe79b819dcc4c17a46801b",
+      "change": "One admission wait before real Home theme click; original helper/deadline and assertions retained. Subsequent9case native and five-programme all-input capture qualify current fixture."
+    }
+  },
+  "independent": {
+    "path": "reviews/2026-10-07-render-appearance-independent.json",
+    "sha256": "0073ab62d1d3554f86520110dd8e943494ce25534a9e1bfc2ee0a8c8dbb89eb4",
+    "author": "/root/terminal_foundation_review",
+    "focusedTests": 18,
+    "separateProbes": 11,
+    "productInputsUnchanged": true
+  },
+  "fixtureIndependent": {
+    "path": "reviews/2026-10-07-appearance-fixture-independent.json",
+    "sha256": "ebc090deb1904fe76fa6d86d2502ff83346b04369d7b073a3927481a04028da5"
+  },
+  "native": {
+    "utility": {
+      "path": "evidence/render-appearance/2026-10-07T12-49-40.386Z/result.json",
+      "sha256": "3a2641ca7dc97778f6bec282003d454d5d6db7d8dd5dc39dc20f67c6870ae597",
+      "cases": 51,
+      "scope": "Actual Electron isolated SVG/PNG utilities and shared preview adapter; not native workspace navigation, copied package or physical monitors."
+    },
+    "workspace": {
+      "path": "evidence/workspace-appearance/2026-10-07T13-03-00.477Z/result.json",
+      "sha256": "9405d63463d2784195495e6d13cfa763e3f5441d27a5416ec4cd3e6cd021e027",
+      "cases": 9
+    },
+    "regressions": {
+      "path": "evidence/workspace-surface/appearance-native-regressions-2026-10-07T13-04-08.094Z/result.json",
+      "sha256": "73049b04131e62a55ad36c7838cd5f4b5533fc29ab532ee322cfa31caaa19cdb",
+      "programmes": 5,
+      "cases": 48,
+      "capturedInputs": 649,
+      "changedInputs": []
+    }
+  },
+  "sourceHashes": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "originalsPreserved": [
+    "evidence/workspace-surface/render-appearance-full-suite-2026-10-07T12-50-20.524Z/result.json",
+    "evidence/render-appearance/2026-10-07T12-42-43.890Z/result.json",
+    "evidence/render-appearance/2026-10-07T12-47-58.779Z/result.json",
+    "evidence/workspace-appearance/2026-10-07T12-51-08.178Z/result.json",
+    "evidence/workspace-appearance/2026-10-07T12-58-01.968Z/result.json",
+    "reviews/2026-10-07-diagram-layout-hosted-evidence.json"
+  ],
+  "limits": [
+    "No copied package or release qualification in this report",
+    "All39 palettes tested on flowchart; no claim of complete legacy family-specific rotating palettes/contrast-repair port",
+    "Current hosted original remains FAILURE; local original Diagram-edit pass does not close hosted pointer timeout root cause",
+    "No installed app replacement, physical monitor/IME or real Terminal admission"
+  ]
+}

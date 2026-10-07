@@ -60,7 +60,8 @@
   status.textContent=state.pending?'Saving diagram…':saveError||lastError||(readonly?'Read only · Mermaid 12.0.0 · Mermaid source colours retained':state.pending?'Saving diagram…':state.fenced?'Save refused · Your local diagram is retained':state.dirty?'Unsaved diagram · Preview only · Ctrl + S to save':'Diagram saved · Mermaid 12.0.0 · Other project data retained');
  }
  const media=matchMedia('(prefers-color-scheme: dark)'),dark=()=>theme.value==='dark'||theme.value==='system'&&media.matches;
- function appearance(){document.documentElement.style.colorScheme=theme.value==='system'?'light dark':theme.value;document.body.dataset.diagramTheme=dark()?'dark':'light';}
+ const renderAppearance=()=>window.SirenNativeDiagramStyle.appearance.resolve(document.documentElement.dataset.theme||theme.value,media.matches);
+ function appearance(){const capsule=renderAppearance(),palette=window.SirenNativeDiagramStyle.appearance.palette(capsule);document.documentElement.style.colorScheme=capsule.mode;document.body.dataset.diagramTheme=capsule.mode;viewport.style.background=palette.canvasBg;$('diagramPreviewTitle').style.color=palette.text;}
  function transform(){canvas.style.transform='translate('+panX+'px,'+panY+'px) scale('+zoom+')';$('diagramZoom').textContent=Math.round(zoom*100)+'%';walkthrough.updateGeometry();}
  function fit(){zoom=1;panX=panY=0;transform();}
  function sanitize(svg){
@@ -84,9 +85,9 @@
   render({source,diagram,token,isCurrent=()=>true}){const operation=renderQueue.catch(()=>{}).then(async()=>{
    if(paused||disposed||!isCurrent())throw Error('View paused');
    if(source.length>50000)throw Error('Preview budget');
-   appearance();const provenance=await window.SirenNativeDiagramStyle.prepare({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,theme:dark()?'dark':'default',maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']},source,diagram);
+   appearance();const provenance=await window.SirenNativeDiagramStyle.prepare({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']},source,diagram,renderAppearance());
    const target=document.createElement('div');host.append(target);
-   try{const result=await window.mermaid.render('nativeDiagram_'+token,source,target),svg=sanitize(result.svg),targets=window.SirenNativeDiagramStyle.apply(svg,diagram||{source},provenance);return {svg,targets,fontDeclared:provenance.fontDeclared===true,layout:provenance.layout};}finally{target.remove();}
+   try{const result=await window.mermaid.render('nativeDiagram_'+token,source,target),svg=sanitize(result.svg),targets=window.SirenNativeDiagramStyle.apply(svg,diagram||{source},provenance);return {svg,targets,fontDeclared:provenance.fontDeclared===true,layout:provenance.layout,surfaceBackground:provenance.surfaceBackground};}finally{target.remove();}
   });renderQueue=operation;return operation;},
   onSource(result){
    retireCatalogue();
@@ -97,7 +98,7 @@
    if(guidedMode)guidedView.reset();
    deckView.reset();
   },
-  onPreview({svg,targets,fontDeclared,layout}){canvas.replaceChildren(svg);styleView.setTargets(targets,{fontDeclared,layout});buildView.setTargets(targets);const title=$('diagramPreviewTitle'),diagram=draft?.getDiagram();title.textContent=diagram?.diagramTitleTouched?diagram.diagramTitle||'':'';title.hidden=!title.textContent;title.title=title.textContent;viewport.dataset.hasTitle=String(!title.hidden);transform();document.body.dataset.diagramRendered='true';walkthrough.bind(svg,targets);renderedSvg=svg;renderedTargets=targets;annotations.bind(svg,targets);lastError='';updateState();},
+  onPreview({svg,targets,fontDeclared,layout,surfaceBackground}){canvas.replaceChildren(svg);appearance();if(surfaceBackground)viewport.style.background=surfaceBackground;styleView.setTargets(targets,{fontDeclared,layout});buildView.setTargets(targets);const title=$('diagramPreviewTitle'),diagram=draft?.getDiagram();title.textContent=diagram?.diagramTitleTouched?diagram.diagramTitle||'':'';title.hidden=!title.textContent;title.title=title.textContent;viewport.dataset.hasTitle=String(!title.hidden);transform();document.body.dataset.diagramRendered='true';walkthrough.bind(svg,targets);renderedSvg=svg;renderedTargets=targets;annotations.bind(svg,targets);lastError='';updateState();},
   onError(){walkthrough.invalidate();annotations.invalidate();renderedSvg=null;renderedTargets=[];document.body.dataset.diagramRendered='false';lastError=sourceInput.value.length>50000?'Your source is retained. Preview supports up to 50,000 characters.':'The preview could not render. Your exact source and project data were retained.';updateState();}
  });
  const refresh=async()=>{

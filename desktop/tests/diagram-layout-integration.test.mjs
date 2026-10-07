@@ -8,7 +8,7 @@ import {normalizeDomainIntent} from '../src/windows/domain.mjs';
 const built=await buildDiagramStyle({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
 const draftCode=await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8');
 function adapter(config={},diagramType='flowchart-v2'){
- const calls=[],window={mermaid:{initialize:c=>calls.push(structuredClone(c)),parse:async()=>({config,diagramType}),mermaidAPI:{getDiagramFromText:async()=>({db:{getData:()=>({nodes:[]})}})}}};
+ const calls=[],window={mermaid:{initialize:c=>calls.push(structuredClone(c)),parse:async()=>({config,diagramType}),mermaidAPI:{getConfig:()=>({themeVariables:{background:'#ffffff'}}),getDiagramFromText:async()=>({db:{getData:()=>({nodes:[]})}})}}};
  vm.runInNewContext(built.script,{window});return{style:window.SirenNativeDiagramStyle,calls};
 }
 test('actual common render adapter applies explicit fallback without mutating source colours or automatic defaults',async()=>{

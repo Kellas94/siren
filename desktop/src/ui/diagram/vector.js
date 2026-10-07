@@ -22,19 +22,19 @@
   }
   return document.importNode(root,true);
  }
- function layout(root,diagram,dark){
+ function layout(root,diagram,palette){
   const box=(root.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);if(box.length!==4||!box.every(Number.isFinite)||box[2]<=0||box[3]<=0||box.some(value=>Math.abs(value)>1000000))fail();
   let [x,y,width,height]=box;const title=diagram.diagramTitleTouched&&typeof diagram.diagramTitle==='string'?diagram.diagramTitle:'';
-  if(title){if(title.length>512)fail();const text=document.createElementNS(NS,'text');text.textContent=title;text.setAttribute('font-family','system-ui,sans-serif');text.setAttribute('font-size','16');text.setAttribute('font-weight','600');text.setAttribute('text-anchor','middle');text.setAttribute('fill',dark?'#e9ebf3':'#20283a');text.setAttribute('x',String(x+width/2));text.setAttribute('y',String(y-18));root.append(text);const measured=text.getComputedTextLength();if(!Number.isFinite(measured))fail();if(measured+32>width){x-=(measured+32-width)/2;width=measured+32;}y-=44;height+=44;}
-  const background=document.createElementNS(NS,'rect');for(const [key,value]of Object.entries({x,y,width,height,fill:dark?'#202127':'#ffffff'}))background.setAttribute(key,String(value));root.insertBefore(background,root.firstChild);
+  if(title){if(title.length>512)fail();const text=document.createElementNS(NS,'text');text.textContent=title;text.setAttribute('font-family','system-ui,sans-serif');text.setAttribute('font-size','16');text.setAttribute('font-weight','600');text.setAttribute('text-anchor','middle');text.setAttribute('fill',palette.text);text.setAttribute('x',String(x+width/2));text.setAttribute('y',String(y-18));root.append(text);const measured=text.getComputedTextLength();if(!Number.isFinite(measured))fail();if(measured+32>width){x-=(measured+32-width)/2;width=measured+32;}y-=44;height+=44;}
+  const background=document.createElementNS(NS,'rect');for(const [key,value]of Object.entries({x,y,width,height,fill:palette.canvasBg}))background.setAttribute(key,String(value));root.insertBefore(background,root.firstChild);
   root.setAttribute('viewBox',[x,y,width,height].join(' '));root.setAttribute('width',String(Math.ceil(width)));root.setAttribute('height',String(Math.ceil(height)));root.setAttribute('preserveAspectRatio','xMidYMid meet');root.removeAttribute('style');root.setAttribute('role','img');
  }
  if(window.__SIREN_ELK)window.mermaid.registerLayoutLoaders(window.__SIREN_ELK);
  window.sirenRenderDiagramVector=async input=>{
   if(busy)fail();busy=true;try{
-   const diagram=input?.diagram,source=diagram?.source,dark=input?.appearance==='dark';if(!diagram||typeof source!=='string'||source.length>50000||!['light','dark'].includes(input.appearance))fail();host.replaceChildren();
-   const provenance=await window.SirenNativeDiagramStyle.prepare({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,theme:dark?'dark':'default',maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']},source,diagram);
-   const result=await window.mermaid.render('diagramVector',source,host),root=sanitize(result.svg);host.replaceChildren(root);window.SirenNativeDiagramStyle.apply(root,diagram,provenance);layout(root,diagram,dark);
+   const diagram=input?.diagram,source=diagram?.source,contract=window.SirenNativeDiagramStyle.appearance;if(!diagram||typeof source!=='string'||source.length>50000||input.renderAppearance===undefined&&!['light','dark'].includes(input.appearance))fail();const capsule=input.renderAppearance===undefined?contract.resolve(input.appearance,false):contract.read(input.renderAppearance),palette=contract.palette(capsule);host.replaceChildren();
+   const provenance=await window.SirenNativeDiagramStyle.prepare({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']},source,diagram,capsule);
+   const result=await window.mermaid.render('diagramVector',source,host),root=sanitize(result.svg);host.replaceChildren(root);window.SirenNativeDiagramStyle.apply(root,diagram,provenance);layout(root,diagram,{...palette,canvasBg:provenance.surfaceBackground??palette.canvasBg});
    const svg=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(svg).length>2*1024*1024)fail();return svg;
   }finally{host.replaceChildren();busy=false;}
  };

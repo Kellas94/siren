@@ -1,0 +1,1588 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "role": "Finite read-only original hosted trace; no GUI execution or causal product verdict",
+  "retainedUtc": "2026-10-07T12:37:34.811Z",
+  "status": "OBSERVED_INCOMPLETE_CONTROL_GESTURE_WITH_ROSTER_TIMEOUT_CAUSE_OPEN",
+  "runId": 37617733447,
+  "runConclusion": "failure",
+  "canonicalCommit": "34b970c2996c9931af46134fb10112fe81fa2d0b",
+  "inputsBefore": [
+    {
+      "path": "evidence/workspace-surface/ci37617733447/run-api-original.json",
+      "bytes": 14562,
+      "sha256": "270aa8739b0223a9aa35d94ee21698853956e1e55b4d14f080b723509f03f3d2"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/jobs-api-original.json",
+      "bytes": 25174,
+      "sha256": "f18eaf383219c5c104c934e09ff07b84499f540aff10f88ac268ec53a8df4201"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/desktop-native-diagrams-evidence-original/evidence/diagram-edit/2026-10-07T12-06-18.580Z/result.json",
+      "bytes": 56859,
+      "sha256": "0b373f9f8bfa8c157ffcbd7cae8d0d8742288b67f083d22b6ed04fc57eab0404"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-layout-hosted-evidence.json",
+      "bytes": 4129509,
+      "sha256": "ab06f88d763b9c32c4b2523a86866a3acd02a01f256b4e93ef6db3b50785011d"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-layout-hosted-evidence.md",
+      "bytes": 5561,
+      "sha256": "aafd583afd5afe85d5b06b4db009e22bf86b9c1b81ebed04b0cbd53ae74c8cd3"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/diagram-edit.mjs.canonical.txt",
+      "bytes": 18099,
+      "sha256": "3377ef347e9ab4ecb72211980042693fd44e73911de55e265c140b7dc2acc054"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/condition.mjs.canonical.txt",
+      "bytes": 648,
+      "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/drive.mjs.canonical.txt",
+      "bytes": 12270,
+      "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/attach-page.mjs.canonical.txt",
+      "bytes": 2333,
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/pointer.mjs.canonical.txt",
+      "bytes": 1764,
+      "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "evidence/workspace-surface/ci37617733447/run-api-original.json",
+      "bytes": 14562,
+      "sha256": "270aa8739b0223a9aa35d94ee21698853956e1e55b4d14f080b723509f03f3d2"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/jobs-api-original.json",
+      "bytes": 25174,
+      "sha256": "f18eaf383219c5c104c934e09ff07b84499f540aff10f88ac268ec53a8df4201"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/desktop-native-diagrams-evidence-original/evidence/diagram-edit/2026-10-07T12-06-18.580Z/result.json",
+      "bytes": 56859,
+      "sha256": "0b373f9f8bfa8c157ffcbd7cae8d0d8742288b67f083d22b6ed04fc57eab0404"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-layout-hosted-evidence.json",
+      "bytes": 4129509,
+      "sha256": "ab06f88d763b9c32c4b2523a86866a3acd02a01f256b4e93ef6db3b50785011d"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-layout-hosted-evidence.md",
+      "bytes": 5561,
+      "sha256": "aafd583afd5afe85d5b06b4db009e22bf86b9c1b81ebed04b0cbd53ae74c8cd3"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/diagram-edit.mjs.canonical.txt",
+      "bytes": 18099,
+      "sha256": "3377ef347e9ab4ecb72211980042693fd44e73911de55e265c140b7dc2acc054"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/condition.mjs.canonical.txt",
+      "bytes": 648,
+      "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/drive.mjs.canonical.txt",
+      "bytes": 12270,
+      "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/attach-page.mjs.canonical.txt",
+      "bytes": 2333,
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37617733447/pointer.mjs.canonical.txt",
+      "bytes": 1764,
+      "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d"
+    }
+  ],
+  "inputsUnchanged": 10,
+  "canonicalSourceBlobs": {
+    "diagram-edit.mjs": {
+      "path": "desktop/tests/native/diagram-edit.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57a9283067d427669eea79616740c0c313fbd3af",
+      "size": 18099,
+      "url": "https://api.github.com/repos/Kellas94/siren/git/blobs/57a9283067d427669eea79616740c0c313fbd3af"
+    },
+    "condition.mjs": {
+      "path": "desktop/tests/native/condition.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ad996a09515a49643a0de40fe4b1ed4e2dd93fd",
+      "size": 648,
+      "url": "https://api.github.com/repos/Kellas94/siren/git/blobs/5ad996a09515a49643a0de40fe4b1ed4e2dd93fd"
+    },
+    "drive.mjs": {
+      "path": "desktop/tests/native/drive.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "430f35e82e9162077524d7ba74a073b33df76f57",
+      "size": 12270,
+      "url": "https://api.github.com/repos/Kellas94/siren/git/blobs/430f35e82e9162077524d7ba74a073b33df76f57"
+    },
+    "attach-page.mjs": {
+      "path": "desktop/tests/native/attach-page.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8b86f8145638cea02f234b55f06931a1e26af48b",
+      "size": 2333,
+      "url": "https://api.github.com/repos/Kellas94/siren/git/blobs/8b86f8145638cea02f234b55f06931a1e26af48b"
+    },
+    "pointer.mjs": {
+      "path": "desktop/tests/native/pointer.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d270a367039b78a4fffb78b59551218e6a23524",
+      "size": 1764,
+      "url": "https://api.github.com/repos/Kellas94/siren/git/blobs/7d270a367039b78a4fffb78b59551218e6a23524"
+    }
+  },
+  "originalFailure": {
+    "path": "evidence/workspace-surface/ci37617733447/desktop-native-diagrams-evidence-original/evidence/diagram-edit/2026-10-07T12-06-18.580Z/result.json",
+    "status": "ADVERSE",
+    "cases": [
+      {
+        "name": "actual hit-tested Home and working admission; genuine frozen-validator source save preserves whole entity metadata, unrelated Docs/agents/releases and large Python source",
+        "ok": true
+      },
+      {
+        "name": "actual independent Ctrl+S save and stale same-diagram refusal; theme preview retains local source and failed all-view Lock restores genuine frames without overwrite",
+        "ok": true
+      }
+    ],
+    "error": {
+      "message": "UI condition not met: (async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.length>8})()",
+      "stack": "Error: UI condition not met: (async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.length>8})()\n    at waitForNativeCondition (file:///D:/a/siren/siren/desktop/tests/native/condition.mjs:11:8)\n    at async openWorking (file:///D:/a/siren/siren/desktop/tests/native/diagram-edit.mjs:53:4)\n    at async file:///D:/a/siren/siren/desktop/tests/native/diagram-edit.mjs:70:606"
+    },
+    "inputsUnchanged": true,
+    "ownedPid": 3484,
+    "openWorkingObservations": [
+      {
+        "callerWindowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+        "before": [
+          "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+          "518cc6cc-41d5-4126-b887-b97f6786b415",
+          "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+          "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+          "6f160d0d-90ac-49c3-ad66-4e892287b08a"
+        ],
+        "stages": [
+          {
+            "stage": "before-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": []
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "after-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "working-ready",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          }
+        ],
+        "openedWindowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e"
+      },
+      {
+        "callerWindowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+        "before": [
+          "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+          "518cc6cc-41d5-4126-b887-b97f6786b415",
+          "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+          "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+          "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+          "66ba18a7-9f0d-42b4-91a3-703560513a7e"
+        ],
+        "stages": [
+          {
+            "stage": "before-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "after-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 3977.7999999999884,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4012.9000000000233,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4013.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "working-ready",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 3977.7999999999884,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4012.9000000000233,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4013.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          }
+        ],
+        "openedWindowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb"
+      },
+      {
+        "callerWindowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+        "before": [
+          "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+          "518cc6cc-41d5-4126-b887-b97f6786b415",
+          "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+          "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+          "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+          "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+          "b001b0d7-9308-47f2-aec1-4407fac4f1cb"
+        ],
+        "stages": [
+          {
+            "stage": "before-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": []
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "after-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 4191,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4211.799999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4211.799999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "working-ready",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 4191,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4211.799999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4211.799999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                }
+              ]
+            }
+          }
+        ],
+        "openedWindowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f"
+      },
+      {
+        "callerWindowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+        "before": [
+          "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+          "518cc6cc-41d5-4126-b887-b97f6786b415",
+          "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+          "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+          "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+          "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+          "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+          "b103884f-84d4-41c1-b699-18b4ea3ea8bb"
+        ],
+        "stages": [
+          {
+            "stage": "before-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 632.90625,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 3977.7999999999884,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4012.9000000000233,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4013.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b103884f-84d4-41c1-b699-18b4ea3ea8bb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "after-click",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 3977.7999999999884,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4012.9000000000233,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4013.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 14875.299999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b103884f-84d4-41c1-b699-18b4ea3ea8bb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          },
+          {
+            "stage": "failure",
+            "page": {
+              "url": "siren://app/windows/diagram.html?windowId=518cc6cc-41d5-4126-b887-b97f6786b415",
+              "bodyInert": false,
+              "visibility": "",
+              "ready": "true",
+              "readonly": "true",
+              "button": {
+                "hidden": false,
+                "disabled": false,
+                "rectangle": {
+                  "x": 493,
+                  "y": 66,
+                  "width": 118.734375,
+                  "height": 32.1875
+                },
+                "hit": true,
+                "cover": "openWorkingDiagram"
+              },
+              "status": "Read only · Mermaid 12.0.0 · Mermaid source colours retained",
+              "events": [
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 2871.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 2892,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 3977.7999999999884,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerup",
+                  "isTrusted": true,
+                  "at": 4012.9000000000233,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "click",
+                  "isTrusted": true,
+                  "at": 4013.0999999999767,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                },
+                {
+                  "type": "pointerdown",
+                  "isTrusted": true,
+                  "at": 14875.299999999988,
+                  "bodyInert": false,
+                  "visibility": "",
+                  "hidden": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "roster": {
+              "ok": true,
+              "views": [
+                {
+                  "windowId": "7f3e3e45-cb42-4934-a7b3-b639fc382c59",
+                  "role": "workspace",
+                  "entityId": null,
+                  "state": "active"
+                },
+                {
+                  "windowId": "518cc6cc-41d5-4126-b887-b97f6786b415",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d7bb4377-6313-46d8-a7db-f3c2ab51aeb1",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "e8d06f17-af8c-428f-bd1f-2ffeb0b7c48a",
+                  "role": "code",
+                  "entityId": "1d6392db-9460-403a-893b-845b7610b5ad",
+                  "state": "active"
+                },
+                {
+                  "windowId": "6f160d0d-90ac-49c3-ad66-4e892287b08a",
+                  "role": "docs",
+                  "entityId": "doc-a",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                },
+                {
+                  "windowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+                  "role": "diagram",
+                  "entityId": "other",
+                  "state": "active"
+                },
+                {
+                  "windowId": "b103884f-84d4-41c1-b699-18b4ea3ea8bb",
+                  "role": "diagram",
+                  "entityId": "flow",
+                  "state": "active"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "trace": {
+    "callSite": "diagram-edit.mjs:70 after durable Close/save, reopen reader working copy",
+    "waitSite": "openWorking:53 via driver.waitFor/condition:11",
+    "oracle": "r.ok && r.views.length > before.length, before.length=8; no hardcoded total or count ceiling in this predicate",
+    "successfulFirstOpens": [
+      {
+        "attempt": 1,
+        "before": 5,
+        "openedWindowId": "66ba18a7-9f0d-42b4-91a3-703560513a7e",
+        "after": 6
+      },
+      {
+        "attempt": 2,
+        "before": 6,
+        "openedWindowId": "b001b0d7-9308-47f2-aec1-4407fac4f1cb",
+        "after": 7
+      },
+      {
+        "attempt": 3,
+        "before": 7,
+        "openedWindowId": "d007f078-7d1f-4cd4-b92d-e654f34b046f",
+        "after": 8
+      }
+    ],
+    "lastAttempt": {
+      "beforeCount": 8,
+      "afterClickCount": 8,
+      "failureCount": 8,
+      "buttonEnabled": true,
+      "visible": true,
+      "hitTested": true,
+      "bodyInert": false,
+      "beforeRectangle": {
+        "x": 632.90625,
+        "y": 66,
+        "width": 118.734375,
+        "height": 32.1875
+      },
+      "afterRectangle": {
+        "x": 493,
+        "y": 66,
+        "width": 118.734375,
+        "height": 32.1875
+      },
+      "failureRectangle": {
+        "x": 493,
+        "y": 66,
+        "width": 118.734375,
+        "height": 32.1875
+      },
+      "newEvents": [
+        {
+          "type": "pointerdown",
+          "isTrusted": true,
+          "at": 14875.299999999988,
+          "bodyInert": false,
+          "visibility": "",
+          "hidden": false,
+          "disabled": false
+        }
+      ]
+    },
+    "deadlines": {
+      "driverPredicateNominalMs": 30000,
+      "driverObservationPauseMs": 100,
+      "satelliteResponseNominalMs": 20000,
+      "satelliteResponsePollMs": 20,
+      "outerDriverCdpResponseMs": 20000,
+      "pointerStability": "Two requestAnimationFrame observations, allgeometry deltas<0.1px; finite running/pending ancestor animation blocks admission",
+      "limit": "These are source deadlines; per-evaluate response latency and retained-data lack of evaluation timestamps do not establish exact30s elapsed walltime. No mutation retry or additional allowance is present."
+    }
+  },
+  "supportedConclusions": [
+    "Original incomplete control event sequence is observed: only new trusted pointerdown, no new pointerup/click in document capture ring; roster remains8",
+    "Before-to-after snapshots also show buttonx632.90625→493 with y/width/height unchanged; precise movement time is not recorded",
+    "Canonical attach helper sends one pressed and one released CDP command to the same measured coordinate with buttonleft and no retry; command responses do not prove renderer delivered an element click",
+    "Source short-term geometry stability check does not prove position stayed fixed throughout press/release; the original timeout must not be replaced by a successful rerun"
+  ],
+  "unproven": [
+    "No retained original press/release client coordinates or focus/capture event timeline establishes whether release landed outside control",
+    "No original native OS focus/PID focus receipt proves or refutes native focus effects",
+    "No proof the count of8 is a product window cap, IPC refusal, durable save failure, or newlayout product regression",
+    "No same-cause inference for historicalpan/Save-to-Attach; source/GUI followup required for causal correction"
+  ],
+  "nextDiagnostic": "If ROOT authorizes a separate diagnostic, retain exact sent CDP coordinates/request responses, passive pointerdown/up/click clientcoords/target/time and nativePIDfocus. Preserve all original assertions/deadlines and this ADVERSE source; diagnose before any product change."
+}

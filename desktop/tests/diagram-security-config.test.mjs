@@ -12,7 +12,8 @@ test('native Mermaid protects its security policy and finite renderer budgets fr
  const historyView=await readFile(new URL('../src/ui/diagram/history-view.js',import.meta.url),'utf8');
  const annotations=buildDiagramMetadata()+'\n'+await readFile(new URL('../src/ui/diagram/annotations.js',import.meta.url),'utf8');
  const walkthrough=await readFile(new URL('../src/ui/diagram/walkthrough.js',import.meta.url),'utf8');
- runInNewContext(annotations+'\n'+guided.script+'\n'+guidedView+'\n'+styling.script+'\n'+historyView+'\n'+walkthrough+'\n'+code,{window,document:{getElementById:get,createElement:element,documentElement:{style:{}},body:{dataset:{}}},matchMedia:()=>({matches:false,addEventListener(){}}),ResizeObserver:class{observe(){}disconnect(){}}});
+ get('diagramTheme').value='system';
+ runInNewContext(annotations+'\n'+guided.script+'\n'+guidedView+'\n'+styling.script+'\n'+historyView+'\n'+walkthrough+'\n'+code,{window,document:{getElementById:get,createElement:element,documentElement:{style:{},dataset:{}},body:{dataset:{}}},matchMedia:()=>({matches:false,addEventListener(){}}),ResizeObserver:class{observe(){}disconnect(){}}});
  await assert.rejects(adapters.render({source:'%%{init:{"secure":[],"maxEdges":999999,"securityLevel":"loose"}}%%\nflowchart TD\nA-->B',token:1}));
  assert.equal(config.securityLevel,'strict');assert.equal(config.startOnLoad,false);assert.equal(config.maxTextSize,50000);assert.equal(config.maxEdges,500);assert.equal(config.htmlLabels,false);
  for(const key of ['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering'])assert.equal(config.secure.includes(key),true,key+' must be a protected native policy field');

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen } from 'electron';
+import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen, nativeTheme } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { join, basename } from 'node:path';
@@ -13,6 +13,7 @@ import { runAfterWorkspaceLoad } from './windows/readiness.mjs';
 import { WindowRegistry } from './windows/registry.mjs';
 import {invokeDock} from './windows/dock-ipc.mjs';
 import {AppearanceStore} from './appearance/store.mjs';
+import {createRenderAppearanceContract} from './appearance/render.mjs';
 import {invokeShell} from './appearance/ipc.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
@@ -532,7 +533,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
 });
 const presentationDecks=new NativePresentationDecks({registry:windowRegistry,snapshotFor:grant=>projects.readProject(grant.projectId)});
 const createPresentation=()=>new PresentationSession({registry:windowRegistry,loadDeck:(grant,scope)=>presentationDecks.read(grant,scope),
- renderPublicSlide:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Presentation retired');return renderPresentationPreview({BrowserWindow,entryPath:join(rendererRoot,'presentation-render.html'),entrySha256:build.presentationRender?.entrySha256,input,scope});},
+ renderPublicSlide:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));const renderAppearance=await nativeRenderAppearance(scope);if(!scope.isCurrent())throw Error('Presentation retired');return renderPresentationPreview({BrowserWindow,entryPath:join(rendererRoot,'presentation-render.html'),entrySha256:build.presentationRender?.entrySha256,input:{...input,context:{...input.context,renderAppearance}},scope});},
  sendFrame:(grant,frame)=>{const event=windowRegistry.eventFor(grant);if(!event)return false;event.sender.send('siren:presentation-frame',frame);return true;},
 });
 let presentationSession=createPresentation();
@@ -560,7 +561,7 @@ const docsReferences=new NativeDocsReferences({registry:windowRegistry,owner:wor
  show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Reference window unavailable');view.webContents.send('siren:view-ready');view.show();},
 });
 const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:workspaceOwner,reads:diagramReads,projects,
- render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input,scope});},
+ render:async(input,scope)=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));const renderAppearance=await nativeRenderAppearance(scope);if(!scope.isCurrent())throw Error('Diagram export retired');return renderDiagramVector({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector?.entrySha256,input:{...input,renderAppearance},scope});},
  reveal:path=>shell.showItemInFolder(path),
 });
 const docsExports=new NativeDocsExports({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,projects,reveal:path=>shell.showItemInFolder(path)});
@@ -1098,6 +1099,13 @@ ipcMain.handle('siren:window-dock',(event,method,payload)=>{
   return result;
 });
 const appearanceStore=new AppearanceStore(dataRoot,{canWrite:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier,onDiagnostic:event=>console.warn('SIREN_APPEARANCE_FAILURE',JSON.stringify(event))});
+const nativeAppearanceContract=createRenderAppearanceContract();
+async function nativeRenderAppearance(scope){
+ if(!scope.isCurrent())throw Error('Render retired');const preference=await appearanceStore.read();if(!scope.isCurrent())throw Error('Render retired');
+ // Match chrome's read-only recovery fallback; never overwrite a damaged preference.
+ if(!preference.ok&&preference.code!=='INVALID_APPEARANCE')throw Error('Appearance unavailable');
+ return nativeAppearanceContract.resolve(preference.ok?preference.theme:'system',nativeTheme.shouldUseDarkColors);
+}
 ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,payload,store:appearanceStore,
  context:()=>({projectName:snapshot?.project?.label||'Local workspace'}),
  capture:own=>{

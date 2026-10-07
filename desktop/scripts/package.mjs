@@ -10,7 +10,7 @@ import {buildProcessReader} from './build-process-reader.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
-  ...['contracts','store','ipc'].map(n=>`src/appearance/${n}.mjs`),
+  ...['contracts','store','ipc','render'].map(n=>`src/appearance/${n}.mjs`),
   ...['access','credentials','local-pin','pin-worker','pin-protection','pin-protocol','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','budgets','domain-validation','import-admission','import-status','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','native-process','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),

@@ -4,15 +4,25 @@ function styleTargets(root,appearance){
   if(matches.length){for(const group of matches)group.setAttribute('data-native-node-id',id);result.push({id,groups:matches,protected:{...appearance.global,...appearance.nodes.get(id)}});}
  }return result;
 }
-async function prepareStyle(config,source,diagram={}){
+function safeSurfaceColour(value){
+ if(typeof value!=='string'||value.length>80||['inherit','initial','unset','revert','revertlayer','currentcolor'].includes(value.toLowerCase()))return null;
+ const hex=/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(value);
+ if(!hex&&!/^(?:(?:rgb|hsl)a?\([\d.,%\s+-]+\)|[a-z]{1,24})$/i.test(value))return null;
+ // Actual renderers validate with Chromium. A non-browser test can prove only
+ // the exact hex grammar; unknown names/functions never become a surface.
+ return (typeof CSS!=='undefined'?CSS.supports('color',value):hex)?value:null;
+}
+async function prepareStyle(config,source,diagram={},appearanceDescriptor){
  // The native render queue serializes this stateful Mermaid adapter. Keep only
  // the current bounded render's provenance, never a source history/cache.
+ if(appearanceDescriptor!==undefined)config={...config,...renderAppearance.config(appearanceDescriptor)};
  const typography={};if(diagram.fontFamily&&ALLOWED_FONTS.includes(diagram.fontFamily))typography.fontFamily=fontStack(diagram.fontFamily);if(Number.isFinite(diagram.fontSize)&&diagram.fontSize>=10&&diagram.fontSize<=28)typography.fontSize=diagram.fontSize+'px';
  const chosenConfig={...config,...(typography.fontFamily?{fontFamily:typography.fontFamily}:{}),...(Object.keys(typography).length?{themeVariables:{...config.themeVariables,...typography}}:{})};
  window.mermaid.initialize(chosenConfig);const parsedLayout=await window.mermaid.parse(source),layout=nativeLayout.resolve(parsedLayout?.config,parsedLayout?.diagramType,diagram.sirenNativeLayoutEngine);
  sourceAppearance.clear();await configureMermaidSource(layout.layout?{...chosenConfig,layout:layout.layout}:chosenConfig,source);const appearance=sourceAppearance.get(source)||{nodes:new Map()};sourceAppearance.clear();
  const parsed=await window.mermaid.parse(source),declared=parsed?.config||{},keys={'flowchart-v2':'flowchart',flowchart:'flowchart',classDiagram:'class','classDiagram-v2':'class',stateDiagram:'state','stateDiagram-v2':'state',sequence:'sequence',er:'er',requirement:'requirement'},scoped=declared[keys[parsed.diagramType]||parsed.diagramType]||{},variables={...declared.themeVariables,...scoped.themeVariables},chosen=typeof declared.theme==='string'||typeof scoped.theme==='string';
- return {...appearance,layout,global:{fill:chosen||['primaryColor','secondaryColor','tertiaryColor','mainBkg','noteBkg','actorBkg','background'].some(key=>Object.hasOwn(variables,key)),border:chosen||['primaryBorderColor','secondaryBorderColor','nodeBorder','actorBorder'].some(key=>Object.hasOwn(variables,key)),text:chosen||Object.keys(variables).some(key=>/textcolor$/i.test(key))},fontDeclared:[declared,scoped,variables].some(bag=>['fontFamily','fontSize','fontWeight'].some(key=>Object.hasOwn(bag,key)))};
+ const surfaceBackground=chosen||Object.hasOwn(variables,'background')?safeSurfaceColour(variables.background??window.mermaid.mermaidAPI.getConfig().themeVariables?.background):null;
+ return {...appearance,layout,surfaceBackground,global:{fill:chosen||['primaryColor','secondaryColor','tertiaryColor','mainBkg','noteBkg','actorBkg','background'].some(key=>Object.hasOwn(variables,key)),border:chosen||['primaryBorderColor','secondaryBorderColor','nodeBorder','actorBorder'].some(key=>Object.hasOwn(variables,key)),text:chosen||Object.keys(variables).some(key=>/textcolor$/i.test(key))},fontDeclared:[declared,scoped,variables].some(bag=>['fontFamily','fontSize','fontWeight'].some(key=>Object.hasOwn(bag,key)))};
 }
 function applyStyle(root,diagram,appearance){
  const targets=styleTargets(root,appearance),styles=sanitizeNodeStyles(diagram.nodeStyles||{}),family=diagram.fontFamily?fontStack(diagram.fontFamily):null,size=diagram.fontSize?clamp(Number(diagram.fontSize),10,28):null,weight=diagram.fontWeight?normalizeFontWeight(diagram.fontWeight):null;
@@ -27,4 +37,4 @@ function applyStyle(root,diagram,appearance){
  }
  return targets;
 }
-window.SirenNativeDiagramStyle=Object.freeze({prepare:prepareStyle,apply:applyStyle,fonts:Object.freeze([...ALLOWED_FONTS]),weights:Object.freeze([...ALLOWED_WEIGHTS])});
+window.SirenNativeDiagramStyle=Object.freeze({prepare:prepareStyle,apply:applyStyle,appearance:renderAppearance,fonts:Object.freeze([...ALLOWED_FONTS]),weights:Object.freeze([...ALLOWED_WEIGHTS])});

@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {buildDiagramStyle} from '../build/diagram-style.mjs';
 const built=await buildDiagramStyle({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
+test('surface provenance keeps exact source hex colours and refuses invalid CSS or contextual/resource values',async()=>{
+ for(const value of ['#123','#1234','#123456','#12345678']){const s=fixture({themeVariables:{background:value}}),p=await s.prepare({},'exact');assert.equal(p.surfaceBackground,value);}
+ for(const value of ['#12345','#1234567','notacolour','currentcolor','inherit','url(https://bad)','rgb(garbage)']){const s=fixture({themeVariables:{background:value}}),p=await s.prepare({},'exact');assert.equal(p.surfaceBackground,null,value);}
+});
 function fixture(config={},nodes){let current={};const window={mermaid:{initialize(value){current=value;},parse:async()=>({diagramType:'flowchart',config}),mermaidAPI:{getConfig:()=>({themeVariables:{fontWeight:current.themeVariables?.fontWeight??400}}),getDiagramFromText:async()=>({db:{getData:()=>({nodes:nodes??[{id:'A',cssStyles:['fill:#ff3366;color:#ffffff']},{id:'A-1',cssStyles:[]},{id:'B',cssStyles:[]}]})}})}}};vm.runInNewContext(built.script,{window});return window.SirenNativeDiagramStyle;}
 class Element{
  constructor(attrs={}){this.attrs={...attrs};this.values={};this.style={setProperty:(key,value)=>this.values[key]=value};}
