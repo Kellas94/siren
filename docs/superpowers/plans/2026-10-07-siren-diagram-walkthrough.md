@@ -61,7 +61,8 @@ Files: create `desktop/tests/native/diagram-walkthrough.mjs`; retain distinct au
 - [x] Fresh bounded build, appropriate tests/full suite and input hashes; source committed884fc7a3578fa65d61b99b9d80efdc2622aff2b8 only after actual scoped qualification.
 - [x] Separate portable preview, exact296 admitted files/helper/runtime, unchanged original native Walkthrough8 plus history/typography8 and shell/core regression checks. Capacity/performance/physical-UX limits retained in owner qualification.
 - [x] Retain owner qualification and genuine authors. Previewcdea1cbf ASAR54367258B/5041e57138ce9d56360afac8d1e65bdb5c705fe0a12a520992e2134fe337de07; all copied inputs unchanged. Owner JSON/MD records full1375, actual development8/copied8 and original adverse provenance.
-- [ ] Update resume points and guarded canonical sync: local base remains4f8d4a0e57425be4f16a6df325b1ac40c2a4b630 against canonicaldf7acd653ce431480d6001b7e920a8e1b8d142c4/tree34664e8919cf1417c8799f1499c44c59a372a3ef/1776blobs. Original hosted Code final evidence is preserved; new hosted verdict remains pending.
+- [x] Guarded canonical sync complete: local checkpoint073760c8620eb8a1a816ce4f0207bdfd15bb1a30 maps to canonicald0279126950975734b64580eede3a1d81d7df320/treeb04cb5bb80cd8af778ef3b8225805dff90582db5/1806blobs. Original hosted Code final evidence preserved. PR2 remains draft, main unchanged; integration8d5d6938508b67094e9eeabcdf4f0ddd33d782ac same tree. New hosted37559978738 IN_PROGRESS at dispatch; final verdict pending, not covered by this checkbox.
+- [ ] Retain actual new hosted FINAL and owner readback; do not replace original adverse verdicts.
 
 Not covered: node metadata Inspector/Filters, changing diagram semantics, arbitrary grammar support, public presentation editing, the historical Save mis-target cause, complete decorative parity, source-size maximum or physical-monitor certification.
 

@@ -1,0 +1,11 @@
+# Diagram preview space — owner observation and correction
+
+Author and actual native executor: /root. Diagnostic driver author: /root/disk_inventory. This is owner evidence, not an independent approval.
+
+One passive original-scenario run on qualified preview884/a531 produced ADVERSE2 at evidence/diagram-build/2026-10-07T02-02-58.779Z/result.json. It did **not** reproduce the historical Save→Attach incident: requested point563.953125/82.09375 reached trusted Save events, Save x516.171875 stayed stable, Attach started690.921875, and exact saved version2/dirtyfalse/project/source checks passed. The subsequent unchanged oracle at original line55:309 requires preview height>60% of innerHeight; the944x575 screenshot shows the always-visible pan hint on its own toolbar row and preview about340px below345px threshold. Original adverse, passive observations and package identities are preserved unchanged.
+
+The narrow correction changes only src/ui/diagram/window.html f435a729→358eafa3: move the same hint outside the toolbar flow into viewport aria-describedby text and a hover title. A clipped span preserves the accessible description; no command, handler or source validation changed. Original HTML snapshot and change receipt are retained separately.
+
+Existing18 focused controller/Walkthrough/Build/history tests passed, as observed in actual task tool output; no reconstructed test log is created. The original uninstrumented Diagram Build harness c3d36cb3 then completed all7 actual development cases at evidence/diagram-build/2026-10-07T02-06-06.508Z/result.json, inputs unchanged. The original viewport>60% assertion and source/project oracles remain intact. Fresh generated Diagram6acc234a288b62c66ed12734cd7aeaa8e1ce2ab42b81412d66f729fa69cbde80; Code/Home/vector unchanged.
+
+Genuine independent analysisb599c193 separately confirms the adverse interpretation and narrow proposal; it does not claim to have executed the corrected native run. The prior1375 full suite qualifies the earlier source. Owner comparison proves HTML is its only captured input difference; it is not relabeled a new full-suite run. Separate corrected package qualification follows. Hosted37559978738 remains on older canonicald027/a531. Original37552477003 Save→Attach root cause stays OPEN; no retries, relaxed threshold, release or installed-app replacement occurred.
