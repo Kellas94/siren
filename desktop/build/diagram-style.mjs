@@ -13,7 +13,7 @@ export async function buildDiagramStyle({baselinePath}={}){
  // Carry Mermaid's real semantic DOM identity alongside its colour flags.
  // Strict rendering prefixes these IDs with the root render ID; never infer
  // a block from a substring that could alias another user's node name.
- const marker='nodes.set(String(id), flags(styles));';if(functions[0].split(marker).length!==2)throw Error('DIAGRAM_STYLE_IDENTITY_REFUSED');functions[0]=functions[0].replace(marker,'nodes.set(String(id), {...flags(styles),domId:typeof node.domId==="string"?node.domId:null});');
+ const marker='nodes.set(String(id), flags(styles));';if(functions[0].split(marker).length!==2)throw Error('DIAGRAM_STYLE_IDENTITY_REFUSED');functions[0]=functions[0].replace(marker,String.raw`nodes.set(String(id), {...flags(styles),font:styles.some(style=>/(?:^|[;,])\s*font(?:-family|-size|-weight)?\s*:/i.test(style)),domId:typeof node.domId==="string"?node.domId:null});`);
  const adapter=await readFile(new URL('../src/ui/diagram/style.js',import.meta.url),'utf8');
  const script='(() => {\n"use strict";\nconst sourceAppearance=new Map(),clamp=(value,min,max)=>Math.max(min,Math.min(max,value));\n'+constants.join('\n')+'\n'+functions.join('\n')+'\n'+adapter+'\n})();';
  if(/<\/script/i.test(script))throw Error('DIAGRAM_STYLE_SCRIPT_REFUSED');new Script(script);return Object.freeze({script,sha256:createHash('sha256').update(script).digest('hex'),baselineSha256:baselineHash});

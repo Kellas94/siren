@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
 const transfer=await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8');
 const controller=await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8');
+const historyView=await readFile(new URL('../src/ui/diagram/history-view.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(){
  const elements=new Map(),created=[],events=new Map(),intervals=[];let shelfResolve,shelfCalls=0,refreshes=0,prepare,resume;
@@ -16,7 +17,7 @@ function fixture(){
   SirenNativeDiagramStyleView:{create:part},SirenNativeDiagramBuildView:{create:part},SirenNativeGuidedView:{create:part},SirenNativeDiagramSession:{create:()=>({refresh(){refreshes++;return Promise.resolve(true);},pause:async()=>false,resume(){},dispose(){}})},
   SirenNativeViewIdentity:{clear(){}},sirenDiagramRead:{},sirenDiagramEdit:{onReferenceChanged:()=>()=>{}},sirenViewControl:{onPrepare(fn){prepare=fn;},onResume(fn){resume=fn;}}};
  const context={window,document,setInterval:fn=>{intervals.push(fn);return 1;},clearInterval(){},clearTimeout(){},matchMedia:()=>({matches:false,addEventListener(){}})};
- runInNewContext(transfer,context);runInNewContext(controller,context);
+ runInNewContext(transfer,context);runInNewContext(historyView+'\n'+controller,context);
  return {window,document,get,view,events,intervals,prepare:()=>prepare(),resume:()=>resume(),refreshes:()=>refreshes,shelfCalls:()=>shelfCalls,resolve:value=>shelfResolve(value)};
 }
 test('actual Diagram controller waits for its native placement before reading or exposing content',async()=>{

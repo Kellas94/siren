@@ -6,6 +6,7 @@ import { parse } from 'parse5';
 import { readOwnedBytes } from '../src/projects/io.mjs';
 import {buildPresentationEdits} from './document-context.mjs';
 import {bundleMetadataHelper} from './source-bundle-metadata.mjs';
+import {validateNativeNodeStyles} from './native-node-style-validation.mjs';
 
 const baselineHash='5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -61,6 +62,7 @@ export const domainHelper = `
           if(domain!=='diagram'||action!=='update-style')return false;
           const validators={nodeStyles:sanitizeNodeStyles,styleClasses:sanitizeStyleClasses,nodeClasses:sanitizeNodeClasses,edgeStyles:sanitizeEdgeStyles,edgeRoutes:sanitizeEdgeRoutes,nodeMetadata:sanitizeNodeMetadata,comments:sanitizeComments,layout:sanitizeLayout,view:sanitizeView,links:sanitizeNodeLinks,icons:sanitizeNodeIcons,rules:sanitizeFormatRules,numbering:sanitizeNumbering,legend:sanitizeLegend,gitBranchColours:sanitizeGitBranchColours,presentation:sanitizePresentation,fontFamily:normalizeFontFamily,fontWeight:normalizeFontWeight};
           return Object.entries(payload).every(([key,value])=>{
+            if(key==='nodeStyles')return (${validateNativeNodeStyles.toString()})(value,before?.nodeStyles,sanitizeNodeStyles);
             if(key==='fontSize')return Number.isFinite(value)&&value>=10&&value<=28;
             if(key==='diagramTitle')return typeof value==='string'&&value.length<=300;
             if(key==='diagramTitleTouched')return typeof value==='boolean';

@@ -36,11 +36,11 @@
 
 **Interfaces:** Consume existing `getDiagram/getStatus/setSource/setStyle/save/flushView`. Produce `getHistory()` returning finite `{index,entries:[{id,label}],bytes,limitBytes,limitStates}`, `undo()`, `redo()`, `restoreHistory(id)` returning existing `{ok,code}` convention. Extend `setSource(value,{label='Edit Mermaid',coalesce=false}={})` and `setStyle(input,{label='Change style'}={})`; no renderer bridge expansion.
 
-- [ ] Write tests for complete source/style restore across Save, no-op and redo truncation, bounded UTF8 retention, fences and current-version CAS, separate presentation edits, and newer external adoption reset.
-- [ ] Run `node --test tests/diagram-history.test.mjs`; watch missing-method RED.
-- [ ] Implement snapshots of admitted style values/source; compute retained UTF8 budget; discard old states without altering current work. Derive style patch relative to the current acknowledged diagram when restoring. Save seals coalescing, not CAS history rewind.
-- [ ] Run history, draft and presentation-draft tests; require zero failures and exact unchanged unrelated fields.
-- [ ] Commit the independently tested draft deliverable locally.
+- [x] Write tests for complete source/style restore across Save, no-op and redo truncation, bounded UTF8 retention, fences and current-version CAS, separate presentation edits, and newer external adoption reset.
+- [x] Run `node --test tests/diagram-history.test.mjs`; watch missing-method RED.
+- [x] Implement snapshots of admitted style values/source; compute retained UTF8 budget; discard old states without altering current work. Derive style patch relative to the current acknowledged diagram when restoring. Save seals coalescing, not CAS history rewind.
+- [x] Run history, draft and presentation-draft tests; require zero failures and exact unchanged unrelated fields.
+- [x] Commit the independently tested draft deliverable locally.
 
 ### Task2: Compact history commands and keyboard/lifecycle integration
 
@@ -48,10 +48,10 @@
 
 **Interfaces:** Consume Task1 history methods and current Guided/Build/Style `commit/isEditing`. History UI uses the same guarded command path for Undo/Redo/step jump, updates source/Guided/Style/preview, and makes no direct IPC save.
 
-- [ ] Write mounted tests: toolbar/jump restoration, incomplete field refusal, source semantic Ctrl+Z/Shift+Z/Y, focused field/composition/repeat guards, readonly/paused and presentation mode refusal.
-- [ ] Watch missing controls/handlers RED, then implement Undo/Redo beside source mode controls and a compact History disclosure. Clearly label source/style scope and retained-state budget.
-- [ ] Run controller and existing UI/window tests; require all accepted old interactions to remain intact.
-- [ ] Commit locally after GREEN.
+- [x] Write mounted tests: toolbar/jump restoration, incomplete field refusal, source semantic Ctrl+Z/Shift+Z/Y, focused field/composition/repeat guards, readonly/paused and presentation mode refusal.
+- [x] Watch missing controls/handlers RED, then implement Undo/Redo beside source mode controls and a compact History disclosure. Clearly label source/style scope and retained-state budget.
+- [x] Run controller and existing UI/window tests; require all accepted old interactions to remain intact.
+- [x] Commit locally after GREEN.
 
 ### Task3: Supported typography access
 
@@ -59,16 +59,28 @@
 
 **Interfaces:** Reuse existing font/weight allowlists, draft `setStyle`, render `styleTargets` and source-aware `applyStyle`. Add global weight and selected-block font/size/weight with explicit inheritance/reset controls; no new domain fields.
 
-- [ ] Write tests for missing global/block controls, preservation of colour/other block keys, no selection/readonly/source precedence, invalid pending number refusal and target-change field retention.
-- [ ] Watch RED; implement compact labelled groups in the current Style panel with no additional permanent toolbar row.
-- [ ] Run style-view/style/history/controller tests; require exact field preservation and no implicit Save.
-- [ ] Commit locally after GREEN.
+- [x] Write tests for missing global/block controls, preservation of colour/other block keys, no selection/readonly/source precedence, invalid pending number refusal and target-change field retention.
+- [x] Watch RED; implement compact labelled groups in the current Style panel with no additional permanent toolbar row.
+- [x] Run style-view/style/history/controller tests; require exact field preservation and no implicit Save.
+- [x] Commit locally after GREEN.
 
 ### Task4: Genuine review and qualification
 
-- [ ] Request one independent review of the coherent final change, explicitly including review-focus inputs/rulings; retain original findings and corrections separately.
-- [ ] Freeze source and complete full suite/build, exact package/runtime/helper comparison, development and actual copied-package native keyboard/pointer/history/font/Save/Lock cases.
-- [ ] Distinguish controlled tests from native observations; retain failures. Hosted qualification is a separate candidate-specific verdict.
+- [x] Request one independent review of the coherent final change, explicitly including review-focus inputs/rulings; retain original findings and corrections separately.
+- [x] Freeze source and complete full suite/build, exact package/runtime/helper comparison, development and actual copied-package native keyboard/pointer/history/font/Save/Lock cases.
+- [x] Distinguish controlled tests from native observations; retain failures. Hosted qualification is a separate candidate-specific verdict.
 - [ ] Record owner qualification, guarded canonical synchronization and resume checkpoint. Continue the approved parity backlog without requesting another routine checkpoint approval.
 
-Status: PLAN ONLY. Source for the Presenter candidate remains frozen during its copied native execution; no Diagram implementation started.
+Status: LOCAL QUALIFICATION COMPLETE. Source63f21362, owner reports record fullsuite1340 and native-fixture-only boundary, genuine development/copied8, exact295 files and copied shell/core/300k. Canonical synchronization/new hosted verdict remain pending.
+
+## Task1 preflight ruling and scoped progress
+
+Actual main DomainRepository merges style properties; neither undefined/null nor a visual default restores a missing optional key. Add finite nonpersisted `resetStyleFields` only to existing replace-content/replace-deck-content actions. Allow only the six renderer-managed style names, reject overlap/duplicates/unknown/sparse/getter values, strip the control before frozen style validation/persistence, delete only those admitted keys under current CAS. Preserve presentationEdits separately. Cost if wrong: refine this finite contract and requalify domain admission; no generic JSON deletion or saved version rollback.
+
+Task1 files also include src/windows/domain.mjs, src/projects/domain-validation.mjs and their domain-owner/domain-validation tests. Actual missing-history RED5 and finite domain reset RED2 retained. Current scoped draft/presentation/domain suite40 passes. First test oracle incorrectly expected one Redo to cross two distinct source/style steps; original failed result is retained and corrected test now asserts each exact intermediate state. Native/fullsuite/GUI/history controls remain unqualified; implementation continues.
+
+## Final local source verification boundary
+
+Actual current product source/build/workflow and all unit tests passed fullsuite1340 (identity3 +units1337), unchanged captured inputs. After that suite, the sole changed captured file was the native harness: enabled-option enumeration corrected from a demonstrated keyboard transport defect; finite executor metadata now names the actual root/agent/GitHub runner. No product/unit-test code changed. Relevant CI/build tests4 and final actual current-harness native8 passed separately; this does not claim the earlier fullsuite executed the new native harness. Original nativeADVERSE0/CSP diagnostic and nativeADVERSE1/select diagnostic retained with authors. Actual native strict-CSP startup, source-owned fonts, exact Save/CAS/optional-field absence, pending fields, same-renderer docking, window isolation and commonLock passed. Root rehashed all final native capturedinputs and independently inspected actual screenshot.
+
+Observed narrow-window placeholder clipping/history-popover overlap and stale invalid-edit feedback remain UI refinement items; no all-theme/physical-monitor/IME/stress/maximum or complete Studio parity claim. Historical older Diagram timeout remains OPEN.

@@ -1,5 +1,6 @@
 .diagram-source-panel{grid-template-rows:auto auto minmax(0,1fr)}
 .diagram-editor-modes{display:flex;gap:6px}.diagram-editor-modes button[aria-pressed=true]{background:#648dff22;border-color:#648dff}
+.diagram-editor-modes{flex-wrap:wrap;align-items:center}#diagramHistoryControls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;position:relative}#diagramHistoryControls button{font-size:11px;padding:5px 7px}#diagramHistoryPanel{position:absolute;top:calc(100% + 8px);left:0;width:290px;max-width:calc(100vw - 80px);padding:12px;z-index:8;border:1px solid #78859a55;border-radius:12px;background:var(--siren-panel,light-dark(#fff,#26282f));box-shadow:0 12px 36px #0003}#diagramHistoryPanel label{display:block;font-size:11px;margin-bottom:8px}#diagramHistorySteps{width:100%;min-width:0}#diagramHistoryPanel .diagram-history-note{font-size:11px;line-height:1.5;opacity:.7;margin:8px 0 0}
 #diagramGuided{grid-row:3;min-width:0;min-height:0;overflow:auto;border:1px solid #78859a44;border-radius:10px;padding:10px;background:light-dark(#fff,#202127)}
 .guided-pages{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;padding-bottom:12px;font-size:11px;opacity:.85}
 .guided-pages button{font-size:11px;padding:5px 7px}.guided-rows{display:flex;flex-direction:column;gap:8px}

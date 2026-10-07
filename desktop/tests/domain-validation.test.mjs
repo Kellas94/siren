@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const module=await import('../src/projects/domain-validation.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
+test('Diagram typed removal controls are never sent to frozen style validator; reset-only still validates source and added fields',async()=>{
+ for(const action of ['replace-content','replace-deck-content']){const calls=[],input={domain:'diagram',action,payload:{source:'flowchart TD\nA-->B',resetStyleFields:['fontWeight'],...(action==='replace-deck-content'?{presentationEdits:[{action:'add',id:'new-card',kind:'text'}]}:{})},before:{presentation:{sequence:[],notes:{}}}};
+ assert.equal(await module.validateDomainPatch(input,{isCurrent:()=>true,createValidator:async()=>({validatePatch:async value=>{calls.push(value);return !Object.hasOwn(value.payload,'resetStyleFields');},dispose:async()=>{}})}),true);
+ assert.deepEqual(calls.map(v=>v.action),action==='replace-content'?['replace-source']:['replace-source','edit-presentation']);
+ }
+});
 test('one Diagram content mutation requires both original source/style validators and disposal before admission',async()=>{
  const input={domain:'diagram',action:'replace-content',payload:{source:'flowchart TD\nA-->B',fontSize:18,nodeStyles:{B:{fill:'#2277cc'}}},before:{id:'diagram-a',source:'saved'}};
  const calls=[];let disposed=0;

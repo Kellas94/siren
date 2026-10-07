@@ -12,6 +12,8 @@ const fail=code=>Object.freeze({ok:false,code});
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 export const DOMAIN_BYTES=2*1024*1024;
 const styleFields=['diagramTitle','diagramTitleTouched','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','nodeMetadata','comments','layout','view','links','icons','rules','numbering','legend','gitBranchColours','presentation'];
+const resettableStyleFields=new Set(['diagramTitle','diagramTitleTouched','fontFamily','fontSize','fontWeight','nodeStyles']);
+const managedNodeStyleFields=new Set(['fill','border','text','fontFamily','fontSize','fontWeight']);
 // Copy only plain bounded JSON data, never execute getters/toJSON or retain a
 // renderer-owned nested object. Native validators subsequently apply the frozen
 // product's semantic rules to blocks/styles; no sanitized replacement is saved.
@@ -37,11 +39,11 @@ function domainIntent(domain,input) {
   if(request.action==='replace-context-content')payload.context=normalizeDocumentContext(payload.context);
  }
  else if(domain==='diagram'&&['replace-source','update-model'].includes(request.action)){payload=navigationFields(request.payload,['source']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');}
- else if(domain==='diagram'&&request.action==='replace-content'){payload=navigationFields(request.payload,['source',...styleFields],['source']);if(typeof payload.source!=='string'||Object.keys(payload).length<2)throw error('REQUEST_REFUSED');}
- else if(domain==='diagram'&&request.action==='replace-deck-content'){payload=navigationFields(request.payload,['source','presentationEdits',...styleFields.filter(k=>k!=='presentation')],['source','presentationEdits']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');payload.presentationEdits=normalizePresentationEdits(payload.presentationEdits);}
+ else if(domain==='diagram'&&request.action==='replace-content'){payload=navigationFields(request.payload,['source','resetStyleFields',...styleFields],['source']);if(typeof payload.source!=='string'||Object.keys(payload).length<2)throw error('REQUEST_REFUSED');}
+ else if(domain==='diagram'&&request.action==='replace-deck-content'){payload=navigationFields(request.payload,['source','presentationEdits','resetStyleFields',...styleFields.filter(k=>k!=='presentation')],['source','presentationEdits']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');payload.presentationEdits=normalizePresentationEdits(payload.presentationEdits);}
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');
- const copied=dataCopy(payload);if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
+ const copied=dataCopy(payload);if(Object.hasOwn(copied,'resetStyleFields')){const fields=copied.resetStyleFields;if(!Array.isArray(fields)||!fields.length||fields.length>6||new Set(fields).size!==fields.length||fields.some(key=>!resettableStyleFields.has(key)||Object.hasOwn(copied,key)))throw error('REQUEST_REFUSED');}if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
  return Object.freeze({...request,payload:copied});
 }
 export function normalizeDomainIntent(domain,input) {try{return domainIntent(domain,input);}catch{throw error('REQUEST_REFUSED');}}
@@ -107,11 +109,15 @@ export class DomainRepository {
     const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:prior.revision-1,sourceRefs:prior.sourceRefs,metadata:JSON.parse(prior.json),operationId:prior.operationId});guard(scope);if(!saved.ok)return fail(saved.code);return receipt(prior,domain,id,saved.durability,request.operationId);
    }
    if(version(current,domain,id)!==request.expectedVersion)throw error(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT');
-   if(await this.#validate({domain,action:request.action,payload:dataCopy(request.payload),before:JSON.parse(JSON.stringify(selectedEntity(current,domain,id)))},scope)!==true)throw error('DOMAIN_VALIDATION_FAILED');guard(scope);
+   const before=selectedEntity(current,domain,id);
+   if(domain==='diagram'&&request.payload.resetStyleFields?.includes('nodeStyles')&&Object.hasOwn(before,'nodeStyles')){const styles=before.nodeStyles;if(!styles||typeof styles!=='object'||Array.isArray(styles)||Object.values(styles).some(node=>!node||typeof node!=='object'||Array.isArray(node)||Object.keys(node).some(key=>!managedNodeStyleFields.has(key))))throw error('DOMAIN_VALIDATION_FAILED');}
+   if(await this.#validate({domain,action:request.action,payload:dataCopy(request.payload),before:JSON.parse(JSON.stringify(before))},scope)!==true)throw error('DOMAIN_VALIDATION_FAILED');guard(scope);
    const workspace=workspaceMetadata(current),target=workspace[domain==='docs'?'workpapers':'diagrams'].find(item=>item.id===id);
+   const content=Object.fromEntries(Object.entries(request.payload).filter(([k])=>k!=='resetStyleFields'));
+   if(domain==='diagram')for(const key of request.payload.resetStyleFields??[])delete target[key];
    if(domain==='docs'&&request.action==='replace-context-content')Object.assign(target,applyDocumentContext(target,request.payload.context,{targets:workspace}),{title:request.payload.title,blocks:request.payload.blocks});
-   else if(domain==='diagram'&&request.action==='replace-deck-content')Object.assign(target,Object.fromEntries(Object.entries(request.payload).filter(([k])=>k!=='presentationEdits')),{presentation:applyPresentationEdits(target.presentation,request.payload.presentationEdits)});
-   else Object.assign(target,request.payload);if(domain==='diagram')target.sirenNativeVersion=request.expectedVersion+1;
+   else if(domain==='diagram'&&request.action==='replace-deck-content')Object.assign(target,Object.fromEntries(Object.entries(content).filter(([k])=>k!=='presentationEdits')),{presentation:applyPresentationEdits(target.presentation,request.payload.presentationEdits)});
+   else Object.assign(target,content);if(domain==='diagram')target.sirenNativeVersion=request.expectedVersion+1;
    const metadata=envelope(current,workspace);metadata.sirenNativeEntityOperation={schema:1,projectId:scope.projectId,domain,entityId:id,requestHash,sha256:fingerprint(target)};
    const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:current.revision,sourceRefs:current.sourceRefs??[],metadata,operationId:request.operationId});guard(scope);if(!saved.ok)return fail(saved.code);
    const reopened=await projects.readProject(scope.projectId);guard(scope);if(reopened.revision!==saved.revision||fingerprint(selectedEntity(reopened,domain,id))!==fingerprint(target))throw error('DOMAIN_READBACK_FAILED');return receipt(reopened,domain,id,saved.durability,request.operationId);

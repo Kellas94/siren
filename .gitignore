@@ -504,3 +504,26 @@ WP-001_*.json
 !desktop/tests/presenter-export-preload.test.mjs
 !desktop/tests/presenter-export-view.test.mjs
 !docs/superpowers/plans/2026-10-07-siren-diagram-history-typography.md
+
+# Qualified Diagram history and typography evidence, 2026-10-07
+!desktop/build/native-node-style-validation.mjs
+!desktop/reviews/2026-10-07-diagram-history-typography-csp-followup-independent.md
+!desktop/reviews/2026-10-07-diagram-history-typography-independent-original.md
+!desktop/reviews/2026-10-07-diagram-history-typography-independent-recheck.md
+!desktop/reviews/2026-10-07-diagram-history-typography-local-qualification.json
+!desktop/reviews/2026-10-07-diagram-history-typography-local-qualification.md
+!desktop/reviews/2026-10-07-diagram-history-typography-native-csp-diagnostic.md
+!desktop/reviews/2026-10-07-diagram-history-typography-native-final-observation.md
+!desktop/reviews/2026-10-07-diagram-history-typography-native-original-adverse.md
+!desktop/reviews/2026-10-07-diagram-history-typography-native-select-observation.md
+!desktop/reviews/2026-10-07-native-code-parity-next-analysis.md
+!desktop/reviews/2026-10-07-native-diagram-history-removal-independent-preflight.md
+!desktop/reviews/2026-10-07-presenter-notes-canonical-sync.json
+!desktop/reviews/2026-10-07-presenter-notes-hosted-evidence.json
+!desktop/reviews/2026-10-07-presenter-notes-hosted-evidence.md
+!desktop/src/ui/diagram/history-view.js
+!desktop/tests/diagram-history-ci.test.mjs
+!desktop/tests/diagram-history-view.test.mjs
+!desktop/tests/diagram-history.test.mjs
+!desktop/tests/diagram-node-style-validation.test.mjs
+!desktop/tests/native/diagram-history-typography.mjs
