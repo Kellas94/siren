@@ -6,6 +6,8 @@ Data: 7 octombrie 2026. Autor document: `/root/catalogue_view`, revizuit de `/ro
 
 ## Rezultatul dorit
 
+Research preliminar separat: [opțiuni de motor și fixture de benchmark](../../research/2026-10-07-siren-data-engine-options.md), cu surse oficiale pentru DuckDB, Polars și Arrow. Status RESEARCH_ONLY_NOT_ENGINE_SELECTION; fără bibliotecă selectată, dependențe instalate sau benchmark executat.
+
 Utilizatorul construiește vizual un flux de date complex, înțelege fiecare transformare, inspectează codul generat și rulează explicit scriptul corespunzător unei versiuni finalizate. Modulul trebuie să deservească procesarea bazelor de date și seturilor mari de date, dincolo de simpla vizualizare CSV.
 
 Clarificarea ulterioară cere și **modelare de risc financiar**, pivoti și automatizarea fluxurilor, cu țintă explicită de benchmark de **100 de milioane de rânduri și peste (100M+)**. Aceasta este o țintă cerută pentru proiectare/testare, **nu o capacitate actuală, limită calificată sau promisiune de performanță**.

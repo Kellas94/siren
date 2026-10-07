@@ -48,6 +48,17 @@ the folder to a different Windows account requires a separate recovery design.
 No publisher private keys, credentials or source-access tokens are included.
 An ASAR is a runtime container, not encryption or protection from reverse engineering.
 
+The packager owns one temporary `.build-input-UUID` directory per invocation.
+It removes that directory after success, failure or cooperative cancellation,
+provided its parent and root identities remain unchanged and no links or special
+files are observed. Completed and partial preview packages remain separate;
+projects, evidence and other invocations' staging are never pruned by this policy.
+If cleanup is refused or fails, the build reports `PACKAGE_STAGING_CLEANUP_FAILED`
+with the exact retained staging path, preserving the original build error too.
+These checks are not an atomic filesystem sandbox. Forced process termination
+cannot run cleanup; orphaned staging needs separate verified review rather than
+automatic age-based deletion.
+
 There is no admitted update installer or public feed yet. Source-aware desktop
 projects keep immutable code versions separate from documentation and use an
 incremental Python editor. Current import budgets are 32 MiB per source and

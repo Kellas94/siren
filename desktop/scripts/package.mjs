@@ -7,6 +7,7 @@ import { buildRenderer } from '../build/renderer.mjs';
 import { buildInventory } from './inventory.mjs';
 import { hashOwnedFile } from '../src/updates/download.mjs';
 import {buildProcessReader} from './build-process-reader.mjs';
+import {withPackageStaging} from './package-staging.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
 const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
@@ -54,8 +55,10 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   const inventory = await buildInventory({ desktopRoot, electronRoot });
   inventory.windowsProcessReader={...processReader.receipt,implementation:'SIREN-owned fixed read-only helper',osProvidedRuntime:'.NET Framework 4.x',thirdPartyPackages:[]};
   const production = new Set(inventory.npm.map(p => p.name));
-  const previewRoot = join(desktopRoot, 'dist', `development-${randomUUID()}`); const source = join(desktopRoot, 'dist', `.build-input-${randomUUID()}`); const version = '0.1.0';
-  const app = join(previewRoot, 'App', 'versions', version); await mkdir(app, { recursive: true }); await mkdir(source);
+  const distRoot=join(desktopRoot,'dist');await mkdir(distRoot,{recursive:true});
+  return withPackageStaging(distRoot,async source=>{
+  const previewRoot = join(distRoot, `development-${randomUUID()}`); const version = '0.1.0';
+  const app = join(previewRoot, 'App', 'versions', version); await mkdir(app, { recursive: true });
   const included = await collectApplicationInputs(desktopRoot, production);
   for (const path of included) { await mkdir(dirname(join(source, path)), { recursive: true }); await copyFile(join(desktopRoot, path), join(source, path)); }
   // Runtime binaries are copied unchanged, never patched/re-signed or represented as a qualified launcher.
@@ -88,5 +91,6 @@ export async function buildDevelopmentPackage({ desktopRoot = resolve(dirname(fi
   await writeFile(join(previewRoot, 'BUILD-IDENTITY.json'), JSON.stringify(receipt, null, 2));
   await writeFile(join(previewRoot, 'README.txt'), 'SIREN desktop development preview. Not a production portable release.\nOpen App/versions/0.1.0/SIREN.exe to inspect the prototype.\nProjects/recovery/profile are created in Data outside App. Production activation/feed and the update launcher are not configured or qualified. No general portability/security/licensing admission is claimed.\n');
   return { previewRoot, appPath: join(app, 'SIREN.exe'), receipt };
+  });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) console.log(JSON.stringify(await buildDevelopmentPackage({ sourceCommit: process.argv[2] })));

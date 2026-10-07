@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir,readdir,lstat} from 'node:fs/promises';
+import {join,resolve,sep} from 'node:path';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {listPackage,statFile,extractFile} from '@electron/asar';
+import {buildDevelopmentPackage,collectApplicationInputs} from '../../scripts/package.mjs';
+const repo='C:/Claude/SIREN_WORK/portable',commit='6e96e1cf7272529a813dd64fe94fe59a956d04fa';
+const git=(...args)=>execFileSync('C:/Users/Taras/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/git/cmd/git.exe',['-C',repo,'-c','safe.directory='+repo,...args],{windowsHide:true,maxBuffer:16*1024*1024});
+assert.equal(git('rev-parse','HEAD').toString().trim(),commit);
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const full=JSON.parse(await readFile('evidence/workspace-surface/package-staging-full-2026-10-07T17-53-59.991Z/result.json','utf8'));
+const root=resolve('evidence/workspace-surface/package-staging-real-'+new Date().toISOString().replaceAll(':','-'));await mkdir(root);
+const capture=async()=>Object.fromEntries(await Promise.all(Object.keys(full.before).map(async path=>[path,hash(await readFile(path))])));
+const before=await capture();assert.deepEqual(before,full.after);
+const distBefore=(await readdir('dist')).sort();
+const protectedPaths=['dist/development-232d578c-6769-43fe-a817-c975949d8dc8/BUILD-IDENTITY.json','dist/development-232d578c-6769-43fe-a817-c975949d8dc8/App/versions/0.1.0/resources/app.asar','dist/development-754e3bab-d112-469c-a298-c1913cc9a3e0/BUILD-IDENTITY.json','dist/development-754e3bab-d112-469c-a298-c1913cc9a3e0/App/versions/0.1.0/resources/app.asar'];
+const protectedBefore=Object.fromEntries(await Promise.all(protectedPaths.map(async path=>[path,hash(await readFile(path))])));
+await writeFile(root+'/before.json',JSON.stringify({before,distBefore,protectedBefore},null,2),{flag:'wx'});
+let build;
+try{
+ build=await buildDevelopmentPackage({sourceCommit:commit});
+ await writeFile(root+'/build.json',JSON.stringify(build,null,2),{flag:'wx'});
+ const after=await capture();assert.deepEqual(after,before);
+ const distAfter=(await readdir('dist')).sort();assert.deepEqual(distAfter,distBefore.concat(build.previewRoot.split(/[\\/]/).at(-1)).sort());
+ assert.deepEqual(distAfter.filter(name=>name.startsWith('.build-input-')),distBefore.filter(name=>name.startsWith('.build-input-')));
+ for(const path of protectedPaths)assert.equal(hash(await readFile(path)),protectedBefore[path]);
+ const receipt=JSON.parse(await readFile(join(build.previewRoot,'BUILD-IDENTITY.json'),'utf8'));
+ assert.equal(receipt.sourceCommit,commit);assert.equal(receipt.kind,'development-preview');
+ for(const key of ['releaseAdmitted','accountConfigured','updatesConfigured','launcherQualified','inventoryQualified'])assert.equal(receipt[key],false);
+ assert.equal(receipt.electron,'44.5.1');
+ const app=join(build.previewRoot,'App/versions/0.1.0'),archive=join(app,'resources/app.asar');
+ assert.equal(hash(await readFile(archive)),receipt.appArchive.sha256);
+ assert.equal(receipt.appArchive.sha256,'a84e0d7b340e73a8f18a6ada7e0eb259cfe6d76b0acd34da11fa29a51e9f9a7a');
+ assert.equal(hash(await readFile(build.appPath)),receipt.runtimeBinary.sha256);
+ const inventory=JSON.parse(await readFile(join(app,'SIREN-RUNTIME-INVENTORY.json'),'utf8'));
+ const wanted=(await collectApplicationInputs(process.cwd(),new Set(inventory.npm.map(p=>p.name)))).sort();
+ const nativePath=path=>path.replaceAll('/',sep);
+ const files=listPackage(archive).map(path=>path.replaceAll('\\','/').replace(/^\//,'')).filter(path=>!statFile(archive,nativePath(path)).files).sort();
+ assert.deepEqual(files,wanted);const members=[];
+ for(const path of files){
+  const stat=statFile(archive,nativePath(path));assert.equal(stat.unpacked,undefined);assert.equal(stat.link,undefined);
+  const bytes=extractFile(archive,nativePath(path));assert.deepEqual(bytes,await readFile(path),path);
+  if(path.startsWith('src/')||path==='package.json')assert.equal(bytes.toString('utf8').replaceAll('\r\n','\n'),git('show',commit+':desktop/'+path).toString('utf8').replaceAll('\r\n','\n'),path+' committed content');
+  members.push({path,bytes:bytes.length,sha256:hash(bytes)});
+ }
+ for(const path of ['src/terminal/cwd.mjs','src/terminal/profiles.mjs','scripts/package-staging.mjs'])assert.equal(files.includes(path),false);
+ const runtimeMembers=[];
+ async function runtimeWalk(directory,prefix=''){
+  for(const entry of await readdir(directory,{withFileTypes:true})){
+   if(!prefix&&entry.name==='resources')continue;
+   const path=prefix?prefix+'/'+entry.name:entry.name;assert.equal(entry.isSymbolicLink(),false);
+   if(entry.isDirectory())await runtimeWalk(join(directory,entry.name),path);
+   else {assert.equal(entry.isFile(),true);const bytes=await readFile(join(directory,entry.name));const target=path==='electron.exe'?'SIREN.exe':path;assert.deepEqual(await readFile(join(app,target)),bytes);runtimeMembers.push({path,target,bytes:bytes.length,sha256:hash(bytes)});}
+  }
+ }
+ await runtimeWalk('node_modules/electron/dist');
+ for(const path of ['process-identity.exe','process-identity.json'])assert.deepEqual(await readFile('native/generated/'+path),await readFile(join(app,'resources/siren-'+path)));
+ assert.equal(hash(await readFile(join(app,'resources/siren-process-identity.exe'))),receipt.processReader.binary.sha256);
+ for(const notice of inventory.chromium.supplementalNotices)assert.equal(hash(await readFile(join(app,'notices',notice.file))),notice.sha256);
+ const result={author:'/root',status:'COMPLETE',commit,previewRoot:build.previewRoot,appPath:build.appPath,receipt,capturedInputs:Object.keys(before).length,before,after,changedInputs:[],distBefore,distAfter,protectedBefore,archiveMembers:members,runtimeMembers,claims:{ownStagingRemoved:true,olderDistEntryNamesPreserved:true,protectedBuildAndAsarBytesUnchanged:true,archiveIdenticalToPreviousQualifiedPreview:true,realElectronRuntimeCopiedAndCompared:true,nativeGuiExecuted:false,installedReplacement:false,releaseAdmission:false},scope:'Real development package built and all regular ASAR members, unchanged Electron files, native helper and notices checked. No new native GUI run or production qualification.'};
+ await writeFile(root+'/result.json',JSON.stringify(result,null,2),{flag:'wx'});
+ console.log(JSON.stringify({root,status:result.status,previewRoot:build.previewRoot,members:members.length,runtimeMembers:runtimeMembers.length,capturedInputs:result.capturedInputs,archive:receipt.appArchive.sha256,stagingBefore:distBefore.filter(p=>p.startsWith('.build-input-')).length,stagingAfter:distAfter.filter(p=>p.startsWith('.build-input-')).length}));
+}catch(error){await writeFile(root+'/adverse.json',JSON.stringify({author:'/root',status:'ADVERSE',commit,build,error:{name:error.name,message:error.message,stack:error.stack}},null,2),{flag:'wx'});throw error;}

@@ -1,0 +1,208 @@
+{
+  "author": "/root",
+  "createdUTC": "2026-10-07T18:17:58.557Z",
+  "status": "QUALIFIED_BOUNDED_BUILD_FIX",
+  "sourceCommit": "6e96e1cf7272529a813dd64fe94fe59a956d04fa",
+  "baseCommit": "d8584a5f9ad7fca694c29ccc37ee2192cb44a668",
+  "problem": "Each settled development build retained its own .build-input UUID tree. Original actual-builder tests demonstrated this on both success and failure.",
+  "change": "Fresh per-invocation staging is removed after success, failure or cooperative rejection only if the original canonical regular directories and observed descendants remain admitted. Cleanup failure is explicit and retains the exact original thrown value and staging path. Other stages, preview output, user projects and historical evidence are not selected.",
+  "tests": {
+    "originalActualBuilderRed": {
+      "tests": 2,
+      "pass": 0,
+      "fail": 2,
+      "runtime": "Non-executable synthetic Electron; actual renderer/ASAR builder"
+    },
+    "focusedGreen": {
+      "tests": 19,
+      "pass": 19,
+      "fail": 0,
+      "skipped": 0
+    },
+    "full": {
+      "tests": 1736,
+      "identity": 4,
+      "units": 1732,
+      "pass": 1736,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "capturedInputs": 672,
+      "changedInputs": []
+    },
+    "README": "Added during the full suite; outside its captured set. Separately hash-bound and reviewed; the four source/test inputs remained frozen.",
+    "independent": {
+      "author": "/root/package_staging_review",
+      "verdict": "ACCEPT_BOUNDED_FIX",
+      "probes": 4,
+      "pass": 4,
+      "fail": 0,
+      "actualWindowsCleanupError": "EBUSY",
+      "files": [
+        {
+          "path": "desktop/reviews/2026-10-07-package-staging-independent.json",
+          "bytes": 2963,
+          "sha256": "ae0d2d7d763cd4f4acc3a8b071dfde2f8d950eeed7306503aa7c81899900d6e1"
+        },
+        {
+          "path": "desktop/reviews/2026-10-07-package-staging-independent.md",
+          "bytes": 7337,
+          "sha256": "b95b313cb23586c0cc39d4d02a8465b7c32f2bbdba046c5f3c2939f6797e0013"
+        }
+      ],
+      "limits": "Independent review did not execute builder, full suite or native GUI; those claims remain separate."
+    }
+  },
+  "actualPackage": {
+    "previewRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-f76d3621-ccab-41c6-9115-b827779045d4",
+    "appPath": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-f76d3621-ccab-41c6-9115-b827779045d4\\App\\versions\\0.1.0\\SIREN.exe",
+    "asarMembers": 305,
+    "electronFiles": 72,
+    "capturedInputs": 672,
+    "changedInputs": [],
+    "stagingBefore": 0,
+    "stagingAfter": 0,
+    "asarSHA256": "a84e0d7b340e73a8f18a6ada7e0eb259cfe6d76b0acd34da11fa29a51e9f9a7a",
+    "identicalToPreviousQualifiedPreview": true,
+    "protectedBuildAndAsarBytesUnchanged": true,
+    "nativeGuiExecuted": false,
+    "sourceMatchesCommitWithOnlyGitLFNormalization": true
+  },
+  "retained": [
+    {
+      "source": "evidence/workspace-surface/package-staging-2026-10-07/integration-red-original.log",
+      "destination": "desktop/reviews/2026-10-07-package-staging-builder-red-original.log",
+      "bytes": 2912,
+      "sha256": "e280769892808ebc08ab906feaadc006009ec6400079416caeb7a9930da8041a"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-2026-10-07/focused-green-original.log",
+      "destination": "desktop/reviews/2026-10-07-package-staging-focused-green-original.log",
+      "bytes": 4772,
+      "sha256": "85f30c8c55604dd8756944433865056c4781a781ca70321133c9f63872a1aa02"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-full-2026-10-07T17-53-59.991Z/identity.log",
+      "destination": "desktop/reviews/2026-10-07-package-staging-full-identity-original.log",
+      "bytes": 1185,
+      "sha256": "92c05b65cabda66da63a69bb6b269258e3cff37c475b84a1a517eed8961b6705"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-full-2026-10-07T17-53-59.991Z/units.log",
+      "destination": "desktop/reviews/2026-10-07-package-staging-full-units-original.log",
+      "bytes": 437821,
+      "sha256": "6ae49d917d809c339103bc0caadc6debebf508f38ebc6407a9e87fe815ff0d51"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-full-2026-10-07T17-53-59.991Z/result.json",
+      "destination": "desktop/reviews/2026-10-07-package-staging-full-result-original.json",
+      "bytes": 156283,
+      "sha256": "342afdda1003c3cdba541c54a4bc5b2b6936c601f1c4615a2a9442f4e221b0a5"
+    },
+    {
+      "source": "evidence/workspace-surface/run-package-staging-full-owner.mjs",
+      "destination": "desktop/reviews/2026-10-07-package-staging-full-runner-owner.mjs.txt",
+      "bytes": 3388,
+      "sha256": "10d233d4d41036f6f9f9dc0c3749f9b8ed475492b65c60e5b039a15c4197854a"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-independent-2026-10-07/independent-probe.mjs",
+      "destination": "desktop/reviews/2026-10-07-package-staging-independent-probe.mjs.txt",
+      "bytes": 5178,
+      "sha256": "7c2c588c4c5b76e0e8d88f5ca584ac10f6ea389cdb3b783d806c71cf73c51c5d"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-independent-2026-10-07/independent-probe-output.json",
+      "destination": "desktop/reviews/2026-10-07-package-staging-independent-probe-original.json",
+      "bytes": 978,
+      "sha256": "f9be9943db3cd91b8e2a4572d24a1b4242ba1df3bd53f06085f0c77769c6ba35"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-real-2026-10-07T18-14-08.163Z/result.json",
+      "destination": "desktop/reviews/2026-10-07-package-staging-real-package-result-original.json",
+      "bytes": 224627,
+      "sha256": "5286ac9b3383fd292f14a5e34a6afb18a31081880b2c48da0d646014000bbb3c"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-real-2026-10-07T18-14-08.163Z/build.json",
+      "destination": "desktop/reviews/2026-10-07-package-staging-real-package-build-original.json",
+      "bytes": 3100,
+      "sha256": "16229857e7472a4176aaf51ac7b83dd959ab19daebfc3158cae0a87fde1d71c0"
+    },
+    {
+      "source": "evidence/workspace-surface/build-package-staging-owner.mjs",
+      "destination": "desktop/reviews/2026-10-07-package-staging-real-package-runner-owner.mjs.txt",
+      "bytes": 6972,
+      "sha256": "a6cdca73756310b428c93df93bd4898cc5344eb09b1798f64670f3d9b4f1030a"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-2026-10-07/real-package-console-original.log",
+      "destination": "desktop/reviews/2026-10-07-package-staging-real-package-console-original.log",
+      "bytes": 431,
+      "sha256": "1badc4ea514847fffc437194da59b70064bb8ede0989dbeb5fba0f4007ab51da"
+    },
+    {
+      "source": "evidence/workspace-surface/package-staging-2026-10-07/source-commit.json",
+      "destination": "desktop/reviews/2026-10-07-package-staging-source-commit-original.json",
+      "bytes": 3748,
+      "sha256": "51ac3d3875e7926fe187975086bf68c37072871cf0a97cec77c801d54c94d11d"
+    }
+  ],
+  "reviewRulings": [
+    {
+      "behavior": "Atomic protection from malicious path races",
+      "reason": "Explicitly excluded; observed-state checks are not a filesystem sandbox",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "Force-kill or never-settling callback cleanup",
+      "reason": "Excluded; terminated or suspended JavaScript cannot complete cooperative cleanup",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "New build cancellation signal/API",
+      "reason": "Fix handles cancellation thrown by awaited work, does not initiate cancellation",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "Global/historical retention cleanup",
+      "reason": "Explicitly excluded; no global scanner added",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "GUI/native/release/portability/installed qualification",
+      "reason": "Synthetic non-executed runtime in integration and no native run in review",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "Full repository suite and unrelated defects",
+      "reason": "Coordinator-owned checks outside this bounded independent review",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    },
+    {
+      "behavior": "General build-input trust before staging",
+      "reason": "Unchanged surrounding code; cleanup fix is not broad build sandboxing",
+      "ownerDisposition": "Accepted bounded exclusion; no broader admission asserted."
+    }
+  ],
+  "limits": {
+    "atomicFilesystemSandbox": false,
+    "forcedTerminationCleanup": false,
+    "newCancellationAPI": false,
+    "historicalRetention": false,
+    "generalBuildInputSandbox": false,
+    "productionRelease": false,
+    "installedReplacement": false,
+    "nativeTerminalAdmission": false,
+    "activationOrUpdates": false
+  },
+  "hosted": {
+    "run": "37654899907",
+    "status": "FINAL_FAILURE",
+    "native": "Aggregate abandoned; no native matrix jobs or receipts",
+    "cause": "UNKNOWN",
+    "original": "desktop/reviews/2026-10-07-terminal-home-hosted-evidence.json",
+    "retryOrWorkflowChanges": false
+  },
+  "nextSyncLocalBase": "96282fb2f63a12d46104ee35161f0339062f15c3"
+}
