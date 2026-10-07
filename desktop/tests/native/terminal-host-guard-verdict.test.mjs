@@ -25,3 +25,35 @@ test('disabled monitor control requires real surviving fixed descendants and ver
  }
  assert.equal(isExpectedHostMonitorRefusal(sample(),expected),false);
 });
+
+// A fixture root/console helper may already have exited when its utility host
+// exits. The mandatory branch, grandchild and detached process remain the
+// causal canaries; the original hosted failure is retained separately.
+test('negative accepts a previously exited fixture root but requires three surviving canaries',()=>{
+ const r=sample(true),s=r.native.afterBlockedHostExit;
+ s.held[1].alive=false;s.held[1].exitCode=0;s.active--;
+ r.native.cleanup[1].snapshot.held[1].exitCode=0;
+ assert.equal(isExpectedHostMonitorRefusal(r,expected),true);
+});
+test('positive accepts fixture root exit zero with all three canaries terminated by monitor79',()=>{
+ const r=sample();r.native.afterBlockedHostExit.held[1].exitCode=0;r.native.cleanup[1].snapshot.held[1].exitCode=0;
+ assert.equal(isHostGuardComplete(r,expected),true);
+ for(const i of [2,3,4]){const changed=structuredClone(r);changed.native.afterBlockedHostExit.held[i].exitCode=0;assert.equal(isHostGuardComplete(changed,expected),false);}
+});
+test('negative cleanup must terminate each still-live captured member with code98',()=>{
+ for(const i of [1,2,3,4]){const r=sample(true);r.native.cleanup[1].snapshot.held[i].exitCode=0;assert.equal(isExpectedHostMonitorRefusal(r,expected),false);}
+});
+test('snapshot root identity and held root state cannot disagree',()=>{
+ for(const mutate of [r=>r.native.stop.root.createdFileTime='9999',r=>r.native.cleanup[1].snapshot.root.image='other.exe',r=>r.native.afterBlockedHostExit.held[0].exitCode=79]){const r=sample();mutate(r);assert.equal(isHostGuardComplete(r,expected),false);}
+});
+test('failed Stop requires an explicit live unchanged retryable owner before native host cleanup',async()=>{
+ const {isFailedStopGuardComplete,isExpectedFailedStopMonitorRefusal}=await import('./terminal-host-guard-verdict.mjs');
+ assert.equal(typeof isFailedStopGuardComplete,'function');assert.equal(typeof isExpectedFailedStopMonitorRefusal,'function');
+ const r=sample();r.stopFailureControl=true;r.native.failedStop={code:'OWNERSHIP_STOP_FAILED',snapshot:structuredClone(r.native.otherHostStillAlive)};
+ r.native.failedStop.snapshot.stopping=false;r.native.failedStop.snapshot.injectedStopFailures=1;
+ assert.equal(isFailedStopGuardComplete(r,expected),true);
+ for(const mutate of [x=>delete x.native.failedStop,x=>x.native.failedStop.code='OTHER',x=>x.native.failedStop.snapshot.stopping=true,x=>x.native.failedStop.snapshot.held[3].alive=false,x=>x.stopFailureControl=false]){const bad=structuredClone(r);mutate(bad);assert.equal(isFailedStopGuardComplete(bad,expected),false);}
+ const legacy=sample(true);legacy.stopFailureControl=true;legacy.native.failedStop={code:'OWNERSHIP_STOP_FAILED',snapshot:structuredClone(legacy.native.otherHostStillAlive)};legacy.native.failedStop.snapshot.stopping=true;legacy.native.failedStop.snapshot.injectedStopFailures=1;legacy.native.afterBlockedHostExit.monitorFired=true;
+ assert.equal(isExpectedFailedStopMonitorRefusal(legacy,expected),true);
+ legacy.native.cleanup[1].snapshot.held[4].exitCode=0;assert.equal(isExpectedFailedStopMonitorRefusal(legacy,expected),false);
+});

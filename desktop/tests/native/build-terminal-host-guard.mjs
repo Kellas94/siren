@@ -6,7 +6,7 @@ import {readFile,writeFile,mkdir,lstat,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {join,dirname,resolve,parse} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {isHostGuardComplete,isExpectedHostMonitorRefusal} from './terminal-host-guard-verdict.mjs';
+import {isHostGuardComplete,isExpectedHostMonitorRefusal,isFailedStopGuardComplete,isExpectedFailedStopMonitorRefusal} from './terminal-host-guard-verdict.mjs';
 const run=promisify(execFile),hash=b=>createHash('sha256').update(b).digest('hex');
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
 const desktop=fileURLToPath(new URL('../../',import.meta.url));
@@ -51,7 +51,7 @@ try{
  await phase('compile',msbuild,[join(candidate,'build/binding.sln'),'/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+version,'/p:WindowsTargetPlatformVersion=10.0.26100.0','/verbosity:diagnostic'],candidate);
  async function walk(root){for(const entry of await readdir(root,{withFileTypes:true})){const path=join(root,entry.name);if(entry.isDirectory())await walk(path);else if(entry.isFile()){const b=await readFile(path);receipt.buildInputs.push({path,bytes:b.length,sha256:hash(b)});}else throw Error('LINKED_BUILD_INPUT');}}
  await walk(join(output,'headers'));
- for(const name of ['terminal_host_guard','terminal_host_guard_negative']){
+ for(const name of ['terminal_host_guard','terminal_host_guard_negative','terminal_host_guard_stop_failure','terminal_host_guard_legacy_stop_failure']){
   const path=join(candidate,'build/Release',name+'.node'),b=await readFile(path);assert.equal(b.subarray(0,2).toString(),'MZ');assert.equal(b.readUInt16LE(b.readUInt32LE(60)+4),0x8664);
   receipt.binaries.push({name,path,bytes:b.length,sha256:hash(b),machine:'x64'});
  }
@@ -62,6 +62,11 @@ try{
  catch(error){assert.equal(error.code,1,'NEGATIVE_CONTROL_EXIT_UNEXPECTED');const native=JSON.parse(error.stdout.trim());receipt.negative=native;assert.equal(isExpectedHostMonitorRefusal(native,{...fixed,addonSha256:negative.sha256}),true,'NEGATIVE_CONTROL_NOT_THE_EXPECTED_CONTAINED_MONITOR_FAILURE');receipt.phases.find(p=>p.name==='host-monitor-negative').expectedRefusalVerified=true;}
  const tested=await phase('host-monitor-positive',process.execPath,[runner,positive.path],desktop,60000);receipt.positive=JSON.parse(tested.stdout.trim());
  assert.equal(isHostGuardComplete(receipt.positive,{...fixed,addonSha256:positive.sha256}),true,'HOST_MONITOR_QUALIFICATION_INCOMPLETE');
+ const legacy=receipt.binaries[3],fixedFailure=receipt.binaries[2];
+ try{await phase('failed-stop-legacy-negative',process.execPath,[runner,legacy.path,'--stop-failure-control'],desktop,60000);throw Error('LEGACY_STOP_CONTROL_UNEXPECTED_SUCCESS');}
+ catch(error){assert.equal(error.code,1,'LEGACY_STOP_CONTROL_EXIT_UNEXPECTED');const native=JSON.parse(error.stdout.trim());receipt.legacyFailedStop=native;assert.equal(isExpectedFailedStopMonitorRefusal(native,{...fixed,addonSha256:legacy.sha256}),true,'LEGACY_STOP_CONTROL_NOT_THE_EXPECTED_CONTAINED_FAILURE');receipt.phases.find(p=>p.name==='failed-stop-legacy-negative').expectedRefusalVerified=true;}
+ const repaired=await phase('failed-stop-fixed-positive',process.execPath,[runner,fixedFailure.path,'--stop-failure-control'],desktop,60000);receipt.fixedFailedStop=JSON.parse(repaired.stdout.trim());
+ assert.equal(isFailedStopGuardComplete(receipt.fixedFailedStop,{...fixed,addonSha256:fixedFailure.sha256}),true,'FAILED_STOP_MONITOR_QUALIFICATION_INCOMPLETE');
  for(const artifact of [...receipt.sources,...receipt.binaries,compiler,link,receipt.msbuild])assert.equal(hash(await readFile(artifact.path)),artifact.sha256,'INPUT_IDENTITY_CHANGED');
  assert.equal(hash(await readFile(executable)),fixed.executableSha256);receipt.status='HOST_GUARD_CONTROL_VERIFIED_TERMINAL_NOT_ADMITTED';
 }catch(error){receipt.status='FAILED';receipt.error={code:error.code,message:error.message};throw error;}

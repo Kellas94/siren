@@ -2,6 +2,7 @@
 #include <node_api.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -20,10 +21,13 @@ struct Handle {
 struct Member {Handle process;DWORD pid=0;ULONGLONG created=0;std::wstring image;};
 struct Owner {
  Handle job;Member root;HANDLE wait=nullptr;std::vector<Member> held;bool closed=false;
+ std::mutex terminationLock;
+ DWORD injectedStopFailures=0;
  std::atomic<bool> stopping{false},monitorFired{false},monitorTerminateSucceeded{false};
  bool Dispose(){
   // Never close the watched process or free callback context before cancellation
-  // completes. Callback takes no JS/main-thread locks and never unregisters itself.
+  // completes. Never hold terminationLock while unregistering: the callback
+  // may be waiting for it. Callback takes no JS locks and never unregisters.
   if(wait&&!UnregisterWaitEx(wait,INVALID_HANDLE_VALUE))return false;
   wait=nullptr;job=Handle();root.process=Handle();held.clear();closed=true;return true;
  }
@@ -33,6 +37,7 @@ using Owned=std::unique_ptr<Owner,DeleteOwner>;
 void Finalize(napi_env,void* p,void*){DeleteOwner{}(static_cast<Owner*>(p));}
 void CALLBACK HostExit(PVOID context,BOOLEAN timedOut){
  auto* p=static_cast<Owner*>(context);if(timedOut)return;
+ std::lock_guard<std::mutex> lock(p->terminationLock);
  p->monitorFired.store(true);
  if(!p->stopping.load())p->monitorTerminateSucceeded.store(TerminateJobObject(p->job.h,79)!=FALSE);
 }
@@ -82,7 +87,7 @@ napi_value Snapshot(napi_env env,Owner* p){
  for(size_t i=0;i<p->held.size();i++){auto v=MemberValue(env,p->held[i]);if(!v)return nullptr;CHECK(napi_set_element(env,array,static_cast<uint32_t>(i),v));}
  auto root=MemberValue(env,p->root);if(!root)return nullptr;
  DWORD f=limits.BasicLimitInformation.LimitFlags;
- if(!Set(env,result,"active",Integer(env,count))||!Set(env,result,"root",root)||!Set(env,result,"held",array)||!Set(env,result,"killOnClose",Boolean(env,(f&JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)!=0))||!Set(env,result,"breakaway",Boolean(env,(f&(JOB_OBJECT_LIMIT_BREAKAWAY_OK|JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK))!=0))||!Set(env,result,"inheritable",Boolean(env,(flags&HANDLE_FLAG_INHERIT)!=0))||!Set(env,result,"monitorFired",Boolean(env,p->monitorFired.load()))||!Set(env,result,"monitorTerminateSucceeded",Boolean(env,p->monitorTerminateSucceeded.load())))return Refuse(env,"NAPI_FAILURE");return result;
+ if(!Set(env,result,"active",Integer(env,count))||!Set(env,result,"root",root)||!Set(env,result,"held",array)||!Set(env,result,"killOnClose",Boolean(env,(f&JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)!=0))||!Set(env,result,"breakaway",Boolean(env,(f&(JOB_OBJECT_LIMIT_BREAKAWAY_OK|JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK))!=0))||!Set(env,result,"inheritable",Boolean(env,(flags&HANDLE_FLAG_INHERIT)!=0))||!Set(env,result,"monitorFired",Boolean(env,p->monitorFired.load()))||!Set(env,result,"monitorTerminateSucceeded",Boolean(env,p->monitorTerminateSucceeded.load()))||!Set(env,result,"stopping",Boolean(env,p->stopping.load()))||!Set(env,result,"injectedStopFailures",Integer(env,p->injectedStopFailures)))return Refuse(env,"NAPI_FAILURE");return result;
 }
 napi_value Mark(napi_env env,napi_callback_info info){if(!Args(env,info,0,nullptr))return nullptr;napi_value result;CHECK(napi_create_bigint_uint64(env,Now(),&result));return result;}
 napi_value Start(napi_env env,napi_callback_info info){
@@ -115,7 +120,25 @@ napi_value Capture(napi_env env,napi_callback_info info){
 napi_value Stop(napi_env env,napi_callback_info info){
  napi_value a[2];if(!Args(env,info,2,a))return nullptr;auto* p=Get(env,a[0]);DWORD code;if(!p)return nullptr;if(p->closed)return Refuse(env,"OWNERSHIP_CLOSED");
  if(!Number(env,a[1],code)||(code!=77&&code!=98))return Refuse(env,"OWNERSHIP_REQUEST_REFUSED");
- p->stopping.store(true);if(!TerminateJobObject(p->job.h,code))return Refuse(env,"OWNERSHIP_STOP_FAILED");return Boolean(env,true);
+ std::lock_guard<std::mutex> lock(p->terminationLock);
+#ifdef SIREN_TEST_LEGACY_STOP_LATCH
+ // Deliberate test-only reproduction of the original failed-Stop latch.
+ p->stopping.store(true);
+#endif
+ BOOL terminated=FALSE;
+#ifdef SIREN_TEST_FAIL_SECOND_STOP
+ // Same source, fixed fault: Stop A succeeds; Stop B fails without making an
+ // OS termination call. Cleanup98 and the native callback79 are never faulted.
+ static std::atomic<unsigned> stop77Count{0};
+ if(code==77&&++stop77Count==2){++p->injectedStopFailures;SetLastError(ERROR_ACCESS_DENIED);}
+ else terminated=TerminateJobObject(p->job.h,code);
+#else
+ terminated=TerminateJobObject(p->job.h,code);
+#endif
+ if(!terminated)return Refuse(env,"OWNERSHIP_STOP_FAILED");
+ // A failed API call must leave host-loss monitoring armed. Serialize this
+ // decision with HostExit so a callback cannot skip during a failed request.
+ p->stopping.store(true);return Boolean(env,true);
 }
 napi_value Close(napi_env env,napi_callback_info info){
  napi_value a;if(!Args(env,info,1,&a))return nullptr;auto* p=Get(env,a);if(!p)return nullptr;if(p->closed)return Boolean(env,false);DWORD count=0;

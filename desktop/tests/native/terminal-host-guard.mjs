@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 const desktop=fileURLToPath(new URL('../../',import.meta.url));
 const output=join(desktop,'evidence/terminal-host-guard',new Date().toISOString().replaceAll(':','-'));
 const addon=resolve(process.argv[2]??join(desktop,'evidence/terminal-host-guard-build/not-built/terminal_host_guard.node'));
+const stopFailureControl=process.argv.includes('--stop-failure-control');
 for(let p=dirname(output);p!==parse(p).root;p=dirname(p)){
  try{assert.equal((await lstat(p)).isSymbolicLink(),false,`linked parent: ${p}`);}catch(e){if(e.code!=='ENOENT')throw e;}
 }
@@ -17,7 +18,7 @@ const hash=b=>createHash('sha256').update(b).digest('hex');
 const executable=join(desktop,'node_modules/electron/dist/electron.exe');
 const fixture=join(output,'fixed-job-child.exe'),compiler=join(process.env.SystemRoot,'Microsoft.NET/Framework64/v4.0.30319/csc.exe');
 const fixtureSource=join(desktop,'tests/fixtures/terminal-job-list.cs');
-const receipt={schema:1,scope:'Isolated actual Electron utility host Job and native host-death monitor; no session/ConPTY/product admission',admitted:false,output,addon,
+const receipt={schema:1,scope:'Isolated actual Electron utility host Job and native host-death monitor; no session/ConPTY/product admission',admitted:false,output,addon,stopFailureControl,
  runnerSha256:hash(await readFile(fileURLToPath(import.meta.url))),executableSha256:hash(await readFile(executable)),fixtureSourceSha256:hash(await readFile(fixtureSource)),compilerSha256:hash(await readFile(compiler))};
 try{receipt.addonSha256=hash(await readFile(addon));}catch(error){receipt.addonReadError=error.message;}
 const built=await promisify(execFile)(compiler,['/nologo','/optimize+','/platform:x64','/target:exe','/out:'+fixture,fixtureSource],{windowsHide:true,timeout:30000,maxBuffer:65536});
@@ -74,13 +75,21 @@ async function main(config){
   assert.equal(native.stop(a.owner,77),true);const stopped=await wait(()=>{const s=native.snapshot(a.owner);return s.active===0&&s.held.every(p=>!p.alive)?s:null;});
   assert.ok(stopped.held.every(p=>p.exitCode===77));result.stop=stopped;
   const untouched=native.snapshot(b.owner);assert.ok(untouched.active>=5);assert.ok(untouched.held.every(p=>p.alive));result.otherHostStillAlive=untouched;
+  if(config.stopFailureControl){
+   assert.throws(()=>native.stop(b.owner,77),{code:'OWNERSHIP_STOP_FAILED'});
+   const snapshot=native.snapshot(b.owner);assert.equal(snapshot.injectedStopFailures,1);assert.ok(snapshot.held.every(p=>p.alive));assert.equal(snapshot.active,untouched.active);
+   result.failedStop={code:'OWNERSHIP_STOP_FAILED',snapshot};
+  }
   const blockedAt=Date.now();b.h.postMessage({kind:'exit'});
   // A native worker must reap descendants while this JS event loop cannot run.
   while(Date.now()-blockedAt<2000){}
   const after=native.snapshot(b.owner);result.afterBlockedHostExit=after;result.blockedMs=Date.now()-blockedAt;
   assert.equal(after.root.alive,false,'HOST_DID_NOT_EXIT_DURING_BLOCK');
   assert.equal(after.active,0,'HOST_DEATH_LEFT_OWNED_DESCENDANTS');assert.ok(after.held.every(p=>!p.alive),'HOST_DEATH_LEFT_HELD_PROCESS');
-  assert.equal(after.monitorFired,true);assert.equal(after.monitorTerminateSucceeded,true);assert.ok(after.held.filter(p=>p.pid!==after.root.pid).every(p=>p.exitCode===79));
+  assert.equal(after.monitorFired,true);assert.equal(after.monitorTerminateSucceeded,true);
+  const canaries=result.cases[1].fixturePids;
+  for(const key of ['branch','grandchild','detached'])assert.ok(after.held.some(p=>p.pid===canaries[key]&&p.exitCode===79),'HOST_MONITOR_CANARY_EXIT_NOT_79');
+  assert.ok(after.held.filter(p=>p.pid!==after.root.pid).every(p=>p.exitCode===0||p.exitCode===79),'HOST_MONITOR_UNEXPECTED_EXIT');
   result.status='HOST_GUARD_PASSED';
  }catch(error){result.status='FAILED';result.error={code:error.code,message:error.message,stack:error.stack};}
  finally{
@@ -89,7 +98,7 @@ async function main(config){
   await writeFile(join(config.output,'native-result.json'),JSON.stringify(result,null,2),{flag:'wx'});app.exit(result.status==='HOST_GUARD_PASSED'?0:1);
  }
 }
-const config={output,addon,fixture,executable,conhost:join(process.env.SystemRoot,'System32/conhost.exe'),hostEntry:join(output,'host.mjs')};
+const config={output,addon,fixture,executable,stopFailureControl,conhost:join(process.env.SystemRoot,'System32/conhost.exe'),hostEntry:join(output,'host.mjs')};
 await writeFile(join(output,'package.json'),JSON.stringify({type:'module',main:'main.mjs'}),{flag:'wx'});
 await writeFile(config.hostEntry,`void (${host.toString()})(JSON.parse(process.argv[2]));`,{flag:'wx'});
 await writeFile(join(output,'main.mjs'),`void (${main.toString()})(${JSON.stringify(config)});`,{flag:'wx'});
