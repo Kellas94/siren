@@ -23,6 +23,9 @@ on:
       - 'desktop/tests/native/terminal-conpty-membership*.mjs'
       - 'desktop/tests/native/build-terminal-conpty-membership.mjs'
       - 'desktop/tests/fixtures/terminal-conpty-membership.cs'
+      - 'desktop/tests/native/terminal-conpty-broker-*.mjs'
+      - 'desktop/tests/native/build-terminal-conpty-broker-membership.mjs'
+      - 'desktop/tests/fixtures/terminal-conpty-broker-membership.cs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -75,7 +78,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs
           exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
@@ -117,7 +120,15 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-conpty-membership.mjs
           exit $LASTEXITCODE
+      - name: Observe helpers created inside atomically Session-contained workers
+        shell: pwsh
+        timeout-minutes: 2
+        run: |
+          node desktop/tests/native/build-terminal-conpty-broker-membership.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
+        # The new workers are a separate experiment; earlier results stay intact.
+        # Generated EXEs are evidence only, retained opaquely and never rerun.
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -153,4 +164,12 @@ jobs:
             desktop/evidence/terminal-conpty-membership/*/*.json
             desktop/evidence/terminal-conpty-membership/*/*.txt
             desktop/evidence/terminal-conpty-membership/*/study.log
+            desktop/evidence/terminal-conpty-broker-membership-build/*/receipt.json
+            desktop/evidence/terminal-conpty-broker-membership-build/*/*.txt
+            desktop/evidence/terminal-conpty-broker-membership/*/*.json
+            desktop/evidence/terminal-conpty-broker-membership/*/*/*.json
+            desktop/evidence/terminal-conpty-broker-membership/*/*.txt
+            desktop/evidence/terminal-conpty-broker-membership/*/*-partial.cs
+            desktop/evidence/terminal-conpty-broker-membership/*/broker-study.exe
+            desktop/evidence/terminal-conpty-broker-membership/*/study.log
           if-no-files-found: error
