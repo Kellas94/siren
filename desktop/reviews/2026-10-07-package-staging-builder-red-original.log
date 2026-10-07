@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: successful real package build removes its own staging and preserves its archive and historical sibling
+not ok 1 - successful real package build removes its own staging and preserves its archive and historical sibling
+  ---
+  duration_ms: 20483.0394
+  type: 'test'
+  location: 'C:\\Claude\\SIREN_WORK\\portable\\desktop\\tests\\package-staging-integration.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    This invocation must remove its own staging and preserve other staging
+    + actual - expected
+    
+      [
+        '.build-input-00000000-0000-4000-8000-000000000000',
+    +   '.build-input-2da8acf4-24d8-4a28-b2d3-d1309bde8cf2'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: '.build-input-00000000-0000-4000-8000-000000000000'
+  actual:
+    0: '.build-input-00000000-0000-4000-8000-000000000000'
+    1: '.build-input-2da8acf4-24d8-4a28-b2d3-d1309bde8cf2'
+  operator: 'deepStrictEqual'
+  stack: |-
+    assertHistoricalOnly (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/package-staging-integration.test.mjs:44:9)
+    async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/package-staging-integration.test.mjs:50:2)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: failed real package build removes its own populated staging and preserves original error and partial preview
+not ok 2 - failed real package build removes its own populated staging and preserves original error and partial preview
+  ---
+  duration_ms: 11541.222
+  type: 'test'
+  location: 'C:\\Claude\\SIREN_WORK\\portable\\desktop\\tests\\package-staging-integration.test.mjs:54:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    This invocation must remove its own staging and preserve other staging
+    + actual - expected
+    
+      [
+        '.build-input-00000000-0000-4000-8000-000000000000',
+    +   '.build-input-daebb47c-e6f6-494e-8089-abe1c5e4f9d5'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: '.build-input-00000000-0000-4000-8000-000000000000'
+  actual:
+    0: '.build-input-00000000-0000-4000-8000-000000000000'
+    1: '.build-input-daebb47c-e6f6-494e-8089-abe1c5e4f9d5'
+  operator: 'deepStrictEqual'
+  stack: |-
+    assertHistoricalOnly (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/package-staging-integration.test.mjs:44:9)
+    async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/package-staging-integration.test.mjs:57:2)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32257.6196

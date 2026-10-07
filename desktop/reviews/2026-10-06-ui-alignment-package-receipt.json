@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "implementer-copied-package-evidence",
+  "sourceCommit": "8636a3728b0e760ff8316f35e4c0a1d78d22981c",
+  "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-db94586e-cc8f-4db9-ab69-8cd3c08ef244",
+  "archive": {
+    "bytes": 53607834,
+    "sha256": "97343bddaa709da39da11154964121a39664f98214a83e99de4941ae5e5d79e1"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "byteCheck": {
+    "author": "/root",
+    "sourceCommit": "8636a3728b0e760ff8316f35e4c0a1d78d22981c",
+    "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-db94586e-cc8f-4db9-ab69-8cd3c08ef244",
+    "files": 243,
+    "archive": {
+      "bytes": 53607834,
+      "sha256": "97343bddaa709da39da11154964121a39664f98214a83e99de4941ae5e5d79e1"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "exactApplicationBytes": true,
+    "unchangedElectronRuntime": true,
+    "releaseAdmitted": false
+  },
+  "closedSet": {
+    "author": "/root",
+    "sourceCommit": "8636a3728b0e760ff8316f35e4c0a1d78d22981c",
+    "archive": {
+      "bytes": 53607834,
+      "sha256": "97343bddaa709da39da11154964121a39664f98214a83e99de4941ae5e5d79e1"
+    },
+    "uniqueActualFiles": 243,
+    "expectedFiles": 243,
+    "noExtraOrMissing": true,
+    "noUnpackedOrLinkEntries": true
+  },
+  "status": "COMPLETE",
+  "runs": [
+    {
+      "name": "portable",
+      "resultPath": "evidence\\packaged-2026-10-05T21-40-33.447Z\\result.json",
+      "resultSha256": "11c275f03f13bf7b999abfcc03c642108ba8f8bedbbba6d5938ff373c44c21ab",
+      "logSha256": "356d12adecf041a872902adb1a8ff90a269596517324b7a87c7404023bf66f4d",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": null,
+      "inputs": null,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\packaged-2026-10-05T21-40-33.447Z\\Mutat-Știință-2",
+        "evidence\\packaged-2026-10-05T21-40-33.447Z\\Pachet-Știință-1",
+        "evidence\\packaged-2026-10-05T21-40-33.447Z\\Siguranță-readonly-3"
+      ]
+    },
+    {
+      "name": "export300k",
+      "resultPath": "evidence\\diagram-export\\2026-10-05T21-40-58.237Z\\result.json",
+      "resultSha256": "099d6d5fe34f32537a126bb9a0a510ee2b6e9e42f50038f5de2e03c6b2865972",
+      "logSha256": "498f907a529a92bdafe1652866a3874b384f092387fc43a4729fca201b7200f8",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 5,
+      "inputs": 16,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\diagram-export\\2026-10-05T21-40-58.237Z\\Pachet-Știință-SVG"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "diagram-dock300k",
+      "resultPath": "evidence\\diagram-dock\\2026-10-05T21-41-16.312Z\\result.json",
+      "resultSha256": "43c3f0e2a245b8bb1ae12fecc78ea58c5adcd1597f004caf861ff0d0bc8c3ba7",
+      "logSha256": "b9888e5f7fe13665da5804e363d4451658c147180194b49dcecb4cc3aa43eaa6",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 5,
+      "inputs": 20,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\diagram-dock\\2026-10-05T21-41-16.312Z\\Pachet-Știință-Docking"
+      ],
+      "lineCount": 300000
+    }
+  ],
+  "sourceReceipt": "reviews/2026-10-06-ui-alignment-root-source-receipt.json",
+  "releaseAdmitted": false,
+  "scope": "Three sequential root-owned actual copied-package runs: unchanged original portable recovery/PIN/Unicode flow, DiagramExport300k5 and DiagramDock300k5. No independent Electron execution, hosted query-cancellation cause, package upload qualification, wholeTask4/6, physical monitors/cleanPC/production admission."
+}

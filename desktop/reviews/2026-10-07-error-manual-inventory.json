@@ -1,0 +1,376 @@
+{
+  "schema": 1,
+  "author": {
+    "agent": "/root/catalogue_view",
+    "role": "read-only inventory author"
+  },
+  "capturedAt": "2026-10-07T13:15:06.3542392Z",
+  "status": "STATIC_INVENTORY_NOT_IMPLEMENTATION_APPROVAL",
+  "scope": {
+    "productEdits": false,
+    "dependencyChanges": false,
+    "applicationExecution": false,
+    "testsRun": false,
+    "guiRun": false,
+    "buildRun": false,
+    "releaseApproval": false
+  },
+  "sourceIdentities": [
+    {
+      "path": "src/ipc.mjs",
+      "bytes": 3197,
+      "sha256": "1f33543d72438a8ce3c2198db1d5999bb90d54111de6cb37e4626dea1946f34a"
+    },
+    {
+      "path": "src/preload.cjs",
+      "bytes": 7352,
+      "sha256": "906f300cb814d752eb2e559b1e218508f76e7428f0b522c607e2e5018edb420f"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 107163,
+      "sha256": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275"
+    },
+    {
+      "path": "src/ui/workspace/guide.js",
+      "bytes": 7883,
+      "sha256": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7"
+    },
+    {
+      "path": "src/ui/workspace/home.js",
+      "bytes": 33858,
+      "sha256": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4"
+    },
+    {
+      "path": "src/ui/desktop.js",
+      "bytes": 26592,
+      "sha256": "e524dd33ec1a7ca7fb8299f6630d7efc8069d2114c3a27bc5e40351455171139"
+    },
+    {
+      "path": "src/ui/shared/shell.js",
+      "bytes": 7452,
+      "sha256": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b"
+    },
+    {
+      "path": "src/account/local-pin.mjs",
+      "bytes": 12893,
+      "sha256": "a41f4d6868820973b92f568239934b4d1a669db317b4388aed049e225b6eb537"
+    },
+    {
+      "path": "src/account/pin-protection.mjs",
+      "bytes": 4765,
+      "sha256": "1e47f90e02e0e17b29c6cc26ee555c85fdeebea289cb6e4bf66b0c2b437d79fb"
+    },
+    {
+      "path": "src/recovery/diagnostics.mjs",
+      "bytes": 2018,
+      "sha256": "85c70a246cbe28ea10c9337cd3f4a5ffff2a12cc1eed13d42c5e67e8112af486"
+    },
+    {
+      "path": "src/recovery/sessions.mjs",
+      "bytes": 3915,
+      "sha256": "e3d0dd9c67c09194ea8fd1886832b1d40a063d2c83b6f239ce6c9cb2e03cc333"
+    },
+    {
+      "path": "src/recovery/processes.mjs",
+      "bytes": 3437,
+      "sha256": "031a1e273479e2be9b0d0b21451f96f8653bd7bc4befdb40f8428440944ac02a"
+    },
+    {
+      "path": "src/projects/store.mjs",
+      "bytes": 10585,
+      "sha256": "0052752b42e0ac0dc8154903514bb4658e15f403813b91b81a35b8d07b0c5971"
+    },
+    {
+      "path": "src/projects/paths.mjs",
+      "bytes": 1219,
+      "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+    },
+    {
+      "path": "src/projects/import-status.mjs",
+      "bytes": 512,
+      "sha256": "720e3de3fa3fa3574a37bb9f30322d4ac331d6b2403d436cb412251bff5818e5"
+    },
+    {
+      "path": "src/navigation/source-import.mjs",
+      "bytes": 3223,
+      "sha256": "cb00426e176a47406da1a24192979ab09fd1111191e7fba40a1ae3c3ddbfee3a"
+    },
+    {
+      "path": "src/navigation/backup-export.mjs",
+      "bytes": 3342,
+      "sha256": "2b814ae5380b0a3ed0a7768d08f76f53ba379222458f58a6a84c976371ae165b"
+    },
+    {
+      "path": "src/navigation/project-copies.mjs",
+      "bytes": 3515,
+      "sha256": "5742ea54c0ed761812b1d4b92e122850db79047b8bccd24fe24143e63ccfedc9"
+    },
+    {
+      "path": "src/sources/repository.mjs",
+      "bytes": 23261,
+      "sha256": "ce4ba2ff620af9961b0b389b28c258491b5f13423ce32e1bd298ebf8d047b2e4"
+    },
+    {
+      "path": "src/sources/text-model.mjs",
+      "bytes": 12864,
+      "sha256": "359274f92067872fa11435e3e7aede8161ee2b7510b4930664173f85f10aa585"
+    },
+    {
+      "path": "src/sources/analysis.mjs",
+      "bytes": 7592,
+      "sha256": "27ce1cd2e44a94f95b0f32a22a20166aca6cafea092d198092c7a445e7f98511"
+    },
+    {
+      "path": "src/windows/domain.mjs",
+      "bytes": 18018,
+      "sha256": "66924038eb8534280c3a7ee03da9d22322236d5cbd95e29b6362fb0db830eb3e"
+    },
+    {
+      "path": "src/windows/source-analysis.mjs",
+      "bytes": 7159,
+      "sha256": "20a59671f9b0fc18edc7c629c607f8bf74f2685385a45e5669ab767fb3eec24e"
+    },
+    {
+      "path": "src/windows/diagram-export.mjs",
+      "bytes": 6761,
+      "sha256": "f9aef5b688a413cb9bd70b59c4e2aaf419bdc78bf3d300249ffdfb7226b03186"
+    },
+    {
+      "path": "src/windows/docs-export.mjs",
+      "bytes": 7459,
+      "sha256": "830e68a837af9715d6bddd745965753b123f4fc3df675eef4f80317e2465c5d7"
+    },
+    {
+      "path": "src/windows/presenter-export.mjs",
+      "bytes": 6826,
+      "sha256": "6d3c647ccab4eef5bedd2b241d974232e24b0c3169af58dd36dddc2e513daf1a"
+    },
+    {
+      "path": "src/windows/coordinator.mjs",
+      "bytes": 30433,
+      "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+    },
+    {
+      "path": "src/windows/registry.mjs",
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    {
+      "path": "src/windows/layout.mjs",
+      "bytes": 12121,
+      "sha256": "89117e479be516b674abd2b4aee3babb7aa58ac8c54ad79401c8cb288f20ca45"
+    },
+    {
+      "path": "src/windows/dock-ipc.mjs",
+      "bytes": 2382,
+      "sha256": "d5939036488b304f21307f8a5c12a50ff1308462aaba9e68a355c8b245ab226f"
+    },
+    {
+      "path": "src/windows/presentation.mjs",
+      "bytes": 13193,
+      "sha256": "12ec79a34cdd253b0f9f68e00eecfb53ca6fcd19452f7b62cfe10a0d5967925e"
+    },
+    {
+      "path": "src/windows/diagram-catalogue.mjs",
+      "bytes": 7171,
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0"
+    },
+    {
+      "path": "src/ui/diagram/catalogue-view.js",
+      "bytes": 14759,
+      "sha256": "881b1e02e9198a1ff94edc3ab00edb15b6612fa511ca6c67b6a78b39f8aba167"
+    },
+    {
+      "path": "src/ui/windows/diagram.js",
+      "bytes": 29079,
+      "sha256": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1"
+    },
+    {
+      "path": "src/ui/code/analysis.js",
+      "bytes": 17096,
+      "sha256": "e3052cd4c131c685a70fa1ceee1ccc8a2c7bc65043d95ff6d1f6da831fe1c4e4"
+    },
+    {
+      "path": "src/appearance/store.mjs",
+      "bytes": 3899,
+      "sha256": "8741e13ba72a8f8711e8a719db3c2b6880b45d80549dfda589f9c583ea9f374e"
+    },
+    {
+      "path": "src/appearance/ipc.mjs",
+      "bytes": 1791,
+      "sha256": "a734cfb2aa0ced3f985a739b1bbcb7e57b1c2cbf3f9e63d02d2da38b80f811a8"
+    },
+    {
+      "path": "src/updates/service.mjs",
+      "bytes": 7049,
+      "sha256": "482c25ae7587b18699bb611137b979f87b1b1a9cc44f0efcc146513c41fcc587"
+    },
+    {
+      "path": "src/updates/manifest.mjs",
+      "bytes": 6272,
+      "sha256": "75c654ecd0a7fa538b54775f67701d7a4faeacb25198793d644ec23c768f0d60"
+    },
+    {
+      "path": "build/workspace.mjs",
+      "bytes": 2960,
+      "sha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44"
+    }
+  ],
+  "inventory": "../docs/research/2026-10-07-siren-error-manual-inventory.md",
+  "families": [
+    {
+      "id": "01",
+      "title": "Acces și cereri native",
+      "actualCodesOrMessages": "SENDER_REFUSED, REQUEST_REFUSED, PIN_REQUIRED, UNAVAILABLE, WORKSPACE_NOT_READY",
+      "sourcePointers": "src/ipc.mjs:28–36; src/windows/registry.mjs:563–635",
+      "boundedInterpretation": "Caller/payload neacceptat, acces local blocat, serviciu absent sau deschidere nefinalizată. WORKSPACE_NOT_READY are deja îndrumarea «Wait…then retry»; celelalte nu identifică singure cauza. Nu sugera dezactivarea verificărilor."
+    },
+    {
+      "id": "02",
+      "title": "Introducere și schimbare PIN",
+      "actualCodesOrMessages": "WRONG_PIN, INVALID_PIN, PIN_COOLDOWN, PIN_NOT_CONFIGURED, PIN_LOCKED",
+      "sourcePointers": "src/account/local-pin.mjs:112–114,143–147,168–212",
+      "boundedInterpretation": "PIN greșit, format/confirmare neacceptate sau operație revocată. Folosește retryAfterMs real pentru cooldown; nu inventa durate. Nu documenta reset prin ștergerea fișierelor."
+    },
+    {
+      "id": "03",
+      "title": "Stocare protejată PIN",
+      "actualCodesOrMessages": "PIN_STORAGE_UNAVAILABLE; PIN_PROTECTION_FAILED (intern)",
+      "sourcePointers": "src/account/local-pin.mjs:58–83,164; src/account/pin-protection.mjs:10–49",
+      "boundedInterpretation": "Mai multe verificări/erori sunt agregate în indisponibilitatea stocării; nu se poate concluziona doar din cod că PIN-ul a fost uitat sau cheia pierdută. Mesajul existent spune că datele sunt păstrate."
+    },
+    {
+      "id": "04",
+      "title": "Pornire sigură și recuperare",
+      "actualCodesOrMessages": "mode readonly/recovery + reason; PROCESS_RESULT_INVALID cu reason (intern)",
+      "sourcePointers": "src/recovery/sessions.mjs:43–57; src/recovery/processes.mjs:4–40; src/ui/desktop.js:165–187",
+      "boundedInterpretation": "Jurnal invalid sau identitate de proces necunoscută duc la readonly; trei porniri neînchise în cinci minute pot selecta recovery. Distinge aceste stări de eroarea proiectului. UI oferă copii verificate și exportul originalului deteriorat."
+    },
+    {
+      "id": "05",
+      "title": "Salvare proiect și concurență",
+      "actualCodesOrMessages": "REVISION_CONFLICT, WRITER_BUSY, SAVE_FAILED, SCHEMA_UNSUPPORTED",
+      "sourcePointers": "src/projects/store.mjs:103–120",
+      "boundedInterpretation": "Altă revizie, writer ocupat, format neacceptat sau salvare neconfirmată. Mesajele cer păstrarea/exportul lucrului și verificarea Recovery. «Nu a fost confirmat» nu dovedește că nicio scriere nu s-a produs."
+    },
+    {
+      "id": "06",
+      "title": "Import de cod și limite",
+      "actualCodesOrMessages": "SOURCE_BUDGET, UNSUPPORTED_ENCODING, SOURCE_IMPORT_FAILED",
+      "sourcePointers": "src/navigation/source-import.mjs:15–17,29–32; src/ui/workspace/home.js:20",
+      "boundedInterpretation": "Importul curent cere UTF-8 și maximum 32 MiB pentru o sursă; UI spune explicit să salvezi ca UTF-8. Nu transforma pragul în număr de linii sau recomandare de tăiere automată."
+    },
+    {
+      "id": "07",
+      "title": "Integritatea surselor stocate",
+      "actualCodesOrMessages": "CORRUPT_SOURCE, IMMUTABLE_CONFLICT, SOURCE_READBACK_FAILED, SOURCE_PROOF_FAILED",
+      "sourcePointers": "src/sources/repository.mjs:93–141,244–291",
+      "boundedInterpretation": "Identitatea, lanțul sau readback-ul nu corespund verificărilor. Codul nu identifică discul ori cauza externă. Nu recomanda rescriere de hash, înlocuire blob sau ignorarea verificării."
+    },
+    {
+      "id": "08",
+      "title": "Editări și versiuni Code",
+      "actualCodesOrMessages": "REVISION_CONFLICT, OPERATION_CONFLICT, OPERATION_ID_REUSE, SOURCE_MISMATCH, VERSION_EXHAUSTED",
+      "sourcePointers": "src/sources/repository.mjs:224–247,301–336; src/sources/text-model.mjs:145–183",
+      "boundedInterpretation": "Versiune sau operație nepotrivită; OPERATION_ID_REUSE există la model și poate fi agregat de straturi superioare. Guide explică Open latest separately și Replace with latest cu confirmare; nu promite merge automat."
+    },
+    {
+      "id": "09",
+      "title": "Validare Docs/Diagram și referințe",
+      "actualCodesOrMessages": "DOMAIN_VALIDATION_FAILED, DOCUMENT_CONFLICT, DOMAIN_VERSION_CHANGED, REFERENCE_TARGET_REFUSED, UNKNOWN_SOURCE_REFERENCE",
+      "sourcePointers": "src/windows/domain.mjs:83–93,119–147",
+      "boundedInterpretation": "Contractul domeniului, versiunea ori referința nu este acceptată. Mesajul manualului trebuie contextualizat cu operația Docs/Diagram, nu dedus dintr-un cod generic; conținutul importat opac nu se repară prin ștergere."
+    },
+    {
+      "id": "10",
+      "title": "Randare Mermaid și panouri",
+      "actualCodesOrMessages": "Mesaj fără cod: preview could not render; prag 50,000 characters",
+      "sourcePointers": "src/ui/windows/diagram.js:102; src/ui/workspace/guide.js:1",
+      "boundedInterpretation": "Preview reține sursa și proiectul; cauza exactă nu este expusă aici. Separă limită, sintaxă Mermaid și tip de diagramă numai dacă există informația reală. Text/Guided/Build au capacități diferite; nu promite drag/edit tuturor tipurilor."
+    },
+    {
+      "id": "11",
+      "title": "Analiză Python și comparație",
+      "actualCodesOrMessages": "ANALYSIS_BUSY, LANGUAGE_NOT_SUPPORTED; status partial/budget-exceeded/cancelled/error; WALL_BUDGET, WORKER_IDENTITY_REFUSED, SOURCE_HASH_MISMATCH",
+      "sourcePointers": "src/windows/source-analysis.mjs:78–80; src/sources/analysis.mjs:49–91; src/ui/code/analysis.js:81–88",
+      "boundedInterpretation": "Complete/partial și coverage descriu analiza statică, nu execuție Python. Partial, anularea și sintaxa detectată nu sunt automat crash. Identitatea worker-ului nu se ocolește; nu există aici instalare interpreter ca remediu."
+    },
+    {
+      "id": "12",
+      "title": "Export SVG, documente și notițe",
+      "actualCodesOrMessages": "EXPORT_BUSY, EXPORT_CHANGED, DIAGRAM_VERSION_CHANGED, DOCUMENT_VERSION_CHANGED, SVG_RENDER_REFUSED, SVG_EXPORT_FAILED, DOCS_EXPORT_FAILED",
+      "sourcePointers": "src/windows/diagram-export.mjs:34–63; src/windows/docs-export.mjs:36–67; src/windows/presenter-export.mjs:31 onward",
+      "boundedInterpretation": "Exporturile folosesc versiunea salvată și readback; Reveal verifică fișierul. Guide cere Save înainte de SVG. Busy și version changed diferă de eșecul scrierii. Nu expune calea privată din eroarea internă."
+    },
+    {
+      "id": "13",
+      "title": "Backup salvat și destinație",
+      "actualCodesOrMessages": "BACKUP_BUDGET, BACKUP_UNAVAILABLE, BACKUP_WRITE_FAILED, EXPORT_COMMITTED, CANCELLED",
+      "sourcePointers": "src/navigation/backup-export.mjs:7,27–53; src/ui/workspace/guide.js:2",
+      "boundedInterpretation": "Backup de peste 64 MiB este refuzat. EXPORT_COMMITTED înseamnă salvat înainte de schimbarea accesului; BACKUP_WRITE_FAILED cere verificarea destinației înainte de retry. Nu afișa «nu s-a creat nimic» pentru aceste stări."
+    },
+    {
+      "id": "14",
+      "title": "Lock/Close/Quit și lucru în curs",
+      "actualCodesOrMessages": "INSPECTOR_EDIT_PENDING, GUIDED_EDIT_PENDING; SOURCE_FLUSH_FAILED, WORKSPACE_FLUSH_FAILED, WINDOW_DESTROY_FAILED",
+      "sourcePointers": "src/ui/windows/diagram.js:146; src/windows/coordinator.mjs:249,285; src/main.mjs:263",
+      "boundedInterpretation": "Câmp nefinalizat, flush/probă absentă sau protecție nativă incompletă pot refuza tranziția. Codul GUIDED_EDIT_PENDING este folosit și când commit Style/Build nu reușește; numele nu identifică singur panoul. Nu afirma Lock confirmat dacă native destruction a eșuat."
+    },
+    {
+      "id": "15",
+      "title": "Ferestre, docking și monitoare",
+      "actualCodesOrMessages": "VIEW_REFUSED, OPERATION_FAILED; NATIVE_LAYOUT_CANCELLED/INCOMPLETE (interne)",
+      "sourcePointers": "src/windows/dock-ipc.mjs:18–35; src/windows/layout.mjs:53–105; src/windows/registry.mjs:136–162",
+      "boundedInterpretation": "Ținta/grantul poate fi necurent sau plasarea neconfirmată. Guide oferă shelf, Ctrl+Alt+1 și Bring all windows back; acestea sunt controale existente, nu remedii garantate pentru toate erorile."
+    },
+    {
+      "id": "16",
+      "title": "Presenter și Audience",
+      "actualCodesOrMessages": "PRESENTATION_POSITION_REFUSED, PRESENTATION_RENDER_BUSY, PRESENTATION_SUPERSEDED, PUBLIC_SLIDE_REFUSED, AUDIENCE_FRAME_UNAVAILABLE, AUDIENCE_ACK_REFUSED",
+      "sourcePointers": "src/windows/presentation.mjs:66–101; src/ui/workspace/home.js:130",
+      "boundedInterpretation": "Secvență/versiune, randare ori livrare refuzată; superseded poate fi anulare normală de o navigare mai nouă. Guide spune că un slide nesuportat păstrează ultimul public frame. Nu declara că un slide nou a ajuns în Audience fără dovadă."
+    },
+    {
+      "id": "17",
+      "title": "Temă și preferințe",
+      "actualCodesOrMessages": "INVALID_APPEARANCE, APPEARANCE_WRITE_FAILED; warning cu fallback system",
+      "sourcePointers": "src/appearance/store.mjs:17–42; src/appearance/ipc.mjs:16–25",
+      "boundedInterpretation": "Citire invalidă ori scriere neconfirmată; diagnostic intern limitat la phase/code. Nu atribui automat ENOSPC dacă nu a fost observat. Fallback-ul de citire nu înseamnă că fișierul a fost reparat."
+    },
+    {
+      "id": "18",
+      "title": "Actualizări și încredere",
+      "actualCodesOrMessages": "PUBLISHER_NOT_CONFIGURED, TRUST_STATE_INVALID, NO_VERIFIED_UPDATE, CHECK_FAILED, DOWNLOAD_FAILED, AUTO_CHECK_FAILED; HELPER_NOT_QUALIFIED",
+      "sourcePointers": "src/updates/service.mjs:30–77; src/updates/manifest.mjs:44–76; src/main.mjs:321; src/ui/workspace/home.js:137–139",
+      "boundedInterpretation": "Configurație absentă, trust refuzat sau operație nereușită. Verificările de semnătură/manifest au adesea excepții interne agregate în CHECK_FAILED. UI distinge descărcat/verificat de instalare încă necalificată; nu recomanda ocolirea semnăturii sau ștergerea high-water."
+    },
+    {
+      "id": "19",
+      "title": "Proiecte importate și conversie",
+      "actualCodesOrMessages": "PROJECT_UNAVAILABLE, RECOVERY_REQUIRED, MIGRATION_INCOMPLETE; BUNDLE_IMPORT_INCOMPLETE (intern)",
+      "sourcePointers": "src/ui/workspace/guide.js:2; src/ui/workspace/home.js:20; src/projects/import-status.mjs:6; src/navigation/project-copies.mjs",
+      "boundedInterpretation": "UI spune că originalul și copia parțială rămân păstrate când conversia nu se termină. BUNDLE_IMPORT_INCOMPLETE este marker de admitere intern, nu mesaj cu diagnostic de fișier complet. Nu promite conversie în loc sau curățarea automată a originalului."
+    },
+    {
+      "id": "20",
+      "title": "Catalog: creat, dar nedeschis",
+      "actualCodesOrMessages": "CATALOGUE_CREATION_FAILED, OPEN_UNAVAILABLE, ENTITY_REFUSED; receipt creation/current/opening",
+      "sourcePointers": "src/windows/diagram-catalogue.mjs:73–94; src/ui/diagram/catalogue-view.js:100–108",
+      "boundedInterpretation": "Creation și opening sunt rezultate distincte. UI oferă Retry opening saved diagram păstrând aceeași operație; nu genera automat un nou operationId sau o diagramă duplicată. current.available=false nu anulează proba creării."
+    }
+  ],
+  "limits": [
+    "20 selected families are not an exhaustive error-code count.",
+    "Source snippets and related boundaries were inspected statically; no runtime occurrence reproduced.",
+    "Hashes identify files at capture; no assertion that these bytes equal owner-announced beab3cf build inputs.",
+    "Terminal pure foundation codes are excluded from shipped-user manual until native admission.",
+    "Account/backend and AI configuration are deferred; don't advertise functional online recovery/account support."
+  ],
+  "integrationGaps": [
+    "Home dispatcher homeMethods does not admit exportDiagnostics; current Desktop panel does. A deliberate native-scoped route is needed for Home.",
+    "Help/Guide content split between Home guide registry and legacy Desktop guide; a shared static catalog would reduce divergence.",
+    "No global structured per-error registry; generic codes reused with different operation meanings.",
+    "Diagnostic schema excludes paths/content/credentials and does not contain error codes or a log tail; do not claim it captures an error history."
+  ]
+}

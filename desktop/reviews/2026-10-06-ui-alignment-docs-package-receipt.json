@@ -1,0 +1,39 @@
+{
+  "author": "/root",
+  "kind": "implementer-original-copied-package-docs-execution",
+  "sourceCommit": "8636a3728b0e760ff8316f35e4c0a1d78d22981c",
+  "status": "COMPLETE",
+  "cases": 4,
+  "lineCount": 300000,
+  "inputs": 28,
+  "resultPath": "evidence\\docs-edit\\2026-10-05T21-43-22.709Z\\result.json",
+  "resultSha256": "af47c64a3617916684b02ee9dd16269555bb60c41d319f678bbf27f218ed4c3b",
+  "copy": "evidence\\docs-edit\\2026-10-05T21-43-22.709Z\\Pachet-Știință-Docs",
+  "archive": {
+    "bytes": 53607834,
+    "sha256": "97343bddaa709da39da11154964121a39664f98214a83e99de4941ae5e5d79e1"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "files": [
+    {
+      "path": "evidence\\docs-edit\\2026-10-05T21-43-22.709Z\\electron.log",
+      "bytes": 11192,
+      "sha256": "debcac608c2646d5807235de28ad93e9ad853508de3d08081351a56e4dcc0dc8"
+    },
+    {
+      "path": "evidence\\docs-edit\\2026-10-05T21-43-22.709Z\\docs-light.png",
+      "bytes": 34256,
+      "sha256": "7651d56305c53147cccac98cad24a0b8cd633517e1a64345ec558a731f2f554d"
+    },
+    {
+      "path": "evidence\\docs-edit\\2026-10-05T21-43-22.709Z\\docs-dark.png",
+      "bytes": 34229,
+      "sha256": "c1d1261c0c530b25bc19ef6445a8a842962ad2e7a921c4e11eccf44b451a924f"
+    }
+  ],
+  "scope": "Actual native Docs title/plain text/heading editing, frozen validation, independent document saves, dirty conflict/local retention, real Lock refusal and all-view Lock with immutable Code. No advanced block editor or physical-monitor qualification.",
+  "releaseAdmitted": false
+}

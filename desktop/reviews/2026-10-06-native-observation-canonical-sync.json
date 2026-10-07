@@ -1,0 +1,52 @@
+{
+  "author": "/root",
+  "kind": "guarded-diagnostic-sync-not-product-or-hosted-approval",
+  "localBase": "378a0485eb02cd44f6224e0ded6ede1e0a3f9d37",
+  "localHead": "518a3306404c031f3b6c48a92e567efbd7a95712",
+  "productSource": "fd20b76d586ce0fb2d925692de49d5f98222c66b",
+  "remoteParent": "67896f9bdd73cb8e08ef92e2a653263b7da649fa",
+  "canonicalHead": "0631a784d4b7e2c56256c285e4377484e60b72f0",
+  "tree": "0bd04129d431da8ac415cc20af6addce5dab6dff",
+  "blobCount": 1569,
+  "preservedUntouched": 1561,
+  "changedEntries": 8,
+  "exactLocalBlobChanges": [
+    {
+      "path": "desktop/reviews/2026-10-06-guided-focus-canonical-sync.json",
+      "sha": "7dd3a2efbf10330b4086ea59bfb5fdc1c840eccf"
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-guided-focus-hosted-adverse-evidence.md",
+      "sha": "3b2a32368116b4c7d202c90b5d78ebfc01c60c23"
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-guided-focus-hosted-adverse-receipt.json",
+      "sha": "f7a8275d66805c10d4e06294b41abcd91756b451"
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-hosted-adverse-observation-independent.md",
+      "sha": "0efd16d60810063bbb56071de9b8c523fed5f0b2"
+    },
+    {
+      "path": "desktop/reviews/2026-10-06-native-export-delivery-boundary-analysis.md",
+      "sha": "485e1ea333f6ae7aa3d9eaa1224cbd62d44b364a"
+    },
+    {
+      "path": "desktop/tests/native/docs-context.mjs",
+      "sha": "090c745b0c024d17871203aa484917211dc30f21"
+    },
+    {
+      "path": "desktop/tests/native/guided-intro.mjs",
+      "sha": "fe2fd67128a47c4402d65ca5d8f351dc90a04d85"
+    }
+  ],
+  "canonicalIgnorePrefixPreserved": true,
+  "run": 37524176999,
+  "status": "IN_PROGRESS",
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "limits": [
+    "Diagnostic event traces only; no product fix claimed",
+    "Original failed runs/artifacts retained",
+    "No merge/release/installed replacement"
+  ]
+}

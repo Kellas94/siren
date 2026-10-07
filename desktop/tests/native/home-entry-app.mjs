@@ -1,0 +1,156 @@
+import {app,BrowserWindow,protocol,net,ipcMain,safeStorage} from 'electron';
+import assert from 'node:assert/strict';
+import {readFile,writeFile,readdir} from 'node:fs/promises';
+import {join,resolve,relative,isAbsolute} from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+import {setTimeout as delay} from 'node:timers/promises';
+import {HomeAuthority} from '../../src/navigation/authority.mjs';
+import {HomeService} from '../../src/navigation/service.mjs';
+import {invokeHome} from '../../src/navigation/ipc.mjs';
+import {NavigationStore} from '../../src/navigation/store.mjs';
+import {ProjectCatalog} from '../../src/navigation/catalog.mjs';
+import {ProjectStore} from '../../src/projects/store.mjs';
+import {LocalPinAccess} from '../../src/account/local-pin.mjs';
+import {resolveLocalResource} from '../../src/protocol.mjs';
+import {expectedHomeResources,hasOnlyHomeResources} from './home-entry-resources.mjs';
+const desktop=fileURLToPath(new URL('../../',import.meta.url)),root=resolve(process.argv.find(v=>v.startsWith('--siren-home-fixture='))?.slice('--siren-home-fixture='.length)||'');
+const rel=relative(join(desktop,'evidence/home-entry'),root);if(!rel||rel.startsWith('..')||isAbsolute(rel))throw Error('OWNED_HOME_FIXTURE_REQUIRED');
+app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()=>{});
+protocol.registerSchemesAsPrivileged([{scheme:'siren',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
+app.whenReady().then(async()=>{
+  const result={status:'ADVERSE',scope:'Standalone Home build, genuine native metadata authority and protected PIN in an owned single-window fixture; not production route/all-view transition admission',pid:process.pid,cases:[],observedPhases:[],requests:[],versions:process.versions};
+  let window,authority;
+  const progress=()=>writeFile(join(root,'native-progress.json'),JSON.stringify(result,null,2));
+  try{
+    const prepared=JSON.parse(await readFile(join(root,'prepared.json'),'utf8'));
+    const hash=b=>createHash('sha256').update(b).digest('hex');
+    assert.equal(hash(await readFile(join(root,'generated/home.html'))),prepared.build.sha256);
+    assert.equal(hash(await readFile(join(root,'owned-preload.cjs'))),prepared.preloadSHA256);
+    const data=join(root,'owned-data'),projects=new ProjectStore(data),navigation=new NavigationStore(data),catalog=new ProjectCatalog(data);
+    const pin=new LocalPinAccess(data,safeStorage);await pin.initialize();assert.equal(pin.state().available,true);
+    let projectId=null,generation=1,mode='normal',opening='intro',metadataCalls=0;
+    const state=()=>({projectId,mode,readonly:mode!=='normal',views:[],capabilities:{diagrams:false,docs:false,code:false,present:false}});
+    const service=new HomeService({projects,navigation,catalog,selection:{state},resolveEntity:async()=>({ok:false,code:'ENTITY_UNAVAILABLE'})});
+    protocol.handle('siren',async request=>{result.requests.push(request.url);try{return net.fetch(pathToFileURL(await resolveLocalResource({url:request.url,rendererRoot:join(root,'generated')})).href);}catch{return new Response('Refused',{status:403});}});
+    window=new BrowserWindow({show:false,width:1280,height:920,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,preload:join(root,'owned-preload.cjs')}});
+    window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+    const genuine=event=>event.sender===window.webContents&&event.senderFrame===window.webContents.mainFrame&&event.senderFrame.url==='siren://app/home.html'&&window.webContents.getURL()===event.senderFrame.url;
+    authority=new HomeAuthority({workspace:window,state:()=>({unlocked:pin.state().unlocked,projectId,mode,generation})});
+    ipcMain.on('owned:bootstrap',event=>{event.returnValue=genuine(event)?{mode:pin.state().unlocked?mode:'locked',readonly:!pin.state().unlocked||mode!=='normal',snapshot:null,localAccess:true,pin:pin.state(),opening}:null;});
+    ipcMain.on('owned:ready',event=>{if(genuine(event))result.ready=true;});
+    ipcMain.handle('owned:pin',async(event,method,payload)=>{
+      if(!genuine(event))return {ok:false,code:'ACCESS_REFUSED'};
+      if(method==='getPinState')return pin.state();
+      if(method==='setupPin'||method==='unlockPin'){const reply=await pin[method==='setupPin'?'setup':'unlock'](payload);if(reply.ok){opening='none';generation++;authority.invalidate();}return reply;}
+      if(method==='lockPin'){authority.invalidate();generation++;pin.lock();opening='none';window.webContents.send('owned:invalidated');return {ok:true};}
+      return {ok:false,code:'UNAVAILABLE'};
+    });
+    let delayMetadata=false,metadataEntered=false,releaseMetadata;
+    ipcMain.handle('owned:home',(event,method,payload)=>{if(method==='getHomeState')metadataCalls++;return invokeHome({event,method,payload,authority,services:{getHomeState:async(input,scope)=>{const state=await service.getHomeState(input,scope);if(delayMetadata){metadataEntered=true;await new Promise(resolve=>{releaseMetadata=resolve;});}return state;}}});});
+    const evaluate=code=>window.webContents.executeJavaScript(code);
+    const wait=async(code)=>{const until=Date.now()+30000;while(Date.now()<until){if(await evaluate(code))return;await delay(25);}throw Error('Home condition not met: '+code);};
+    const screenshot=async name=>{
+      // DOM load is not a compositor receipt. Capture only after the owned page
+      // has actually painted; retain the first failed capture as adverse evidence.
+      await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+      await writeFile(join(root,name+'.png'),(await window.webContents.capturePage()).toPNG());
+    };
+    const click=async selector=>{
+      const point=await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing control');const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.disabled||!e.contains(document.elementFromPoint(x,y)))throw Error('Control is not actionable');return {x,y};})()`);
+      window.webContents.sendInputEvent({type:'mouseDown',button:'left',clickCount:1,...point});window.webContents.sendInputEvent({type:'mouseUp',button:'left',clickCount:1,...point});await delay(50);
+    };
+    const keys=async text=>{for(const keyCode of text){window.webContents.sendInputEvent({type:'char',keyCode});await delay(30);}};
+    // Qualify the animated and reduced-motion cases explicitly. The host's
+    // accessibility preference may skip intro; loadURL completion may also
+    // arrive after its timer. Observe actual renderer frames from navigation.
+    await window.loadURL('about:blank');
+    await progress();
+    window.webContents.debugger.attach('1.3');
+    await window.webContents.debugger.sendCommand('Page.enable');
+    await window.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await window.webContents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument',{source:`window.ownedOpeningFrames=[];const observe=()=>{const intro=document.getElementById('sirenIntroOverlay'),pin=document.getElementById('desktopAccessScreen');window.ownedOpeningFrames.push({at:performance.now(),intro:!!intro&&!intro.hidden,pin:!!pin?.open,homeChildren:document.getElementById('homeRoot')?.children.length??0,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches});if(!pin?.open&&window.ownedOpeningFrames.length<600)requestAnimationFrame(observe);};requestAnimationFrame(observe);`});
+    window.show();await window.loadURL('siren://app/home.html');
+    await wait('window.ownedOpeningFrames?.some(frame=>frame.intro)===true');
+    result.openingFrames=await evaluate('window.ownedOpeningFrames');
+    assert.equal(result.openingFrames.some(frame=>frame.reduced),false);
+    assert.equal(result.openingFrames.every(frame=>frame.homeChildren===0),true);
+    result.observedPhases.push('intro');
+    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);assert.equal(metadataCalls,0);
+    if(await evaluate('document.getElementById("sirenIntroOverlay").hidden===false'))await screenshot('intro');else result.introCaptureSkippedAfterCompletion=true;
+    await wait('document.getElementById("desktopAccessScreen")?.open===true');result.observedPhases.push('pin');
+    await wait('(()=>{const s=document.getElementById("desktopAccessScreen"),c=s.querySelector(".desktop-pin-centre");return Number(getComputedStyle(s).opacity)>.99&&Number(getComputedStyle(c).opacity)>.99&&c.getAnimations().every(a=>a.playState!=="running");})()');
+    assert.equal(await evaluate('document.getElementById("sirenIntroOverlay").hidden'),true);
+    assert.equal((await evaluate('window.sirenHome.getHomeState({})')).code,'ACCESS_REFUSED');
+    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);await screenshot('pin');
+    await wait('document.getElementById("desktopAccessScreen")?.dataset.stage==="new"');
+    await keys('4826');await wait('document.getElementById("desktopAccessScreen")?.dataset.stage==="confirm"');await keys('4826');
+    await wait('document.getElementById("homeNewProject")!=null');result.observedPhases.push('home');
+    assert.deepEqual(result.observedPhases,['intro','pin','home']);assert.equal(pin.state().unlocked,true);
+    const dirs=await readdir(join(data,'Projects')).catch(error=>error.code==='ENOENT'?[]:Promise.reject(error));assert.equal(dirs.length,0);
+    assert.equal(await evaluate('document.getElementById("homeContinue")===null'),true);await screenshot('home-empty');
+    assert.equal(hasOnlyHomeResources(result.requests),true);
+    for(const url of expectedHomeResources)assert.ok(result.requests.includes(url),'Genuine Home resource must load: '+url);
+    result.cases.push({name:'real intro, protected PIN setup and empty Home without scratch project or diagram request',status:'COMPLETE'});await progress();
+    const privateText='PLANTED_PRIVATE_SOURCE_NEVER_HOME';const label='Owned <img src=x onerror="alert(1)"> workspace';
+    const selected=await projects.createProject({label,json:JSON.stringify({docs:privateText,privateDraft:privateText})});projectId=selected.project.id;generation++;authority.invalidate();
+    await navigation.record({projectId,label,location:{surface:'docs',entityId:'doc-unavailable'},visitedAt:'2026-10-03T13:00:00.000Z'});
+    const before=await projects.readProject(projectId);await window.reload();await wait('document.getElementById("homeContinue")!=null');
+    assert.equal(await evaluate('document.querySelector(".home-project-details strong").textContent'),label);
+    assert.equal(await evaluate('document.querySelectorAll("#homeRoot img").length'),0);
+    assert.equal(await evaluate(`document.body.textContent.includes(${JSON.stringify(privateText)})`),false);
+    assert.equal(await evaluate('Object.keys(window.sirenHome).some(k=>/source|saveProject|readProject/i.test(k))'),false);
+    await click('#homeContinue');await wait('document.getElementById("homeStatus").textContent.includes("not connected")');
+    await click('#homeNewProject');await keys('Retained name');await evaluate('document.querySelector(".home-create form").requestSubmit()');
+    await wait('document.getElementById("homeCreateStatus").textContent.includes("not connected")');assert.equal(await evaluate('document.getElementById("homeProjectName").value'),'Retained name');
+    await evaluate('document.querySelector(".home-create").close()');
+    assert.deepEqual(await projects.readProject(projectId),before);
+    await evaluate('document.documentElement.style.colorScheme="light"');
+    const lightPaint=await evaluate('getComputedStyle(document.documentElement).backgroundColor');await screenshot('home-light');
+    result.cases.push({name:'metadata labels are inert text; no content mirror, false Continue or lost create input on unavailable native destinations',status:'COMPLETE'});await progress();
+    await click('#homeLock');await wait('document.getElementById("desktopAccessScreen")?.open===true');
+    assert.equal(pin.state().unlocked,false);assert.equal(await evaluate('document.getElementById("sirenIntroOverlay").hidden'),true);
+    assert.equal(await evaluate(`document.body.textContent.includes(${JSON.stringify(label)})`),false);assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);
+    await keys('0000');await wait('/incorrect/i.test(document.getElementById("desktopAccessStatus")?.textContent||"")');await keys('4826');await wait('document.getElementById("homeContinue")!=null');
+    assert.deepEqual(await projects.readProject(projectId),before);
+    result.cases.push({name:'Home-only native Lock clears metadata, skips intro, rejects wrong PIN and restores unchanged project after unlock',status:'COMPLETE'});await progress();
+    window.webContents.setZoomFactor(2);window.setSize(1280,1000);await delay(100);
+    const layout=await evaluate(`(()=>{const r=document.querySelector('.home-content').getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth,cols:getComputedStyle(document.querySelector('.home-module-grid')).gridTemplateColumns.split(' ').length,title:r.width>0};})()`);
+    assert.equal(layout.overflow,false);assert.equal(layout.cols,2);assert.equal(layout.title,true);await screenshot('home-200-percent');
+    window.webContents.setZoomFactor(1);window.setSize(1280,920);
+    await evaluate('document.documentElement.style.colorScheme="dark"');await delay(100);
+    const darkPaint=await evaluate('getComputedStyle(document.documentElement).backgroundColor');assert.notEqual(darkPaint,lightPaint);result.paint={light:lightPaint,dark:darkPaint};await screenshot('home-dark');
+    await evaluate('document.getElementById("homeNewProject").focus()');
+    window.webContents.sendInputEvent({type:'keyDown',keyCode:'Tab'});window.webContents.sendInputEvent({type:'keyUp',keyCode:'Tab'});
+    await wait('document.activeElement.classList.contains("home-project-row")');
+    window.webContents.sendInputEvent({type:'keyDown',keyCode:'Return'});
+    window.webContents.sendInputEvent({type:'char',keyCode:'\r'});
+    window.webContents.sendInputEvent({type:'keyUp',keyCode:'Return'});
+    await wait('document.getElementById("homeStatus").textContent.includes("not connected")');
+    mode='readonly';generation++;authority.invalidate();window.reload();await wait('document.querySelector(".home-warning")!=null');
+    assert.equal(await evaluate('document.getElementById("homeNewProject").disabled'),true);assert.equal(await evaluate('document.querySelector(".home-warning").textContent.startsWith("Read-only")'),true);
+    assert.deepEqual(await projects.readProject(projectId),before);await screenshot('home-readonly');
+    result.cases.push({name:'native 200% responsive layout, dark paint and readonly creation refusal preserve exact project',status:'COMPLETE'});
+    delayMetadata=true;await evaluate('window.ownedPendingRefresh=window.sirenHomeView.refresh();true');
+    const until=Date.now()+30000;while(!metadataEntered&&Date.now()<until)await delay(25);assert.equal(metadataEntered,true);
+    authority.invalidate();generation++;pin.lock();window.webContents.send('owned:invalidated');releaseMetadata();
+    assert.equal(await evaluate('window.ownedPendingRefresh'),false);
+    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);
+    assert.equal(await evaluate(`document.body.textContent.includes(${JSON.stringify(label)})`),false);
+    assert.deepEqual(await projects.readProject(projectId),before);
+    result.cases.push({name:'actual Home authority rejects pending metadata at native Lock; renderer clears old labels and late result cannot republish',status:'COMPLETE'});await progress();
+    delayMetadata=false;opening='intro';
+    await window.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    window.reload();await wait('document.getElementById("desktopAccessScreen")?.open===true');
+    assert.equal(await evaluate('matchMedia("(prefers-reduced-motion: reduce)").matches'),true);
+    assert.equal(await evaluate('document.getElementById("sirenIntroOverlay").hidden'),true);
+    assert.equal(await evaluate('document.getAnimations().some(a=>a.playState==="running")'),false);
+    assert.equal(await evaluate('document.getElementById("homeRoot").children.length'),0);await screenshot('pin-reduced-motion');
+    window.webContents.debugger.detach();
+    result.cases.push({name:'native keyboard focus and activation; actual reduced-motion startup skips intro animation without exposing Home metadata',status:'COMPLETE'});
+    result.requestsOnlyHome=result.requests.every(url=>url==='siren://app/home.html');
+    result.requestsOnlyHomeResources=hasOnlyHomeResources(result.requests);assert.equal(result.requestsOnlyHomeResources,true);
+    result.status='COMPLETE';result.finished=new Date().toISOString();
+  }catch(error){result.error={message:error.message,stack:error.stack};try{if(window&&!window.isDestroyed())await writeFile(join(root,'failure.png'),(await window.webContents.capturePage()).toPNG());}catch{}}
+  finally{authority?.invalidate();if(window&&!window.isDestroyed())window.destroy();result.remainingWindows=BrowserWindow.getAllWindows().length;await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));app.exit(result.status==='COMPLETE'?0:1);}
+});

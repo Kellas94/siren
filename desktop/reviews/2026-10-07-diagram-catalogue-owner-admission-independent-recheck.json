@@ -1,0 +1,274 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "role": "Independent recheck of a separately root-authored correction; this reviewer did not modify product source or original tests",
+  "utc": "2026-10-07T09:19:11.165Z",
+  "status": "SCOPED_INDEPENDENT_RECHECK_PASS",
+  "finding": "CATALOGUE_OPEN_BIRTH_MARKER_REBIND",
+  "closure": "Previously reproduced three finite service negatives now pass unchanged; the narrowly reviewed contract defect is corrected at the tested boundaries. No overall GUI/product/release approval.",
+  "inputs": {
+    "src/windows/diagram-create.mjs": {
+      "bytes": 10556,
+      "sha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa"
+    },
+    "src/windows/diagram-catalogue.mjs": {
+      "bytes": 7171,
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0"
+    },
+    "src/windows/coordinator.mjs": {
+      "bytes": 30433,
+      "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+    },
+    "src/windows/registry.mjs": {
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    "src/windows/domain.mjs": {
+      "bytes": 17411,
+      "sha256": "a9de1dcf8de5b5dfd17593b66c1ec4b68d16f21f22d7970a78b9977f5caadd41"
+    },
+    "src/sources/manifest.mjs": {
+      "bytes": 14796,
+      "sha256": "d49f1eaa8387f1ed0e257640bc2d325797a71c397b092a68e272c0d991c1f234"
+    },
+    "tests/diagram-catalogue-append.test.mjs": {
+      "bytes": 13308,
+      "sha256": "d42bfa3ec8ec20ee851635693c3f339f160e471de11789a6f013ce2f43d142b6"
+    },
+    "tests/diagram-catalogue-owner.test.mjs": {
+      "bytes": 8357,
+      "sha256": "15e87afaec11d4d7b6da6c4cdc30db000031ebc3136e053e8e8d81e0629ac4e6"
+    },
+    "tests/diagram-catalogue-admission.test.mjs": {
+      "bytes": 7388,
+      "sha256": "208c364da29c47a45811cc59f2ed6c4edff6972eec790eb4aa9df8486be7efd7"
+    },
+    "tests/fixtures/catalogue-context.mjs": {
+      "bytes": 4072,
+      "sha256": "b50b29b379ae757cb27c8fa1614ee62e40f3ab3ff3954e405ca9cb7d30ff9f33"
+    },
+    "evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs": {
+      "bytes": 6259,
+      "sha256": "9a52d6cb7b7eeaf8f28a2b7b67ae894e5a8f36b8ff3cbd2842cdcacb8c16f563"
+    },
+    "evidence/workspace-surface/catalogue-owner-admission-independent-cleanup.test.mjs": {
+      "bytes": 2924,
+      "sha256": "6bbe1ae4ef6064f05e85b536b80634923da20cd463120fdbd98f272beb487c4b"
+    },
+    "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.json": {
+      "bytes": 13185,
+      "sha256": "43464739955463c149195def2744ce98710a5d9a9e2a7d86cc208d89f0b3fee5"
+    },
+    "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.md": {
+      "bytes": 3274,
+      "sha256": "445482f9daf0d091af4e3e1487d060c17628f6d824d8e1c407ff35f03a5337dc"
+    }
+  },
+  "afterInputs": {
+    "src/windows/diagram-create.mjs": {
+      "bytes": 10556,
+      "sha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa"
+    },
+    "src/windows/diagram-catalogue.mjs": {
+      "bytes": 7171,
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0"
+    },
+    "src/windows/coordinator.mjs": {
+      "bytes": 30433,
+      "sha256": "60fe7050dbca34911c417b3a1951f94caf68b0a9063692e11a62a940726c5bf1"
+    },
+    "src/windows/registry.mjs": {
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    "src/windows/domain.mjs": {
+      "bytes": 17411,
+      "sha256": "a9de1dcf8de5b5dfd17593b66c1ec4b68d16f21f22d7970a78b9977f5caadd41"
+    },
+    "src/sources/manifest.mjs": {
+      "bytes": 14796,
+      "sha256": "d49f1eaa8387f1ed0e257640bc2d325797a71c397b092a68e272c0d991c1f234"
+    },
+    "tests/diagram-catalogue-append.test.mjs": {
+      "bytes": 13308,
+      "sha256": "d42bfa3ec8ec20ee851635693c3f339f160e471de11789a6f013ce2f43d142b6"
+    },
+    "tests/diagram-catalogue-owner.test.mjs": {
+      "bytes": 8357,
+      "sha256": "15e87afaec11d4d7b6da6c4cdc30db000031ebc3136e053e8e8d81e0629ac4e6"
+    },
+    "tests/diagram-catalogue-admission.test.mjs": {
+      "bytes": 7388,
+      "sha256": "208c364da29c47a45811cc59f2ed6c4edff6972eec790eb4aa9df8486be7efd7"
+    },
+    "tests/fixtures/catalogue-context.mjs": {
+      "bytes": 4072,
+      "sha256": "b50b29b379ae757cb27c8fa1614ee62e40f3ab3ff3954e405ca9cb7d30ff9f33"
+    },
+    "evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs": {
+      "bytes": 6259,
+      "sha256": "9a52d6cb7b7eeaf8f28a2b7b67ae894e5a8f36b8ff3cbd2842cdcacb8c16f563"
+    },
+    "evidence/workspace-surface/catalogue-owner-admission-independent-cleanup.test.mjs": {
+      "bytes": 2924,
+      "sha256": "6bbe1ae4ef6064f05e85b536b80634923da20cd463120fdbd98f272beb487c4b"
+    },
+    "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.json": {
+      "bytes": 13185,
+      "sha256": "43464739955463c149195def2744ce98710a5d9a9e2a7d86cc208d89f0b3fee5"
+    },
+    "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.md": {
+      "bytes": 3274,
+      "sha256": "445482f9daf0d091af4e3e1487d060c17628f6d824d8e1c407ff35f03a5337dc"
+    }
+  },
+  "changedInputs": [],
+  "executionOriginal": {
+    "path": "evidence/workspace-surface/catalogue-owner-admission-independent-recheck/execution-original.json",
+    "sha256": "574171705c09fdded4360a5c6742cbb84cb0716d43cf9a71f6ae19af453b962a"
+  },
+  "results": [
+    {
+      "name": "unchanged-independent-eight",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "--test-timeout=20000",
+        "evidence/workspace-surface/catalogue-owner-admission-independent-probes-corrected.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/workspace-surface/catalogue-owner-admission-independent-recheck/unchanged-independent-eight-original.txt",
+      "logSha256": "cd4d3d7dd0a16ee85b0b756e4f903deb9bd6350631ea0363b369a089954cd6e0"
+    },
+    {
+      "name": "new-independent-handle-cleanup",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "--test-timeout=20000",
+        "evidence/workspace-surface/catalogue-owner-admission-independent-cleanup.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/workspace-surface/catalogue-owner-admission-independent-recheck/new-independent-handle-cleanup-original.txt",
+      "logSha256": "e1026506708b0d0800790df5db9c10b5785563338d95a8c2b00e6aa39930c47b"
+    },
+    {
+      "name": "related-contracts",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "--test-timeout=20000",
+        "tests/diagram-catalogue-append.test.mjs",
+        "tests/diagram-catalogue-owner.test.mjs",
+        "tests/diagram-catalogue-admission.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "tests": 38,
+      "pass": 38,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/workspace-surface/catalogue-owner-admission-independent-recheck/related-contracts-original.txt",
+      "logSha256": "954de3bf8740193e1c2fc7fd368122892b9667ea125c1f2e3c4f84af689765cc"
+    }
+  ],
+  "totalFiniteTests": 49,
+  "totalPass": 49,
+  "originalAdversePreserved": {
+    "json": {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.json",
+      "sha256": "43464739955463c149195def2744ce98710a5d9a9e2a7d86cc208d89f0b3fee5"
+    },
+    "md": {
+      "path": "reviews/2026-10-07-diagram-catalogue-owner-admission-independent.md",
+      "sha256": "445482f9daf0d091af4e3e1487d060c17628f6d824d8e1c407ff35f03a5337dc"
+    },
+    "unchangedEightProbeSha256": "9a52d6cb7b7eeaf8f28a2b7b67ae894e5a8f36b8ff3cbd2842cdcacb8c16f563",
+    "originalOutcome": "8 tests,5PASS/3FAIL,0cancel; original source snapshots and failed outputs retained unchanged"
+  },
+  "rootCorrection": {
+    "helper": {
+      "path": "src/windows/diagram-create.mjs",
+      "sha256": "9bf87c2eb3fbc2e2be728668d0c6189e25e787b8fa6328107cb525a513910aaa"
+    },
+    "service": {
+      "path": "src/windows/diagram-catalogue.mjs",
+      "sha256": "e98defd490e92b95b008a305cae696774d5ad1bfefc4fb1bc5f7748992d556f0"
+    },
+    "analysis": "matchesCatalogueCreation derives the exact expected birth marker from normalized request, trusted catalogue and actual created UUID, comparing the complete marker while allowing later current entity fields to differ. Service passes normalized request to each availability check, including after factory/admit/show and return; renderer receipt remains projected without the private marker."
+  },
+  "cleanupObservations": [
+    {
+      "phase": "factory",
+      "opening": {
+        "ok": false,
+        "code": "ACCESS_REFUSED"
+      },
+      "registeredCount": 4,
+      "newWindowDestroyed": true,
+      "newContentsDestroyed": true,
+      "oldHandlesPreserved": true,
+      "shownCalls": 0,
+      "persistedRevision": 4,
+      "alteredMarkerPreserved": true
+    },
+    {
+      "phase": "admission",
+      "opening": {
+        "ok": false,
+        "code": "OPEN_UNAVAILABLE"
+      },
+      "registeredCount": 4,
+      "newWindowDestroyed": true,
+      "newContentsDestroyed": true,
+      "oldHandlesPreserved": true,
+      "shownCalls": 0,
+      "persistedRevision": 4,
+      "alteredMarkerPreserved": true
+    },
+    {
+      "phase": "show",
+      "opening": {
+        "ok": false,
+        "code": "ACCESS_REFUSED"
+      },
+      "registeredCount": 4,
+      "newWindowDestroyed": true,
+      "newContentsDestroyed": true,
+      "oldHandlesPreserved": true,
+      "shownCalls": 1,
+      "persistedRevision": 4,
+      "alteredMarkerPreserved": true
+    }
+  ],
+  "cleanupScope": "Real registry disposal contract acting on simulated native window/webContents handles, not Electron GUI destruction. After show mutation there is exactly one show adapter call before post-show refusal and disposal; no never-shown claim.",
+  "controls": [
+    "Unchanged eight probes now8/8 including three altered-marker after-await negatives",
+    "Three additional independent cleanup controls confirm destroyed new window+contents, removed capture/registration, preserved original four handles, and retained altered durable revision4",
+    "Related three existing contract files38/38; root’s additional39th marker-helper unit is not included in this independent execution count",
+    "Duplicate operation/window dedup, conflicting title, cloned frame, monotonic pause/roster revocation, post-FIFO admission and concurrent caller confidentiality remain passing within these finite probes"
+  ],
+  "scopeLimits": [
+    "No GUI/build/main/preload/UI/native multi-monitor or physical IME execution by this reviewer.",
+    "No64-opening stress, universal source audit or global registry budget qualification.",
+    "Original adverse report/probes are preserved; no retrospective hosted-pan cause closure or release approval.",
+    "CLI timeout for recheck executions was20s (initial corrected negative execution used15s); unchanged probe source and actions/assertions were identical, all three recheck suites completed in seconds."
+  ],
+  "noNewValidatedBlockerInReviewedScope": true
+}

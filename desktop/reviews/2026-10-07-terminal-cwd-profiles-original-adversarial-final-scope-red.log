@@ -1,0 +1,159 @@
+✔ exact ten Terminal methods accept only their complete typed request and normalize an immutable copy (2.6977ms)
+✔ Terminal requests reject unsafe identifiers, numeric coercion, omitted fields and dimension overflow (0.3282ms)
+✔ prototype-bearing, accessor, symbol and hidden payload fields are refused without executing getters (0.2749ms)
+✔ terminal input is bounded by exact UTF-8 bytes and refuses malformed UTF-16 without partial normalization (2.2032ms)
+✔ invalid Terminal payload is refused before dispatch and valid dispatch receives only the immutable copy (0.72ms)
+✔ frozen Terminal default budgets equal the approved finite limits (0.1929ms)
+✔ cwd defaults refuse authority before invoking picker or filesystem (4.287ms)
+✔ cwd returns only immutable public grant and resolves same-project eligible peer (2.2658ms)
+✔ cwd literal native paths preserve drive roots Unicode and shell punctuation (2.1047ms)
+✔ cwd cancellation and empty or multiple picker results never choose a fallback (0.5874ms)
+✔ cwd denies malformed path namespaces components and invalid Unicode (1.6069ms)
+✔ cwd refuses protected root equality descendants case aliases and normalized traversal (0.6253ms)
+✔ cwd refuses redirected leaf or reparse ancestors without trusting canonical label (1.3825ms)
+✔ cwd revalidates selected identity and every ancestor instead of silently retargeting (0.9619ms)
+✔ cwd missing inaccessible or file directory provider never returns an alternate path (0.8736ms)
+✔ cwd guards reject copied foreign stale and disallowed role grants (0.6378ms)
+✔ cwd locked readonly recovery and nonwritable views cannot select or resolve (0.9403ms)
+✔ cwd picker completion cannot survive admission rollback or revoke (0.3481ms)
+✔ cwd admission is rechecked after each protected-root and selected-directory await (0.3407ms)
+✔ cwd resolve rechecks authority after every filesystem await (0.6525ms)
+✔ cwd revoke and dispose invalidate old tokens and in-flight work permanently (0.6849ms)
+✔ cwd bounded tokens never evict live authority and concurrent picker capacity is finite (0.7706ms)
+✔ cwd stale completion after revoke cannot consume the new generation capacity (0.3322ms)
+✔ cwd provider getters and asynchronous truthy authority are refused (0.2846ms)
+✔ cwd missing protection or inspection provider never grants a token (0.2192ms)
+✖ cwd final authorization cannot revoke the scope and then return a late token (0.6779ms)
+✖ cwd final resolve guard cannot dispose authority and still deliver a path (0.3844ms)
+✖ cwd current guard cannot reentrantly revoke admission on the final return check (0.3417ms)
+✖ cwd native device aliases are outside the admitted local pathname policy (0.2452ms)
+✔ cwd rejected inspections redact provider exceptions and retain capacity (0.2901ms)
+✔ Terminal policy defaults to refusing sender identity; matching plain fields never mint native authority (0.6643ms)
+✔ workspace may configure/list/create/stop, but only terminal role may attach/input/resize/ACK/detach (0.7623ms)
+✔ PIN and epoch are checked on every call, including passive session metadata (0.1208ms)
+✔ readonly and recovery expose only passive eligible metadata; unknown modes refuse everything (0.119ms)
+✔ native session, project and current attachment identity are required for leased operations (0.134ms)
+✔ failed or asynchronous authority providers cannot authorize a synchronous input fence (0.1963ms)
+✔ normal app mode never upgrades a current read-only view to shell execution (0.154ms)
+✔ profile defaults do not discover files or issue a usable executable (2.2367ms)
+✔ profile list is immutable and exposes no native executable argv or environment (1.4077ms)
+✔ profile resolver returns absolute fixed interactive PowerShell envelope without commands (0.636ms)
+✔ profile missing native OS root or executable remains unavailable without PATH fallback (1.6261ms)
+✔ profile unknown optional ids and caller startup arguments cannot select a shell (0.3588ms)
+✔ profile revalidates pinned executable and directory identities after discovery (1.5863ms)
+✔ profile refuses native file evidence with missing ancestry identity or accessor fields (0.7315ms)
+✔ profile environment strips injection keys without mutating native OS snapshot (0.3875ms)
+✔ profile refuses duplicate case-folded environment variables and non-data snapshots (1.2469ms)
+✔ profile total environment budget refuses oversized aggregate without silent truncation (0.5725ms)
+✔ profile scope is checked after OS-directory and executable awaits on list (0.238ms)
+✔ profile scope is checked after each resolve await including environment snapshot (0.3899ms)
+✔ profile revoke never revives an old asynchronous discovery and dispose is permanent (0.286ms)
+✔ profile concurrent operations are bounded without permanently consuming capacity on failure (0.2856ms)
+✔ profile asynchronous truthy or throwing authorization cannot discover a shell (0.2421ms)
+✔ usable native profile envelope never becomes a renderer supplied create authority (0.3622ms)
+✖ profile final scope check cannot reentrantly revoke and deliver executable or env (0.6599ms)
+✖ profile final native guard cannot dispose and still return a usable envelope (0.5099ms)
+✔ profile replacement during environment await is rechecked before returning envelope (0.2534ms)
+✔ profile concurrent discovery never accepts two different pinned native identities (0.6118ms)
+✔ profile missing required OS variables or malformed private-key policy refuses (0.506ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 52
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.6093
+
+✖ failing tests:
+
+test at tests\terminal-cwd.test.mjs:40:1
+✖ cwd final authorization cannot revoke the scope and then return a late token (0.6779ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:40:334)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests\terminal-cwd.test.mjs:41:1
+✖ cwd final resolve guard cannot dispose authority and still deliver a path (0.3844ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+  
+  Caught error:
+  
+  Error: CWD_REFUSED
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:41:379)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: CWD_REFUSED
+        at refuse (file:///C:/Claude/SIREN_WORK/portable/desktop/src/terminal/cwd.mjs:17:27)
+        at CwdAuthority.resolve (file:///C:/Claude/SIREN_WORK/portable/desktop/src/terminal/cwd.mjs:89:133)
+        at file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:41:399
+        at waitForActual (node:assert:632:21)
+        at strict.rejects (node:assert:769:31)
+        at rejects (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:19:33)
+        at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:41:385)
+        at async Test.run (node:internal/test_runner/test:1313:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:897:7),
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests\terminal-cwd.test.mjs:42:1
+✖ cwd current guard cannot reentrantly revoke admission on the final return check (0.3417ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:42:362)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests\terminal-cwd.test.mjs:43:1
+✖ cwd native device aliases are outside the admitted local pathname policy (0.2452ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-cwd.test.mjs:43:237)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests\terminal-profiles.test.mjs:25:1
+✖ profile final scope check cannot reentrantly revoke and deliver executable or env (0.6599ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-profiles.test.mjs:25:340)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests\terminal-profiles.test.mjs:26:1
+✖ profile final native guard cannot dispose and still return a usable envelope (0.5099ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/terminal-profiles.test.mjs:26:361)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -1,0 +1,2575 @@
+{
+  "author": "/root",
+  "status": "SCOPED_RETAINED_HOSTED_READBACK_COMPLETE",
+  "runId": 37591120593,
+  "conclusion": "failure",
+  "triggerCommit": "e60ded0df0da84bd55ea55dd9f13e16001ca95f6",
+  "sourceCommit": "9e3d72b5d6904ec96e8f36a78000438346081ee3",
+  "originalReport": {
+    "path": "reviews/2026-10-07-diagram-pan-lease-hosted-evidence.json",
+    "bytes": 2738758,
+    "sha256": "96da499bce0ed71930a77e39be7aac55c8bd8f24ef92124aaee455df914c55ac"
+  },
+  "originalMarkdown": {
+    "path": "reviews/2026-10-07-diagram-pan-lease-hosted-evidence.md",
+    "bytes": 4624,
+    "sha256": "fd8364bae276491c9a2af76a96a2c60668a8c0f53817bf4ace9273fd9e987d45"
+  },
+  "archives": [
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-sources-evidence-original.zip",
+      "bytes": 3708137,
+      "sha256": "99382df35130bee69472c96445dedd7b048094f1b782f087fe5a9366f70da105"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original.zip",
+      "bytes": 2110931,
+      "sha256": "5d056d762ab350427057eed4d372d0c85bb3aeec0548a150d1dbf5616f4fb6bf"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original.zip",
+      "bytes": 4973441,
+      "sha256": "4796e94f6a3199162a6c489096b818b6a248c2284ea5a22398c4f8322887ef7a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original.zip",
+      "bytes": 8534415,
+      "sha256": "b97e8c78480336d6978506d77d52837135784473c77c14c3c19cadb86bdac76d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-development-evidence-original.zip",
+      "bytes": 73895,
+      "sha256": "b33de768ff7763d1c915d22b84efd8850b5bdf6b55662f5898d6d707700f6f92"
+    }
+  ],
+  "members": [
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\explicit-text-no-python-structure.png",
+      "bytes": 75962,
+      "sha256": "ead7b350bd91f7ca282ef20126b3b6627c16fc2357b97f6ef225bef994db4b5b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\home-code-context-kpmg.png",
+      "bytes": 114482,
+      "sha256": "e7cb968abe788b5a6e0c48b14d13f984b4ae915a49dbb2897decd6ee0489599d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\readonly-code-commands.png",
+      "bytes": 66098,
+      "sha256": "7bf75806cf809b93e4fe907e6db13e738dea8e7fa53550f4f6ed00fcf45d387f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\result.json",
+      "bytes": 141850,
+      "sha256": "b23494af40014a4d17a4307484401c9c38402e92710716143ebdda9ecffecf3b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\same-name-saved-comparison.png",
+      "bytes": 88978,
+      "sha256": "156f5ee1321060986aece340401ac801e9f860c04d8b06819eae8396ce2cfd8f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-14-20.481Z\\working-saved-python-index.png",
+      "bytes": 91573,
+      "sha256": "9811bb27f5fc7a328ba3505f428e3d5b4d36e20748d5ac31a3dbeba7c8fe3fe8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-view-flush\\2026-10-07T08-13-26.408Z\\electron.log",
+      "bytes": 24,
+      "sha256": "5196e6bce7f54fd1c04891f9e7044c9550e491bb7459ba4bb72928151c185ec0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-view-flush\\2026-10-07T08-13-26.408Z\\native-progress.json",
+      "bytes": 3355,
+      "sha256": "0c9f8de9cb3ce73a2b1b1d11dca7c0e1684d3e6d6085ec78a6c2911067db4318"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-view-flush\\2026-10-07T08-13-26.408Z\\native-result.json",
+      "bytes": 3565,
+      "sha256": "a76fe024c343c3116fbbea560ebe194c570a2785bc2ee33417d43068d3a072ea"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-view-flush\\2026-10-07T08-13-26.408Z\\prepared.json",
+      "bytes": 21501,
+      "sha256": "dba7e0c85517e0ea43c93adb78ea1c38585486fccee0e4b344f725dac81f3a37"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\code-view-flush\\2026-10-07T08-13-26.408Z\\result.json",
+      "bytes": 40109,
+      "sha256": "50502bda8ac6988f0eb69403c3694961378d6032fefa1afde3347108f54a1444"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-edit\\2026-10-07T08-12-17.930Z\\docs-dark.png",
+      "bytes": 71532,
+      "sha256": "2099792c7e35b473a5fda6081dd13a11fec2dbde5e0d9efa7bd0f046ce39fe57"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-edit\\2026-10-07T08-12-17.930Z\\docs-light.png",
+      "bytes": 74833,
+      "sha256": "3a279c7eaee54d1d72677b46f204eca27df98225198f97604d045aa542ce6c26"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-edit\\2026-10-07T08-12-17.930Z\\electron.log",
+      "bytes": 11201,
+      "sha256": "7c2033a015007de849d60f85d86e52d6579a9b768bc035274569da35c66aba8e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-edit\\2026-10-07T08-12-17.930Z\\result.json",
+      "bytes": 6984,
+      "sha256": "289ce5845439d90441936267be332a891a1a59969a176790b376ef468d7578e8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-format\\2026-10-07T08-12-46.041Z\\docs-rich-workspace.png",
+      "bytes": 65504,
+      "sha256": "3031e6cd80d3b97371f3af68222bb0ba69f949f072202753d04ff179a16dec67"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-format\\2026-10-07T08-12-46.041Z\\electron.log",
+      "bytes": 4320,
+      "sha256": "0a49accf89405d74930262430d44e9d683bb8d0c1d920ca5fe08407247eeebff"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-format\\2026-10-07T08-12-46.041Z\\result.json",
+      "bytes": 8749,
+      "sha256": "17c8a6d8d294c296c8d5b45f339fd3f5f42bcd13687a934a51b9cda12681ba17"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-sources\\2026-10-07T08-11-44.712Z\\docs-code-dark.png",
+      "bytes": 79499,
+      "sha256": "60c4d632275a5c4c89b5d8cb4edc720b6ffce2bff9b32bf28f0e349c324e6dd2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-sources\\2026-10-07T08-11-44.712Z\\docs-code-light.png",
+      "bytes": 82395,
+      "sha256": "6d0724116b96054c08d0dbd3eca312f7d5b56df882af224745e44396193f231d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\docs-sources\\2026-10-07T08-11-44.712Z\\result.json",
+      "bytes": 3914,
+      "sha256": "dc6c9b5f9883ef40f1a3114f855651f0d8650e8e99e8a5e2171378b0fa8a7621"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\domain-workspaces\\2026-10-07T08-13-27.893Z\\electron.log",
+      "bytes": 45,
+      "sha256": "2904a5618493251b5c52f0f19e24eb0985b88aa97bee8b502dd61ac98bd31351"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\domain-workspaces\\2026-10-07T08-13-27.893Z\\native-progress.json",
+      "bytes": 4399,
+      "sha256": "fb685234ec74c01b9b329327e98529fdcf1b51da122c26b2085dfc969fecc204"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\domain-workspaces\\2026-10-07T08-13-27.893Z\\native-result.json",
+      "bytes": 4808,
+      "sha256": "8ea07ac12f302902ca0d1ff1f3c1d05a41fff4a70d3faec8d83dc45520624152"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\domain-workspaces\\2026-10-07T08-13-27.893Z\\prepared.json",
+      "bytes": 24638,
+      "sha256": "7b6f7de029d65a3452580cb078db2587c9deded521b320da1cd092e10af8ae06"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\domain-workspaces\\2026-10-07T08-13-27.893Z\\result.json",
+      "bytes": 44061,
+      "sha256": "ddba179beb153604f6658d52237b4fe2c5c53db9d0a6631c10f9fa422da74a93"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\large-source-docs\\2026-10-07T08-13-16.679Z\\electron.log",
+      "bytes": 836,
+      "sha256": "5b7f210b2a654934a557c5f45e26da87626eaaef3c74f49b003669e305d5735b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\large-source-docs\\2026-10-07T08-13-16.679Z\\native-progress.json",
+      "bytes": 1229,
+      "sha256": "efb7826c044e3f50c4890ee4e1bf548b7d793b5958f80345cf21761869cc5d74"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\large-source-docs\\2026-10-07T08-13-16.679Z\\native-result.json",
+      "bytes": 1429,
+      "sha256": "4895910b3e339c13779491b6b4c759b9dc3ead48a538bd56d2de9640571ea4dd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\large-source-docs\\2026-10-07T08-13-16.679Z\\prepared.json",
+      "bytes": 5383,
+      "sha256": "53b3df571392b396baecd137c9f8ac17df83e000fe349a2b733fc3f83b1e92f0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\large-source-docs\\2026-10-07T08-13-16.679Z\\result.json",
+      "bytes": 4872,
+      "sha256": "cf4299d8947ddccdf9d0e6f44f09acfa04932657efacd608fc0e04ef87ff92e3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\native-verification\\sources.json",
+      "bytes": 7966,
+      "sha256": "5d713e6e29ca893d66d24599b3ed8b3e41d9cc6e1239eab14530589a800beca0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\native-window-role-privacy-2026-10-07T08-13-40.467Z\\electron.log",
+      "bytes": 3555,
+      "sha256": "6b029b26934d258aa798a033080bc5288489da06332681d263eba50a2157cb20"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\native-window-role-privacy-2026-10-07T08-13-40.467Z\\result.json",
+      "bytes": 2597,
+      "sha256": "be5343d2fd18b9de0ec4402a6583a3006db21c6c90bae18dbffbe22bfa8b3a92"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-analysis\\2026-10-07T08-10-26.893Z\\electron.log",
+      "bytes": 2674,
+      "sha256": "279045f6c9af80816a3c7a8837d009a64c9c565332b3e4495997850cca7528bd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-analysis\\2026-10-07T08-10-26.893Z\\result.json",
+      "bytes": 8194,
+      "sha256": "85b5917f9e42d87c974fb1909570fb9655743abab5c13fa956b8df07a2e8d1c1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-analysis\\2026-10-07T08-10-26.893Z\\structure-dark.png",
+      "bytes": 89810,
+      "sha256": "0d0f054c7c00c8ea30e20d3ab029178e79fc30ac85b57483e5054f4b4f7871e1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-analysis\\2026-10-07T08-10-26.893Z\\structure-light.png",
+      "bytes": 93308,
+      "sha256": "65904e9af62067f448bb192008b20915b41e3a94d30ef55b00a64b00e3f91781"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-diff\\2026-10-07T08-10-38.786Z\\comparison-dark.png",
+      "bytes": 112266,
+      "sha256": "7450bb5c7c2592a85489425cd41c65573aa1e811c48cacbeb81cda2d984220c0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-diff\\2026-10-07T08-10-38.786Z\\comparison-light.png",
+      "bytes": 115685,
+      "sha256": "d6394e697bebc27622dbd4a2002f15b6146ef689f75c94863eb721717e9d3c06"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-diff\\2026-10-07T08-10-38.786Z\\electron.log",
+      "bytes": 3288,
+      "sha256": "4721e2dab72ae9ddfdaaaf25ed2ffc6880bb95155fbac8bd601a4df9d24054bc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-diff\\2026-10-07T08-10-38.786Z\\result.json",
+      "bytes": 8281,
+      "sha256": "25c5e3484217221f624a714581aafdcca515437842f487620456e7a96569c13f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-edit\\2026-10-07T08-11-01.012Z\\result.json",
+      "bytes": 4328,
+      "sha256": "0d53277250f98bcbf46ab1e6ec029786ef1c4498973cd5c9abbf0b4112175f93"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-edit\\2026-10-07T08-11-01.012Z\\working-copy-saved.png",
+      "bytes": 99399,
+      "sha256": "b4b333f6f1fe1c057b2792fe4c9f4434cdd21169aa040e53eb0327c96054efce"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link-create\\2026-10-07T08-11-30.050Z\\new-link-dark.png",
+      "bytes": 80578,
+      "sha256": "840ac3a406e682dd13cd2d15521a550774eefde31931aba24584fd42f71b88ed"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link-create\\2026-10-07T08-11-30.050Z\\new-link-light.png",
+      "bytes": 75133,
+      "sha256": "82b87f81b61dab2baf059b5c44c7ce4a1e0e62dcda68283da7fb583cfd8683c3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link-create\\2026-10-07T08-11-30.050Z\\result.json",
+      "bytes": 4052,
+      "sha256": "b61110a4580d3092e9a4d2680374da88f30c85bcddcc1983804a362767ded084"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link-create\\2026-10-07T08-11-30.050Z\\stale-document-refused.png",
+      "bytes": 84677,
+      "sha256": "f0c75185f4095b7c7296c90e8d38e0f139df1eed12a5b3a70558388d00c84758"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\home-named-windows.png",
+      "bytes": 67777,
+      "sha256": "538cd4d27d492cd16dccf452e93c0854bbafa3c116400ac9aec7f7d60bb6cbf8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\home-unsaved-windows.png",
+      "bytes": 67507,
+      "sha256": "f468cdf9043a345e2e738d89bd900fce65d7a31860da17d95a6158eb8fec5b86"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\link-selector.png",
+      "bytes": 83434,
+      "sha256": "758ab77aeb3a63f6605d0bf8f3653bb207d23f83bd33849c9bdafdada81b0c3a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\named-code-window.png",
+      "bytes": 100716,
+      "sha256": "e754cc441e0c91ef2753d00b6934c14f4048c29c6de7be50f4c2bbe40b4573a5"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\named-docs-window.png",
+      "bytes": 77076,
+      "sha256": "aa67964258319f58771f8313d49d0b4705f6a2113e265b2facda160045a579b7"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-link\\2026-10-07T08-11-13.209Z\\result.json",
+      "bytes": 6306,
+      "sha256": "7f0aa279d035a9113772480468fcd8d46e4c5a848f25795def1d19ca184993ca"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-map\\2026-10-07T08-10-49.217Z\\electron.log",
+      "bytes": 2431,
+      "sha256": "8f950aed136764fea4dc3ed7bc6a041664387b292c25d147fa7cceb02bb48d61"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-map\\2026-10-07T08-10-49.217Z\\map-dark.png",
+      "bytes": 100637,
+      "sha256": "fb48376ae331e4d457eba355721ec86734a80fba8b29dfcb80f82a76f7300692"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-map\\2026-10-07T08-10-49.217Z\\map-light.png",
+      "bytes": 104201,
+      "sha256": "5f0338bd4e051510709804959d16900d3f450b4d7dbbe00bc87248fed2a03478"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-map\\2026-10-07T08-10-49.217Z\\result.json",
+      "bytes": 8097,
+      "sha256": "510e7bcbc53ec02caa75007cfc8ae0b18becaa20083899a58380cc9f72b4ab63"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-owner\\2026-10-07T08-09-56.971Z\\electron.log",
+      "bytes": 840,
+      "sha256": "a67eaaf3d1cdcde22937602800e72ff8da9b4330165dc0ce58accce9c718220d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-owner\\2026-10-07T08-09-56.971Z\\native-progress.json",
+      "bytes": 3412,
+      "sha256": "6957fedb089ebb07a7344b9869616a4bf5ee4acbc11b99e04589d9c5e1590887"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-owner\\2026-10-07T08-09-56.971Z\\native-result.json",
+      "bytes": 3813,
+      "sha256": "a785b1ec5b60a53de31f6ed1d03e3707522808dbfc06cc05758323559eb4667f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-owner\\2026-10-07T08-09-56.971Z\\prepared.json",
+      "bytes": 3680,
+      "sha256": "6b16783f30416db33857b69040705c27a6a3e8edf09241c68957f24719a435dc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-owner\\2026-10-07T08-09-56.971Z\\result.json",
+      "bytes": 4662,
+      "sha256": "4ab26ee69ee59c63ffd30e4edd7a0c9f1be83756d33e167776200379b2f61ac6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\code-dark-eof.png",
+      "bytes": 87087,
+      "sha256": "ff2c6c7ab70dff4c69c0840b8ca83b0f2f0d9c7aff01336c00218cbf327be14f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\code-light-eof.png",
+      "bytes": 89604,
+      "sha256": "85ba19966932b83319a3784ea420278f1c4f3461f23f6630fa302420e32ab9e1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\docs-dark.png",
+      "bytes": 75543,
+      "sha256": "f1245012ecd6811d33129338f0619908bb41e11ae772864d016acc035f9ddaa4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\docs-light.png",
+      "bytes": 79274,
+      "sha256": "d56640f970e5583be32853db8abdc3366094f9aba0c8a74085f047d935cc6dfa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\electron.log",
+      "bytes": 3063,
+      "sha256": "7991caa31c72ab506b575fa3f0cf9116e3c4e655c37a78035b4abb00b5bd556a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\result.json",
+      "bytes": 12327,
+      "sha256": "01ba9b04ff1c2016c9df31d5cdee7f4357b42f1a397c27a7d96f3a313a61f505"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-10-07.546Z\\windows-shelf.png",
+      "bytes": 60524,
+      "sha256": "b17b0d15a1fd19fba6af3264a548ae2d9f57c31f00b465367ed624c37f4f3948"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\code-dark-eof.png",
+      "bytes": 87132,
+      "sha256": "82e8a36d1bbf4e062bd75c43bcf6ace2d4d3aacc81eaf7c4675e35e79be592fb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\code-light-eof.png",
+      "bytes": 89648,
+      "sha256": "731b2f333a6aab89b4905e67942f20e4f047a6d86099bb38208057039b18dd63"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\docs-dark.png",
+      "bytes": 75543,
+      "sha256": "f1245012ecd6811d33129338f0619908bb41e11ae772864d016acc035f9ddaa4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\docs-light.png",
+      "bytes": 79274,
+      "sha256": "d56640f970e5583be32853db8abdc3366094f9aba0c8a74085f047d935cc6dfa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\electron.log",
+      "bytes": 4974,
+      "sha256": "a724b21bde6cc0df849b6bd1c7da8355272ca2b3a6d9efc24f922d8656d6119e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\result.json",
+      "bytes": 12906,
+      "sha256": "02b4b2435e9faed2363d4284b597af70ca9ccf3f6a8ea5d8ea3d6c8b17632c4f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-read\\2026-10-07T08-12-59.562Z\\windows-shelf.png",
+      "bytes": 64383,
+      "sha256": "c911a8b5a5bd365adc5a590659ad92fb936ccf1f01c14322d7d2486578b633fd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-sync\\2026-10-07T08-12-00.899Z\\local-text-retained.png",
+      "bytes": 108191,
+      "sha256": "59cfc09b184e903980be6f580479f9738422a6badf70de0392ceea4a0f39e662"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\source-sync\\2026-10-07T08-12-00.899Z\\result.json",
+      "bytes": 3621,
+      "sha256": "f47ae12f95ba8c3337d4ef9153fea78ae0391c0485007956df8b1ed6104c4d56"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\window-close-keys\\2026-10-07T08-13-34.043Z\\electron.log",
+      "bytes": 4245,
+      "sha256": "0e8f7a2a763ffd43291eb5c10855a53c406930daf74892ab4ffcdcac022b64a9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\window-close-keys\\2026-10-07T08-13-34.043Z\\result.json",
+      "bytes": 3866,
+      "sha256": "03fba54eb3fa53026d4420a93823da7cfc6a00b9d6cf6d67aefb7e0f3a0ceb8b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\code-kpmg.png",
+      "bytes": 58907,
+      "sha256": "244d6e6c3e27e2f83da79bb492f3a1971c23e4f6ecc3b39321ea2a9d3cf79749"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\diagram-dark-imported-colour.png",
+      "bytes": 87329,
+      "sha256": "fb64747efa30a87249cdcad005a85320ca307fc6108b2cedd12b5866efdd7d9e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\diagram-kpmg.png",
+      "bytes": 87958,
+      "sha256": "123236e3a55989d1f5796507b66adf063bbc66b5f37c727827a27708c10bb979"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\docs-kpmg.png",
+      "bytes": 64576,
+      "sha256": "9dc769aec6726b04600e76aa46d349e67a969f6e62a10d6db1b5f4c34939ac03"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\docs-library-after-native-navigation.png",
+      "bytes": 89395,
+      "sha256": "e714f2f8a465d9bcb0bfd210ff46d24b2427ed262ef649afee05f0fa500d5a50"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\electron.log",
+      "bytes": 15623,
+      "sha256": "e753db3b14304bc484838d7336404a9c9be525ce4cae319df5d1cacb5acc1547"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\home-kpmg.png",
+      "bytes": 65756,
+      "sha256": "93a5b33d281144484bd6a59dc95052d1c280c24b1ee6bd5570b7371a3b81dd00"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\project-find.png",
+      "bytes": 83809,
+      "sha256": "55608d0f4ed1c8aeea28fd8cf04cf4c6c167296bb5cd09ade067b1c3b343e56e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\result.json",
+      "bytes": 7174,
+      "sha256": "774e052b65c963cc597d8d6f8fc13e64e496dc3b9e792502977725f1afc1f9f4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\evidence\\workspace-appearance\\2026-10-07T08-13-45.330Z\\studio-shared-theme.png",
+      "bytes": 54790,
+      "sha256": "b65f7d9d5393c6c84405713251fa30caa433f17fba25ee1f02e7e80503d7dd21"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original\\native\\generated\\process-identity.json",
+      "bytes": 346,
+      "sha256": "f920506f0c7cfc25f515179164e0aafebf4b7095e7095f3577bc24108c106b56"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\dist\\development-d68ec72c-709b-4a3f-af71-1faebd3b0e01\\BUILD-IDENTITY.json",
+      "bytes": 2682,
+      "sha256": "a2415234423621cfc408a5850a1f0287ab71bd763e6d1d5a6280e08f38ec3c0c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\explicit-text-no-python-structure.png",
+      "bytes": 75962,
+      "sha256": "ead7b350bd91f7ca282ef20126b3b6627c16fc2357b97f6ef225bef994db4b5b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\home-code-context-kpmg.png",
+      "bytes": 114546,
+      "sha256": "f87b4d48dd9dbad7cbaa6006362b56b7ef28f18d78ee31b0115788bc710263a3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\readonly-code-commands.png",
+      "bytes": 66098,
+      "sha256": "7bf75806cf809b93e4fe907e6db13e738dea8e7fa53550f4f6ed00fcf45d387f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\result.json",
+      "bytes": 142763,
+      "sha256": "395c79d271bf37a9091c7159ae66df6c43dc8849cb48a8d5b94629cccfbb0003"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\same-name-saved-comparison.png",
+      "bytes": 88917,
+      "sha256": "bddb8f98b6a03ae19cf96f9d1158c527e0e1ffed61b13a5c3a9ce9d3f1106651"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\code-context-commands-native\\2026-10-07T08-05-46.140Z\\working-saved-python-index.png",
+      "bytes": 91573,
+      "sha256": "9811bb27f5fc7a328ba3505f428e3d5b4d36e20748d5ac31a3dbeba7c8fe3fe8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-06-29.732Z\\inspector-dark.png",
+      "bytes": 95966,
+      "sha256": "fd968b06561381376a1c92d9b44e8aad78a59620a17bdab68c1ea7927b759bb3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-06-29.732Z\\owner-filter-active.png",
+      "bytes": 92093,
+      "sha256": "08f46e998339f5d1950406d6457f80e5db6e12643760e873795b7718249a0baa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-06-29.732Z\\readonly-filters-light.png",
+      "bytes": 94190,
+      "sha256": "f8f37e477c3123387a980cf6765bcedc7e3b7e05fa66e8aeb773e5028e98d7df"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-06-29.732Z\\result.json",
+      "bytes": 138043,
+      "sha256": "dbe7f9fb460ae4b20fdb6afe9815b9d7e9f4e90f71cb2bf25d038980c7e5116a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-history-typography-native\\2026-10-07T08-05-16.075Z\\result.json",
+      "bytes": 158172,
+      "sha256": "199d704c308e6d1bcf986adda83d44b3092950840b9050c55d92fed6b138d9aa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-06-51.791Z\\diagram-light.png",
+      "bytes": 86950,
+      "sha256": "a06725482bf9b7d1ee858081262224748cc67b855f32653b7b2acdeed1331a12"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-06-51.791Z\\failure.png",
+      "bytes": 62394,
+      "sha256": "46d3788efe83305a577a49cbdb7f64f51a64faf46808f7032cdc0e0ee690e450"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-06-51.791Z\\result.json",
+      "bytes": 7800,
+      "sha256": "24b6715a63367ef74335a4513aa0d7404961fc4a85b2a4811f3910906da4bd7f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-06-51.791Z\\view-failure-5EA8B88F3377C38CDDE739C4831E06FA.png",
+      "bytes": 86962,
+      "sha256": "36ec73bf6343689b512ebd6ba8fa3c74edbfb6aaed3ddd43916c02e37e6564dc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-06-04.117Z\\result.json",
+      "bytes": 162222,
+      "sha256": "87f3fb4477c24b99ee15da97cf46d52f61137eefc7d1c94d4c0a65d4e204404a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-06-04.117Z\\walkthrough-attached-dark.png",
+      "bytes": 99702,
+      "sha256": "b9bb3d2c859c4fd5d720482c7752d797626dc23ce5387ba3a5a00ce720974b9c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-06-04.117Z\\walkthrough-dark.png",
+      "bytes": 95861,
+      "sha256": "6fc2ab71fd80d6c83dc83b486ff147b433409bc043c589d3c6075e41fc8b3396"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-06-04.117Z\\walkthrough-light.png",
+      "bytes": 100697,
+      "sha256": "7937951174ea35891d316384e275d97342a49dba806cc8ea32d026cdff2d9803"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-04-27.181Z\\activity-dark-944x575.png",
+      "bytes": 93155,
+      "sha256": "c6835d4a4cd0f7e12ceac293d3d5803d5167b4381f43bf2b913e445d686d5735"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-04-27.181Z\\activity-light-944x575.png",
+      "bytes": 99650,
+      "sha256": "7290e62ab87c2fedf7a2435163cfe2402e21eee6fec55708a5dccf55706e572a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-04-27.181Z\\activity-readonly-deep-jump.png",
+      "bytes": 90251,
+      "sha256": "e3e758e0413609d3a9c18335dfa183e825f0f4cde65d2e29fc384fd864e0ad41"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-04-27.181Z\\activity-recorded-review.png",
+      "bytes": 90827,
+      "sha256": "bbb369c25b94f9db4521324559594176b8494297a20797277a8b4480e9acfadc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-04-27.181Z\\result.json",
+      "bytes": 203514,
+      "sha256": "33778de972014de555b8f4769acd0b6d04510b87da67e77f7376de97e3ef9f94"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\docs-export-native\\2026-10-07T08-04-15.021Z\\result.json",
+      "bytes": 136592,
+      "sha256": "eca098d15ce2a544685128b0f57a1ea656dc7878e4ecc5b25afc29d2772d3474"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-03-45.960Z\\result.json",
+      "bytes": 58558,
+      "sha256": "b437e8ae9d36e50dbe3a520854731a74a8a67a14e8faf59273e796470152a11d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-03-45.960Z\\setup-abrupt-1\\result.json",
+      "bytes": 5248,
+      "sha256": "a551c211b1fae61ce1e9b15471943d4779e7f2a3baf0f75408ba753b23b96105"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-03-45.960Z\\setup-lock-abrupt-1\\result.json",
+      "bytes": 5457,
+      "sha256": "431cd1621dd98386651978bcba15af3012f18721ca2809e00a006c2b475f1384"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-03-45.960Z\\setup-lock-graceful-1\\result.json",
+      "bytes": 5826,
+      "sha256": "add03b0f3acdf66afe1b22d53755dc76efbe9b3ace625e7e3f9dcf13af1e0c06"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\presenter-notes-export-native\\2026-10-07T08-04-57.456Z\\result.json",
+      "bytes": 141548,
+      "sha256": "e9e4d0c08d3cdca0a9a234ab640f1840211d87c8c5264d6eb839633f26ba0984"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\shell-2026-10-07T08-04-05.198Z\\desktop.png",
+      "bytes": 88350,
+      "sha256": "cb9ab3ef13d528f6337c75bb816d57035a4e1c809abaf56bbe38b39d9947b7d7"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\shell-2026-10-07T08-04-05.198Z\\electron.log",
+      "bytes": 1296,
+      "sha256": "6bcf45fe565b3f82f12d16b16eed57facfd4c7aee4c3ea72877781d5ced00953"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\shell-2026-10-07T08-04-05.198Z\\result.json",
+      "bytes": 1366,
+      "sha256": "c7a1aecade25e9f0b9d2fa61b5656fc99ebeb12b55fae80a3f6be5f1789b0669"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\evidence\\shell-2026-10-07T08-04-05.198Z\\startup.json",
+      "bytes": 145,
+      "sha256": "5fabb23c007335f21c800db3b82f7bd8ae6623f6a6e34cf3b739feb72cc91b67"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original\\native\\generated\\process-identity.json",
+      "bytes": 346,
+      "sha256": "cbe801fbfd778c9bda64860310d773d8fecdb3401406b8ab1cdfeedbb544ed24"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\access-screen-2026-10-07T08-11-50.492Z\\access-dark.png",
+      "bytes": 89127,
+      "sha256": "0e66e63e09403f4a55c76bb331e8d7233371a96665ae29fbf82769d99b685881"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\access-screen-2026-10-07T08-11-50.492Z\\access-light.png",
+      "bytes": 91347,
+      "sha256": "9121b86772c75375f1b27f7528f71647b6ac26195a85a34c2a3d29a6c3460e61"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\access-screen-2026-10-07T08-11-50.492Z\\electron.log",
+      "bytes": 1296,
+      "sha256": "47943e54d763f6b9154c784fbce3983471c4f35348f887b8be2a807180e86384"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\access-screen-2026-10-07T08-11-50.492Z\\result.json",
+      "bytes": 9542,
+      "sha256": "1c9951f7e5be64f7509cba7bab8d8a43c66754b6be583ee8a446352cf39fa7fd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\account-transition-2026-10-07T08-10-01.728Z\\account-commit-guard.png",
+      "bytes": 95612,
+      "sha256": "7d69285530fc628b24002af60b9fb418359f48b9afedcae3f7367fbb81548084"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\account-transition-2026-10-07T08-10-01.728Z\\electron.log",
+      "bytes": 1408,
+      "sha256": "130f2622898b9302820c03c858e7980e67b4f0faa756dd250aa2db5c26eacdd3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\account-transition-2026-10-07T08-10-01.728Z\\result.json",
+      "bytes": 2067,
+      "sha256": "7235618f4bb24303bdbc3b332d9615b60d1f09127dab60dce9c3114ee406bfaa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\account-transition-2026-10-07T08-10-01.728Z\\runtime-safety-ui.png",
+      "bytes": 80052,
+      "sha256": "e245da7c3b78240c059a51a1e6c6e7fe931346a46260cf1f1922ab8f2b36bb49"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\account-transition-2026-10-07T08-10-01.728Z\\unconfigured-online-native-refusal.png",
+      "bytes": 94592,
+      "sha256": "55fe916b2fe263fb7e8bd4e7075c22f93e24b5fa4b50eaab61634f08f3c3ed5a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-diagram-2026-10-07T08-11-10.223Z\\diagram-edited-code-minimised.png",
+      "bytes": 75569,
+      "sha256": "96f1419700799b4f039e2f69cd81b5e7c78556547553e8f3dabbe02e40dc7aaf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-diagram-2026-10-07T08-11-10.223Z\\electron.log",
+      "bytes": 1410,
+      "sha256": "5a3ae7aab28dc46e65f77b2745cc4ba59b8dc98c4038631ff61ffb9709ca2ab4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-diagram-2026-10-07T08-11-10.223Z\\result.json",
+      "bytes": 207,
+      "sha256": "c6e527527660b36ca5b8fba6d2e5a830502cd7d22fda6cd21a15fe06ee38c81e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-recovery-2026-10-07T08-10-40.341Z\\diagnostic.json",
+      "bytes": 6982,
+      "sha256": "cda1eb10165d4873330ae3ea7ba428ba447e5d3a2b0c256c961e7f06c998ee62"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-recovery-2026-10-07T08-10-40.341Z\\electron-before-restart.log",
+      "bytes": 3013,
+      "sha256": "e0e83ecd50af06f75b0425e98f9ec350ff6024905b41679dccf726ecf266acc2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-recovery-2026-10-07T08-10-40.341Z\\electron.log",
+      "bytes": 1408,
+      "sha256": "c27230fb3decc5ee6d54a94a4fe1d8d452f32defa33e050cf1590f1fad868669"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-recovery-2026-10-07T08-10-40.341Z\\private-code.png",
+      "bytes": 100754,
+      "sha256": "c20c10b8cf6c607a8d99c4e3abd6fa9bf44cf599a9ec7ad6dc282f748a0439b8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-recovery-2026-10-07T08-10-40.341Z\\result.json",
+      "bytes": 279,
+      "sha256": "c946267b1459d23b733541980b89aeb03297b759ec82c44a04d413ca82518498"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-windows-2026-10-07T08-10-14.144Z\\code-actions.png",
+      "bytes": 135717,
+      "sha256": "e24b0f4f16430cdca47f0bd3850cbee075c75185a623923f35e5815a8406feeb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-windows-2026-10-07T08-10-14.144Z\\electron.log",
+      "bytes": 1410,
+      "sha256": "a548fe969516b44d819afc7686e282a0a85a3e34ce0c7ea8f43c4172cd160f89"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-windows-2026-10-07T08-10-14.144Z\\minimised-windows.png",
+      "bytes": 91321,
+      "sha256": "8e6ddd7a1155638d65545f755786f741991be807c72b4206e9a13ed51912c32c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\code-windows-2026-10-07T08-10-14.144Z\\result.json",
+      "bytes": 216,
+      "sha256": "559a8fa04e633586dfd54c269a1f8e79ac997a3108d9e7ecba87257550563e78"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\code-dark.png",
+      "bytes": 75008,
+      "sha256": "a2a07997daea7442db2e1b04ca248631dfdf314901f36eafbb84266d1b80ae43"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\code-light.png",
+      "bytes": 91442,
+      "sha256": "e7ee53d3f6a8d9a9b4efd8411fcaeedaf3022677fa1ec0b252377ec1e8342a1b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\controls-dark.png",
+      "bytes": 100060,
+      "sha256": "365115b8b9293e633568cbc5a561bfed7b458dd29dd06a06df0d01f6e1a2998a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\controls-light.png",
+      "bytes": 102511,
+      "sha256": "dbdf9fa594dfc0d4dceb22579d61272c12cc69b4b68d8cdb7ff057706a895999"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\electron.log",
+      "bytes": 1410,
+      "sha256": "a8e92e144ce2688b0df5e5a53727b59df166d449dae61ed0ad8b7a5b9f0f9df8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\desktop-ui-2026-10-07T08-10-27.595Z\\result.json",
+      "bytes": 1703,
+      "sha256": "c2f1bc523d3df41af3d38d5089c282a20248aba2cfc179fe43da69f6bfb76c63"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\dev-first-run-2026-10-07T08-11-38.777Z\\electron.log",
+      "bytes": 1296,
+      "sha256": "97f9f8c62e6c2937b58453b20de393785429d05f3f527dd0ce2711a90e3bcd96"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\dev-first-run-2026-10-07T08-11-38.777Z\\first-development-launch.png",
+      "bytes": 84254,
+      "sha256": "f0a550f0aeb6c4483624f06b49db19c73741421a98dd7aef308eb33f48dd0997"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\dev-first-run-2026-10-07T08-11-38.777Z\\guided-saved-code-minimised.png",
+      "bytes": 90643,
+      "sha256": "1b4fbbd83feb86ca89ca31f56b8f973fa31b64c827822f2ff0595443f9c7ae86"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\dev-first-run-2026-10-07T08-11-38.777Z\\result.json",
+      "bytes": 3074,
+      "sha256": "edfcdc0f26f4f408192094dd14b887f4651af24031b73d773ee5d5cbc03f41dd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\diagram-history-typography-native\\2026-10-07T08-15-46.688Z\\result.json",
+      "bytes": 157659,
+      "sha256": "d5c375e5398ff4e387d17ec0b18f8cae69c47c6d062b262d1976e350aeb70c6b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-14-58.053Z\\activity-dark-944x575.png",
+      "bytes": 92976,
+      "sha256": "4aebdb0fc3f3cb844e6ce1238f045bb1f02bb588927efd5586f8b80116b65dbd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-14-58.053Z\\activity-light-944x575.png",
+      "bytes": 99480,
+      "sha256": "e63a8b3e3e0f31d205268947ac97431e483d2f514dbd44e356565fb6c1d3e7f0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-14-58.053Z\\activity-readonly-deep-jump.png",
+      "bytes": 90251,
+      "sha256": "e3e758e0413609d3a9c18335dfa183e825f0f4cde65d2e29fc384fd864e0ad41"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-14-58.053Z\\activity-recorded-review.png",
+      "bytes": 90801,
+      "sha256": "65ff15dee6a33b978dba3128b8ed921aa8971bc987ad48ca2fa3dee88ee1af41"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-activity-native\\2026-10-07T08-14-58.053Z\\result.json",
+      "bytes": 202429,
+      "sha256": "c8e96298770a9b7bb718ef465d4f09e25c8278ed85f97912f88daf0738a37117"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\docs-export-native\\2026-10-07T08-14-46.615Z\\result.json",
+      "bytes": 136094,
+      "sha256": "bb532bf4776432ebee9c438cc3bf093e4e41a7b436ce97540a8e6b895db5c01d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\electron.log",
+      "bytes": 1328,
+      "sha256": "fb507363fc452ccf2e7fbaf0706beb029614f6fcd5003d73b0eda73c92f77d10"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\fresh-after-intro.png",
+      "bytes": 94744,
+      "sha256": "b44c4e34eef272473724354555c1a828ad4104dabbba2948779c41c97e33465f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\guided-before-edit.png",
+      "bytes": 99303,
+      "sha256": "dc9be67f5d7a0dc906c2532675e1acc0e53ffdd1e1f2907c2acfffa2f0ba5448"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\guided-edited.png",
+      "bytes": 86448,
+      "sha256": "e2ff3d1fa0c26ecbd1d53d30fab61c253955806b4a2d210c46445c6ae7beecd2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\guided-electron.log",
+      "bytes": 1411,
+      "sha256": "558be83198fbfdfe0e3ce87ad410434c0da9eea70f02f90791e2678fc831d184"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\guided-intro-2026-10-07T08-11-21.795Z\\result.json",
+      "bytes": 55737,
+      "sha256": "a0af66af5f92065662b324b070a4b8901198e5662e8e4b8628863bc4cf97869c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\headless-import\\2026-10-07T08-13-06.011Z\\electron.log",
+      "bytes": 136,
+      "sha256": "42e19f2e29519327ed00a1d2f697b44c055a883310eeb640bdb2f3cf30273b99"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\headless-import\\2026-10-07T08-13-06.011Z\\native-result.json",
+      "bytes": 3528,
+      "sha256": "abc5b50e88873f1e43955d1cab82d56a423922f27605ea2e722c2eda606ccbce"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\headless-import\\2026-10-07T08-13-06.011Z\\prepared.json",
+      "bytes": 1511,
+      "sha256": "13989da37053861492c6cd9eefe3e890df99451e79c0523e7b760cf7518f7e28"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\headless-import\\2026-10-07T08-13-06.011Z\\result.json",
+      "bytes": 2145,
+      "sha256": "0a4ed42a498aa3f5e950160f1210b0fe903d2b703b96db6d54d2ab4903660bf3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-backup-export-native\\2026-10-07T08-14-41.407Z\\result.json",
+      "bytes": 130980,
+      "sha256": "0b4f2df7939125c9a12a570ef28a29ad71da5dd94d3b326a6b68620343eb65e0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\electron.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\home-200-percent.png",
+      "bytes": 149167,
+      "sha256": "6bc5267b66f491046e7e678a55aa85af93be432b9372c2174acc45b0f6c4dc77"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\home-dark.png",
+      "bytes": 83118,
+      "sha256": "4eae9f90a78be6749a6c358c85122d0076e9846b166bb1a1d1c813a88c9df177"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\home-empty.png",
+      "bytes": 62273,
+      "sha256": "5049c84d0368c076411a84b2d9855a0f2b5c9d07f18b69bbe16a363bbb8f36cb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\home-light.png",
+      "bytes": 66477,
+      "sha256": "597ec568ad9de9e2278362f23958f35ac3392a60166140fbac60ef9368269c78"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\home-readonly.png",
+      "bytes": 84710,
+      "sha256": "2107b428fdcdba12eb81e1095f6612e3a285feb2f925dbc4aa03e658c084402e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\intro.png",
+      "bytes": 5851,
+      "sha256": "53998dd1efc5d1df1ebcda16c7fb3f70609633cf800c3c44c51908e490933988"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\native-progress.json",
+      "bytes": 2503,
+      "sha256": "0be66525b5a8d510b01847650c286e251357768c74bab7dd8779ed0d77551e97"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\native-result.json",
+      "bytes": 2844,
+      "sha256": "4e2656f2781ea6628d3cacea8787389b933626dcd5b979f60df63829a0f43820"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\pin-reduced-motion.png",
+      "bytes": 5033,
+      "sha256": "401cea3f2dd1be40f369eb44fc35670f59374dbf3369be4bd5f84bb7dacfc7db"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\pin.png",
+      "bytes": 95884,
+      "sha256": "f446e455b07397e8d6c7ae6506b16154e4f6351f03bc7747d32534de3114d86a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\prepared.json",
+      "bytes": 22015,
+      "sha256": "91348ad3c5dcb6016cef4c7c3d37d2236b0c00ea713b6034de380bc0c437348f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-entry\\2026-10-07T08-13-13.092Z\\result.json",
+      "bytes": 43926,
+      "sha256": "04ce0b8f762f4122c1eb44ae2da9c30643353f454fee36a562fb8216c0dfc9bb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-library\\2026-10-07T08-13-52.738Z\\electron.log",
+      "bytes": 1023,
+      "sha256": "415c1274b2cd017f7a352c5d5946870083d41c227c91200f991ee9f72ea39edf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-library\\2026-10-07T08-13-52.738Z\\home-guide.png",
+      "bytes": 130190,
+      "sha256": "f4ed9cd70c4b526128167ac90ad093d907211ee957153dfd423246d12a84a39c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-library\\2026-10-07T08-13-52.738Z\\home-paged-library.png",
+      "bytes": 101905,
+      "sha256": "ec8418ed0b9489a0060d637120d19e0e660cffb4b512eae57e0c6b6751bc9aef"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-library\\2026-10-07T08-13-52.738Z\\home-updates.png",
+      "bytes": 92317,
+      "sha256": "82acb2dc35c261cb2aa47548d9ac72a1b8576895ca1cb08fddb78660433614bf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-library\\2026-10-07T08-13-52.738Z\\result.json",
+      "bytes": 3100,
+      "sha256": "1a9d4b9b01a90f7c2bdab2733b7180ff964532b3bf46be4dc0a77d4a837d9da1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-recovery\\2026-10-07T08-13-45.078Z\\home-readonly.png",
+      "bytes": 58253,
+      "sha256": "0de707fae6126a3ce2a126a737b14ba594b1f7bf0742109a022ce68a62a38048"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-recovery\\2026-10-07T08-13-45.078Z\\recovery-refused-edit.png",
+      "bytes": 105099,
+      "sha256": "7e409d2ea6489d99c25cc655a4b3fe72f9e555c8a4730e82e9d771dac943d103"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\home-recovery\\2026-10-07T08-13-45.078Z\\result.json",
+      "bytes": 2739,
+      "sha256": "b3c7810d78be8d4bf49798ec1d75efe6b50027f8544165440ea2abcbe1a09e40"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\cooldown-locked.png",
+      "bytes": 86501,
+      "sha256": "a658f6c2ac0c5d1fa5f2e14735b77d3dfeb89f8cd1817c0c819b3ef3c8823e6b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\cooldown-restart-locked.png",
+      "bytes": 88461,
+      "sha256": "8aed826c6650a47ae780e2613007f569f5c0ffcb62f7cda43ee42cdbbd66711a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\electron.log",
+      "bytes": 1410,
+      "sha256": "da71638e745db1d158ecdc8b9864ee0f22f11acbe708e3cc23cb189cb432c2f8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\first-locked.png",
+      "bytes": 93064,
+      "sha256": "b8803ce00cdece5b5c471160067dd43ae37e68f3e063046a5e660631216e19bd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\first-session-electron.log",
+      "bytes": 4108,
+      "sha256": "74b99536134dc7db1a1b77265879bd19dd267127295685c91670052b74e22d59"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\manually-locked.png",
+      "bytes": 86501,
+      "sha256": "a658f6c2ac0c5d1fa5f2e14735b77d3dfeb89f8cd1817c0c819b3ef3c8823e6b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\restart-locked.png",
+      "bytes": 91573,
+      "sha256": "bc3c22754f67ecb41333dc7d3b9f930f0a21c2ac8d2c0faef176aecd1f29258d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\result.json",
+      "bytes": 43754,
+      "sha256": "a28448d8e63b679c3a7e0c20a3b1a7c9f66dcc71f8c039ed42bea08998b1d7e0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\local-pin-2026-10-07T08-12-07.514Z\\unlocked-restart.png",
+      "bytes": 76790,
+      "sha256": "e34deb29521af21a164be46bf484781da74a67f62c8d89a83a323a47a5f22399"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\native-verification\\desktop.json",
+      "bytes": 7921,
+      "sha256": "90a49e6956642f458874d82d13668a111d9d7e6e574daac1580bad76816c5a2a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\result.json",
+      "bytes": 41748,
+      "sha256": "76e547f7c68f77a97c11841fbea2cb9166ac3781a43221fcdf85c5812612439d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-abrupt-1\\result.json",
+      "bytes": 4700,
+      "sha256": "e8f3bac8b7d62a0fdbc25ddbcec993bcce235b7cbd563ad8068b097d1a301396"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-abrupt-2\\result.json",
+      "bytes": 4700,
+      "sha256": "2e007ee0629ad5db5b7606bbcd4f1bd92b055b7dc0591ae659765d83c22adf07"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-lock-abrupt-1\\result.json",
+      "bytes": 4899,
+      "sha256": "0ce8db523554eb3acc3029d580483324b571f954fcdea2a250423b76a95bb268"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-lock-abrupt-2\\result.json",
+      "bytes": 4899,
+      "sha256": "bab2325bf69cceafb280964fdca5dd6e6224d7d184944bca656491cf92854269"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-lock-graceful-1\\result.json",
+      "bytes": 5262,
+      "sha256": "5576c785e554a06de7ff53468a444690ee7f6458358195c0915746a59fedf2ed"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\pin-crash-recovery\\2026-10-07T08-14-20.603Z\\setup-lock-graceful-2\\result.json",
+      "bytes": 5262,
+      "sha256": "9e6c14f5fef0716e0a3487895a4938c57f57fea0a7e87abdd2cc274e21059540"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\presenter-notes-export-native\\2026-10-07T08-15-28.331Z\\result.json",
+      "bytes": 141039,
+      "sha256": "f56ff782f126caf6e801f91a60056bb2951385037288849ff2acf67092b0f9ea"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\protected-storage-2026-10-07T08-10-01.427Z\\electron.log",
+      "bytes": 2301,
+      "sha256": "3dbfbfc136bce1f6ec95313c61656c9f41d942ad26a7bc6e953b549a64378577"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\protected-storage-2026-10-07T08-10-01.427Z\\launch.json",
+      "bytes": 3161,
+      "sha256": "af70f99d54fe4cfed6000f6ba60db7d02168572c6f100c3af5cfb1eb31de337d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\protected-storage-2026-10-07T08-10-01.427Z\\result.json",
+      "bytes": 246,
+      "sha256": "b72d365f94cde9305b6f8b5d44646210879a5b2d3a160b2334d1a75b1444d149"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\readonly-roster\\2026-10-07T08-13-12.066Z\\electron.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\readonly-roster\\2026-10-07T08-13-12.066Z\\native-result.json",
+      "bytes": 1865,
+      "sha256": "3296d614a49cd955539ccee8532cb10763a23e781e26064802bb9ddaf2bcf70d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\readonly-roster\\2026-10-07T08-13-12.066Z\\prepared.json",
+      "bytes": 1470,
+      "sha256": "1c5cc713e823bb29985bcdcdf7d872792399e754267eee969c8b2eadb9e7c373"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\readonly-roster\\2026-10-07T08-13-12.066Z\\result.json",
+      "bytes": 41240,
+      "sha256": "327b665b66a2968ae387bba98d3b0c13db61e7e5fd425c22986bda9e22566008"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\docs-electron.log",
+      "bytes": 1406,
+      "sha256": "2bee8dfc52809a4bc803192ece153cfd07503d231bb6277676407696027359a9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\docs.png",
+      "bytes": 102883,
+      "sha256": "5defea66c7b23866f7cb1a45fb51eb9f6513dbb855f7e6abf9cead2ddd1786f6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\matching-electron.log",
+      "bytes": 1410,
+      "sha256": "2dabf789bfb61f5d2765d6e9c93a5926794ea53117e2a6acc695d82997635c21"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\matching.png",
+      "bytes": 83744,
+      "sha256": "33727e16e0fcab82a0e45306608554713eba0223198ab49326397a1e75ffc6fa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\result.json",
+      "bytes": 67650,
+      "sha256": "25e4b77feedc46a67e163440dff62e22ac9035c9061318c2a1ad2c3f8a692b24"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\source-electron.log",
+      "bytes": 1408,
+      "sha256": "f79c80188744837dc5d46d18dce33a19f9c128f304c39627518e1630ceb4d43d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\source.png",
+      "bytes": 103091,
+      "sha256": "1b1cb49e8885bf0be763321905e452f6b10c73f6a0bb53da624c5cba9d1810a8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\zoom-electron.log",
+      "bytes": 1408,
+      "sha256": "acb4080e8cd515511e7d8aa817594c47f09077a0315c989d6484ae4c112b6874"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\recovery-zoom-2026-10-07T08-10-53.769Z\\zoom.png",
+      "bytes": 103483,
+      "sha256": "028226a6a32ae86a3f53ff22d1a3530c086cf1cd36badd46a90f3abe000c6285"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\shell-2026-10-07T08-09-52.585Z\\desktop.png",
+      "bytes": 88316,
+      "sha256": "ae23ce0673c9dfec0d1add5950eb98c4be0bb8bb5670913371b75cff6bfedbec"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\shell-2026-10-07T08-09-52.585Z\\electron.log",
+      "bytes": 1296,
+      "sha256": "96540484f051cd773667f68e785e9933341912632f90d6335f074b5e482587ad"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\shell-2026-10-07T08-09-52.585Z\\result.json",
+      "bytes": 1366,
+      "sha256": "787bc58c26ed3ab28f916df98735084d4c881ef07c8cafd6849fbc64fba1d63a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\shell-2026-10-07T08-09-52.585Z\\startup.json",
+      "bytes": 145,
+      "sha256": "5fabb23c007335f21c800db3b82f7bd8ae6623f6a6e34cf3b739feb72cc91b67"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\code-dark-eof.png",
+      "bytes": 86932,
+      "sha256": "29c51bb4c579e967c51b73609457e26522e1e1f3b2ced340e74de19978773a93"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\code-light-eof.png",
+      "bytes": 89485,
+      "sha256": "db64a5cc6fafb2e2085d7a6340a693521745d873b3ceeb5987c1d3fcfd995580"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\docs-dark.png",
+      "bytes": 75543,
+      "sha256": "f1245012ecd6811d33129338f0619908bb41e11ae772864d016acc035f9ddaa4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\docs-light.png",
+      "bytes": 79274,
+      "sha256": "d56640f970e5583be32853db8abdc3366094f9aba0c8a74085f047d935cc6dfa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\electron.log",
+      "bytes": 19743,
+      "sha256": "2cfe71e1f5ff6eaa5f2a004dbf4ad6b452ac9fd190446e9ac453f90c0b6bf305"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\home-open-windows.png",
+      "bytes": 59688,
+      "sha256": "73fb09d1a17cbe3e2fa72892cc09fb5cfa81317e2d2c2968eb911362405ca70b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\home-selected-restored.png",
+      "bytes": 64276,
+      "sha256": "12d2a0bfb363e169148d2d51e5b7b962cca6b72d61539c602dd63e17b15043fc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\result.json",
+      "bytes": 15854,
+      "sha256": "926691045bd03e212a628df749b41069e7bf768834de4c7f03ec314d8dca83ed"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\source-read\\2026-10-07T08-13-19.793Z\\windows-shelf.png",
+      "bytes": 65074,
+      "sha256": "4e4d69e504b29556b7179206166b0462dce8d40f5696ac454dde307cb69e010f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\toast-transition\\2026-10-07T08-14-10.698Z\\result.json",
+      "bytes": 2143,
+      "sha256": "c00036f9460290725b9e6d03c5b46c9eb06bd461ac1805e80adc54b0ab1e8645"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\window-focus\\2026-10-07T08-14-00.060Z\\restored-home.png",
+      "bytes": 62211,
+      "sha256": "cc13ca6ea26557a88b1b0f4a04d4930a38d001f3313cbaa005907e8155ce7f1e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\evidence\\window-focus\\2026-10-07T08-14-00.060Z\\result.json",
+      "bytes": 16319,
+      "sha256": "97051c9a78f5b116913728c07210479b476983498b2367b209cfbe86f89881e7"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original\\native\\generated\\process-identity.json",
+      "bytes": 346,
+      "sha256": "3e49d5a527b0dd0b85eb138625979d46299feabdb11ce1f104e15c8d41fa1ffd"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-14-40.698Z\\inspector-dark.png",
+      "bytes": 95966,
+      "sha256": "fd968b06561381376a1c92d9b44e8aad78a59620a17bdab68c1ea7927b759bb3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-14-40.698Z\\owner-filter-active.png",
+      "bytes": 92093,
+      "sha256": "08f46e998339f5d1950406d6457f80e5db6e12643760e873795b7718249a0baa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-14-40.698Z\\readonly-filters-light.png",
+      "bytes": 94190,
+      "sha256": "f8f37e477c3123387a980cf6765bcedc7e3b7e05fa66e8aeb773e5028e98d7df"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-annotations-native\\2026-10-07T08-14-40.698Z\\result.json",
+      "bytes": 137116,
+      "sha256": "e4972b527d6b8af3ef268217ab036bdaad37c7cfb0d05a7a472fe7ab18b1a34c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\build-dark.png",
+      "bytes": 107082,
+      "sha256": "1d90b373d301623013540d864725801e00ebb67f45e7ad71cf43eaa0625e4ec5"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\build-light.png",
+      "bytes": 110389,
+      "sha256": "f8d10652f520fca888dc3ce820a9e500e7a4928b6f3e01e37c558f952e64a2b3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\electron.log",
+      "bytes": 8836,
+      "sha256": "6fbacb227b61c2411a0bdb43d41245d461085f01fc26cad8291382c38ba4c362"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\guided-dark.png",
+      "bytes": 101117,
+      "sha256": "49c36ee0a60249f257adf5781459b271a982a4fd22876c73006e991c770dc887"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\guided-light.png",
+      "bytes": 103388,
+      "sha256": "ea90bc2aa6f5306bf5dca4c884ad37c425931cd630ad18057ad0fc2b4a2ddd52"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\initial-style-diagnostics.json",
+      "bytes": 2108,
+      "sha256": "2b85ebbef7c379ca7cdcf60a40652dd744ab05cf7f8a752eea98640541606ddf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\result.json",
+      "bytes": 17750,
+      "sha256": "c5fa553e4ef8e01b6fa2d59e705b02fb389684f974005ddf89d51faa284a73c8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\styles-dark.png",
+      "bytes": 105188,
+      "sha256": "112a190e8f34a7ce5e8f609766c04691399f9608816e3d710b741c25c3c9c579"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-build\\2026-10-07T08-10-45.696Z\\styles-light.png",
+      "bytes": 109405,
+      "sha256": "9387d426e013869d19fef173db21ffe4fbdfdea35314d17fdefcc2cc122f5921"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-dock\\2026-10-07T08-11-25.605Z\\diagram-attached-dark.png",
+      "bytes": 101214,
+      "sha256": "2243964ed392550d38e1a685bb3da6bed1855c9e1b25e51e11425267f3075cf9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-dock\\2026-10-07T08-11-25.605Z\\diagram-attached-light.png",
+      "bytes": 104058,
+      "sha256": "c7d86cae41eaa7452bda8740b40ac0ede82df3ad6add94a3e0ad884055107601"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-dock\\2026-10-07T08-11-25.605Z\\electron.log",
+      "bytes": 4827,
+      "sha256": "53aad251d679a4f37f54d6c540f20d34e2e06123302fd59c0de1473681aea8f9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-dock\\2026-10-07T08-11-25.605Z\\result.json",
+      "bytes": 5487,
+      "sha256": "6e68dd6af51b06e6df54aae1a6f0688f7453ea755b75a2f90d49591acf00e88b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-edit\\2026-10-07T08-09-53.690Z\\diagram-working-dark.png",
+      "bytes": 90154,
+      "sha256": "16cde251db52bd66985b31667fb4db49e2556eb7ddfbaf44f5ff0e50183d4848"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-edit\\2026-10-07T08-09-53.690Z\\diagram-working-light.png",
+      "bytes": 91961,
+      "sha256": "093feb1321a0921a135a6d74ae823c774ad0d2b929bb4054995cc079deaf1767"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-edit\\2026-10-07T08-09-53.690Z\\electron.log",
+      "bytes": 10435,
+      "sha256": "822cde526899381e264f2793c4c007f63df84d01e52124780caf92a101b5570a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-edit\\2026-10-07T08-09-53.690Z\\result.json",
+      "bytes": 48844,
+      "sha256": "60b2067e4e284c02bf4b159665630f809ac18dd20144efcea9ea6319f52d6dbb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-export\\2026-10-07T08-11-12.602Z\\electron.log",
+      "bytes": 4132,
+      "sha256": "32a4019d50eefc016289d8fb4de4a163d571a4e038f3c63c919cb9d89b59ab09"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-export\\2026-10-07T08-11-12.602Z\\result.json",
+      "bytes": 4792,
+      "sha256": "6df628f86035275d1f02b04448fc7874500dac131380a330750161ba3fe0d201"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-export\\2026-10-07T08-11-12.602Z\\svg-dark.png",
+      "bytes": 93576,
+      "sha256": "23e7d8dfa54d70f9bda11308a9cf2e89cf9afe5a59924927be5d19629d4e68f8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-export\\2026-10-07T08-11-12.602Z\\svg-light.png",
+      "bytes": 96578,
+      "sha256": "8afb0bb42121847642c862ebc3947173acfe64ae67a71293ce7366784c978a81"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-guided\\2026-10-07T08-10-13.110Z\\electron.log",
+      "bytes": 4698,
+      "sha256": "05d3693ab6e06b006a27cb811101b8cca26aa0d5147dafd95dd8ae5fc60d1d60"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-guided\\2026-10-07T08-10-13.110Z\\guided-dark.png",
+      "bytes": 99921,
+      "sha256": "c2e98e54fd9ae0740d1eebfe60c0edf3ee0c4c9da442a54f90e3eb921f7e7df6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-guided\\2026-10-07T08-10-13.110Z\\guided-light.png",
+      "bytes": 102504,
+      "sha256": "f50a6b4e3f9c40165efe5b3a1ad4ca6a5dd98193834dc8bfb4388c343116e988"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-guided\\2026-10-07T08-10-13.110Z\\result.json",
+      "bytes": 5586,
+      "sha256": "ff178c9a2a9a9205141a8cd905eb71775caf857d0eb96bc1b155bae98ba51db3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-14-59.657Z\\diagram-light.png",
+      "bytes": 86950,
+      "sha256": "a06725482bf9b7d1ee858081262224748cc67b855f32653b7b2acdeed1331a12"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-14-59.657Z\\failure.png",
+      "bytes": 62452,
+      "sha256": "80d29ef0a64624658d54ce8eec1efc80bf9ebec745343ac2526935aee31cc93b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-14-59.657Z\\result.json",
+      "bytes": 7452,
+      "sha256": "0c16a152dc0aec464dc9fb8a75931fb133169ff0e08117d2baf0256ebada79bb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-pan-release\\2026-10-07T08-14-59.657Z\\view-failure-86046B1193A409F4DB3FC25F7B566F86.png",
+      "bytes": 86962,
+      "sha256": "36ec73bf6343689b512ebd6ba8fa3c74edbfb6aaed3ddd43916c02e37e6564dc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-preview\\2026-10-07T08-09-38.784Z\\diagram-dark.png",
+      "bytes": 85273,
+      "sha256": "186c031104d4adc7904eeed713fc1e8b2f03f1eb726ccb0435c18b338b1eb6f9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-preview\\2026-10-07T08-09-38.784Z\\diagram-light.png",
+      "bytes": 86950,
+      "sha256": "a06725482bf9b7d1ee858081262224748cc67b855f32653b7b2acdeed1331a12"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-preview\\2026-10-07T08-09-38.784Z\\result.json",
+      "bytes": 5134,
+      "sha256": "7c577d76c9b254f8269aec6966a202572240826e5fd6c862590816c7f550c0e2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\electron.log",
+      "bytes": 6765,
+      "sha256": "c7093cc5929b35aa8f063184b4d67e721a4aa78a8f0c867ddea4dc36dccf634d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\guided-dark.png",
+      "bytes": 101117,
+      "sha256": "49c36ee0a60249f257adf5781459b271a982a4fd22876c73006e991c770dc887"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\guided-light.png",
+      "bytes": 103543,
+      "sha256": "266cce3ca916d033ac7ab0d16882fad9537aa9cd2281df4561566f722332609e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\initial-style-diagnostics.json",
+      "bytes": 2108,
+      "sha256": "2b85ebbef7c379ca7cdcf60a40652dd744ab05cf7f8a752eea98640541606ddf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\result.json",
+      "bytes": 9480,
+      "sha256": "706d59e71da10dc2fbebcb71492602413765ff4fb34fa315853f955bd23e7530"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\styles-dark.png",
+      "bytes": 105188,
+      "sha256": "112a190e8f34a7ce5e8f609766c04691399f9608816e3d710b741c25c3c9c579"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-style\\2026-10-07T08-10-27.280Z\\styles-light.png",
+      "bytes": 109405,
+      "sha256": "9387d426e013869d19fef173db21ffe4fbdfdea35314d17fdefcc2cc122f5921"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-14-17.147Z\\result.json",
+      "bytes": 161311,
+      "sha256": "231b436a438cc9895e1161b469973ae4e0dc643691250baec73a9c0d2c501982"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-14-17.147Z\\walkthrough-attached-dark.png",
+      "bytes": 99699,
+      "sha256": "3086de91a4359f55828779b10640f6b9ca170a509bc6200ff5232890fff44ff2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-14-17.147Z\\walkthrough-dark.png",
+      "bytes": 95861,
+      "sha256": "6fc2ab71fd80d6c83dc83b486ff147b433409bc043c589d3c6075e41fc8b3396"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\diagram-walkthrough-native\\2026-10-07T08-14-17.147Z\\walkthrough-light.png",
+      "bytes": 100689,
+      "sha256": "2816db228b083beb316e0c38cfad6c4a959fa9e042c97224ae55572e63436e82"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-context-native\\2026-10-07T08-13-45.488Z\\context-minimum.png",
+      "bytes": 21705,
+      "sha256": "6b9ef67b97e7db01bfee9008e7bbc5c1ba9e072e3a6f8299084595a9046028d0"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-context-native\\2026-10-07T08-13-45.488Z\\electron.log",
+      "bytes": 2320,
+      "sha256": "1ffd592e81e187ded3882282bba8d1f60f2a99ced2c45fc4fca99397829628d2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-context-native\\2026-10-07T08-13-45.488Z\\replacement-valid.png",
+      "bytes": 88,
+      "sha256": "d4afab195b2a5b89ec242453a62850ef99577a3aef891aa353de29cf1bb6b0bf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-context-native\\2026-10-07T08-13-45.488Z\\replacement.png",
+      "bytes": 68,
+      "sha256": "9d5e998704306a4923462c52b1e5ca319224636f5d4be4fc6fe0adf4b81c6820"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-context-native\\2026-10-07T08-13-45.488Z\\result.json",
+      "bytes": 31520,
+      "sha256": "09e0c0f5feb47a30c70bedb972a982a4f342b6744d1f46c204bcce7735be1a49"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-reader\\2026-10-07T08-13-06.832Z\\docs-readable-kpmg.png",
+      "bytes": 74539,
+      "sha256": "c5a63d3e7235e16690698c8afc046e7be713c20a41e569ff75c1a7ea6a56d88b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-reader\\2026-10-07T08-13-06.832Z\\electron.log",
+      "bytes": 102,
+      "sha256": "38933ada546299c5026be85e1ced78a68cf792bc6fa3b12a35390b0ca60f7371"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-reader\\2026-10-07T08-13-06.832Z\\result.json",
+      "bytes": 2576,
+      "sha256": "fe10a5dd7d827e17418c21c555e8ac2225c5f8583f0dd215e2fdba0bf8ed4f5d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-structured\\2026-10-07T08-12-06.820Z\\electron.log",
+      "bytes": 2019,
+      "sha256": "829ebf43edbc9c9546c222e1b74a7aef0faa816e823ab32f0cc11b19eb337c93"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-structured\\2026-10-07T08-12-06.820Z\\result.json",
+      "bytes": 2585,
+      "sha256": "cc73c46938a3505cb370cf3cea1e10d988972ba18e639a15ccbcf92331811236"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-structured\\2026-10-07T08-12-06.820Z\\structured-dark.png",
+      "bytes": 68444,
+      "sha256": "6d777277c3530ef9c6955830a56b161d78d9d5eeb1ed659d0765a18f9974411f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\docs-structured\\2026-10-07T08-12-06.820Z\\structured-light.png",
+      "bytes": 71511,
+      "sha256": "10e8ec7ba33c0f33b2d9b52758825ed7aa2b8bd728acde910c80526c4c114e33"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-documents\\2026-10-07T08-11-54.206Z\\electron.log",
+      "bytes": 5930,
+      "sha256": "c75df702a44ab603e392004710811348bbba9dad443a0d0dabbc8118b72488e1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-documents\\2026-10-07T08-11-54.206Z\\new-document-dark.png",
+      "bytes": 65573,
+      "sha256": "71a06df0fc51f3e9c7b5161e4ddf106d1e356147592ff06de663ac8f7b246c81"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-documents\\2026-10-07T08-11-54.206Z\\new-document-light.png",
+      "bytes": 68477,
+      "sha256": "f2da1782cf5ad66a770a327fa523883c43b0b13d8e7f0060f230b19538c97395"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-documents\\2026-10-07T08-11-54.206Z\\result.json",
+      "bytes": 2711,
+      "sha256": "5a92c2fe9610ec069b7b8496a950d958b7ae6de867c5b67641ba3ce1217b6685"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\electron.log",
+      "bytes": 1875,
+      "sha256": "9be5bfb0a9e3e1967ed5b9b772c4cff786414d365144d326a1e45bdd06a09049"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-guide.png",
+      "bytes": 130190,
+      "sha256": "f4ed9cd70c4b526128167ac90ad093d907211ee957153dfd423246d12a84a39c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-paged-library.png",
+      "bytes": 101905,
+      "sha256": "ec8418ed0b9489a0060d637120d19e0e660cffb4b512eae57e0c6b6751bc9aef"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-search-dark.png",
+      "bytes": 97702,
+      "sha256": "7def5c29ab8c6c102969d5d6008cc563dafea3c7261823c7290ce3631a7ed282"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-search-light.png",
+      "bytes": 101678,
+      "sha256": "aa74cb29dbc8e99ad1fe8f3d363b6d84a1ffd63bbf1b93784c56e3d175cff8ff"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-searched-library.png",
+      "bytes": 99927,
+      "sha256": "68753acd42f4bbe1026721fb9ada0ff4af3d4f20f260d4a4f889345949f3a421"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\home-updates.png",
+      "bytes": 92317,
+      "sha256": "82acb2dc35c261cb2aa47548d9ac72a1b8576895ca1cb08fddb78660433614bf"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-library-search\\2026-10-07T08-11-46.062Z\\result.json",
+      "bytes": 4787,
+      "sha256": "0876c0dc497121f19a4f3f5cbc2be7c708e682f9dc2fc1d4a4d2847b21365cf6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\code-import-discovery.png",
+      "bytes": 106149,
+      "sha256": "3bdc3df793b11740e51c0295a9dd12db794d2bc8978ba1aab97f6cc9ef90ff6f"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\desktop-copy-dialog.png",
+      "bytes": 105643,
+      "sha256": "df7f0b84aa185974eb660d7b6c2732b5afda1b4c0d03354d052c4f25271453df"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\desktop-copy-home-light.png",
+      "bytes": 70017,
+      "sha256": "949e267e2bc325eaf6b29a1c754121b0f70dda31684e0e0172b6a2dde74ff561"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\desktop-copy-home.png",
+      "bytes": 69137,
+      "sha256": "fadedde6f149fa3a5cea42984ef0d730b913e9e07ccd503c52619910ffa36b88"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\desktop-new-dialog.png",
+      "bytes": 103930,
+      "sha256": "ccd2f6bd900c4c7a3c45a800e2313dabeaf4a0613e621caed2346ede0c223c56"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\diagnostic.json",
+      "bytes": 7274,
+      "sha256": "f08913ca9216725d7a2466ab3f662218dcf3b223735aeea505201638ac1baaf9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\new-diagram-working.png",
+      "bytes": 87088,
+      "sha256": "25e7a06c70ad90bea1ab601d4c62282cdd87c8c62e3143b8a3dfba03042a1f23"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\new-docs-working.png",
+      "bytes": 76518,
+      "sha256": "529a6273afe0d8a75a05807bcee7dbfe0d475a30eaf11375840e6cd3d619a513"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\home-source-projects\\2026-10-07T08-12-20.357Z\\result.json",
+      "bytes": 9949,
+      "sha256": "d7dbc647fe6a3bb8df90a58b4b54c96a2273d9489b5eb4b9b7d7a70c5270424d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\native-verification\\diagrams.json",
+      "bytes": 8048,
+      "sha256": "5dc45318d75e213c65868501ba467300cbdf958df1707dade80af725bd644455"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-authoring-native\\2026-10-07T08-13-58.356Z\\authoring-minimum.png",
+      "bytes": 28791,
+      "sha256": "5bc9bff521e4939af23e21e1445b06262ed1373f3d48d32ca97abf96e69a69a6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-authoring-native\\2026-10-07T08-13-58.356Z\\electron.log",
+      "bytes": 1800,
+      "sha256": "a0b1758079c1841c875d291a1f90c137cca4706978d68551d18fa139b5056327"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-authoring-native\\2026-10-07T08-13-58.356Z\\public-table-presenter.png",
+      "bytes": 74484,
+      "sha256": "a93b156d21fa3837551c362937d2a55deb56ef57c6b3c5101c6d3aee8e303d41"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-authoring-native\\2026-10-07T08-13-58.356Z\\result.json",
+      "bytes": 3056,
+      "sha256": "acf67d8116e162afd85c7cafd2cadda7648a317348aed56cdfde79980b328c29"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\dark.png",
+      "bytes": 83771,
+      "sha256": "a7c3e9321526523801e5c8b287dcbd15279d30f4cca1f69faabbebc8dd508049"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\driver-result.json",
+      "bytes": 246,
+      "sha256": "d4f91318ad886aecf3ece578bbc9dc3ce76057a445f9bab4392ec9ad25bbe21e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\electron.log",
+      "bytes": 128,
+      "sha256": "54c1eb81db03a43914632c355306e11b5e5d1e6b480a2a7172a209943310ef05"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\light.png",
+      "bytes": 83715,
+      "sha256": "aa3b91197587aadfc24aef4a0db265c67c2b6449bad6f0627bf56cfdcada2cea"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\result.json",
+      "bytes": 3683,
+      "sha256": "0be0f4189e407dac9f4ba51e2c5776e245fab63dd9cc9bbbc73817666c6e9668"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\table.png",
+      "bytes": 55540,
+      "sha256": "82c837b13af415f7ac256dd726d3e82ab26b8b3c5a110a73d48ae9317291c46d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-cards\\2026-10-07T08-12-43.531Z\\title.png",
+      "bytes": 63533,
+      "sha256": "a1b9addeb9fe4c585953326b153b315292c09f3d9eadfa177d12039c1d185325"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-render\\2026-10-07T08-12-37.312Z\\electron.log",
+      "bytes": 129,
+      "sha256": "a6c97add56ecdb53d76bb9ce25f36858a6dfc9f52a71f1111ac5883463eb5fe9"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-render\\2026-10-07T08-12-37.312Z\\node.png",
+      "bytes": 61895,
+      "sha256": "4d8348e7bde734b1cec609780f636fb0ff13568cc291356941fb59e5b8c775b6"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-render\\2026-10-07T08-12-37.312Z\\overview.png",
+      "bytes": 74950,
+      "sha256": "dbafcd35fd58ee3e7ff353f8fd359f127153efff209d05bd41ceed6b9727f262"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-render\\2026-10-07T08-12-37.312Z\\result.json",
+      "bytes": 2447,
+      "sha256": "d76ffbbf9664587c26e4160b233d918b599a6a6f56a7433d743752f66e951bb3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-render\\2026-10-07T08-12-37.312Z\\section.png",
+      "bytes": 42157,
+      "sha256": "380412270e95f7356adf96b051799fb1978d86c434bc1c3886223615333a51a5"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-style\\2026-10-07T08-12-39.765Z\\dark.png",
+      "bytes": 127302,
+      "sha256": "c6b447566cdeaeaba3cc3b56748b52ee42208833b2a56a2b636ef1e43c39087a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-style\\2026-10-07T08-12-39.765Z\\driver-result.json",
+      "bytes": 246,
+      "sha256": "c6a95ef9b2819cbd2d48bcd63aa0b13eddc027d87a0f5ee09735d128d41ee26a"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-style\\2026-10-07T08-12-39.765Z\\electron.log",
+      "bytes": 128,
+      "sha256": "f62272341c69ba04cdf2c829c7c7f9176e1fd9414a115c49bb19e2a6aa90381b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-style\\2026-10-07T08-12-39.765Z\\light.png",
+      "bytes": 98161,
+      "sha256": "208a5be9df84c11c70c5acd5aea4d7ab56a6be322827d221d296c0f6834584c4"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-style\\2026-10-07T08-12-39.765Z\\result.json",
+      "bytes": 20165,
+      "sha256": "a015b91c9a78dc5a52d92e628ffade48b51a8376c082f1ee16b174230d95d027"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-card-text.png",
+      "bytes": 31661,
+      "sha256": "20def394fd9878240a0d5aafb733dd0226c686a07124df36314bbc9d6c10d951"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-card-title.png",
+      "bytes": 36470,
+      "sha256": "467f84070b34720f7955ff6c0e655d571d7495896736231dd75a5d3f190fd6f7"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-dark.png",
+      "bytes": 34160,
+      "sha256": "a5851ffafb6ecd02477268c8ca3d13885d88c39d848146be2d75368b11cbd540"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-fullscreen.png",
+      "bytes": 13820,
+      "sha256": "afe431f8b74e750b8ffe9a20a0601467398581b7d43f62bed5501d39f0f23b5e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-light.png",
+      "bytes": 34248,
+      "sha256": "196d6bae8b8afdb78192dec8d087ac9e45066c5738c7b56e01aaa1895547bde2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-overview.png",
+      "bytes": 34248,
+      "sha256": "196d6bae8b8afdb78192dec8d087ac9e45066c5738c7b56e01aaa1895547bde2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\audience-section.png",
+      "bytes": 16526,
+      "sha256": "8235c7c3278562c92820a73deaf19b374fff7f498f55ab778658404b9a443c21"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\electron.log",
+      "bytes": 3117,
+      "sha256": "86615c290c3318bdca03dc6445e1e1a953b20da2fd6b9db29433701a204a3533"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\presenter-dark.png",
+      "bytes": 87352,
+      "sha256": "6f8bec88fe6f343db4831875dfb6524a3cd923ce09152b1ad88d07df1dbaa129"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\presenter-light.png",
+      "bytes": 91561,
+      "sha256": "4e8b99bff399b2600295a1492dad9e5d698cd16d5c44308870d00ccfd8497055"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\presenter-overview.png",
+      "bytes": 90709,
+      "sha256": "873bac5c942e69a815286f50caecd85113d43440924a67176011af94fa4d707e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\presenter-section.png",
+      "bytes": 78497,
+      "sha256": "51b419639ab76a51a80cfd957bf06383393fd7912e7fbf174f59232b6e36bf37"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\presentation-windows\\2026-10-07T08-12-49.218Z\\result.json",
+      "bytes": 9548,
+      "sha256": "e74f913068ab12371810b814547fe51b990de30a8a4bac0e480f471e764efffa"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\audience-immutable.png",
+      "bytes": 28715,
+      "sha256": "d983c573b7fc0bd7768ed99f97611639a8097b9c2affea1172064d23c2196686"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-artdeco.png",
+      "bytes": 59232,
+      "sha256": "c8313f28ab1da7153f7ea6b91f37e1626008854f065510da140e248100cbec6e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-cupertino.png",
+      "bytes": 85221,
+      "sha256": "74c656489eb1feb7004c6b51a9c0fd07048522f9807069c73a4710deb969b354"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-kpmg.png",
+      "bytes": 59147,
+      "sha256": "a5dc6c000812e72d8d441d0875924b02d6e567fd97a52200661ee4c3d4e877d1"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-light.png",
+      "bytes": 59802,
+      "sha256": "1acd6596c795d959956b037b92f1b405d79e547bb75e0c26d876867967b42f79"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-matrix.png",
+      "bytes": 47020,
+      "sha256": "6c1af23b7ea9253069b64b2e64d8c3722293096b0da49ce59cbdcea53baa199e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\code-minimum.png",
+      "bytes": 40874,
+      "sha256": "5567799e9c6e1f3c8640601fff378ed03c0fcb854c4530d5f9e557056df22716"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-artdeco.png",
+      "bytes": 87513,
+      "sha256": "1bc6f5d06db7c0eb22b103c283833c30b65b58b7dd1a906859b5ff2cbbc05308"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-cupertino.png",
+      "bytes": 116030,
+      "sha256": "72fb832386cccbe9bc15d732df4de5533cdfffb259f3ec8d33cac84d450937cc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-dark-imported-colour.png",
+      "bytes": 87329,
+      "sha256": "fb64747efa30a87249cdcad005a85320ca307fc6108b2cedd12b5866efdd7d9e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-kpmg.png",
+      "bytes": 87958,
+      "sha256": "123236e3a55989d1f5796507b66adf063bbc66b5f37c727827a27708c10bb979"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-light.png",
+      "bytes": 88681,
+      "sha256": "899222518d3091df656b910b3ddb6d76ff4313bd906b42c9b3a70d5b2a4a302e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-matrix.png",
+      "bytes": 73768,
+      "sha256": "7a678faa1c11b7b2b3eacbdaf4d274ac0df687ed20cd07ba5373619435ed15bb"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-minimum-style.png",
+      "bytes": 41627,
+      "sha256": "75afa63ffbca7d9107b5cd7da4de27bb006b981b982af5c7e44406d4864a4800"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-minimum.png",
+      "bytes": 44574,
+      "sha256": "0bafeeb79cf7e08b46f7b1283fc981a7713fedaabcf47c2455b3c45ebfcc4702"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-style-artdeco.png",
+      "bytes": 91136,
+      "sha256": "edcfd926548f82a3e20fdca4da52a847f7fce77da260d175c08b4cd06085c7ba"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-style-cupertino.png",
+      "bytes": 131493,
+      "sha256": "eaed58c6742f71b40e855c91e1d96ffde8b76c3ba3e06f23cc7318b0cb396c91"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-style-kpmg.png",
+      "bytes": 96855,
+      "sha256": "3ead946a26ef229d6dcf790f8aad66f2d94a97ead15c22ff5802913e416d9281"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-style-light.png",
+      "bytes": 97339,
+      "sha256": "de46d924b0c0c7f999194a8c995ecf6048b85b8bdafc602404878536ddd535b2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\diagram-style-matrix.png",
+      "bytes": 81917,
+      "sha256": "1203af9ea484f458a76846c389d640475a4afcd68d4fdfa1f55f1ad1d884c44b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-artdeco.png",
+      "bytes": 63622,
+      "sha256": "4200a725835ceda68877cfd4fa6147469a4e6bfe277b1c1793a8f1ed197bfde2"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-cupertino.png",
+      "bytes": 97204,
+      "sha256": "1b7a81baa07e63c918a9cc094b7862d6dc51c41ca1d41b4c08d0478553a7508b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-kpmg.png",
+      "bytes": 64576,
+      "sha256": "9dc769aec6726b04600e76aa46d349e67a969f6e62a10d6db1b5f4c34939ac03"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-library-after-native-navigation.png",
+      "bytes": 89395,
+      "sha256": "e714f2f8a465d9bcb0bfd210ff46d24b2427ed262ef649afee05f0fa500d5a50"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-light.png",
+      "bytes": 64577,
+      "sha256": "d6dc55d016376e95b92c4a50cb349f37a9de8ba9ef1718a5bdff9d9b9ae13168"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-matrix.png",
+      "bytes": 50486,
+      "sha256": "23805844a089a8e6d27819020a20306fa13960e81e1029bab92ff1d119dc5662"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\docs-minimum.png",
+      "bytes": 36951,
+      "sha256": "cea6e2bc39da39d14ffee5032a6632ded4b7b5448cc3f247603490febc7c0c14"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\electron.log",
+      "bytes": 16722,
+      "sha256": "22d3e0235e497b3a1f71cf2301232b274574c07b4a32139be8a44f9d66f7db48"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\home-artdeco.png",
+      "bytes": 62628,
+      "sha256": "7b957714b44d8a0b52f7c1794c23a4d549097fd548a71256aa4c8dacb1879537"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\home-cupertino.png",
+      "bytes": 66692,
+      "sha256": "08a434e965b1782f5cf528acfab942944a75ca3acceca63057278ac5a4b67a5e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\home-kpmg.png",
+      "bytes": 66990,
+      "sha256": "6506712a3b8156f115dc6643f1e8969f56b96dfc9706159e3435a79af2ccf332"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\home-light.png",
+      "bytes": 64581,
+      "sha256": "575cf89b18a9467919d01c5f6b200dd1961b84062bd2ef97f299ee4d5081ebdc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\home-matrix.png",
+      "bytes": 59337,
+      "sha256": "96e46ebdca4ae917bea5436e3825c079710a7a2eb0fe4b64a5148e38db5e089b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-artdeco.png",
+      "bytes": 73712,
+      "sha256": "432c0baaa725f56fb8ea8963ca2d528e41580e39466ad38b47f7af82eb4a0a13"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-cupertino.png",
+      "bytes": 92759,
+      "sha256": "46ed5b36ac241f08c230d01cfd1f4bc8bd1969a01faf94f57e86c9a36171c421"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-kpmg.png",
+      "bytes": 74611,
+      "sha256": "5abe7a0ecb71fff23ecdcf5009e15584a9a20cda7d7e3ef3c65a207dc709e84b"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-light.png",
+      "bytes": 75661,
+      "sha256": "f902a77858d3fae2f3c37fb2bb5c465271cedf954889174beb2be34177d717dc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-matrix.png",
+      "bytes": 61229,
+      "sha256": "594f5186ea68967e9277325366f065663d34d924820843e0d56ea3e703c571f3"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\presenter-minimum.png",
+      "bytes": 33971,
+      "sha256": "a52337389e97e1956beac6a2acc15a670e6c12b6005e9342cdd4bebf83c465f8"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\project-find.png",
+      "bytes": 83809,
+      "sha256": "55608d0f4ed1c8aeea28fd8cf04cf4c6c167296bb5cd09ade067b1c3b343e56e"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\result.json",
+      "bytes": 18193,
+      "sha256": "c4fa0ce1190a52188124f545bfd269bb2aef0e6accb151585ada5c647cca2608"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\evidence\\ui-personality\\2026-10-07T08-13-13.966Z\\studio-shared-theme.png",
+      "bytes": 55302,
+      "sha256": "47ac2032194c9645e419099606fd788eea15961ecc79b478eef078f4576096fe"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original\\native\\generated\\process-identity.json",
+      "bytes": 346,
+      "sha256": "40a6eda1a0a8ec1a3b4bdf9094aa96ad9e1065698f17a346db54b9925947bbc7"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original\\evidence\\ci-native-identity.log",
+      "bytes": 1217,
+      "sha256": "c3b59fba5f8767860a1339e6d6a2a2e6fb919698038ee8422d5e9bc043fcc81d"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original\\evidence\\ci-units.log",
+      "bytes": 388619,
+      "sha256": "ecadc287b1d4735d279adb9ea790a486d08d86243fe2e221c62d5499c2b73a09"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original\\evidence\\process-identity-deadline-2026-10-07T08-03-26.512Z\\result.json",
+      "bytes": 1609,
+      "sha256": "9d1449c9e9f1a4a367b4b40efdcc650a711b069a191f49fad94fa1b2e7f13231"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original\\evidence\\process-reader-native-2026-10-07T08-03-56.958Z\\result.json",
+      "bytes": 2165,
+      "sha256": "2fb3afe2aba08b02deebc3b57edd437761b4f369ee80bd0f0c693b9cc06d73bc"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original\\native\\generated\\process-identity.json",
+      "bytes": 346,
+      "sha256": "33bc72966a361e114e06414647cbf728f092d968391af0734c5520f59055f21a"
+    }
+  ],
+  "retainedMetadata": [
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\artifacts-api-original.json",
+      "bytes": 4357,
+      "sha256": "e43cf91c15ffb94cfe4f9dd9f4a324b6c2c79bbcd1bd03606393efa215daa34e"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\candidate-compare-api-original.json",
+      "bytes": 306211,
+      "sha256": "612c3efbbb634ed7a43dce31b6037a29f60e47c067059b2e4f1f7e7c4d0d1162"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\canonical-api-original.json",
+      "bytes": 1162,
+      "sha256": "5a261a6c2e7e19a62a8ba62bb603fab20d966648ce10b25586d339d55dd33c29"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\checkpoint-jobs-api-2026-10-07.json",
+      "bytes": 16656,
+      "sha256": "0c227c47dc3fa0145c5baa98922899e35b098a8e60b97d5f979d3a4bca0e6c8f"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\checkpoint-run-api-2026-10-07.json",
+      "bytes": 14335,
+      "sha256": "e2ea5bc798c00e09914819aab6d331d09e0bf35067cf9bcf78ca41919ba519de"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-file-inventory.json",
+      "bytes": 876,
+      "sha256": "b39a3fcf812d3f902d96576791e044cb14a1f713f7f558baead2db80eb4d926d"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-original.zip",
+      "bytes": 73895,
+      "sha256": "b33de768ff7763d1c915d22b84efd8850b5bdf6b55662f5898d6d707700f6f92"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-development-evidence-zip-identity.json",
+      "bytes": 481,
+      "sha256": "93fe60e0dac47b62a7c3b4559a2a60fb335934577fceb2bfa5b40e23cbed0e6e"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-job-decoded-original.json",
+      "bytes": 47233,
+      "sha256": "946af023283aaba0f0507ca9169dac212c89da36e4a4c17b724ac0c4c5d3f6dc"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-file-inventory.json",
+      "bytes": 23455,
+      "sha256": "69feaa5e78b233ac491797748977a393ae62fe3ac3802d247af0fd1ebb9eeee7"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-original.zip",
+      "bytes": 4973441,
+      "sha256": "4796e94f6a3199162a6c489096b818b6a248c2284ea5a22398c4f8322887ef7a"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-desktop-evidence-zip-identity.json",
+      "bytes": 492,
+      "sha256": "872805162174defc6bb7d8f03e1467e0ff29bbcb20f5e89fb0853d2aaada0075"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-file-inventory.json",
+      "bytes": 31329,
+      "sha256": "b37e80960821db83ec5941411acc10ea7ef94c0d434a3300817c819d813cbf6e"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-original.zip",
+      "bytes": 8534415,
+      "sha256": "b97e8c78480336d6978506d77d52837135784473c77c14c3c19cadb86bdac76d"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-diagrams-evidence-zip-identity.json",
+      "bytes": 494,
+      "sha256": "ee01472c94f06fa0d84efcde25f6dc46effd8e2ad8a96746785b673a67bffa4b"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-file-inventory.json",
+      "bytes": 17961,
+      "sha256": "fff67506b0890fe2f5b60c9f189ed2563eeeaedf2f4bec416326a3700cb5d815"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-original.zip",
+      "bytes": 3708137,
+      "sha256": "99382df35130bee69472c96445dedd7b048094f1b782f087fe5a9366f70da105"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-native-sources-evidence-zip-identity.json",
+      "bytes": 491,
+      "sha256": "369958d1648faec73489c21268afb269ccda37b20afc933843725f92a851d17f"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-file-inventory.json",
+      "bytes": 7413,
+      "sha256": "b00e75652625cfe9d792aaae7bd7248b369fc976a92db93cfb0dba89b3cbfc45"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-original.zip",
+      "bytes": 2110931,
+      "sha256": "5d056d762ab350427057eed4d372d0c85bb3aeec0548a150d1dbf5616f4fb6bf"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-packaged-evidence-zip-identity.json",
+      "bytes": 479,
+      "sha256": "4d1376f6a4c1c04fcdd051a78ab3cf4bdf9dcdf0dcebe3570d01de01bb3088ed"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\desktop-verify-immutable-source.yml.txt",
+      "bytes": 44961,
+      "sha256": "5d71cf3f1acdee88782a17dee9dfb64fc27406367cd2b2d5ac2c2b9a6596e8d5"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\diagrams-job-decoded-original.json",
+      "bytes": 43526,
+      "sha256": "513329fa9451ef14b379eb0916db095e9e38ff8146b2acd578b565475a87e9ae"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\hosted-evidence-first-generated-original.json",
+      "bytes": 2724876,
+      "sha256": "41bf062b0c2540bba010c10c44d3aa6671842ac563f10d0717b71d2bf4d2aed5"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\integration-api-original.json",
+      "bytes": 2588,
+      "sha256": "b044020d5efe8fb119a941b23e6fd92b75dcb72a2c0f1d3f20fc54861ffb3f47"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\jobs-api-original.json",
+      "bytes": 31136,
+      "sha256": "1f36131dabc4b0cf2cc3ab61934454a0581ca890b4367b1ae1543863869f2893"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\main-ref-api-original.json",
+      "bytes": 327,
+      "sha256": "5a22b3b40aa644e6c9931833e690d34a07bbf5d4a07d94efa23cbbe95aa78c9c"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\package-job-decoded-original.json",
+      "bytes": 46270,
+      "sha256": "45cc8fb9b34a029c742c26fac10267b8693cfdd4d1e8f3aa9aa0f06b3abf4d8e"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\RESUME-CHECKPOINT-2026-10-07.md",
+      "bytes": 2951,
+      "sha256": "47817c944430aa08a4e7a36bb8f80c93442fd20f718a450985da4de6cffd58e6"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\run-api-original.json",
+      "bytes": 12722,
+      "sha256": "4093bf2524e830745867d7b10d8ec586424dc797b6a28052302ef6a4d7ff2a5f"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\sources-job-decoded-original.json",
+      "bytes": 44550,
+      "sha256": "cd706d950be92e18ef3948f692a82927ef83479658df5db26871711f63714c03"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\tree-api-original.json",
+      "bytes": 496643,
+      "sha256": "862082e6a7f4094704044d004b00901bef5120f7979b31277a1fa95671f6b402"
+    },
+    {
+      "path": "evidence\\workspace-surface\\ci37591120593\\unit-job-decoded-original.json",
+      "bytes": 705831,
+      "sha256": "b9a2394586280f3fb0d01c2f204dcd1b41294cc619ecc55803966a73ba4c397a"
+    }
+  ],
+  "verifiedReportClaims": [
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "bytes": 7921,
+      "sha256": "90a49e6956642f458874d82d13668a111d9d7e6e574daac1580bad76816c5a2a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "bytes": 7966,
+      "sha256": "5d713e6e29ca893d66d24599b3ed8b3e41d9cc6e1239eab14530589a800beca0"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "bytes": 8048,
+      "sha256": "5dc45318d75e213c65868501ba467300cbdf958df1707dade80af725bd644455"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/home-backup-export-native/2026-10-07T08-14-41.407Z/result.json",
+      "bytes": 130980,
+      "sha256": "0b4f2df7939125c9a12a570ef28a29ad71da5dd94d3b326a6b68620343eb65e0"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/guided-intro-2026-10-07T08-11-21.795Z/result.json",
+      "bytes": 55737,
+      "sha256": "a0af66af5f92065662b324b070a4b8901198e5662e8e4b8628863bc4cf97869c"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/home-recovery/2026-10-07T08-13-45.078Z/result.json",
+      "bytes": 2739,
+      "sha256": "b3c7810d78be8d4bf49798ec1d75efe6b50027f8544165440ea2abcbe1a09e40"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/docs-export-native/2026-10-07T08-14-46.615Z/result.json",
+      "bytes": 136094,
+      "sha256": "bb532bf4776432ebee9c438cc3bf093e4e41a7b436ce97540a8e6b895db5c01d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/docs-export-native/2026-10-07T08-04-15.021Z/result.json",
+      "bytes": 136592,
+      "sha256": "eca098d15ce2a544685128b0f57a1ea656dc7878e4ecc5b25afc29d2772d3474"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/presenter-notes-export-native/2026-10-07T08-15-28.331Z/result.json",
+      "bytes": 141039,
+      "sha256": "f56ff782f126caf6e801f91a60056bb2951385037288849ff2acf67092b0f9ea"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/presenter-notes-export-native/2026-10-07T08-04-57.456Z/result.json",
+      "bytes": 141548,
+      "sha256": "e9e4d0c08d3cdca0a9a234ab640f1840211d87c8c5264d6eb839633f26ba0984"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/diagram-history-typography-native/2026-10-07T08-15-46.688Z/result.json",
+      "bytes": 157659,
+      "sha256": "d5c375e5398ff4e387d17ec0b18f8cae69c47c6d062b262d1976e350aeb70c6b"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/diagram-history-typography-native/2026-10-07T08-05-16.075Z/result.json",
+      "bytes": 158172,
+      "sha256": "199d704c308e6d1bcf986adda83d44b3092950840b9050c55d92fed6b138d9aa"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/result.json",
+      "bytes": 41748,
+      "sha256": "76e547f7c68f77a97c11841fbea2cb9166ac3781a43221fcdf85c5812612439d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-abrupt-1/result.json",
+      "bytes": 4700,
+      "sha256": "e8f3bac8b7d62a0fdbc25ddbcec993bcce235b7cbd563ad8068b097d1a301396"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-abrupt-2/result.json",
+      "bytes": 4700,
+      "sha256": "2e007ee0629ad5db5b7606bbcd4f1bd92b055b7dc0591ae659765d83c22adf07"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-lock-abrupt-1/result.json",
+      "bytes": 4899,
+      "sha256": "0ce8db523554eb3acc3029d580483324b571f954fcdea2a250423b76a95bb268"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-lock-abrupt-2/result.json",
+      "bytes": 4899,
+      "sha256": "bab2325bf69cceafb280964fdca5dd6e6224d7d184944bca656491cf92854269"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-lock-graceful-1/result.json",
+      "bytes": 5262,
+      "sha256": "5576c785e554a06de7ff53468a444690ee7f6458358195c0915746a59fedf2ed"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-14-20.603Z/setup-lock-graceful-2/result.json",
+      "bytes": 5262,
+      "sha256": "9e6c14f5fef0716e0a3487895a4938c57f57fea0a7e87abdd2cc274e21059540"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-03-45.960Z/result.json",
+      "bytes": 58558,
+      "sha256": "b437e8ae9d36e50dbe3a520854731a74a8a67a14e8faf59273e796470152a11d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-03-45.960Z/setup-abrupt-1/result.json",
+      "bytes": 5248,
+      "sha256": "a551c211b1fae61ce1e9b15471943d4779e7f2a3baf0f75408ba753b23b96105"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-03-45.960Z/setup-lock-abrupt-1/result.json",
+      "bytes": 5457,
+      "sha256": "431cd1621dd98386651978bcba15af3012f18721ca2809e00a006c2b475f1384"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T08-03-45.960Z/setup-lock-graceful-1/result.json",
+      "bytes": 5826,
+      "sha256": "add03b0f3acdf66afe1b22d53755dc76efbe9b3ace625e7e3f9dcf13af1e0c06"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/code-context-commands-native/2026-10-07T08-05-46.140Z/result.json",
+      "bytes": 142763,
+      "sha256": "395c79d271bf37a9091c7159ae66df6c43dc8849cb48a8d5b94629cccfbb0003"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/diagram-annotations-native/2026-10-07T08-06-29.732Z/result.json",
+      "bytes": 138043,
+      "sha256": "dbe7f9fb460ae4b20fdb6afe9815b9d7e9f4e90f71cb2bf25d038980c7e5116a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/diagram-pan-release/2026-10-07T08-06-51.791Z/result.json",
+      "bytes": 7800,
+      "sha256": "24b6715a63367ef74335a4513aa0d7404961fc4a85b2a4811f3910906da4bd7f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/diagram-walkthrough-native/2026-10-07T08-06-04.117Z/result.json",
+      "bytes": 162222,
+      "sha256": "87f3fb4477c24b99ee15da97cf46d52f61137eefc7d1c94d4c0a65d4e204404a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/docs-activity-native/2026-10-07T08-04-27.181Z/result.json",
+      "bytes": 203514,
+      "sha256": "33778de972014de555b8f4769acd0b6d04510b87da67e77f7376de97e3ef9f94"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/evidence/shell-2026-10-07T08-04-05.198Z/result.json",
+      "bytes": 1366,
+      "sha256": "c7a1aecade25e9f0b9d2fa61b5656fc99ebeb12b55fae80a3f6be5f1789b0669"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original/dist/development-d68ec72c-709b-4a3f-af71-1faebd3b0e01/BUILD-IDENTITY.json",
+      "bytes": 2682,
+      "sha256": "a2415234423621cfc408a5850a1f0287ab71bd763e6d1d5a6280e08f38ec3c0c"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-sources-evidence-original.zip",
+      "bytes": 3708137,
+      "sha256": "99382df35130bee69472c96445dedd7b048094f1b782f087fe5a9366f70da105"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-sources-evidence-file-inventory.json",
+      "bytes": 17961,
+      "sha256": "fff67506b0890fe2f5b60c9f189ed2563eeeaedf2f4bec416326a3700cb5d815"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-original.zip",
+      "bytes": 2110931,
+      "sha256": "5d056d762ab350427057eed4d372d0c85bb3aeec0548a150d1dbf5616f4fb6bf"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-packaged-evidence-file-inventory.json",
+      "bytes": 7413,
+      "sha256": "b00e75652625cfe9d792aaae7bd7248b369fc976a92db93cfb0dba89b3cbfc45"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original.zip",
+      "bytes": 4973441,
+      "sha256": "4796e94f6a3199162a6c489096b818b6a248c2284ea5a22398c4f8322887ef7a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-file-inventory.json",
+      "bytes": 23455,
+      "sha256": "69feaa5e78b233ac491797748977a393ae62fe3ac3802d247af0fd1ebb9eeee7"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original.zip",
+      "bytes": 8534415,
+      "sha256": "b97e8c78480336d6978506d77d52837135784473c77c14c3c19cadb86bdac76d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-file-inventory.json",
+      "bytes": 31329,
+      "sha256": "b37e80960821db83ec5941411acc10ea7ef94c0d434a3300817c819d813cbf6e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-development-evidence-original.zip",
+      "bytes": 73895,
+      "sha256": "b33de768ff7763d1c915d22b84efd8850b5bdf6b55662f5898d6d707700f6f92"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-development-evidence-file-inventory.json",
+      "bytes": 876,
+      "sha256": "b39a3fcf812d3f902d96576791e044cb14a1f713f7f558baead2db80eb4d926d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/unit-job-decoded-original.json",
+      "bytes": 705831,
+      "sha256": "b9a2394586280f3fb0d01c2f204dcd1b41294cc619ecc55803966a73ba4c397a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/package-job-decoded-original.json",
+      "bytes": 46270,
+      "sha256": "45cc8fb9b34a029c742c26fac10267b8693cfdd4d1e8f3aa9aa0f06b3abf4d8e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-job-decoded-original.json",
+      "bytes": 47233,
+      "sha256": "946af023283aaba0f0507ca9169dac212c89da36e4a4c17b724ac0c4c5d3f6dc"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/sources-job-decoded-original.json",
+      "bytes": 44550,
+      "sha256": "cd706d950be92e18ef3948f692a82927ef83479658df5db26871711f63714c03"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/diagrams-job-decoded-original.json",
+      "bytes": 43526,
+      "sha256": "513329fa9451ef14b379eb0916db095e9e38ff8146b2acd578b565475a87e9ae"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/run-api-original.json",
+      "bytes": 12722,
+      "sha256": "4093bf2524e830745867d7b10d8ec586424dc797b6a28052302ef6a4d7ff2a5f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/jobs-api-original.json",
+      "bytes": 31136,
+      "sha256": "1f36131dabc4b0cf2cc3ab61934454a0581ca890b4367b1ae1543863869f2893"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/artifacts-api-original.json",
+      "bytes": 4357,
+      "sha256": "e43cf91c15ffb94cfe4f9dd9f4a324b6c2c79bbcd1bd03606393efa215daa34e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/canonical-api-original.json",
+      "bytes": 1162,
+      "sha256": "5a261a6c2e7e19a62a8ba62bb603fab20d966648ce10b25586d339d55dd33c29"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/integration-api-original.json",
+      "bytes": 2588,
+      "sha256": "b044020d5efe8fb119a941b23e6fd92b75dcb72a2c0f1d3f20fc54861ffb3f47"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/main-ref-api-original.json",
+      "bytes": 327,
+      "sha256": "5a22b3b40aa644e6c9931833e690d34a07bbf5d4a07d94efa23cbbe95aa78c9c"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/tree-api-original.json",
+      "bytes": 496643,
+      "sha256": "862082e6a7f4094704044d004b00901bef5120f7979b31277a1fa95671f6b402"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/candidate-compare-api-original.json",
+      "bytes": 306211,
+      "sha256": "612c3efbbb634ed7a43dce31b6037a29f60e47c067059b2e4f1f7e7c4d0d1162"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-sources-evidence-original/evidence/code-context-commands-native/2026-10-07T08-14-20.481Z/result.json",
+      "bytes": 141850,
+      "sha256": "b23494af40014a4d17a4307484401c9c38402e92710716143ebdda9ecffecf3b"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original/evidence/diagram-walkthrough-native/2026-10-07T08-14-17.147Z/result.json",
+      "bytes": 161311,
+      "sha256": "231b436a438cc9895e1161b469973ae4e0dc643691250baec73a9c0d2c501982"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original/evidence/diagram-annotations-native/2026-10-07T08-14-40.698Z/result.json",
+      "bytes": 137116,
+      "sha256": "e4972b527d6b8af3ef268217ab036bdaad37c7cfb0d05a7a472fe7ab18b1a34c"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-diagrams-evidence-original/evidence/diagram-pan-release/2026-10-07T08-14-59.657Z/result.json",
+      "bytes": 7452,
+      "sha256": "0c16a152dc0aec464dc9fb8a75931fb133169ff0e08117d2baf0256ebada79bb"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37591120593/desktop-native-desktop-evidence-original/evidence/docs-activity-native/2026-10-07T08-14-58.053Z/result.json",
+      "bytes": 202429,
+      "sha256": "c8e96298770a9b7bb718ef465d4f09e25c8278ed85f97912f88daf0738a37117"
+    }
+  ],
+  "uniqueUnitTests": 1498,
+  "successfulGenericNativePrograms": 60,
+  "additionalEndpoint": "ADVERSE",
+  "laterCopiedProgramsNotExecuted": 30,
+  "limits": [
+    "Read-only owner check of retained original API/ZIP/member bytes, not a new live GitHub fetch",
+    "Original hosted execution belongs to GitHub Actions; no downloaded code executed",
+    "Historical pan and Save-to-Attach causes remain OPEN; no release/merge or new catalogue hosted qualification"
+  ]
+}

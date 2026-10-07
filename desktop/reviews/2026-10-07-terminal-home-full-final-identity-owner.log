@@ -1,0 +1,12 @@
+✔ real Docs fixture teardown accepts canonical TEMP identity when Windows supplies a different path spelling (2419.9705ms)
+✔ real Windows identity survives six-second native startup and remains fail-closed on bounded cancellation (28609.0977ms)
+✔ real Windows process identity preserves Unicode executable paths and stable creation time (2447.2351ms)
+✔ fixed native reader matches the original Windows Unicode path and exact100ns creation time (3040.0223ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36758.2815

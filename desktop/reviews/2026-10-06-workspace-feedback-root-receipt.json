@@ -1,0 +1,114 @@
+{
+  "author": "/root",
+  "sourceCommit": "e27a7f26d6ff3033d3bea74aa9aa9949acbf3461",
+  "scope": "Scoped Docs feedback and Diagram refusal visibility; not an actual hosted failure repair claim",
+  "paths": {
+    "full": "evidence/workspace-surface/full-suite-2026-10-06T02-18-27.306Z",
+    "native": "evidence/workspace-surface/feedback-native-2026-10-06T02-19-28.218Z",
+    "packaged": "evidence/workspace-surface/feedback-package-native-2026-10-06T02-19-33.408Z",
+    "identity": "evidence/workspace-surface/package-identity-2026-10-06T02-19-33.362Z"
+  },
+  "full": {
+    "tests": 1087,
+    "status": "COMPLETE",
+    "changedInputs": [],
+    "logSha256": "877e23587e60314fbc53e826c1aff130ee66874599782a695aea4c3a3030ac98"
+  },
+  "native": {
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "docs-format",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "diagram-style",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-edit",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-structured",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "desktop-ui",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": []
+  },
+  "packaged": {
+    "status": "COMPLETE",
+    "results": [
+      {
+        "name": "packaged",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-format",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "diagram-style",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "docs-edit",
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "workspace-appearance",
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "changedInputs": [],
+    "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-c593fd50-0a00-442b-a9a0-e0eabe130333",
+    "files": 248,
+    "archive": {
+      "bytes": 53668724,
+      "sha256": "e8ed4ea8f3c3ad72f08855cc1535a02c6e146bf35f95be66587b76b258519e05"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    }
+  },
+  "independentReview": {
+    "path": "reviews/2026-10-06-ci37400502223-readonly-analysis.md",
+    "author": "/root/shared_workspace_review",
+    "sha256": "b9a3067e256ec46615db1105d5d3470903282ff62db340b052e20cc40cf007f3",
+    "scope": "Own isolated controlled Diagram receipt RED/GREEN; Docs follow-up static only. Not native/package/hosted approval"
+  },
+  "originalDocsReviewSha256": "c9af571176ebfbb3b86989f5bd3c7ea3e788034d93b1e622b63380eb5fb5174a",
+  "hosted": {
+    "run": 37403029139,
+    "head": "6acf59385855bb0f2a32dd23461c64a03eba1b9b",
+    "status": "in_progress",
+    "scope": "Previous qualified Docs source561, not this local feedback source"
+  },
+  "open": [
+    "Actual hosted theme closer and Guided Save receipt",
+    "Shell readiness cause",
+    "Intermittent native appearance write refusal",
+    "Complete Docs/images/comments/releases/Present/Diagram/decorative parity",
+    "Physical monitors/DPI/IME/accessibility"
+  ]
+}

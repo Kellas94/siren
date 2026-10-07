@@ -1,0 +1,26 @@
+{
+  "author": "/root/review_home_clean_close",
+  "receivedVia": "authenticated collaboration FINAL_ANSWER messages",
+  "transcribedBy": "/root",
+  "transcribedAt": "2026-10-04T21:31:29.363Z",
+  "scope": "Readonly scoped code/retained evidence review; reviewer ran no tests/builds/apps; no active execution/package/hosted/whole-plan approval",
+  "reports": [
+    {
+      "path": "2026-10-05-window-focus-reviewer.md",
+      "sha256": "0b663454d36803b34d333f19e9ae3b88485a18d2fa013140219083aff0ae04cc"
+    },
+    {
+      "path": "2026-10-05-window-focus-reviewer-origin-addendum.md",
+      "sha256": "38798d77e8691889e84082d9fa8cd62ae6345b761b095dda5cc62b5554311569"
+    },
+    {
+      "path": "2026-10-05-window-focus-reviewer-toast-addendum.md",
+      "sha256": "806b7286a083241af49b98ba67a0f23e49a8bf328cf5e8eb8649502a14b5a105"
+    },
+    {
+      "path": "2026-10-05-window-focus-reviewer-final-addendum.md",
+      "sha256": "2f6c8755dfd71cb63024bcf4762f2c7b9f7fadd8fef13d3ae4ff5f0dc793a2ea",
+      "transcribedAt": "2026-10-04T21:41:43.382Z"
+    }
+  ]
+}

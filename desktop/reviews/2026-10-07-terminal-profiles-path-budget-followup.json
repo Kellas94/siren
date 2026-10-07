@@ -1,0 +1,53 @@
+{
+  "author": "/root/terminal_foundation_review",
+  "scope": "Pure finite profile-worker probe with malformed zero-ancestor provider DATA, not native OS/provider qualification.",
+  "before": {
+    "src/terminal/cwd.mjs": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb",
+    "src/terminal/profiles.mjs": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10",
+    "tests/terminal-cwd.test.mjs": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f",
+    "tests/terminal-profiles.test.mjs": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+  },
+  "after": {
+    "src/terminal/cwd.mjs": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb",
+    "src/terminal/profiles.mjs": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10",
+    "tests/terminal-cwd.test.mjs": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f",
+    "tests/terminal-profiles.test.mjs": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+  },
+  "changed": [],
+  "heapLimitMiB": 64,
+  "deadlineMs": 10000,
+  "results": [
+    {
+      "components": 3,
+      "observed": [
+        {
+          "phase": "inspection",
+          "components": 3,
+          "pathLength": 8
+        },
+        {
+          "code": "PROFILE_UNAVAILABLE",
+          "message": "PROFILE_UNAVAILABLE"
+        }
+      ],
+      "status": "EXIT",
+      "exitCode": 0
+    },
+    {
+      "components": 8192,
+      "observed": [
+        {
+          "phase": "inspection",
+          "components": 8192,
+          "pathLength": 16386
+        },
+        {
+          "code": "PROFILE_UNAVAILABLE",
+          "message": "PROFILE_UNAVAILABLE"
+        }
+      ],
+      "status": "EXIT",
+      "exitCode": 0
+    }
+  ]
+}

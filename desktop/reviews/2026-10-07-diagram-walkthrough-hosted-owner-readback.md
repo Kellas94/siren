@@ -1,0 +1,5 @@
+# Walkthrough canonical hosted run — separate owner readback
+
+Author: /root. Fresh API read confirms original run37559978738 completed FAILURE at2026-10-07T02:15:30Z on canonicald0279126. All9 jobs final:5success/4failure. Owner rehashed 67 retained original file records from the separately authored /root/disk_inventory JSON; every byte count and SHA256 matches. Original report remains independently attributed, and no downloaded code was executed.
+
+Actual1375 unique units passed; native Desktop20/20 and Sources20/20 passed; Diagrams16/20 passed with four original unchanged viewport-height failures. Package fails at original Diagram Edit; later unavailable copied steps are not counted as successes. Hosted focused Walkthrough development was skipped after the adverse group; copied Walkthrough8 is distinct. The root's newer HTML358/Diagram6acc correction and copied Edit4/Guided4/Style6/Build7/Walk8 are separate local evidence, never substituted into this hosted verdict. Historical Save→Attach cause remains OPEN.

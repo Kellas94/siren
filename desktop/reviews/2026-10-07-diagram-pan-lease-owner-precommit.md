@@ -1,0 +1,11 @@
+# Diagram endpoint and pending context — owner precommit checkpoint
+
+Author and actual native executor: /root. 1498/1498 unit tests passed, zero skips/failures/cancellations or captured changes. New native endpoint programme completed5cases, including actual down/up without move and partial-move release, exact observed event order and45/25 translation. Nine original affected native programmes completed with unchanged inputs. All28 exact frozen catalogue examples rendered offline in native readonly windows; whole project remained exact.
+
+The conditional endpoint and foreign-pointer termination defects were reproduced against the original actual controller (RED3/5), minimally corrected and independently reviewed. A passing lean diagnostic on the old product does not close either historical hosted failure. Original375799 FINAL FAILURE remains retained: DocsActivity8dev/8copy passed, generic copied pan ADVERSE1 and17laterprogrammes unexecuted. Root read69 retained original byte/hash records and actual liveFINAL/jobs.
+
+Genuine independent lease review found stale equal-source context values could still apply after failed restoration. Its four adverse probes and original report remain; separate implementation correction and independent unchanged10-case recheck verify the finite API repair. The new native harness originally discarded a failed receipt; genuine adverse review and separately rechecked correction now preserve receipts before assertion, bound events32, clean up in finally and refuse completion after cleanup errors. No independent GUI authorship is invented.
+
+Catalogue model/helper is UNWIRED; main-owned creation/FIFO/admission/Home/UI and actual external-focus integration remain next. Ordinary original Guided/Style native regressions passed; finite new lease APIs use simulated DOM proof and require a stable context token at future integration. The additional201-line model control passed initially despite the premature log filename lines-red; no product failure/correction is claimed for it.
+
+Separate copied-package qualification remains next. No main merge, release, installed application replacement, complete parity, physical-monitor/DPI/IME or maximum-size admission. Exact evidence/reviewer identities are in the companion JSON.

@@ -1,0 +1,231 @@
+{
+  "runtimePackageCount": 15,
+  "missingLicenses": [],
+  "packages": [
+    {
+      "package": "@codemirror/search",
+      "version": "6.7.2",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 48927
+    },
+    {
+      "package": "crelt",
+      "version": "1.0.7",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "23852ebf6aef7fadffc92514b3c5df163a8651f2c3ed0dbb494cb49d93bd5de5",
+          "bytes": 1089,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 0
+    },
+    {
+      "package": "@codemirror/view",
+      "version": "6.43.13",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-sihaFrUzAsYBQsL9J2t69y8nfMQGwcYmggAZsk+kjPbjYZMyuf2hU8tUNTZ+P+isb6XRr8JE22TZlJxBoVdH1A==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 493290
+    },
+    {
+      "package": "w3c-keyname",
+      "version": "2.2.8",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "869c30f368eb08735e779027b9f4bc9fea2f39624351856aebe42741f0bc0884",
+          "bytes": 1100,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 0
+    },
+    {
+      "package": "style-mod",
+      "version": "4.1.4",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-XXWIQt633/EpAFx8aZDOTjBzrCaGmhvEQlQo6MVPfa2OzO2cWo+4hV9h+6UkHYlXGfy+ODXKUdP7Pthmcu5ATw==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "cb4474e26547397169061d3586c00022cda5330a1b64fa13e872319f3b63aff1",
+          "bytes": 1100,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 0
+    },
+    {
+      "package": "@codemirror/state",
+      "version": "6.7.6",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-kAz+AncRtKuIknedxT1bq4XwXv4UowhbkHU1myPrtVb/jZtImWuV5BXzv5vK6i3kYACsdiZiQKFQQ5Mq7elW8w==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 147400
+    },
+    {
+      "package": "@marijn/find-cluster-break",
+      "version": "1.0.4",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "9360b00fdd091f05c783b568bdd46c679c41b72415599252de98949462ea1acb",
+          "bytes": 1102,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 0
+    },
+    {
+      "package": "@codemirror/commands",
+      "version": "6.11.1",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-O/4hG3SC1YwcmQ0d2UVNDs+AsaNWd1iHVxbTeEBuqH+6bExAiPK3iS/BvpY6rZGURALv4ZD3sIgcCmRvw3ehBg==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 84624
+    },
+    {
+      "package": "@lezer/common",
+      "version": "1.5.3",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-H0iErY4e43LpXbYDyBci5W4v/RwTgGV3YzYOlJPiGZ8RY8w51kVE+xLn1tg3Z6UmSfyETvtsUK3r7YsgDQEI7Q==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "bytes": 1113,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 83369
+    },
+    {
+      "package": "@codemirror/language",
+      "version": "6.12.4",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-1q4PaT+o6PbgpkJt4Q8Fv5XJxTy4FUZ4MWETtyiDw3J0Pyr9E2vqcKL+k9wcvjNTIsauxvE7OfmWj3FRPHQ76A==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 102129
+    },
+    {
+      "package": "@lezer/lr",
+      "version": "1.4.10",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "bytes": 1113,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 71918
+    },
+    {
+      "package": "@lezer/highlight",
+      "version": "1.2.5",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-O1GMVKgtf5YspFaRzpmqkVgMtIk2HG9uMAbH6wdAIdNh3TVzCsch/+cRi+6l2//UGDKe6NB9BW3cvuR5ezMQ0w==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba",
+          "bytes": 1113,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 29921
+    },
+    {
+      "package": "@codemirror/lang-python",
+      "version": "6.2.1",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-IRjC8RUBhn9mGR9ywecNhB51yePWCGgvHfY1lWN/Mrp3cKuHr0isDKia+9HnvhiWNnMpbGhWrkhuWOc09exRyw==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 13319
+    },
+    {
+      "package": "@lezer/python",
+      "version": "1.1.19",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-MhQIURHRytsNzP/YXnqpYKW6la6voAH3kyplTOOiCdjyFY6cWWGFVmYVdHIPrElqSDf4iCDktQCockB9FxuhzQ==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "54bd812a6d334e0c438b78a43cea74b67e882739fd3450115ddc7c52be5706c1",
+          "bytes": 1113,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 43981
+    },
+    {
+      "package": "@codemirror/autocomplete",
+      "version": "6.20.3",
+      "licenseDeclared": "MIT",
+      "integrity": "sha512-tlosUqb+3BbxCxZdu4tKeRghPFC+QM7q4X5YhKV2eCmPG+1r2F3f4AaSz5sCrFqUtX4Jh20VFTKecl16MgiV9g==",
+      "licenses": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "bytes": 1118,
+          "mitText": true
+        }
+      ],
+      "distJsBytes": 90042
+    }
+  ]
+}

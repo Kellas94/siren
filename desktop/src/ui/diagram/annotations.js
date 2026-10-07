@@ -1,0 +1,73 @@
+(() => {
+ 'use strict';
+ const facets=['owner','status','system','frequency','class'],caption=value=>String(value??'').slice(0,512).replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,' ').replace(/\s+/g,' ').trim().slice(0,160);
+ const own=(object,key)=>object&&typeof object==='object'&&Object.hasOwn(object,key)?object[key]:undefined;
+ function renderedCaption(group){const texts=group.querySelectorAll?.('text');if(!texts?.length)return caption(group.textContent);const parts=[];let remaining=512;const take=value=>{const part=String(value??'').slice(0,Math.max(0,remaining));parts.push(part);remaining-=part.length+1;};for(let i=0;i<Math.min(16,texts.length)&&remaining>0;i++){const lines=texts[i].querySelectorAll('tspan.text-outer-tspan');if(lines.length){for(let j=0;j<Math.min(32,lines.length)&&remaining>0;j++)take(lines[j].textContent);}else take(texts[i].textContent);}return caption(parts.join(' '));}
+ window.SirenNativeDiagramAnnotations=Object.freeze({create({inspectorHost,filtersHost,inspectorButton,filtersButton,diagramFor,readonlyFor=()=>false,editable,enabled,onEdit,onStatus=()=>{},onPending=()=>{},onProjectionChange=()=>{}}){
+  const contract=window.SirenDiagramMetadata,inputs=new Map(),pending=new Set(),filters=new Map();let root=null,rows=[],selected='',disposed=false,paused=false,limited=false,projection=null,facetKey='';
+  const make=(tag,id,text)=>{const node=document.createElement(tag);if(id)node.id=id;if(text!==undefined)node.textContent=text;return node;},button=(id,text)=>{const node=make('button',id,text);node.type='button';return node;};
+  const heading=make('h2',null,'Block Inspector'),target=make('select','diagramInspectorTarget'),notice=make('p','diagramInspectorNotice'),summary=make('p','diagramFilterSummary'),filterContent=make('div','diagramFilterChoices'),reset=button('diagramFilterReset','Reset filters'),apply=button('diagramInspectorApply','Apply to draft'),cancelButton=button('diagramInspectorCancel','Cancel');
+  inspectorHost.setAttribute('role','region');inspectorHost.setAttribute('aria-label','Block Inspector');filtersHost.setAttribute('role','region');filtersHost.setAttribute('aria-label','Local diagram filters');target.setAttribute('aria-label','Inspect block');notice.className=summary.className='diagram-annotation-note';
+  inspectorHost.append(heading,target,notice);const basics=make('div'),details=make('details');details.append(make('summary',null,'Risk, control and evidence'));
+  for(const name of ['owner','status','system','frequency','risk','control','evidence','reference']){
+   const label=make('label',null,name[0].toUpperCase()+name.slice(1)),input=make(name==='status'?'select':name==='evidence'?'textarea':'input','diagramMetadata_'+name);
+   if(name==='status')for(const value of contract.statuses){const option=make('option',null,value||'Unspecified');option.value=value;input.append(option);}else{if(name!=='evidence')input.type='text';input.spellcheck=false;}
+   label.append(input);(facets.includes(name)?basics:details).append(label);inputs.set(name,input);
+   input.addEventListener('input',()=>{if(!canEdit()||input.disabled)return;pending.add(name);input.removeAttribute('aria-invalid');onPending();});
+   if(name==='status')input.addEventListener('change',()=>{if(canEdit()&&!input.disabled){pending.add(name);onPending();}});
+  }
+  const actions=make('div');actions.className='diagram-annotation-actions';actions.append(apply,cancelButton);inspectorHost.append(basics,details,actions);
+  filtersHost.append(make('h2',null,'Filters'),summary,filterContent,reset,make('p',null,'Local dimming only · Connecting edges stay visible. Export SVG keeps the full saved diagram.'));
+  inspectorHost.hidden=filtersHost.hidden=true;inspectorButton.setAttribute('aria-expanded','false');filtersButton.setAttribute('aria-expanded','false');
+  const available=()=>!disposed&&!paused&&enabled()&&root?.isConnected===true;
+  const currentRow=()=>rows.find(row=>row.id===selected),canEdit=()=>available()&&editable()&&currentRow()?.groups.some(group=>group.isConnected===true&&root.contains(group));
+  function guard(){if(!pending.size)return true;onStatus('Inspector fields are pending · Apply to draft or Cancel before continuing.');return false;}
+  function metadata(id,diagram){return own(diagram?.nodeMetadata,id);}
+  function valueFor(id,field,diagram){const value=field==='class'?own(diagram?.nodeClasses,id):own(metadata(id,diagram),field);return typeof value==='string'&&value.isWellFormed()&&value.length<=(field==='class'?180:contract.fields[field])?value:'';}
+  function removeProjection(){if(projection){projection.remove();projection=null;}}
+  function pathFor(group){const parts=[];let node=group;for(let depth=0;node!==root&&depth<32;depth++){const parent=node.parentElement;if(!parent)return null;const index=Array.prototype.indexOf.call(parent.children,node);if(index<0)return null;parts.unshift('>:nth-child('+(index+1)+')');node=parent;}return node===root?'#diagramCanvas>svg'+parts.join(''):null;}
+  function project(data){
+   removeProjection();if(!available())return {matched:rows.length,partial:0};const active=[...filters].filter(([,values])=>values.size),valuesById=new Map(data.map(row=>[row[0],row])),matched=rows.filter(row=>active.every(([field,values])=>values.has(valuesById.get(row.id)?.[facets.indexOf(field)+1])));if(!active.length)return {matched:rows.length,partial:0};
+   const matching=new Set(matched),protectedGroups=new Set(),candidates=new Set();let partial=0;
+   // A semantic parent of a matching group remains context; never dim its
+   // matching children or apply opacity repeatedly to nested target groups.
+   for(const row of matched)for(const group of row.groups){let node=group;for(let depth=0;node&&node!==root&&depth<32;depth++,node=node.parentElement)protectedGroups.add(node);}
+   for(const row of rows)if(!matching.has(row))for(const group of row.groups)if(group.isConnected===true&&root.contains(group)){if(protectedGroups.has(group))partial++;else candidates.add(group);}
+   const rules=[],expected=[];for(const group of candidates){let ancestor=group.parentElement,nested=false;for(let depth=0;ancestor&&ancestor!==root&&depth<32;depth++,ancestor=ancestor.parentElement)if(candidates.has(ancestor)){nested=true;break;}if(nested)continue;
+    const selector=pathFor(group),opacity=Number(getComputedStyle(group).opacity);if(!selector||!Number.isFinite(opacity)||opacity<0||opacity>1||group.style?.getPropertyPriority?.('opacity')==='important'){partial++;continue;}rules.push(selector+'{opacity:'+(opacity*.16)+'!important;}');expected.push({group,opacity:opacity*.16});
+   }
+   if(rules.length){projection=make('style');projection.textContent=rules.join('\n');document.head.append(projection);for(const item of expected){const actual=Number(getComputedStyle(item.group).opacity);if(!Number.isFinite(actual)||Math.abs(actual-item.opacity)>0.000001)partial++;}}return {matched:matched.length,partial};
+  }
+  function paintFilters(diagram){
+   const data=rows.map(row=>[row.id,...facets.map(field=>valueFor(row.id,field,diagram))]),key=JSON.stringify(data);
+   if(key!==facetKey){facetKey=key;filterContent.replaceChildren();for(const field of facets){const values=new Map();for(const row of data){const value=row[facets.indexOf(field)+1];if(value)values.set(value,(values.get(value)||0)+1);}if(!values.size)continue;const section=make('fieldset');section.append(make('legend',null,field[0].toUpperCase()+field.slice(1)));
+     for(const [value,count]of [...values].sort(([a],[b])=>a.localeCompare(b))){const label=make('label'),input=make('input');input.type='checkbox';input.dataset.filterField=field;input.dataset.filterValue=value;input.checked=filters.get(field)?.has(value)===true;input.disabled=!available();label.append(input,make('span',null,value+' · '+count));section.append(label);input.addEventListener('change',()=>{if(!available())return;const values=filters.get(field)??new Set();if(input.checked)values.add(value);else values.delete(value);if(values.size)filters.set(field,values);else filters.delete(field);onProjectionChange();paint();});}filterContent.append(section);
+    }
+    if(!data.some(row=>row.slice(1).some(Boolean)))filterContent.append(make('p',null,'No filter values yet. Add Owner, Status, System or Frequency in Inspector.'));
+   }
+   const result=project(data),count=[...filters.values()].reduce((sum,set)=>sum+set.size,0);filtersButton.textContent=count?'Filters · '+count:'Filters';filtersButton.setAttribute('aria-pressed',String(count>0));reset.disabled=!available()||!count;
+   summary.textContent=result.matched+' / '+rows.length+' blocks match'+(!result.matched&&rows.length?' · No matches':'')+(limited?' · Coverage limited: 250 IDs, 8 groups, 200-character IDs':'')+(result.partial?' · Partial dimming: '+result.partial+' nested or unsupported groups retained as context':'');
+  }
+  function paint(){if(disposed)return;const diagram=diagramFor(),live=available();inspectorButton.disabled=filtersButton.disabled=!live||!rows.length;target.disabled=!live||!rows.length;const item=metadata(selected,diagram),unsupported=[];let shortened=false;
+   for(const [name,input]of inputs){const value=own(item,name),supported=contract.canEditField(name,value);if(!pending.has(name))input.value=typeof value==='string'?supported?value:value.slice(0,contract.fields[name]):'';input.disabled=!canEdit()||!supported;if(!supported){unsupported.push(name);shortened||=typeof value==='string'&&value.length>contract.fields[name];}}
+   notice.textContent=(readonlyFor()?'Read only · Open a working copy to edit.':editable()?'Working annotations · Save diagram explicitly.':'Working annotations · Finish or cancel pending editor fields to edit.')+' Status is an annotation, not release approval.'+(unsupported.length?' Unsupported imported '+unsupported.join(', ')+' retained unchanged; cannot edit here.':'')+(shortened?' Shortened preview only; the complete imported value is retained.':'')+(limited?' Target coverage limited: 250 IDs, 8 groups, 200-character IDs.':'')+(pending.size&&!currentRow()?' Edited block is not currently rendered. Apply after it returns or Cancel.':'');
+   apply.disabled=!canEdit()||!pending.size;cancelButton.disabled=paused||!pending.size;paintFilters(diagram);
+  }
+  function cancel(){if(disposed||paused)return false;pending.clear();for(const input of inputs.values())input.removeAttribute('aria-invalid');paint();onPending();return true;}
+  function select(id){if(!available()||!rows.some(row=>row.id===id&&row.groups.some(group=>group.isConnected===true&&root.contains(group))))return false;if(id!==selected&&!guard()){target.value=selected;return false;}selected=id;target.value=id;paint();return true;}
+  function bind(svg,targets){removeProjection();root=null;rows=[];limited=false;if(disposed||paused||!enabled()||svg?.isConnected!==true||!Array.isArray(targets)){paint();return false;}root=svg;limited=targets.length>=250;const ids=new Map();
+   for(let i=0;i<Math.min(250,targets.length);i++){const item=targets[i];if(!item||typeof item.id!=='string'||!/^[A-Za-z_][\w.-]{0,199}$/.test(item.id)||!Array.isArray(item.groups)){limited=true;continue;}limited||=item.groups.length>8;const row=ids.get(item.id)??{id:item.id,groups:[]};for(let j=0;j<Math.min(8,item.groups.length);j++){const group=item.groups[j];if(group?.isConnected===true&&root.contains(group)&&!row.groups.includes(group)&&row.groups.length<8)row.groups.push(group);}if(row.groups.length&&!ids.has(item.id)){ids.set(item.id,row);rows.push(row);}}
+   if(!rows.some(row=>row.id===selected)&&!pending.size)selected=rows[0]?.id??'';target.replaceChildren();for(const row of rows){const option=make('option',null,row.id+' · '+(renderedCaption(row.groups[0])||row.id));option.value=row.id;target.append(option);}if(pending.size&&!rows.some(row=>row.id===selected)){const option=make('option',null,selected+' · pending, not rendered');option.value=selected;target.append(option);}target.value=selected;facetKey='';paint();return rows.length>0;
+  }
+  function invalidate(){removeProjection();root=null;rows=[];facetKey='';paint();}
+  apply.addEventListener('click',()=>{if(!canEdit()||!pending.size)return;const changes={};let invalid=false;for(const name of pending){const input=inputs.get(name),value=input.value;if(typeof value!=='string'||!value.isWellFormed()||value.length>contract.fields[name]||name==='status'&&!contract.statuses.includes(value)){input.setAttribute('aria-invalid','true');invalid=true;}else changes[name]=value;}if(invalid){onStatus('Inspector change refused · Correct the value or Cancel.');return;}const result=onEdit({id:selected,changes});if(result?.ok){pending.clear();for(const input of inputs.values())input.removeAttribute('aria-invalid');paint();onPending();}else{onStatus('Inspector change refused · Your pending fields are retained.');paint();}});
+  cancelButton.addEventListener('click',cancel);target.addEventListener('change',()=>select(target.value));
+  inspectorButton.addEventListener('click',()=>{if(!available())return;if(!inspectorHost.hidden&&!guard())return;inspectorHost.hidden=!inspectorHost.hidden;inspectorButton.setAttribute('aria-expanded',String(!inspectorHost.hidden));if(!inspectorHost.hidden){filtersHost.hidden=true;filtersButton.setAttribute('aria-expanded','false');}paint();});
+  filtersButton.addEventListener('click',()=>{if(!available()||!guard())return;filtersHost.hidden=!filtersHost.hidden;filtersButton.setAttribute('aria-expanded',String(!filtersHost.hidden));if(!filtersHost.hidden){inspectorHost.hidden=true;inspectorButton.setAttribute('aria-expanded','false');}paint();});
+  reset.addEventListener('click',()=>{if(!available())return;filters.clear();facetKey='';onProjectionChange();paint();});
+  const preserveFocus=event=>{if(event.button===0&&(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable===true))event.preventDefault();};
+  inspectorButton.addEventListener('pointerdown',preserveFocus);filtersButton.addEventListener('pointerdown',preserveFocus);
+  for(const host of [inspectorHost,filtersHost])host.addEventListener('pointerdown',event=>{if(event.target?.tagName==='BUTTON'||event.target?.type==='checkbox')preserveFocus(event);});
+  return Object.freeze({paint,bind,invalidate,isEditing:()=>pending.size>0,guard,cancel,select,isInspecting:()=>!disposed&&!inspectorHost.hidden,pause(){paused=true;invalidate();},resume(){if(!disposed){paused=false;paint();}},dispose(){removeProjection();disposed=true;root=null;rows=[];pending.clear();filters.clear();inspectorHost.replaceChildren();filtersHost.replaceChildren();inspectorButton.disabled=filtersButton.disabled=true;}});
+ }});
+})();

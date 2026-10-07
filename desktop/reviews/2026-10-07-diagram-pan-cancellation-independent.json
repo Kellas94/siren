@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "date": "2026-10-07",
+  "author": "/root/hosted_resume_retention",
+  "kind": "independent-readonly-pan-cancellation-static-diagnosis",
+  "verdict": "CANCELPAN_PATH_OBSERVED_IN_OWNER_DIAGNOSTIC_EVENT_KIND_UNPROVEN",
+  "originalOwnerFailure": {
+    "path": "evidence/diagram-pan-release/2026-10-07T10-15-02.436Z/result.json",
+    "status": "ADVERSE",
+    "partialMove": {
+      "partialMove": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "x": 630.9140625,
+          "y": 378.1875,
+          "id": 1
+        },
+        {
+          "type": "pointermove",
+          "x": 650.9140625,
+          "y": 388.1875,
+          "id": 1
+        },
+        {
+          "type": "pointerup",
+          "x": 675.9140625,
+          "y": 403.1875,
+          "id": 1
+        }
+      ],
+      "dropped": 0,
+      "transform": "translate(0px, 0px) scale(1)"
+    },
+    "independentGui": false
+  },
+  "diagnosticOwnerFailure": {
+    "path": "evidence/diagram-pan-logpoint-diagnostic/2026-10-07T10-18-31.539Z/result.json",
+    "status": "ADVERSE",
+    "lastGesture": [
+      {
+        "phase": "down",
+        "t": 5679.800000011921,
+        "drag": {
+          "id": 1,
+          "x": 630.9140625,
+          "y": 378.1875,
+          "panX": 0,
+          "panY": 0
+        },
+        "panX": 0,
+        "panY": 0,
+        "paused": false,
+        "disposed": false,
+        "stack": "Error\n    at eval (eval at <anonymous> (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:1432:494), <anonymous>:1:168)\n    at HTMLDivElement.<anonymous> (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:6030:494)"
+      },
+      {
+        "phase": "stop",
+        "t": 5702.300000011921,
+        "drag": {
+          "id": 1,
+          "x": 630.9140625,
+          "y": 378.1875,
+          "panX": 0,
+          "panY": 0
+        },
+        "panX": 0,
+        "panY": 0,
+        "paused": false,
+        "disposed": false,
+        "stack": "Error\n    at eval (eval at stop (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:1:1), <anonymous>:1:168)\n    at stop (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:6032:18)\n    at HTMLDivElement.cancelPan (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:6032:78)"
+      },
+      {
+        "phase": "move",
+        "t": 5704.800000011921,
+        "drag": null,
+        "panX": 0,
+        "panY": 0,
+        "paused": false,
+        "disposed": false,
+        "stack": "Error\n    at eval (eval at movePan (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:1433:79), <anonymous>:1:168)\n    at HTMLDivElement.movePan (siren://app/windows/diagram.html?windowId=fd906e77-8955-42f1-80de-b57c97d5aa4c:6031:79)"
+      }
+    ],
+    "transform": "translate(0px, 0px) scale(1)",
+    "instrumentation": "Debugger conditional-false logpoints with bounded128 history; observer can affect timing. Diagnostic repeats partial gestures and is not unchanged original qualification harness."
+  },
+  "conclusions": [
+    "For the 10-18-31 diagnostic only, down stores drag id1, then stop is invoked by cancelPan before the subsequent logged move; drag becomes null while pan remains0/0 and paused/disposed stay false. This is direct retained call-stack evidence of that diagnostic cancellation route.",
+    "The same handler is registered for pointercancel and lostpointercapture. The original diagnostic does not record event type, so it does not distinguish the two or establish what caused the browser event.",
+    "Source permits node/edge pan. The down handler only excludes non-left, anchor and annotation-control targets. A broad node-ignore explanation is not supported.",
+    "Fit explicitly resets pan; onPreview replaces SVG but calls transform using current pan. ResizeObserver only updates walkthrough geometry. No Fit/preview logpoint or private pause flag is observed between this diagnostic down and cancellation. These observations do not prove those routes never affect another run.",
+    "Transport awaits genuine sequential CDP mousePressed, optional mouseMoved buttons1, mouseReleased calls and records document-capture down/move/up. Document delivery alone does not prove viewport handler/capture state.",
+    "The later expanded COMPLETE5 trace shows partial down requesting capture followed by move/up without capture, but still successfully updates pan. It supplies comparison data only and neither disproves original ADVERSE nor identifies its event."
+  ],
+  "unresolved": [
+    "Exact event pointercancel versus lostpointercapture and its timestamp/target/buttons/capture state in the failing gesture.",
+    "Whether cancellation belongs to this gesture or a late same-pointerId event from an earlier gesture. Reused pointerId1 makes this a hypothesis to distinguish, not a demonstrated cause.",
+    "Whether actual viewport lifecycle/render/capture ownership changed between down and browser cancellation.",
+    "Historical hosted run37591120593 has only document event evidence and remains causally unresolved; similar signatures are not sufficient to close it."
+  ],
+  "recommendedFiniteObservation": "Use the already prepared bounded conditional-false diagnostic to record event.type, pointerId/timeStamp/buttons,target/currentTarget and hasPointerCapture at cancelPan together with down sequence/time. Keep exact45/25 oracle, original adverse receipt and original harness unchanged. No retry-as-pass or patch based solely on a passing diagnostic.",
+  "verification": {
+    "kind": "Read-only assertions on retained JSON plus exact source inspection",
+    "assertionsExecuted": true,
+    "guiExecuted": false,
+    "nativeExecuted": false,
+    "productMutation": false,
+    "qualificationOrReleaseApproval": false,
+    "all10InputsUnchanged": true
+  },
+  "inputsBefore": [
+    {
+      "path": "src/ui/windows/diagram.js",
+      "bytes": 28613,
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162"
+    },
+    {
+      "path": "generated/windows/diagram.html",
+      "bytes": 7417014,
+      "sha256": "7b306cd37efb1838e6547caaef23b2a60249b3e4335ecf6aca6792eee7a90364"
+    },
+    {
+      "path": "tests/native/diagram-pan-release.mjs",
+      "bytes": 15799,
+      "sha256": "aa0b265582f8ba11e4ffba5992c0320df44dea99cab79a744c6769e999280f47"
+    },
+    {
+      "path": "tests/native/attach-page.mjs",
+      "bytes": 2333,
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb"
+    },
+    {
+      "path": "tests/native/pointer.mjs",
+      "bytes": 1764,
+      "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d"
+    },
+    {
+      "path": "evidence/workspace-surface/prepare-pan-logpoint-diagnostic-owner.mjs",
+      "bytes": 2482,
+      "sha256": "9ef39e070e5c7a11c7e8647bfc4cae157a07d28fa0d447c4753c210febf9950f"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-pan-logpoint-diagnostic-owner.mjs",
+      "bytes": 17388,
+      "sha256": "68e773cfefacdea6942b6e16dafe63479afec99b565157d092e6ae55846e5ec9"
+    },
+    {
+      "path": "evidence/diagram-pan-release/2026-10-07T10-15-02.436Z/result.json",
+      "bytes": 7810,
+      "sha256": "83276e7a62c989d7159d14c015d9f07c048d6b7e083683108e30736959f0a72f"
+    },
+    {
+      "path": "evidence/diagram-pan-release-capture-diagnostic/2026-10-07T10-16-30.431Z/result.json",
+      "bytes": 17889,
+      "sha256": "6278570cf33cb0a504daed1e789d8a74fff0540b2c275783ff10f817ef46c78f"
+    },
+    {
+      "path": "evidence/diagram-pan-logpoint-diagnostic/2026-10-07T10-18-31.539Z/result.json",
+      "bytes": 115397,
+      "sha256": "3a3b6afc8a6bf3f44c90b4676d6e4f8937947e6fa69e40d1d7ddf0070ab9984d"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "src/ui/windows/diagram.js",
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "unchanged": true
+    },
+    {
+      "path": "generated/windows/diagram.html",
+      "sha256": "7b306cd37efb1838e6547caaef23b2a60249b3e4335ecf6aca6792eee7a90364",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/diagram-pan-release.mjs",
+      "sha256": "aa0b265582f8ba11e4ffba5992c0320df44dea99cab79a744c6769e999280f47",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/attach-page.mjs",
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/pointer.mjs",
+      "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/prepare-pan-logpoint-diagnostic-owner.mjs",
+      "sha256": "9ef39e070e5c7a11c7e8647bfc4cae157a07d28fa0d447c4753c210febf9950f",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-pan-logpoint-diagnostic-owner.mjs",
+      "sha256": "68e773cfefacdea6942b6e16dafe63479afec99b565157d092e6ae55846e5ec9",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/diagram-pan-release/2026-10-07T10-15-02.436Z/result.json",
+      "sha256": "83276e7a62c989d7159d14c015d9f07c048d6b7e083683108e30736959f0a72f",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/diagram-pan-release-capture-diagnostic/2026-10-07T10-16-30.431Z/result.json",
+      "sha256": "6278570cf33cb0a504daed1e789d8a74fff0540b2c275783ff10f817ef46c78f",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/diagram-pan-logpoint-diagnostic/2026-10-07T10-18-31.539Z/result.json",
+      "sha256": "3a3b6afc8a6bf3f44c90b4676d6e4f8937947e6fa69e40d1d7ddf0070ab9984d",
+      "unchanged": true
+    }
+  ]
+}

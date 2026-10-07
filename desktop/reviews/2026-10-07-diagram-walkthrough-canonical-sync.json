@@ -1,0 +1,623 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "role": "Owner guarded canonical synchronization; not independent approval",
+  "observedUtc": "2026-10-07 02:02:20 UTC",
+  "localBase": "4f8d4a0e57425be4f16a6df325b1ac40c2a4b630",
+  "qualifiedLocalCheckpoint": "073760c8620eb8a1a816ce4f0207bdfd15bb1a30",
+  "productSource": "884fc7a3578fa65d61b99b9d80efdc2622aff2b8",
+  "previousCanonical": "df7acd653ce431480d6001b7e920a8e1b8d142c4",
+  "canonical": {
+    "sha": "d0279126950975734b64580eede3a1d81d7df320",
+    "tree": "b04cb5bb80cd8af778ef3b8225805dff90582db5",
+    "parents": [
+      "df7acd653ce431480d6001b7e920a8e1b8d142c4"
+    ]
+  },
+  "integration": {
+    "sha": "8d5d6938508b67094e9eeabcdf4f0ddd33d782ac",
+    "tree": "b04cb5bb80cd8af778ef3b8225805dff90582db5",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "d0279126950975734b64580eede3a1d81d7df320"
+    ]
+  },
+  "tree": {
+    "sha": "b04cb5bb80cd8af778ef3b8225805dff90582db5",
+    "blobs": 1806,
+    "patchedEntries": 41,
+    "newFiles": 30,
+    "untouchedBlobs": 1765
+  },
+  "ignore": {
+    "sha": "2f101ddffaa727a61efe96e9b8800c1426b1ad63",
+    "bytes": 30140,
+    "prefixBytes": 28034,
+    "newExactExceptions": [
+      "desktop/reviews/2026-10-07-code-context-canonical-sync.json",
+      "desktop/reviews/2026-10-07-code-context-canonical-sync.md",
+      "desktop/reviews/2026-10-07-code-context-hosted-evidence.json",
+      "desktop/reviews/2026-10-07-code-context-hosted-evidence.md",
+      "desktop/reviews/2026-10-07-code-context-hosted-owner-verification.md",
+      "desktop/reviews/2026-10-07-code-hosted-language-fixture-analysis.md",
+      "desktop/reviews/2026-10-07-code-hosted-language-fixture-recheck.md",
+      "desktop/reviews/2026-10-07-diagram-inspector-filters-preflight.md",
+      "desktop/reviews/2026-10-07-diagram-save-attach-observability-followup.md",
+      "desktop/reviews/2026-10-07-diagram-save-attach-passive-diagnostic-prepared.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-caption-diagnostic.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-caption-fixed-native-adverse.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-independent-recheck.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-independent-review.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.json",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-native-final-observation.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-native-original-adverse.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-native-pending-preparation.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-native-prepared.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-native-theme-control-adverse.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-theme-transport-correction.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-transform-oracle-correction.md",
+      "desktop/reviews/2026-10-07-diagram-walkthrough-vm-fixture-correction.md",
+      "desktop/src/ui/diagram/walkthrough.js",
+      "desktop/tests/diagram-walkthrough-ci.test.mjs",
+      "desktop/tests/diagram-walkthrough-window.test.mjs",
+      "desktop/tests/diagram-walkthrough.test.mjs",
+      "desktop/tests/native/diagram-walkthrough.mjs",
+      "docs/superpowers/plans/2026-10-07-siren-diagram-walkthrough.md"
+    ]
+  },
+  "localEntries": [
+    {
+      "path": ".github/workflows/desktop-verify.yml",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "89dc2a6e624bf80056f1f738d2a89283a520c634",
+      "sha": "aed80084701a1b9c1b7e9daf51c8f4951f8258fe",
+      "type": "blob",
+      "bytes": 43242
+    },
+    {
+      "path": "desktop/build/diagram-window.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "01c4ccc3172f11d4771787a9deea903f398f0489",
+      "sha": "e06f7d2d760e2c7f9ec54749a8ae4c28fa8aa538",
+      "type": "blob",
+      "bytes": 4176
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-canonical-sync.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "e42f4e8511f7ee5ea8941f4a972ad5e48c4a0f14",
+      "type": "blob",
+      "bytes": 2061
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-canonical-sync.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "39d6ab6e52ed911f836382a17958ecb146d6460e",
+      "type": "blob",
+      "bytes": 1856
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-evidence.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "f46d74a2191286f883cb5199e6ae8394f97869df",
+      "type": "blob",
+      "bytes": 754649
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-evidence.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "3a6bdeaed2ce64f75d3e8812819165f365b4c8bb",
+      "type": "blob",
+      "bytes": 8707
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-owner-verification.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "fd07d03c289bca753791df784dbc591d3247e81a",
+      "type": "blob",
+      "bytes": 1459
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-hosted-language-fixture-analysis.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "cf1721df1963cea5ffe93c2071ee90dd901ed8c8",
+      "type": "blob",
+      "bytes": 6031
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-hosted-language-fixture-recheck.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "eafdfa4262f9383b62ca2a1571eaec855d9e196f",
+      "type": "blob",
+      "bytes": 4321
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-inspector-filters-preflight.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "2355379609f5aac14e671c5b31e63a4cdaffdd8f",
+      "type": "blob",
+      "bytes": 16515
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-save-attach-observability-followup.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "084cd6699a2e62c15109c2ae8c701b5b96ace513",
+      "type": "blob",
+      "bytes": 8695
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-save-attach-passive-diagnostic-prepared.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "1e74f0294fc7a7af4770319a4374ae79b09107fc",
+      "type": "blob",
+      "bytes": 7264
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-caption-diagnostic.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "88686f582c4d9540dbe6d8c1a9a77269d2cb6776",
+      "type": "blob",
+      "bytes": 3977
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-caption-fixed-native-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "9f2bb5e56ac2fc9aa88df0afdd630e7227383639",
+      "type": "blob",
+      "bytes": 3142
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-independent-recheck.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "e091a707f3b8d1766185ab58a3f12740a25a0a2a",
+      "type": "blob",
+      "bytes": 4248
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-independent-review.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "ca8fec49e96ec8806fe32cfc11aae3d3a7727ba0",
+      "type": "blob",
+      "bytes": 6503
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "b6f674b1c414d612ff27110faefbc3f55c584ac8",
+      "type": "blob",
+      "bytes": 12967
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "1f4a54a9106bad5a28e03a6e43b0d1b8042bfa31",
+      "type": "blob",
+      "bytes": 3226
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-final-observation.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "97fc4b6e99ba95fa7e5b096dbadd45cd30ff6bb5",
+      "type": "blob",
+      "bytes": 7981
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-original-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "9f6386a5f7facec1604a4c8121ab0c5e4c02cf97",
+      "type": "blob",
+      "bytes": 4257
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-pending-preparation.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4abb4806aafab60271d60ebe368392d023255d37",
+      "type": "blob",
+      "bytes": 2665
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-prepared.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "137e740de90790e043be2912355d3f8b5741e731",
+      "type": "blob",
+      "bytes": 4820
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-theme-control-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "468672a0acefc1913b118856d7518c6f37f9166f",
+      "type": "blob",
+      "bytes": 3619
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-theme-transport-correction.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "b753a9263ffe4a47526fe609669e1c0a52d018b0",
+      "type": "blob",
+      "bytes": 2117
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-transform-oracle-correction.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "f62e81d87cc5bb06a7f8f445136a8af9ed49e004",
+      "type": "blob",
+      "bytes": 2191
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-vm-fixture-correction.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "cdc260cb2b5bd972241a573885e24510da0463fa",
+      "type": "blob",
+      "bytes": 4812
+    },
+    {
+      "path": "desktop/src/ui/diagram/session.js",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "23be5b401513513c57909de80286ace8cba7b64b",
+      "sha": "b90fcbd8f0f85132478da56aa9771af87aeca16e",
+      "type": "blob",
+      "bytes": 1898
+    },
+    {
+      "path": "desktop/src/ui/diagram/walkthrough.js",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "28ba7be3775d57f7c50d9823a4bc679f4b626d1b",
+      "type": "blob",
+      "bytes": 7441
+    },
+    {
+      "path": "desktop/src/ui/diagram/window.html",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "ad19e9fb7ac4870aa09c742363ac2b38987d8f0a",
+      "sha": "52b80a0086bc1d7fcd92c3aeb9b3d5ff2e4055d8",
+      "type": "blob",
+      "bytes": 9767
+    },
+    {
+      "path": "desktop/src/ui/windows/diagram.js",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "6480856e8572e2dbf435c2635b29ffe855e675d3",
+      "sha": "392c346b0d43f640a0878b2166eee8ded07a531b",
+      "type": "blob",
+      "bytes": 23472
+    },
+    {
+      "path": "desktop/tests/diagram-placement-ready.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "92c9b23918018f469940a95955cb9acf4204497b",
+      "sha": "dabbfec911d3f536acfc33513beb76a4b587e7b9",
+      "type": "blob",
+      "bytes": 4609
+    },
+    {
+      "path": "desktop/tests/diagram-security-config.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "8f41051ac22f0c35ab81c4ec7577342fe0ec98e7",
+      "sha": "9a4e8d0260554dd03486d99b34a56aedfe7f0d81",
+      "type": "blob",
+      "bytes": 2887
+    },
+    {
+      "path": "desktop/tests/diagram-session.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "6d659b7fee29edeea23bd56a0287abf6bedb85be",
+      "sha": "c24b08191464bdf8b71851a28b5b995629ac3200",
+      "type": "blob",
+      "bytes": 5568
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough-ci.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "375cb86b6fe74f19a594072be666924697401af1",
+      "type": "blob",
+      "bytes": 1961
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough-window.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "93a0d6a6e7b0fff5d45e07afeeef2688d9d2ab43",
+      "type": "blob",
+      "bytes": 6635
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "9167db64467b7e3f6aecfe8a1c7f6151a8efee62",
+      "type": "blob",
+      "bytes": 9042
+    },
+    {
+      "path": "desktop/tests/native/diagram-walkthrough.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "3c20aac4de17ed663d33a1e4bbb9e87ef3b0af8f",
+      "type": "blob",
+      "bytes": 25024
+    },
+    {
+      "path": "desktop/tests/native/source-read.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "77785279b37ed1b3584e2122bd31aed0bb2d6acc",
+      "sha": "958f6b2fc9495a2e4c23ed7158e3f99785536082",
+      "type": "blob",
+      "bytes": 22212
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-code-source-context-commands.md",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "917ca480be1967553cedaeb49b0ccd475874ea6a",
+      "sha": "6c8e698cb2cdaec25768b4e169998d2f20522a33",
+      "type": "blob",
+      "bytes": 6303
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-diagram-walkthrough.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "2a1ba5097c5d0b5f37b6bf45a6fd63be253ecb34",
+      "type": "blob",
+      "bytes": 11107
+    }
+  ],
+  "verifiedBlobs": [
+    {
+      "path": ".github/workflows/desktop-verify.yml",
+      "sha": "aed80084701a1b9c1b7e9daf51c8f4951f8258fe"
+    },
+    {
+      "path": "desktop/build/diagram-window.mjs",
+      "sha": "e06f7d2d760e2c7f9ec54749a8ae4c28fa8aa538"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-canonical-sync.json",
+      "sha": "e42f4e8511f7ee5ea8941f4a972ad5e48c4a0f14"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-canonical-sync.md",
+      "sha": "39d6ab6e52ed911f836382a17958ecb146d6460e"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-evidence.json",
+      "sha": "f46d74a2191286f883cb5199e6ae8394f97869df"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-evidence.md",
+      "sha": "3a6bdeaed2ce64f75d3e8812819165f365b4c8bb"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-context-hosted-owner-verification.md",
+      "sha": "fd07d03c289bca753791df784dbc591d3247e81a"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-hosted-language-fixture-analysis.md",
+      "sha": "cf1721df1963cea5ffe93c2071ee90dd901ed8c8"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-code-hosted-language-fixture-recheck.md",
+      "sha": "eafdfa4262f9383b62ca2a1571eaec855d9e196f"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-inspector-filters-preflight.md",
+      "sha": "2355379609f5aac14e671c5b31e63a4cdaffdd8f"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-save-attach-observability-followup.md",
+      "sha": "084cd6699a2e62c15109c2ae8c701b5b96ace513"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-save-attach-passive-diagnostic-prepared.md",
+      "sha": "1e74f0294fc7a7af4770319a4374ae79b09107fc"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-caption-diagnostic.md",
+      "sha": "88686f582c4d9540dbe6d8c1a9a77269d2cb6776"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-caption-fixed-native-adverse.md",
+      "sha": "9f2bb5e56ac2fc9aa88df0afdd630e7227383639"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-independent-recheck.md",
+      "sha": "e091a707f3b8d1766185ab58a3f12740a25a0a2a"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-independent-review.md",
+      "sha": "ca8fec49e96ec8806fe32cfc11aae3d3a7727ba0"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.json",
+      "sha": "b6f674b1c414d612ff27110faefbc3f55c584ac8"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-local-qualification.md",
+      "sha": "1f4a54a9106bad5a28e03a6e43b0d1b8042bfa31"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-final-observation.md",
+      "sha": "97fc4b6e99ba95fa7e5b096dbadd45cd30ff6bb5"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-original-adverse.md",
+      "sha": "9f6386a5f7facec1604a4c8121ab0c5e4c02cf97"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-pending-preparation.md",
+      "sha": "4abb4806aafab60271d60ebe368392d023255d37"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-prepared.md",
+      "sha": "137e740de90790e043be2912355d3f8b5741e731"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-native-theme-control-adverse.md",
+      "sha": "468672a0acefc1913b118856d7518c6f37f9166f"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-theme-transport-correction.md",
+      "sha": "b753a9263ffe4a47526fe609669e1c0a52d018b0"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-transform-oracle-correction.md",
+      "sha": "f62e81d87cc5bb06a7f8f445136a8af9ed49e004"
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-walkthrough-vm-fixture-correction.md",
+      "sha": "cdc260cb2b5bd972241a573885e24510da0463fa"
+    },
+    {
+      "path": "desktop/src/ui/diagram/session.js",
+      "sha": "b90fcbd8f0f85132478da56aa9771af87aeca16e"
+    },
+    {
+      "path": "desktop/src/ui/diagram/walkthrough.js",
+      "sha": "28ba7be3775d57f7c50d9823a4bc679f4b626d1b"
+    },
+    {
+      "path": "desktop/src/ui/diagram/window.html",
+      "sha": "52b80a0086bc1d7fcd92c3aeb9b3d5ff2e4055d8"
+    },
+    {
+      "path": "desktop/src/ui/windows/diagram.js",
+      "sha": "392c346b0d43f640a0878b2166eee8ded07a531b"
+    },
+    {
+      "path": "desktop/tests/diagram-placement-ready.test.mjs",
+      "sha": "dabbfec911d3f536acfc33513beb76a4b587e7b9"
+    },
+    {
+      "path": "desktop/tests/diagram-security-config.test.mjs",
+      "sha": "9a4e8d0260554dd03486d99b34a56aedfe7f0d81"
+    },
+    {
+      "path": "desktop/tests/diagram-session.test.mjs",
+      "sha": "c24b08191464bdf8b71851a28b5b995629ac3200"
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough-ci.test.mjs",
+      "sha": "375cb86b6fe74f19a594072be666924697401af1"
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough-window.test.mjs",
+      "sha": "93a0d6a6e7b0fff5d45e07afeeef2688d9d2ab43"
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough.test.mjs",
+      "sha": "9167db64467b7e3f6aecfe8a1c7f6151a8efee62"
+    },
+    {
+      "path": "desktop/tests/native/diagram-walkthrough.mjs",
+      "sha": "3c20aac4de17ed663d33a1e4bbb9e87ef3b0af8f"
+    },
+    {
+      "path": "desktop/tests/native/source-read.mjs",
+      "sha": "958f6b2fc9495a2e4c23ed7158e3f99785536082"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-code-source-context-commands.md",
+      "sha": "6c8e698cb2cdaec25768b4e169998d2f20522a33"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-diagram-walkthrough.md",
+      "sha": "2a1ba5097c5d0b5f37b6bf45a6fd63be253ecb34"
+    }
+  ],
+  "pullRequest": {
+    "url": "https://github.com/Kellas94/siren/pull/2",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "actualHostedObservation": {
+    "id": 37559978738,
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "priorHosted": {
+    "code": {
+      "id": 37556787785,
+      "conclusion": "failure",
+      "retainedOriginal": true
+    },
+    "diagram": {
+      "id": 37552477003,
+      "conclusion": "failure",
+      "saveAttachCause": "OPEN"
+    }
+  },
+  "limits": [
+    "Hosted observation is dispatch-time only, not final approval",
+    "No release/main merge/installed replacement",
+    "Original adverse reports retained",
+    "Working artifact SHA256 differs from separately verified Git-normalized blob identities"
+  ]
+}

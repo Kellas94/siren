@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "implementer-copied-package-evidence",
+  "sourceCommit": "de99cad7ba566ca1d3835c3d475c4544e303b1e4",
+  "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e7689455-492a-4103-a0aa-a77d699f470c",
+  "archive": {
+    "bytes": 53568726,
+    "sha256": "1d0227258d98e4c1d4f3e263feb755ed3998d5f42c2c2e73eace5572f6f98fbd"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "byteCheck": {
+    "author": "/root",
+    "sourceCommit": "de99cad7ba566ca1d3835c3d475c4544e303b1e4",
+    "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-e7689455-492a-4103-a0aa-a77d699f470c",
+    "files": 243,
+    "archive": {
+      "bytes": 53568726,
+      "sha256": "1d0227258d98e4c1d4f3e263feb755ed3998d5f42c2c2e73eace5572f6f98fbd"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "exactApplicationBytes": true,
+    "unchangedElectronRuntime": true,
+    "releaseAdmitted": false
+  },
+  "status": "COMPLETE",
+  "runs": [
+    {
+      "name": "portable",
+      "resultPath": "evidence\\packaged-2026-10-05T20-08-27.914Z\\result.json",
+      "resultSha256": "d80de011d25400b48285e779db220cbddaa9a5af26feeb6a53818e5a9f84502b",
+      "logSha256": "fff5fcbb3510c49d3717f3e81b3bc7374e6212eccff5ddd76246b629a149f1ac",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": null,
+      "inputs": null,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\packaged-2026-10-05T20-08-27.914Z\\Mutat-Știință-2",
+        "evidence\\packaged-2026-10-05T20-08-27.914Z\\Pachet-Știință-1",
+        "evidence\\packaged-2026-10-05T20-08-27.914Z\\Siguranță-readonly-3"
+      ]
+    },
+    {
+      "name": "export300k",
+      "resultPath": "evidence\\diagram-export\\2026-10-05T20-08-58.514Z\\result.json",
+      "resultSha256": "7f86ec2a6d243ec8e88c53d57770e8dbf41b1eb5aadbc9387ae0666dc3d588bc",
+      "logSha256": "32ae7644c0567e944a494b94294b3fe7ef303461b8dd53479ef5e87543063c0e",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 5,
+      "inputs": 16,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\diagram-export\\2026-10-05T20-08-58.514Z\\Pachet-Știință-SVG"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "close-keys",
+      "resultPath": "evidence\\window-close-keys\\2026-10-05T20-09-18.550Z\\result.json",
+      "resultSha256": "5adcb05156d0c88d435ca553b9b26881ddbc5c165580efe2658c5024c6feeb58",
+      "logSha256": "6c11f4abf0ff584fd866573023b44ac4c1603008e67a1a2593083fa60c458b86",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 14,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\window-close-keys\\2026-10-05T20-09-18.550Z\\Pachet-Știință-Comenzi"
+      ]
+    }
+  ],
+  "sourceReceipt": "reviews/2026-10-05-process-stderr-root-source-receipt.json",
+  "releaseAdmitted": false,
+  "scope": "Three sequential root-owned actual copied-package runs: unchanged original portable recovery/PIN/Unicode flow, DiagramExport300k5 and native active-view Close/Quit4. No independent Electron execution, hosted query-cancellation cause, package upload qualification, wholeTask4/6, physical monitors/cleanPC/production admission."
+}

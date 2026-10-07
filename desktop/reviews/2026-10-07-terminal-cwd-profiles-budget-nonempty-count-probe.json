@@ -1,0 +1,135 @@
+{
+  "author": "/root/hosted_resume_retention",
+  "scope": "own extra pure count-guard controls; no source/test mutation",
+  "heapOldMiB": 64,
+  "heapYoungMiB": 8,
+  "deadlineMs": 10000,
+  "before": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "sha256": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "sha256": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "sha256": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "sha256": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+    }
+  ],
+  "after": [
+    {
+      "path": "src/terminal/cwd.mjs",
+      "sha256": "dc38aae936a933636c7400d7dc5cfef19081943fa557c8daa639392211782dbb"
+    },
+    {
+      "path": "src/terminal/profiles.mjs",
+      "sha256": "7779835f11b510004addb7e03857fa6f788be166e805589be401d491822bce10"
+    },
+    {
+      "path": "tests/terminal-cwd.test.mjs",
+      "sha256": "1e9a78429aef98fcf67a8e053c00807924bd15e1f5f9b82d8719f45aa5badf3f"
+    },
+    {
+      "path": "tests/terminal-profiles.test.mjs",
+      "sha256": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+    }
+  ],
+  "changedInputs": [],
+  "results": [
+    {
+      "kind": "cwd",
+      "count": 1,
+      "original": true,
+      "module": "reviews/2026-10-07-terminal-cwd-independent-original.mjs",
+      "status": "WORKER_ERROR",
+      "code": "ERR_WORKER_OUT_OF_MEMORY",
+      "observed": []
+    },
+    {
+      "kind": "cwd",
+      "count": 128,
+      "original": true,
+      "module": "reviews/2026-10-07-terminal-cwd-independent-original.mjs",
+      "status": "WORKER_ERROR",
+      "code": "ERR_WORKER_OUT_OF_MEMORY",
+      "observed": []
+    },
+    {
+      "kind": "profiles",
+      "count": 1,
+      "original": true,
+      "module": "reviews/2026-10-07-terminal-profiles-independent-original.mjs",
+      "status": "WORKER_ERROR",
+      "code": "ERR_WORKER_OUT_OF_MEMORY",
+      "observed": []
+    },
+    {
+      "kind": "profiles",
+      "count": 128,
+      "original": true,
+      "module": "reviews/2026-10-07-terminal-profiles-independent-original.mjs",
+      "status": "WORKER_ERROR",
+      "code": "ERR_WORKER_OUT_OF_MEMORY",
+      "observed": []
+    },
+    {
+      "kind": "cwd",
+      "count": 1,
+      "original": false,
+      "module": "src/terminal/cwd.mjs",
+      "status": "EXIT",
+      "exitCode": 0,
+      "observed": [
+        {
+          "code": "CWD_REFUSED"
+        }
+      ]
+    },
+    {
+      "kind": "cwd",
+      "count": 128,
+      "original": false,
+      "module": "src/terminal/cwd.mjs",
+      "status": "EXIT",
+      "exitCode": 0,
+      "observed": [
+        {
+          "code": "CWD_REFUSED"
+        }
+      ]
+    },
+    {
+      "kind": "profiles",
+      "count": 1,
+      "original": false,
+      "module": "src/terminal/profiles.mjs",
+      "status": "EXIT",
+      "exitCode": 0,
+      "observed": [
+        {
+          "code": "PROFILE_UNAVAILABLE"
+        }
+      ]
+    },
+    {
+      "kind": "profiles",
+      "count": 128,
+      "original": false,
+      "module": "src/terminal/profiles.mjs",
+      "status": "EXIT",
+      "exitCode": 0,
+      "observed": [
+        {
+          "code": "PROFILE_UNAVAILABLE"
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "implementer-copied-package-evidence",
+  "sourceCommit": "bf68ccbd87287fb39d3dc00665b1a79e7485903b",
+  "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-f8a19147-5815-4e62-9adc-9f51394e379a",
+  "archive": {
+    "bytes": 53568366,
+    "sha256": "4036ccc025e29f037120549a98916350913df06dcff0cbc9717ae898b2c54e2b"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "byteCheck": {
+    "author": "/root",
+    "sourceCommit": "bf68ccbd87287fb39d3dc00665b1a79e7485903b",
+    "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-f8a19147-5815-4e62-9adc-9f51394e379a",
+    "files": 243,
+    "archive": {
+      "bytes": 53568366,
+      "sha256": "4036ccc025e29f037120549a98916350913df06dcff0cbc9717ae898b2c54e2b"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "exactApplicationBytes": true,
+    "unchangedElectronRuntime": true,
+    "releaseAdmitted": false
+  },
+  "status": "COMPLETE",
+  "runs": [
+    {
+      "name": "close-keys",
+      "resultPath": "evidence\\window-close-keys\\2026-10-05T18-59-04.114Z\\result.json",
+      "resultSha256": "b4e9370c0dcffef2527f0df0ec8ce0299d75269651372cf268a3192dc908ba5b",
+      "logSha256": "d8575acfb17b0280d3358fd576f47d7dffd445c66321e50d3a498c8590d9c353",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 14,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\window-close-keys\\2026-10-05T18-59-04.114Z\\Pachet-Știință-Comenzi"
+      ]
+    },
+    {
+      "name": "focus",
+      "resultPath": "evidence\\window-focus\\2026-10-05T18-59-13.266Z\\result.json",
+      "resultSha256": "0604b3fb84d19fea84e18dee9bceca175f46a8810d0281d03a35478b603902ac",
+      "logSha256": "94a765260e173f233554d4b7be2fccc832ca6c579176cd2284dfe2c0a3efaddd",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 9,
+      "inputs": 13,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\window-focus\\2026-10-05T18-59-13.266Z\\Pachet-Știință-Ferestre"
+      ]
+    },
+    {
+      "name": "docs300k",
+      "resultPath": "evidence\\docs-edit\\2026-10-05T18-59-26.763Z\\result.json",
+      "resultSha256": "c3f30caa93ff66285618df23a7a333ed09451c4b0dd2c99b865fa9e95a95b85b",
+      "logSha256": "af2485ad0a504ea0bcc35bc64ae415baedc11abc8925aeb9a8bcd16ce7304f6d",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 28,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\docs-edit\\2026-10-05T18-59-26.763Z\\Pachet-Știință-Docs"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "code300k",
+      "resultPath": "evidence\\source-edit\\2026-10-05T18-59-54.543Z\\result.json",
+      "resultSha256": "9dd1b57f7b0b236e1a452f405da6106f949e8aad53859828c07f2908cf64db91",
+      "logSha256": "5ffe6bae0d6601bcdad87ce23422a9a4a4d4841c2cc0ad73fe1cb4cc173c282f",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 16,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\source-edit\\2026-10-05T18-59-54.543Z\\Pachet-Știință-Code"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "analysis300k",
+      "resultPath": "evidence\\source-analysis\\2026-10-05T19-00-13.314Z\\result.json",
+      "resultSha256": "2c8f25cd8342814c03ca8d2201b7b0a049e07453c54fd45ba341fc11e3673365",
+      "logSha256": "cbc69241ca9b6bb9846aa049e3a0006565fc0c1e1f6ac3b3f32b3708de065e80",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": 4,
+      "inputs": 21,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\source-analysis\\2026-10-05T19-00-13.314Z\\Pachet-Știință-Analysis"
+      ],
+      "lineCount": 300000
+    },
+    {
+      "name": "portable",
+      "resultPath": "evidence\\packaged-2026-10-05T19-00-28.086Z\\result.json",
+      "resultSha256": "b699c6d7e1d6d62a53eeb181247fbd2ade49f824366043e5104e5bc87c9aee44",
+      "logSha256": "892d82ed4dab487517c75d780cedac2eef82eef5150996de85ddbe29d572a8a8",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "groups": null,
+      "inputs": null,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\packaged-2026-10-05T19-00-28.086Z\\Mutat-Știință-2",
+        "evidence\\packaged-2026-10-05T19-00-28.086Z\\Pachet-Știință-1",
+        "evidence\\packaged-2026-10-05T19-00-28.086Z\\Siguranță-readonly-3"
+      ]
+    }
+  ],
+  "releaseAdmitted": false,
+  "scope": "Six sequential root-owned actual copied-package runs: native active-view close/coordinated Quit, Window focus/layout, exact300k Docs/Code/analysis and original portable recovery. Not wholeTask4/Task6/physical hotplug/cleanPC/accounts/updates/production."
+}

@@ -1,0 +1,94 @@
+# SIREN workspace UI implementation
+
+Approved direction: the user accepted implementation on 2026-10-06 after supplying the v1.131.0 HTML and Diagram/Docs screenshots. This extends the approved Home/native workspace plans; no release or replacement of the installed application is implied.
+
+Reference: desktop/reviews/2026-10-06-ui-reference-parity-analysis.md. Preserve the baseline and all previous qualification evidence.
+
+## Delivery sequence
+
+1. Reproduce hosted CI failures. Correct the stale exact Docs caption oracle and establish a genuine native admission receipt before privacy assertions. Retain original failures.
+2. Extract all 39 original theme identities and a finite, resource-free palette from the frozen baseline. Persist one application appearance preference with bounded, atomic native storage. Keep public slides and explicitly imported Mermaid colours independent.
+3. Add a compact shared navigation/appearance bar to Home, studio and private native views. Route through the existing save/navigation barrier, keep Audience private, and retain real module controls below the bar. Use named themes and recognizable SIREN branding.
+4. Align module spacing, context toolbars and reading/canvas surfaces. Track functional parity gaps individually; never create decorative controls that imply undelivered functionality.
+5. Verify unit boundaries, real native Home/module transitions, Lock, drafts and theme propagation; inspect screenshots. Then perform a fresh independent review and coherent source/package qualification before the next sync.
+
+## Ledger
+
+- CI reproduction: Home library fails on the exact intentional `Docs ·` prefix; original evidence retained under desktop/evidence/home-library-search/2026-10-05T22-19-34.868Z. Role privacy passes locally; hosted admission race remains open pending boundary verification.
+- Shared workspace navigation/theme foundation implemented: persistent Home/Diagrams/Docs/Code/Present/Find, selected-project caption, all 39 original named palettes plus System, native bounded atomic appearance storage and private-role IPC. Attached views retain their original frame/draft and use the host bar; detached views have the same navigation. Audience remains outside this private shell.
+- Original Studio theme menu/selectors and native appearance now share one preference. Keep original Studio theme lifecycle and animations, prevent a visual preference from independently autosaving a project, and retain imported Mermaid colours.
+- Global Find searches saved names only, with explicit separate Diagrams and Present destinations; native entity/version admission still owns actual opening. No global source/body search is claimed.
+- Docs has a semantic reading page, headings/Contents, safe inert rich text, bounded expandable tables and instructions, checklist states, and preserved original fields. Rich authoring/image/review/release parity remains open.
+- Independent review: desktop/reviews/2026-10-06-shared-workspace-review.md, authored by /root/shared_workspace_review. Two Important and two Minor findings received; its own 23 targeted tests and isolated mocked-IPC probes are independent evidence, not package/hosted approval. Coordinator corrections do not replace the report or its author.
+- Verification correction pass: first full suite ADVERSE 1055/1064, no input changes (eight VM fixture imports and one old 48px geometry oracle); original workspace-dock ADVERSE immediate minimized-state read. Preserve both. Fresh Docs reader and docking probes passed; appearance probe passed eight actual native cases after fixes to Studio themes and Present search. General source/native qualification is running; package and hosted rerun remain pending.
+- Integration defect caught by actual Studio probe: stylesheet insertion into a closing-head literal inside Mermaid changed a CSP hash. Exact RED/GREEN regression now inserts at parsed document boundaries, keeps original inline library bytes and original security policy. Original failed native evidence retained.
+- Broad regression discovery retained: native-2026-10-05T23-07-34.952Z was ADVERSE, 45/56 original child processes passed with unchanged inputs. Corrections cover duplicate Home asset oracles, stale asynchronous appearance replies, real excess Diagram spacing, an empty semantic outline for source-only Docs, and pointer coordinates clipped by virtualized editors/ongoing scroll. Keep the original 60% Diagram preview requirement and all content/version/save/Lock oracles. Home Settings/Lock remain sticky beneath the common bars. Ten functional reruns passed; the second duplicate Home request oracle was then updated to the same exact three-resource allowlist. Final full/native qualification runs on frozen inputs are pending.
+- Full Docs/Present/Diagram functional parity and all-theme decorative/variant parity are not complete. Do not report the full UI migration as delivered by this foundation batch.
+
+## Rulings
+
+- The existing feature checkout is reused. Preserve remote-only Git history and use the documented guarded delta workflow.
+- Minify Home CSS and retain the existing 64 KiB entry budget. Measurement showed inline palette/navigation would still reach 73,975 bytes. Use exactly two built local assets (`assets/shell.js`, `assets/shell.css`), exact-path CSP and SRI; protocol and package permit only these names, without permitting a general resource folder. Audience has neither asset nor shell bridge.
+- Theme extraction is build-time parsing of trusted baseline CSS. Exclude URLs, imports and executable content. Source originals remain unchanged.
+
+## Final correction qualification
+
+- Full1071 passed with unchanged inputs; the complete broad native round was ADVERSE55/56 with unchanged inputs. Preserve this result. Source-map failed because a non-editable CodeMirror view accepted a delayed DOM selection while theme controls owned focus, after real theme redecoration. A read-only event observer reproduced the exact lost selection before Analyze, with real clicks still hitting the intended controls.
+- Root corrected only unfocused read-only plain DOM selection transactions. Real pointer/keyboard selection, explicit syntax-map navigation, writable sources and stored text remain available. Two controlled transaction tests and the original native map probe passed; four separately retained observed repeats also passed. Final full unit and affected Sources19 qualification are in progress.
+- New shared-appearance and Docs-reader probes can execute their identical UI paths from isolated byte-verified portable copies with common package/source identities. Source-only execution and copied-package execution are recorded separately.
+
+- Final source qualification: full-suite-2026-10-05T23-40-15.666Z COMPLETE1073/1073, zero failed/skipped/cancelled/todo and unchanged full captures. Affected native Sources group sources-final-2026-10-05T23-40-29.053Z COMPLETE19/19, unchanged captures. Previous broad55/56 remains ADVERSE; it is not relabelled. Desktop20 and Diagrams17 completed in that retained run; only Code selection changed afterward, then affected Sources was freshly qualified.
+- After application freeze ended, CI workflow adds isolated portable workspace-appearance/docs-reader execution, exit checks and original evidence in every named upload. Four focused workflow tests passed, including a planted misplaced-artifact rejection. This is separate from full1073 and is not a hosted verdict. Application inputs did not change.
+
+## Coherent development checkpoint
+
+- Source commit f7c868fb51df1c1a8987212b56bf1182a36632c4. Separate portable preview desktop/dist/development-4dde2bac-0b52-4861-ab91-af9f764004b1 has exact248 packed regular files, ASAR48f4660dccaeb79f976794ca7afd3e66a28e8ceb3e536a7f76e99ec57b6ea3ab/53647030bytes and unchanged original Electron44.5.1. All six copied-package probes passed; five named UI/native probes contain25 cases plus the original integrated portable PIN/recovery/Unicode check. All outer source/generated/workflow captures and each copy archive/runtime remained exact.
+- Root evidence and thin receipt: desktop/reviews/2026-10-06-shared-workspace-root-evidence.md and -receipt.json. Original independent report remains separate, unchanged and attributed. No manufactured independent PASS, release, main merge or installed replacement. Fresh hosted CI remains pending after guarded feature synchronization.
+- Next approved migration: actual rich Docs authoring/image/comments/releases and native Present/Diagram feature access, based on the original reference inventory; keep common theme/navigation/save/Lock owners and re-use existing services. Then decorative theme variants and real monitor/DPI checks. The current foundation does not close these parity gaps.
+
+## Hosted startup correction
+
+Actual37391109232/25f finalFAILURE retained; native owner guard fixes delayed legacy theme overwrite, with meaningful committed RED/corrected GREEN and forced-Dark native panel assertion. Driver observes menu rectangle stability without weakening hit tests; timing remains a hypothesis pending hosted qualification. Sourcee8b0e6d3ff7ca7aa0f954f7b42556a2e203ff148 full1076/1076 + affectedSources19/19 unchanged. Fresh separate development7121c9fd exact248 files/ASARcee0b69c and seven isolated copied probes completed with unchanged identities. Root reports are separate from unchanged original independent review. New hosted qualification pending after guarded sync; rich functional/decorative parity remainsOPEN.
+
+## First-use correction checkpoint
+
+Final sourcedd1ec00ebe538de9aa879febe440f60cbd3e2583 preserves genuine early Studio theme selection, keeps private navigation hidden before admission and leaves automatic onboarding to Home. Manual Guide tour/replay are actually verified; standalone baseline unchanged. Finalfull1080 and copied7 qualified separately from priornative39 and finalaffected3. Hosted37393614417/f41b finalFAILURE retained; next actualhosted verification pending. Geometry diagnosis remains open until that result, and full rich functional/decorative parity is not admitted by this foundation. Root receipt/report: desktop/reviews/2026-10-06-desktop-onboarding-root-*.
+
+## Native menu and admission checkpoint
+
+Source0109ff28 full1082/native6/copied7 completed with unchanged captures/identities. Actual extracted original theme function reproduced delayed same-owned-theme menu closure; corrected closure retains other palette lifecycle and user/standalone behavior. Shared appearance now requires genuine successful native preference admission before apply; finite refusal metadata clarifies subsequent failures. Prior37396637182 hostedFAILURE retained, exact save-refusal cause stillOPEN; fresh canonical CI required. Original independent review byte-exact and separately authored; root receipt/report separate. Full rich functional/decorative parity remainsOPEN.
+
+## Docs authoring checkpoint
+
+Source561c119 scoped native formatting/local history now qualified locally:1087 full tests, five affected native probes (Docs edit/format/structured300k, appearance and strict small Desktop), four separate copied-package probes, all unchanged captures. Exact248-file package/ASAR025fc501, original runtime unchanged. Root evidence/receipt and actual independently authored Docs report are separate under desktop/reviews/2026-10-06-docs-authoring-*. Three minor authoring observations remain open; images/comments/releases and complete Present/Diagram/decorative parity remain open.
+
+Canonical0304 hosted37400502223 FINALFAILURE is retained: Desktop17/20 shell readiness/hidden menus, package diagram-style rollback/save after appearance8 passed. New source adds only bounded read-only theme transitions for diagnosing fresh hosted execution, not a claim that these failures or intermittent appearance filesystem refusal are fixed.
+
+## Feedback correction checkpoint
+
+Sourcee27a7f2 adds explicit Clear block formatting, retained rejected-paste text with messages, live history-limit notice and independent Diagram save-refusal visibility through preview completion. Full1087, affected native6, copied5 all COMPLETE/unchanged; exact248-file ASARe8ed4ea8/originalruntime unchanged. Independently authored CI analysis demonstrates the original feedback defect and correction by the same isolated mocked receipt RED/GREEN, without native/hosted certification. Original Docs independent report remains exactc9af571. Root evidence/receipt: desktop/reviews/2026-10-06-workspace-feedback-root-*.
+
+Fresh37403029139 on6acf remains IN_PROGRESS for the prior Docs batch; actual hidden-theme closer/shell/Guided receipts are not inferred from local success. No next sync while that run is qualifying. Full images/comments/releases/Present/Diagram/decorative/physical parity remains open.
+
+## Original metrics / final native UI checkpoint
+
+Source2c9b4461b0283d55516e879f80aa21fe73259d47 carries the exact original39 palette shape/shadow sets, one native chooser, native Code inline-shape correction, themed Style/Build inputs and compact minimum-window command strips. Full1088, actual native Desktop20/Sources20/Diagrams18 and seven isolated exact portable-copy probes completed with unchanged captures; exact248-file package identity. Real Tab traversal is separate from DOM focus/geometry observations; a real pointer opens Style at minimum bounds. Original actual-Code ADVERSE6 and all prior evidence remain retained. Owner receipt/report: desktop/reviews/2026-10-06-ui-metrics-root-*.
+
+Independent metrics review anchors339 and isolated Chromium/14 units; UI follow-up anchors339/8d and15 owner PNGs. Their exact reports retain authors and narrower scopes rather than implying independent native final-source approval. Source2c is locally scoped complete, not hosted or release admitted. Remaining domain/image/review/Present controls, decoration, complete attached ergonomics and physical-monitor validation remain open.
+
+Hosted37405358959 on8f is FINAL FAILURE: units1087/launcher/native20/20/17 succeeded, packaged appearance refused after six cases. Original before-rename/EPERM log and ZIP retained. A separately authored Windows review reproduces genuine rename refusal and staging accumulation, and proposes opt-in bounded rename handling; it does not identify the hosted locker. Next reliability batch keeps three guarded rename attempts20/40ms only for appearance, exact uncommitted staging cleanup, cancellation/ownership checks on each attempt and unchanged generic atomic/recovery semantics. No click retry or deadline/oracle relaxation.
+
+## Guarded appearance IO qualification
+
+Source8e16957e35c1a4a8b123f53d6c0bf32d04d8be74 implements the opt-in bound and cleanup above. Full1100, three affected actual native probes and three distinct exact portable-copy probes completed with unchanged captures; exact248-file identity. Generated UI identities are byte-identical to the separately qualified2c UI source. Prior58/copy7 belong to2c; the new affected3+3 belong to8e, and are not combined into a universal rerun claim. Root receipt/report: desktop/reviews/2026-10-06-appearance-replace-root-*.
+
+New genuine independent correction review executed37 targeted repository tests and four independently authored actual Windows production-store cases: transient release succeeds2, persistent refusal bounded3, retirement/Lock fences stop before2; foreign UUID stages preserved, failed owned stages removed. Original CI and prior reports are retained with actual authors, hashes and narrower scopes. No native/package/hosted/release PASS is inferred from the independent filesystem fixtures. Fresh canonical verification is pending after exact guarded combined synchronization; remaining rich functional/decorative/physical parity stays open.
+
+## Fixed Windows reader and common UI checkpoint
+
+Local source066c886db7da8d441d2aa1a369b07e2fcba48f27: full1105, original native20/20/18 and nine separate isolated copied-package probes COMPLETE with unchanged captures; exact249-file archive plus external helper identity. Actual Home/Code/Diagram screenshots inspected. Genuine correction review6532 retains its own23 targeted tests and real helper/journal/writer scope, not independent Electron/package approval. Original hosted374093 FINALFAILURE and initial owner helperADVERSE3 are retained. Fresh canonical sync/hosted verification pending; remoteBASEce8096/tree8573/1496, localBASE46192. No merge/release/installedreplacement. Rich Docs/Present/Diagram/Code functional and decorative parity, physical-monitor/DPI/IME/accessibility remain OPEN. Root receipt/report: desktop/reviews/2026-10-06-native-process-reader-root-*.
+
+
+## Initial Diagram placement and build ownership checkpoint
+
+Source85bd74ff53de4b13515115f571a95633738a3409: full1112; prior-source98 affected nativeDiagrams18, final shipped application/helper byte-identical; six distinct final-source isolated portable-copy probes COMPLETE with unchanged captures. Exact249 archive/external helper identity. Original hosted37413497183 FINALFAILURE and local platform/partial adverse evidence retained. Genuine independent placement/cache reports remain separately attributed; junction OPEN98 corrected and independently revalidated. Root report/receipt: desktop/reviews/2026-10-06-diagram-placement-root-*. Fresh guarded remote489/d0ae/1509 synchronization and hosted qualification pending. No merge/release/installedreplacement; remaining rich functional/decorative/physical parity OPEN.

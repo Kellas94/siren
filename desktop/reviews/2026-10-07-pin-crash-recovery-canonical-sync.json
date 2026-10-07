@@ -1,0 +1,406 @@
+{
+  "author": "/root",
+  "kind": "guarded-canonical-PIN-sync",
+  "localSyncedCheckpoint": "00fc95269a456e8bc97d9908db04c05a9b28a4d0",
+  "localProduct": "c210bfb0fb7270f7b27ebc198e2cc9e1eabb94ce",
+  "qualifiedSnapshot": "c9d973557bd7ffdc51271dbb780c5360392cc721",
+  "previousLocalSyncedCheckpoint": "ca14246bc407a4702928d49ba4780189704dac22",
+  "previousCanonical": "11ff847bafc3b5a2caa1a3b06ea9fa8d08cf962e",
+  "canonical": "afd1728d2fdb7e132db0bb81fd204a5e116dc83a",
+  "tree": "3881ec00ee4abfc3d0b721af46c66df055b74139",
+  "previousBlobs": 1627,
+  "blobs": 1655,
+  "untouched": 1616,
+  "delta": 39,
+  "added": 28,
+  "canonicalIgnore": {
+    "sha": "d764577e5f9c66e92f4b0dd43e79f4550ea74805",
+    "previousSha": "07a1c48d128b10fe1e81e33b7e68da0925cf6b5f",
+    "prefixPreserved": true,
+    "exactNewExceptions": 28
+  },
+  "integration": {
+    "sha": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+    "tree": "3881ec00ee4abfc3d0b721af46c66df055b74139",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "afd1728d2fdb7e132db0bb81fd204a5e116dc83a"
+    ]
+  },
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {
+    "url": "https://github.com/Kellas94/siren/pull/2",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  "freshHostedSnapshot": {
+    "id": 37539190289,
+    "url": "https://github.com/Kellas94/siren/actions/runs/37539190289",
+    "head": "afd1728d2fdb7e132db0bb81fd204a5e116dc83a",
+    "status": "in_progress",
+    "conclusion": null,
+    "scope": "Snapshot at synchronization; not final qualification"
+  },
+  "previousHosted": {
+    "id": 37534183640,
+    "status": "completed",
+    "conclusion": "failure",
+    "preserved": true,
+    "issue": "Original Diagram reopen timeout remains causally unresolved; source import passed"
+  },
+  "scope": "Exact expected-parent nonforce branch lease and all new/untouched blob SHA/mode readbacks; no main merge/release/installed replacement.",
+  "entries": [
+    {
+      "path": ".github/workflows/desktop-verify.yml",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "69350b4a019d26243386229e7661e5e8acbdda65",
+      "sha": "0f3bb935512f130d2f87389fd99e5597c8a2d124",
+      "type": "blob",
+      "bytes": 40504
+    },
+    {
+      "path": "desktop/package.json",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "b212c9bfc5c3fa82dcc65f8d216c82817e1c8198",
+      "sha": "e56ea66f6365a8d3e054cc79f4b1b6aefb86527c",
+      "type": "blob",
+      "bytes": 1079
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-reopen-hosted-independent.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "8356233963b55f174164a0933fedb3c4c2ff1015",
+      "type": "blob",
+      "bytes": 10210
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-dpapi-record-prototype-research.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "087c9720d9ebadd43b388861613cb8cbf0b2a7c0",
+      "type": "blob",
+      "bytes": 9995
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-crash-recovery-contract-design-review.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "aadc88482ae6e83e27b3329590ec5d24a6ee3e03",
+      "type": "blob",
+      "bytes": 13633
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-crash-recovery-implementation-independent.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "7929c8b4cf8bbb075f207a9860ab1b8b9f8100bc",
+      "type": "blob",
+      "bytes": 10002
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-crash-recovery-local-qualification.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "672cf4b94684a2c70a3a9cd67d52b7dd36bf3490",
+      "type": "blob",
+      "bytes": 59629
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-crash-recovery-local-qualification.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "d3e356688e277942829e956707f5bcb0606842ff",
+      "type": "blob",
+      "bytes": 6247
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-first-launch-crash-copied-profile-diagnostic.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "cb63fc745e4d1b684d436bb1203b4ae363f758ee",
+      "type": "blob",
+      "bytes": 6228
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-first-launch-crash-matrix.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "a0830e6c5cac314fad6daeafeb6c9ce555461157",
+      "type": "blob",
+      "bytes": 8908
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-first-launch-same-main-accepted-crash-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "6631fb4bab0cbf1864e714239e84bc5a243c807b",
+      "type": "blob",
+      "bytes": 5917
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-first-launch-same-main-probe-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "c3ee90656aaa980fcc5a0ae284b9b84712e300f6",
+      "type": "blob",
+      "bytes": 3117
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-provider-profile-prototype-adverse.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "22e7971faf135d5959ae16baf1f49ef5594f2fc9",
+      "type": "blob",
+      "bytes": 9157
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-provider-profile-prototype-environment-addendum.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "8bb2f3a220f03ac9f32a819c7eb409f7882e6532",
+      "type": "blob",
+      "bytes": 9094
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-pin-worker-writer-exclusion-observation.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "f3bf7a58f0a6d7228820e2ebe54264fd2d75b464",
+      "type": "blob",
+      "bytes": 4843
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-source-bundle-canonical-sync.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "d6a540545d7071e4049450521f2b8260971b1103",
+      "type": "blob",
+      "bytes": 2142
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-source-bundle-hosted-evidence.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "efba20c77220c205ac0c27b47f208fbbb399d849",
+      "type": "blob",
+      "bytes": 6995
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-source-bundle-hosted-receipt.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "462beabfb1e9b524b601d484467bc71e501e02ec",
+      "type": "blob",
+      "bytes": 31482
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-windows-pin-keystore-persistence-upstream-research.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "bab30c36cc068e801d9d605e280f0057439a6d33",
+      "type": "blob",
+      "bytes": 13349
+    },
+    {
+      "path": "desktop/scripts/package.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "bd3dfe4c17186410c6447e88eaa77c8c26b29bcf",
+      "sha": "68ea92ed451ddfda1309e9bb1783b98baffddf3d",
+      "type": "blob",
+      "bytes": 10888
+    },
+    {
+      "path": "desktop/src/account/local-pin.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "6251bce79dcf946433033dee216dd4c1c73b7eff",
+      "sha": "ac00ff217b958a76cca53eafc917b7fda65216cb",
+      "type": "blob",
+      "bytes": 12893
+    },
+    {
+      "path": "desktop/src/account/pin-protection.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "3d902bc5e29f4c66c916f5daa68aee5046713b2c",
+      "type": "blob",
+      "bytes": 4765
+    },
+    {
+      "path": "desktop/src/account/pin-protocol.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "ff09dc866a0582c154ba49cf874b7140c3bb9b5b",
+      "type": "blob",
+      "bytes": 2300
+    },
+    {
+      "path": "desktop/src/account/pin-worker.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "9a4814f5d162a7a7d39ab004f6b5fcab02713840",
+      "type": "blob",
+      "bytes": 2957
+    },
+    {
+      "path": "desktop/src/main.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "dbcf6ecc939a287f7ea639bed58379c013e1d9af",
+      "sha": "059fe99d769e6b89d5ff72d089b1cbed09f35fc5",
+      "type": "blob",
+      "bytes": 100064
+    },
+    {
+      "path": "desktop/src/start.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "6091937ab19c60fc24fdb95cd726417d3e26f1b2",
+      "type": "blob",
+      "bytes": 226
+    },
+    {
+      "path": "desktop/tests/legacy-export-access.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "3627d0ef7cb5758a6c7e5b9ad962ed9236611c45",
+      "sha": "f402dd697581f5ba226fc2a39f0db8a596caea41",
+      "type": "blob",
+      "bytes": 11791
+    },
+    {
+      "path": "desktop/tests/local-pin-async.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "7841aec169b528e02a057e6fdc4a774858a840e1",
+      "type": "blob",
+      "bytes": 7880
+    },
+    {
+      "path": "desktop/tests/local-pin-integration-review.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "2c0eab335a071f2987338ef7004e610d19d47933",
+      "sha": "ea623736019dca422d6d6fca51574c860e2fd1b4",
+      "type": "blob",
+      "bytes": 10355
+    },
+    {
+      "path": "desktop/tests/native-window-integration.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "1182f72ffde5e1919b4998e5f6297ac2d14af8b4",
+      "sha": "07e4f6be0990bd21625014ee709a5e943200a649",
+      "type": "blob",
+      "bytes": 14631
+    },
+    {
+      "path": "desktop/tests/native/diagram-edit.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "352bfc053dd587937a2742a324fd1edf0e53100c",
+      "sha": "57a9283067d427669eea79616740c0c313fbd3af",
+      "type": "blob",
+      "bytes": 18099
+    },
+    {
+      "path": "desktop/tests/native/pin-crash-recovery.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "c7070aa64a99106db747024f84f986c48fc197d6",
+      "type": "blob",
+      "bytes": 19161
+    },
+    {
+      "path": "desktop/tests/package.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "031c37845582845de07c520ec0e59157a54851a8",
+      "sha": "a60bde6fba043ff71ccfc3e3e993eee90d4c91a5",
+      "type": "blob",
+      "bytes": 7776
+    },
+    {
+      "path": "desktop/tests/pin-crash-ci.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "74503a6e6b366e66e98dbc79c3db05d7d496897e",
+      "type": "blob",
+      "bytes": 2282
+    },
+    {
+      "path": "desktop/tests/pin-protection.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "ebaa4d4f6af2830747505d429de91d6479eeaa1c",
+      "type": "blob",
+      "bytes": 6142
+    },
+    {
+      "path": "desktop/tests/pin-startup.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "745970105af245aebb516f6646f570e48c5892c6",
+      "type": "blob",
+      "bytes": 1395
+    },
+    {
+      "path": "desktop/tests/pin-worker-boundaries.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "b9a2b8fa7d609c15a3ea4b58227af093c807d5bc",
+      "type": "blob",
+      "bytes": 2710
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-pin-crash-recovery.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "3fcca9184106fde7b68b78fac5cd5cee1bdfdbe7",
+      "type": "blob",
+      "bytes": 12810
+    },
+    {
+      "path": ".gitignore",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "07a1c48d128b10fe1e81e33b7e68da0925cf6b5f",
+      "sha": "d764577e5f9c66e92f4b0dd43e79f4550ea74805",
+      "type": "blob",
+      "bytes": 20318
+    }
+  ]
+}

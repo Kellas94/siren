@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "controlled-copied-package-domain-close",
+  "sourceCommit": "bf68ccbd87287fb39d3dc00665b1a79e7485903b",
+  "packageRoot": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-f8a19147-5815-4e62-9adc-9f51394e379a",
+  "archive": {
+    "bytes": 53568366,
+    "sha256": "4036ccc025e29f037120549a98916350913df06dcff0cbc9717ae898b2c54e2b"
+  },
+  "runtime": {
+    "bytes": 245726208,
+    "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+  },
+  "status": "COMPLETE",
+  "records": [
+    {
+      "kind": "diagram-edit",
+      "resultPath": "evidence/domain-close-keys/diagram-edit/2026-10-05T19-11-08.410Z/result.json",
+      "resultSha256": "7722606acc855a50368c19fa272421e4494652b292b35878ed1e1f876810f183",
+      "electronLogSha256": "5a94624eac1f56a04e38d3ea6ad4360921814f16913bd961a05a8ff711406451",
+      "cases": 4,
+      "inputs": 21,
+      "lineCount": 300000,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\domain-close-keys\\diagram-edit\\2026-10-05T19-11-08.410Z\\Pachet-Știință-Diagrams"
+      ],
+      "derivation": {
+        "originalPath": "tests/native/diagram-edit.mjs",
+        "originalSha256": "ea2ee1d481a499f68ff47744fe5a63f70192d771d595fae3fcac912066ae26b1",
+        "controlledPath": "evidence/workspace-dock/controlled-diagram-edit-close-keys.mjs",
+        "controlledSha256": "1405ec04f10345553551dd84c995d29d6db73ab4005bf2f25274c7be71202021"
+      }
+    },
+    {
+      "kind": "presentation-windows",
+      "resultPath": "evidence/domain-close-keys/presentation-windows/2026-10-05T19-11-57.989Z/result.json",
+      "resultSha256": "f0df75c55c76046d0ff13447025ccc727c8550a8aaa94cabeda112209f1ae322",
+      "electronLogSha256": "547709cc1fbed1ecc578899578522ef09c297587e89057990587d857d204b098",
+      "cases": 8,
+      "inputs": 34,
+      "lineCount": 300000,
+      "exactCopiedArchivesAndRuntimes": [
+        "evidence\\domain-close-keys\\presentation-windows\\2026-10-05T19-11-57.989Z\\Pachet-Știință-Present"
+      ],
+      "derivation": {
+        "originalPath": "tests/native/presentation-windows.mjs",
+        "originalSha256": "6a96b4e927ded5fa8b266cb59646f886775285c66c491d825871dd571b085209",
+        "controlledPath": "evidence/workspace-dock/controlled-presentation-windows-close-keys.mjs",
+        "controlledSha256": "11f5a334913326f776f8660c9e6527283f1ec8aa1c9e2b31cabec04307179b28"
+      }
+    }
+  ],
+  "scope": "Root actual PID-checked native Diagram Ctrl+W, Presenter Ctrl+W/Q and Audience Ctrl+W on separate copied packages. Original probes unchanged. Both derivatives retain original assertion text/order; added Audience close leaves one Audience at final Lock, so that final roster is narrower than the original two-Audience Lock. Diagram Q/Audience Q and physical keyboard/IME remain unqualified. No independent Electron, hosted or release claim.",
+  "releaseAdmitted": false
+}

@@ -32,22 +32,24 @@ jobs:
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
+      - name: Build fixed native process reader
+        run: node scripts/build-process-reader.mjs
       - name: Unit and protocol behavior (includes real 180-second timeout)
         # CI27 exhausted six minutes before the expanded suite completed.
         # Individual behavioral deadlines remain unchanged; keep this bounded.
         timeout-minutes: 12
         run: |
           New-Item -ItemType Directory -Force evidence | Out-Null
-          # Native process identity must not compete with large editor/storage
-          # worker fixtures. Preserve the product's bounded unknown/refusal path.
-          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs')
+          # Native process identity and the nested TEMP subprocess run serially,
+          # away from large editor/storage workers. Keep all original deadlines.
+          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs', 'tests/process-reader-native.test.mjs', 'tests/fixture-temp-alias.test.mjs')
           foreach ($identityFile in $identityFiles) {
             if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
           }
           node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
           $identityExit = $LASTEXITCODE
           $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
-            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs') } |
+            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs', 'fixture-temp-alias.test.mjs') } |
             Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
           if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
           node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
@@ -56,7 +58,7 @@ jobs:
           exit 0
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
-      - name: Retain scoped test evidence in private CI
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -66,6 +68,10 @@ jobs:
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -119,6 +125,18 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -140,6 +158,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log
@@ -148,6 +172,13 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log
@@ -163,6 +194,12 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -181,6 +218,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json
@@ -224,19 +264,90 @@ jobs:
           exit $LASTEXITCODE
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
+      - name: Build fixed native process reader
+        run: node scripts/build-process-reader.mjs
+      - name: Actual Help and diagnostics
+        if: matrix.group == 'desktop'
+        run: node tests/native/help-diagnostics.mjs
       - name: Actual development renderer and protected storage
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
-      - name: Retain scoped test evidence in private CI
+      - name: Actual first-session PIN crash recovery
+        if: matrix.group == 'desktop'
+        run: node tests/native/pin-crash-recovery.mjs
+      - name: Actual Home saved-backup export
+        if: matrix.group == 'desktop'
+        run: node tests/native/home-backup-export.mjs
+      - name: Actual Docs saved-document export
+        if: matrix.group == 'desktop'
+        run: node tests/native/docs-export.mjs
+      - name: Actual Docs Activity
+        if: matrix.group == 'desktop'
+        run: node tests/native/docs-activity.mjs
+      - name: Actual Presenter captured-notes export
+        if: matrix.group == 'desktop'
+        run: node tests/native/presenter-notes-export.mjs
+      - name: Actual Diagram history and typography
+        if: matrix.group == 'desktop'
+        run: node tests/native/diagram-history-typography.mjs
+      - name: Actual Code context and commands
+        if: matrix.group == 'sources'
+        run: node tests/native/code-context-commands.mjs
+      - name: Actual Diagram walkthrough
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-walkthrough.mjs
+      - name: Actual Diagram Inspector and filters
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-annotations.mjs
+      - name: Actual Diagram pan release
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-pan-release.mjs
+      - name: Actual Diagram catalogue
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-catalogue.mjs
+      - name: Actual Diagram layout
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-layout.mjs
+      - name: Actual Diagram layout SVG and Present
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-layout-render.mjs
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-native-${{ matrix.group }}-evidence
           path: |
+            desktop/evidence/home-backup-export-native/*/result.json
+            desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/docs-activity-native/*/result.json
+            desktop/evidence/docs-activity-native/*/*.png
+            desktop/evidence/presenter-notes-export-native/*/result.json
+            desktop/evidence/diagram-history-typography-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/*.png
+            desktop/evidence/diagram-walkthrough-native/*/result.json
+            desktop/evidence/diagram-walkthrough-native/*/*.png
+            desktop/evidence/diagram-annotations-native/*/result.json
+            desktop/evidence/diagram-annotations-native/*/*.png
+            desktop/evidence/diagram-pan-release/*/result.json
+            desktop/evidence/diagram-pan-release/*/*.png
+            desktop/evidence/diagram-catalogue/*/result.json
+            desktop/evidence/diagram-catalogue/*/*.png
+            desktop/evidence/diagram-layout-native/*/result.json
+            desktop/evidence/diagram-layout-native/*/*.png
+            desktop/evidence/diagram-layout-render/*/result.json
+            desktop/evidence/diagram-layout-render/*/driver-result.json
             desktop/evidence/native-verification/*.json
+            desktop/evidence/help-diagnostics/*/result.json
+            desktop/evidence/help-diagnostics/*/electron.log
+            desktop/evidence/help-diagnostics/*/*.png
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -290,6 +401,18 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -311,6 +434,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log
@@ -319,6 +448,13 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log
@@ -334,6 +470,12 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -352,6 +494,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json
@@ -394,8 +539,42 @@ jobs:
           $packageJson = node scripts/package.mjs $sourceCommit
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $preview = $packageJson | ConvertFrom-Json
+          node tests/native/pin-crash-recovery.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged first-session PIN crash recovery failed" }
+          node tests/native/shell.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
+          node tests/native/help-diagnostics.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Help and diagnostics failed" }
+          node tests/native/docs-export.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs saved export failed" }
+          node tests/native/docs-activity.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs Activity failed" }
+          node tests/native/presenter-notes-export.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Presenter notes export failed" }
+          node tests/native/diagram-history-typography.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram history and typography failed" }
+          node tests/native/code-context-commands.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Code context and commands failed" }
+          node tests/native/diagram-walkthrough.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram walkthrough failed" }
+          node tests/native/diagram-annotations.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram Inspector and filters failed" }
+          node tests/native/diagram-pan-release.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram pan release failed" }
+          node tests/native/diagram-catalogue.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram catalogue failed" }
+          node tests/native/diagram-layout.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram layout failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/source-bundle-import.mjs --package $preview.previewRoot --300k --code-only
+          if ($LASTEXITCODE -ne 0) { throw "Packaged source bundle import failed" }
+          node tests/native/workspace-appearance.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged shared appearance/navigation failed" }
+          node tests/native/ui-personality.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged UI theme metrics and native controls failed" }
+          node tests/native/docs-reader.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged semantic Docs reading failed" }
           node tests/native/source-analysis.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-diff.mjs --package $preview.previewRoot --300k
@@ -408,6 +587,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-edit.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-format.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs formatting/history failed" }
           node tests/native/diagram-preview.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-edit.mjs --package $preview.previewRoot --300k
@@ -418,8 +599,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/diagram-export.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/diagram-dock.mjs --package $preview.previewRoot --300k
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram docking failed" }
           node tests/native/diagram-build.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/native/docs-context.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs context failed" }
+          node tests/native/presentation-authoring.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged presentation authoring failed" }
           node tests/native/docs-structured.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { throw "Packaged structured Docs failed" }
           node tests/native/home-library-search.mjs --package $preview.previewRoot
@@ -434,18 +621,46 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-sources.mjs --package $preview.previewRoot --300k
           if ($LASTEXITCODE -ne 0) { throw "Packaged Docs source opening failed" }
+          node tests/native/window-close-keys.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged native close commands failed" }
           node tests/native/presentation-windows.mjs --lines 300000 --package $preview.previewRoot
           exit $LASTEXITCODE
-      - name: Retain scoped test evidence in private CI
+      - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-packaged-evidence
           path: |
+            desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/docs-activity-native/*/result.json
+            desktop/evidence/docs-activity-native/*/*.png
+            desktop/evidence/presenter-notes-export-native/*/result.json
+            desktop/evidence/help-diagnostics/*/result.json
+            desktop/evidence/help-diagnostics/*/electron.log
+            desktop/evidence/help-diagnostics/*/*.png
+            desktop/evidence/diagram-history-typography-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/*.png
+            desktop/evidence/diagram-walkthrough-native/*/result.json
+            desktop/evidence/diagram-walkthrough-native/*/*.png
+            desktop/evidence/diagram-annotations-native/*/result.json
+            desktop/evidence/diagram-annotations-native/*/*.png
+            desktop/evidence/diagram-pan-release/*/result.json
+            desktop/evidence/diagram-pan-release/*/*.png
+            desktop/evidence/diagram-catalogue/*/result.json
+            desktop/evidence/diagram-catalogue/*/*.png
+            desktop/evidence/diagram-layout-native/*/result.json
+            desktop/evidence/diagram-layout-native/*/*.png
+            desktop/evidence/diagram-layout-render/*/result.json
+            desktop/evidence/diagram-layout-render/*/driver-result.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
             desktop/evidence/*/failure-state.json
+            desktop/evidence/shell-*/startup.json
+            desktop/native/generated/process-identity.json
+            desktop/evidence/pin-crash-recovery/*/result.json
+            desktop/evidence/pin-crash-recovery/*/*/result.json
             desktop/evidence/*/failure.json
             desktop/evidence/*/diagnostic.json
             desktop/evidence/*/failure-events.json
@@ -499,6 +714,18 @@ jobs:
             desktop/evidence/home-library-search/*/result.json
             desktop/evidence/home-library-search/*/electron.log
             desktop/evidence/home-library-search/*/*.png
+            desktop/evidence/ui-personality/*/result.json
+            desktop/evidence/ui-personality/*/electron.log
+            desktop/evidence/ui-personality/*/*.png
+            desktop/evidence/workspace-appearance/*/result.json
+            desktop/evidence/workspace-appearance/*/electron.log
+            desktop/evidence/workspace-appearance/*/*.png
+            desktop/evidence/docs-reader/*/result.json
+            desktop/evidence/docs-reader/*/electron.log
+            desktop/evidence/docs-reader/*/*.png
+            desktop/evidence/docs-format/*/result.json
+            desktop/evidence/docs-format/*/electron.log
+            desktop/evidence/docs-format/*/*.png
             desktop/evidence/source-edit/*/result.json
             desktop/evidence/source-edit/*/*.png
             desktop/evidence/source-link/*/result.json
@@ -520,6 +747,12 @@ jobs:
             desktop/evidence/home-documents/*/result.json
             desktop/evidence/home-documents/*/*.png
             desktop/evidence/home-documents/*/*.log
+            desktop/evidence/docs-context-native/*/result.json
+            desktop/evidence/docs-context-native/*/*.png
+            desktop/evidence/docs-context-native/*/*.log
+            desktop/evidence/presentation-authoring-native/*/result.json
+            desktop/evidence/presentation-authoring-native/*/*.png
+            desktop/evidence/presentation-authoring-native/*/*.log
             desktop/evidence/docs-structured/*/result.json
             desktop/evidence/docs-structured/*/*.png
             desktop/evidence/docs-structured/*/*.log
@@ -528,6 +761,13 @@ jobs:
             desktop/evidence/home-source-projects/*/*.png
             desktop/evidence/home-recovery/*/result.json
             desktop/evidence/home-recovery/*/*.png
+            desktop/evidence/window-focus/*/result.json
+            desktop/evidence/window-close-keys/*/result.json
+            desktop/evidence/window-close-keys/*/electron.log
+            desktop/evidence/window-close-keys/*/*.png
+            desktop/evidence/window-focus/*/*.png
+            desktop/evidence/toast-transition/*/result.json
+            desktop/evidence/toast-transition/*/*.png
             desktop/evidence/presentation-render/*/result.json
             desktop/evidence/presentation-render/*/native-result.json
             desktop/evidence/presentation-render/*/*.log
@@ -543,6 +783,12 @@ jobs:
             desktop/evidence/presentation-windows/*/result.json
             desktop/evidence/presentation-windows/*/*.log
             desktop/evidence/presentation-windows/*/*.png
+            desktop/evidence/diagram-export/*/result.json
+            desktop/evidence/diagram-export/*/*.log
+            desktop/evidence/diagram-export/*/*.png
+            desktop/evidence/diagram-dock/*/result.json
+            desktop/evidence/diagram-dock/*/*.log
+            desktop/evidence/diagram-dock/*/*.png
             desktop/evidence/diagram-style/*/result.json
             desktop/evidence/diagram-style/*/*.log
             desktop/evidence/diagram-style/*/*.png
@@ -561,6 +807,9 @@ jobs:
             desktop/evidence/source-diff/*/result.json
             desktop/evidence/source-diff/*/*.png
             desktop/evidence/source-map/*/*.log
+            desktop/evidence/source-bundle-import-native/*/result.json
+            desktop/evidence/source-bundle-import-native/*/*.png
+            desktop/evidence/source-bundle-import-native/*/*.log
             desktop/evidence/source-map/*/result.json
             desktop/evidence/source-map/*/*.png
             desktop/evidence/protected-storage-*/launch.json

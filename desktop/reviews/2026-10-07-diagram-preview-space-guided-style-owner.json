@@ -1,0 +1,42 @@
+{
+  "author": "/root",
+  "executor": "/root",
+  "status": "COMPLETE",
+  "sourceCommit": "306bcfd6e04efd5194055fd10ec2413bbff88603",
+  "originalOuter": {
+    "path": "evidence/workspace-surface/preview-space-guided-style-native-2026-10-07T02-16-36.785Z/result.json",
+    "sha256": "c3b4aed7a8991d1b205ac08dd875b49a49a90f3dc6dcce0887f00bf431f6b8f0"
+  },
+  "records": [
+    {
+      "path": "evidence/diagram-guided/2026-10-07T02-16-36.912Z/result.json",
+      "bytes": 6227,
+      "sha256": "c19fc57c91179df942145bd2848393c8f21c29703f24e0f293d015902ffa00cf",
+      "cases": 4,
+      "packageUnchanged": true,
+      "capturedInputs": 22,
+      "harness": [
+        "tests/native/diagram-guided.mjs",
+        "e5298d71b552196e74f49721bbe054ca5abbf9a260d558dab846dbd037f72897"
+      ]
+    },
+    {
+      "path": "evidence/diagram-style/2026-10-07T02-16-57.304Z/result.json",
+      "bytes": 10115,
+      "sha256": "0a0df226450b2c4fc12733cf0507c7a0c743a3fe0dc433763267e58119f8a430",
+      "cases": 6,
+      "packageUnchanged": true,
+      "capturedInputs": 27,
+      "harness": [
+        "tests/native/diagram-style.mjs",
+        "14b5904f754a03098e322121f0f4964ffa5a1f5f1498a11ea2814e7e93b5c66f"
+      ]
+    }
+  ],
+  "changedInputs": [],
+  "limits": [
+    "Unchanged original native Guided and Style tests; no additional full suite",
+    "Current success does not relabel earlier hosted viewport failures or close historical Save mis-target",
+    "No merge, production release or installed replacement"
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "schema": 1,
+  "author": "root implementer",
+  "kind": "scoped execution evidence, not independent approval",
+  "sourceCommit": "45f6dc4d49873110fb62cfca07b9902fae5bc8eb",
+  "remoteHead": "0dec7274ed9811dbe38d44e9e16eb822d5221f5b",
+  "remoteTree": "962772806dfa72c820c4e4a0bfa6694485242534",
+  "fullSuite": {
+    "tests": 1010,
+    "pass": 1010,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 183422.1832,
+    "logSHA256": "ad66f3304b8db6a3bd6a7dcb284058f730dc3e89c166dfe5c09351b9560e4a81"
+  },
+  "sourceGroups": [
+    {
+      "script": "monitor-memory",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "64f0a58ef5d559bf40950f447bb20bc6660ef70294c43c89721edf0a5ca5a7fd"
+    },
+    {
+      "script": "window-focus",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "9a748d8e61adec9cad4067f5fe3d8f62c9f83551e645d9c3b8d45319192054c9"
+    },
+    {
+      "script": "home-library",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "2cf9a7a68e3d5b1dc5002dfcd08dd3933eeac37e7f4301a672da887ab3f2897d"
+    },
+    {
+      "script": "docs-edit",
+      "args": [
+        "--300k"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "4bad257264b1cd31adb3aa319fe81af89e7d327e6dfe9e26424af220d4c69662"
+    },
+    {
+      "script": "source-link",
+      "args": [
+        "--300k"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "0e767dad7d6c402a2328c29d10338ab58ad916e20fcf4b1593eddcb5780185c8"
+    },
+    {
+      "script": "presentation-windows",
+      "args": [
+        "--lines",
+        "300000"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "454f10f80df1a3083349895b052fd1f50d38491832aa9cb53e27c137c2f08c3c"
+    }
+  ],
+  "packageGroups": [
+    {
+      "script": "packaged",
+      "args": [
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-a943aa2e-4af1-44ac-9d52-4958dab10cf6"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "bf5b7b717f95efc91df77b9556aaf39e54f9ded3fe478e54c3a1ef0e0dfe3aec"
+    },
+    {
+      "script": "window-focus",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-a943aa2e-4af1-44ac-9d52-4958dab10cf6"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "9d638a8d68a55fd80434c4c667532ad35cb59ada61ba59c0b8dc80af669e822e"
+    },
+    {
+      "script": "monitor-memory",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-a943aa2e-4af1-44ac-9d52-4958dab10cf6"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "cfad7abfa1bdf64ffcb71d9eabe37228c97ec6a0e5979c6e31c5bb36e1560521"
+    },
+    {
+      "script": "presentation-windows",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-a943aa2e-4af1-44ac-9d52-4958dab10cf6",
+        "--lines",
+        "300000"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "6a6cc8f4a58d3b7832307bb04684fec13af9d5817f42b6868114e0f4e0a294fd"
+    },
+    {
+      "script": "source-link",
+      "args": [
+        "--package",
+        "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-a943aa2e-4af1-44ac-9d52-4958dab10cf6",
+        "--300k"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "542578d731c13fbd2be4338458d34f8d60c25edda72c374d962e6d4ae6297061"
+    },
+    {
+      "script": "access-screen",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "e8ba2ed512da089cc9e1bbb33c79de9ddfa2541522acfed22a465d6194a02f2c"
+    },
+    {
+      "script": "toast-transition",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "500f3de4e513afc309589062535978107168aed27967b29e593ef9e807880e86"
+    },
+    {
+      "script": "home-library",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "logSHA256": "b09b3e22353f8f97b324b95f620f9dfcab8a7324af350577a121d32cc68f2baa"
+    }
+  ],
+  "identity": {
+    "sourceCommit": "45f6dc4d49873110fb62cfca07b9902fae5bc8eb",
+    "files": 241,
+    "archive": {
+      "bytes": 53529925,
+      "sha256": "d364396bfdb747998b454395dc87e9924c2f62a53ca4b8c28078f268015b0699"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    },
+    "exactApplicationBytes": true,
+    "releaseAdmitted": false
+  },
+  "unchangedInputs": true,
+  "unchangedArchive": true,
+  "limits": [
+    "native callback selection rather than physical menu clicking",
+    "no physical monitor removal or DPI settings change",
+    "no whole Task6 or attach-back admission",
+    "no production release or installed replacement",
+    "hosted CI pending, independently reviewed separately"
+  ]
+}

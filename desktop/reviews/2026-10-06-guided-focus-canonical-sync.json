@@ -1,0 +1,23 @@
+{
+  "author": "/root",
+  "status": "CANONICAL_SYNC_COMPLETE_FRESH_HOSTED_PENDING",
+  "localSource": "fd20b76d586ce0fb2d925692de49d5f98222c66b",
+  "localSyncedHead": "378a0485eb02cd44f6224e0ded6ede1e0a3f9d37",
+  "nextLocalSyncBase": "378a0485eb02cd44f6224e0ded6ede1e0a3f9d37",
+  "remoteHead": "67896f9bdd73cb8e08ef92e2a653263b7da649fa",
+  "remoteTree": "311e653a4734cbec6146d12449718d8283e924b6",
+  "remoteBranch": "feature/portable-foundation-2026-10-02",
+  "blobs": 1564,
+  "untouchedVerified": 1553,
+  "exactLocalGitBlobs": 10,
+  "canonicalIgnorePrefixPreserved": true,
+  "previousRemote": "6b3b2d7695130e9251726e90393d31d63e6637f5",
+  "previousRun": {
+    "id": 37519020850,
+    "status": "FAILURE",
+    "retained": true,
+    "timeoutCause": "UNRESOLVED"
+  },
+  "noMainMerge": true,
+  "noRelease": true
+}

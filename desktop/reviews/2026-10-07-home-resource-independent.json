@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "role": "Independent finite test-fixture correction review; no independent GUI execution or hosted approval",
+  "reviewedUtc": "2026-10-07T11:53:15.360Z",
+  "status": "SCOPED_FIXTURE_CORRECTION_VERIFIED_HOSTED_FAILURE_PRESERVED",
+  "findings": [],
+  "inputsBefore": [
+    {
+      "path": "tests/native/home-entry-resources.mjs",
+      "bytes": 490,
+      "sha256": "4f67d3fde6c066c74420bf72c745132f317cce7a6e9794084b4e139de042c747"
+    },
+    {
+      "path": "tests/native/home-entry-app.mjs",
+      "bytes": 17541,
+      "sha256": "e2112c81dfa4e2b4a841a05438a3a912326a2402a36f330b46c61bb7a4666bd3"
+    },
+    {
+      "path": "tests/native/home-entry.mjs",
+      "bytes": 3637,
+      "sha256": "6a29320e262bfa8eaaf2279d76ba19155a786deeaf203eace9f4b90c6f23fa01"
+    },
+    {
+      "path": "tests/home-entry-resources.test.mjs",
+      "bytes": 2684,
+      "sha256": "02013d74b2b0393c8afcffa1834dde981ceb93fedef600184509ec831b8f709e"
+    },
+    {
+      "path": "build/workspace.mjs",
+      "bytes": 2960,
+      "sha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44"
+    },
+    {
+      "path": "build/home-catalogue.mjs",
+      "bytes": 2113,
+      "sha256": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/result.json",
+      "bytes": 45886,
+      "sha256": "8d6e3c1b594d8521273c6f4ea9c8ccb1b4458cbb0f3dcfed9c545f8048d14c4f"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/native-result.json",
+      "bytes": 2954,
+      "sha256": "9fa61ddcdad9ffdc9872affe3feeca08fdf29d793bde5884935405a8c7be1004"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/prepared.json",
+      "bytes": 22988,
+      "sha256": "6b342b72d4e8090655ca9eba684b239a9c1b1ba64ec6bd06560030d41c41bc29"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37609861403/run-api-original.json",
+      "bytes": 14738,
+      "sha256": "83a36fde7947c46e1b073afad7dbcef8bf578697e90f98f235e8c2cd20e2f459"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37609861403/home-entry-canonical-source-original.mjs.txt",
+      "bytes": 17651,
+      "sha256": "df239f34d30955e7d794cf1823a931eda5f2ccd64df327a184e6e67f67d290fa"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-hosted-evidence.json",
+      "bytes": 3151773,
+      "sha256": "76ffe8516f4202ea4b81f1bf5c9554a7e1affc4df3f60f0671cb5e8debc542fa"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-hosted-evidence.md",
+      "bytes": 5926,
+      "sha256": "996151e0323c89753a5b79880160f4852c886602bb9c257b37f3ec5f2824e2df"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "tests/native/home-entry-resources.mjs",
+      "bytes": 490,
+      "sha256": "4f67d3fde6c066c74420bf72c745132f317cce7a6e9794084b4e139de042c747"
+    },
+    {
+      "path": "tests/native/home-entry-app.mjs",
+      "bytes": 17541,
+      "sha256": "e2112c81dfa4e2b4a841a05438a3a912326a2402a36f330b46c61bb7a4666bd3"
+    },
+    {
+      "path": "tests/native/home-entry.mjs",
+      "bytes": 3637,
+      "sha256": "6a29320e262bfa8eaaf2279d76ba19155a786deeaf203eace9f4b90c6f23fa01"
+    },
+    {
+      "path": "tests/home-entry-resources.test.mjs",
+      "bytes": 2684,
+      "sha256": "02013d74b2b0393c8afcffa1834dde981ceb93fedef600184509ec831b8f709e"
+    },
+    {
+      "path": "build/workspace.mjs",
+      "bytes": 2960,
+      "sha256": "cd9228882c9cb40b51d43f0ae8de7cee3aac488fb23045df935f73e0be277e44"
+    },
+    {
+      "path": "build/home-catalogue.mjs",
+      "bytes": 2113,
+      "sha256": "68fd28f4e6148e6e5fc3ce36c19df4068fe0dd2777684f0840082f3fd4beb6f2"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/result.json",
+      "bytes": 45886,
+      "sha256": "8d6e3c1b594d8521273c6f4ea9c8ccb1b4458cbb0f3dcfed9c545f8048d14c4f"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/native-result.json",
+      "bytes": 2954,
+      "sha256": "9fa61ddcdad9ffdc9872affe3feeca08fdf29d793bde5884935405a8c7be1004"
+    },
+    {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/prepared.json",
+      "bytes": 22988,
+      "sha256": "6b342b72d4e8090655ca9eba684b239a9c1b1ba64ec6bd06560030d41c41bc29"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37609861403/run-api-original.json",
+      "bytes": 14738,
+      "sha256": "83a36fde7947c46e1b073afad7dbcef8bf578697e90f98f235e8c2cd20e2f459"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37609861403/home-entry-canonical-source-original.mjs.txt",
+      "bytes": 17651,
+      "sha256": "df239f34d30955e7d794cf1823a931eda5f2ccd64df327a184e6e67f67d290fa"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-hosted-evidence.json",
+      "bytes": 3151773,
+      "sha256": "76ffe8516f4202ea4b81f1bf5c9554a7e1affc4df3f60f0671cb5e8debc542fa"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-catalogue-hosted-evidence.md",
+      "bytes": 5926,
+      "sha256": "996151e0323c89753a5b79880160f4852c886602bb9c257b37f3ec5f2824e2df"
+    }
+  ],
+  "unchangedInputs": 13,
+  "originalHosted": {
+    "runId": 37609861403,
+    "conclusion": "failure",
+    "canonical": "127770390ac47cf2dcdaa174472897968f65139d",
+    "originalFailure": "Standalone Home native fixture line91 asserted every request belonged to only home.html/shell.js/shell.css; observed newly legitimate catalogue CSS and workspace JS failed this predicate.",
+    "originalAppGitBlob": "9d2ba69f21084a04e334f690a5f83bae94043c8f",
+    "originalWrapperGitBlob": "fdde8df292ae73f92b2b13081edcedc37f8c1db6",
+    "originalSource": {
+      "path": "evidence/workspace-surface/ci37609861403/home-entry-canonical-source-original.mjs.txt",
+      "bytes": 17651,
+      "sha256": "df239f34d30955e7d794cf1823a931eda5f2ccd64df327a184e6e67f67d290fa"
+    },
+    "originalNative": {
+      "path": "evidence/workspace-surface/ci37609861403/desktop-native-desktop-evidence-original/evidence/home-entry/2026-10-07T10-59-48.804Z/native-result.json",
+      "bytes": 1882,
+      "sha256": "cbca365bf26eefbab25d55dc12d76a87c32f80d7dfc4c1473f43ff7ec12514b1"
+    }
+  },
+  "correction": {
+    "fixtureOnly": true,
+    "expectedResourceCount": 5,
+    "resourceUrls": [
+      "siren://app/home.html",
+      "siren://app/assets/shell.js",
+      "siren://app/assets/shell.css",
+      "siren://app/assets/home-workspace.js",
+      "siren://app/assets/diagram-catalogue.css"
+    ],
+    "appDelta": "Exactly one helper import and two resource assertion rewrites; first assertion now additionally requires every expected resource present. All other app bytes match original after the three prescribed substitutions.",
+    "wrapperDelta": "Only adds helper path to captured inputs; original capture/after capture/status admission untouched.",
+    "helperBoundary": "Frozen finite exact string membership; nonempty array with every observed request permitted. Duplicates allowed for legitimate reloads. Helper alone allows subsets; native fixture separately requires all5 after first Home ready.",
+    "builderCoupling": "Focused regression builds real fresh standalone Home in a test-owned temporary directory, parses external script/link URLs, requires exact4asset set and computes each integrity SHA384 from actual emitted bytes. Independent probe also verifies retained native Home build SHA256 and all4actual asset SHA384 bodies."
+  },
+  "ownNodeExecution": {
+    "existingFocusedTests": 3,
+    "independentProbes": 8,
+    "total": 11,
+    "pass": 11,
+    "fail": 0,
+    "strictNegativeUriCases": 29,
+    "malformedInputCases": 13,
+    "probeSource": {
+      "path": "evidence/workspace-surface/home-resource-independent/probes.test.mjs",
+      "bytes": 6214,
+      "sha256": "4c9ae1615a1c30b0683b6264392fed82719c9b3bf2134e50724d6c1deeda1936"
+    },
+    "log": {
+      "path": "evidence/workspace-surface/home-resource-independent/probes.log",
+      "bytes": 1232,
+      "sha256": "68ab167095e4bad8f104b24ac749c443ffbafb9454ecfb5f1546287c2c1d73b1"
+    },
+    "exit": {
+      "path": "evidence/workspace-surface/home-resource-independent/probe-exit.json",
+      "bytes": 97,
+      "sha256": "e34bcb8acf5c3081ed8a9dc74a84f05e5dde091ed1af6b3ba24ce8164e91e7a9"
+    }
+  },
+  "ownerActualNativeReadback": {
+    "executor": "/root",
+    "reviewerDidNotExecuteGui": true,
+    "wrapper": {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/result.json",
+      "bytes": 45886,
+      "sha256": "8d6e3c1b594d8521273c6f4ea9c8ccb1b4458cbb0f3dcfed9c545f8048d14c4f"
+    },
+    "native": {
+      "path": "evidence/home-entry/2026-10-07T11-45-41.844Z/native-result.json",
+      "bytes": 2954,
+      "sha256": "9fa61ddcdad9ffdc9872affe3feeca08fdf29d793bde5884935405a8c7be1004"
+    },
+    "status": "COMPLETE",
+    "nativeStatus": "COMPLETE",
+    "cases": 6,
+    "allCaseStatusComplete": true,
+    "ownedPid": 15940,
+    "nativePid": 15940,
+    "nativeShaMatches": true,
+    "inputsUnchanged": true,
+    "exactCurrentFixtureHashCount": 3,
+    "requests": [
+      "siren://app/home.html",
+      "siren://app/assets/diagram-catalogue.css",
+      "siren://app/assets/home-workspace.js",
+      "siren://app/assets/shell.css",
+      "siren://app/assets/shell.js",
+      "siren://app/home.html",
+      "siren://app/home.html",
+      "siren://app/home.html",
+      "siren://app/home.html",
+      "siren://app/home.html",
+      "siren://app/home.html"
+    ],
+    "requestsOnlyHome": false,
+    "requestsOnlyHomeResources": true
+  },
+  "limits": [
+    "No product source,protocol,CSP or generated desktop artifact was edited by reviewer; existing focused Node builder test emits only a fresh test-owned temporary standalone Home",
+    "Own execution was finite Node only; actual6nativecases belong to ROOT and remain readback evidence, not independent GUI approval",
+    "Root clarified its focused4 count combines the3newresource tests and1existinghome-entrypoints test; reviewer own result is3existingplus8own=11, not4inonefile",
+    "Historical hosted37609861403 FINALFAILURE stays intact; no hosted rerun/PASS, main merge, release, push or cancellation claimed",
+    "No inference about the new local layout tranche, fullapp production routing,physicalmonitor/IME, historical375911pan or Save-to-Attach causes"
+  ]
+}

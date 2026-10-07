@@ -1,0 +1,350 @@
+{
+  "author": "/root",
+  "kind": "owner-original-hosted-observation-not-independent-approval",
+  "status": "SUCCESS",
+  "run": 37524176999,
+  "canonicalHead": "0631a784d4b7e2c56256c285e4377484e60b72f0",
+  "localSyncedBase": "518a3306404c031f3b6c48a92e567efbd7a95712",
+  "productSource": "fd20b76d586ce0fb2d925692de49d5f98222c66b",
+  "integration": "7e0b8515761ba2060fbb2f7a0349ceb78d96afb5",
+  "tree": "0bd04129d431da8ac415cc20af6addce5dab6dff",
+  "jobs": [
+    {
+      "id": 112476845101,
+      "name": "Qualification scope",
+      "conclusion": "success"
+    },
+    {
+      "id": 112476964844,
+      "name": "desktop / Windows packaged workspaces",
+      "conclusion": "success"
+    },
+    {
+      "id": 112476965036,
+      "name": "launcher / launcher",
+      "conclusion": "success"
+    },
+    {
+      "id": 112476965118,
+      "name": "desktop / windows",
+      "conclusion": "success"
+    },
+    {
+      "id": 112479570520,
+      "name": "desktop / Windows native (diagrams)",
+      "conclusion": "success"
+    },
+    {
+      "id": 112479570544,
+      "name": "desktop / Windows native (sources)",
+      "conclusion": "success"
+    },
+    {
+      "id": 112479570610,
+      "name": "desktop / Windows native (desktop)",
+      "conclusion": "success"
+    },
+    {
+      "id": 112482143775,
+      "name": "desktop / Desktop qualification",
+      "conclusion": "success"
+    },
+    {
+      "id": 112482229801,
+      "name": "SIREN merge qualification",
+      "conclusion": "success"
+    }
+  ],
+  "units": {
+    "uniqueTests": 1139,
+    "logs": [
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-development-evidence-original/evidence/ci-native-identity.log",
+        "tests": 3,
+        "sha256": "eeb7e062252d2172c93c620f875eb6b8ebb242f09bbf4fb2e3426506ebabfae1"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-development-evidence-original/evidence/ci-units.log",
+        "tests": 1136,
+        "sha256": "1bf1d5374c869482e72964cb9fd6a7525028859a7accb3b0ab14d03d3e976e7a"
+      }
+    ]
+  },
+  "native": [
+    {
+      "group": "desktop",
+      "probes": 20,
+      "path": "evidence/workspace-surface/ci37524176999/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "sha256": "864d93d46edf8144f838d2b708c76c4a6e966b176c1badf8056e1a7f3d2f4295"
+    },
+    {
+      "group": "sources",
+      "probes": 20,
+      "path": "evidence/workspace-surface/ci37524176999/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "sha256": "c7bde0ac86996a842b6a3283727c13c835cdcb6264b29a8da878efdc59c5443a"
+    },
+    {
+      "group": "diagrams",
+      "probes": 20,
+      "path": "evidence/workspace-surface/ci37524176999/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "sha256": "5dc7f46c9d3f47ae1d23dfc59fed77b6bfecf866b4b96dfaa8d062e7c25f3933"
+    }
+  ],
+  "packaged": {
+    "retainedReceipts": 30,
+    "structuredCases": 145,
+    "results": [
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-build/2026-10-06T20-15-41.231Z/result.json",
+        "status": "COMPLETE",
+        "cases": 7,
+        "sha256": "218bdf7a4b5190977dfec7b60ad057d3129bc71f3e3f696973d9c73b60f95736"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-dock/2026-10-06T20-15-13.888Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "ec09da01a9cf3348bf276f469639515455572700f0cd8f7e460982c004f28c7e"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-edit/2026-10-06T20-13-38.994Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "581389bedd6bc82426d3b8238b1d25728f3fe2858e3e773241805b210b4e8bd7"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-export/2026-10-06T20-14-56.048Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "0b58445daab0268cd94fc7a35bdbe46091f7f2b193470838b40c644f511ea006"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-guided/2026-10-06T20-14-08.013Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "2bb2d5c656bb63f5e786e244f8646adfe94c69c386ec7bd6ff2709d8bcc84f85"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-preview/2026-10-06T20-13-21.644Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "90f0f358cce6adff1f58126df0c2ab2143d02bb22700f1b24d29556673f02393"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/diagram-style/2026-10-06T20-14-29.218Z/result.json",
+        "status": "COMPLETE",
+        "cases": 6,
+        "sha256": "577fc1e303ba0f2437b6fdd4697ace9e8d889578a2b9842d1a152248ace97aa8"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-context-native/2026-10-06T20-16-14.125Z/result.json",
+        "status": "COMPLETE",
+        "cases": 6,
+        "sha256": "b3dad568a3e358856da6ef199f39cdff543c6e22600f0a255d2f406d8605b936"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-edit/2026-10-06T20-12-38.765Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "a749e5cc3c36933d6e00cf8746b95afa561ca054b9b708cdffcdff2e539bf3b7"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-format/2026-10-06T20-13-07.630Z/result.json",
+        "status": "COMPLETE",
+        "cases": 6,
+        "sha256": "02cab5c1c8ff7a49657c5f2e2cd6648747e73e598530a624d427f8018f1d7631"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-reader/2026-10-06T20-11-10.304Z/result.json",
+        "status": "COMPLETE",
+        "cases": 2,
+        "sha256": "814713124d4858bc50350c4cf6e3b17213f350b84b56d37b56131d04816d6cfc"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-sources/2026-10-06T20-19-02.759Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "9a39191141db9937bbc0b26213627783180b0dcc988d46a6fa23edc2129f67f7"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-structured/2026-10-06T20-16-54.465Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "606328db4219a9c60bc3fa1a009fdaa2fd3156d22c86707932e26f03befc444a"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/home-documents/2026-10-06T20-17-22.013Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "531baba6264172a594c9da087e05d2b913c89e30592704e4247f978b35cca412"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/home-library-search/2026-10-06T20-17-12.446Z/result.json",
+        "status": "COMPLETE",
+        "cases": 7,
+        "sha256": "99446e072828efbff00b34244b75f86fc2be2db238bba0b019d8589fa68b669a"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/home-source-projects/2026-10-06T20-17-59.896Z/result.json",
+        "status": "COMPLETE",
+        "cases": 8,
+        "sha256": "23758537fbe1e3c658f7607324703fab0bdf6c43078ba9f347ac5235ebb80fa6"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/packaged-2026-10-06T20-09-50.747Z/result.json",
+        "status": "COMPLETED",
+        "cases": null,
+        "sha256": "2ad12b445caa40250d119a333ed95e409acda42a76c758f9c7d2da2ca27fbf1a"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/presentation-authoring-native/2026-10-06T20-16-30.214Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "b53f7ccd9a95510c3df4730fc0ca4c494573e4e683944ac6efce8bd7cada166f"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/presentation-windows/2026-10-06T20-19-32.695Z/result.json",
+        "status": "COMPLETE",
+        "cases": 6,
+        "sha256": "a8fa4138694ebe524801a0b3abd5e80815deb242399372a5236feb1ac153a7e5"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/shell-2026-10-06T20-09-40.977Z/result.json",
+        "status": "COMPLETED",
+        "cases": null,
+        "sha256": "1e8ac4dcb88594b00b2879763ba7aaa5f8dcd5bfd598349f00ccfda569e8e414"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-analysis/2026-10-06T20-11-18.350Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "349f33045a497eae8929b144d891cd2a48532989a1f1c271e8d38b21858cf229"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-diff/2026-10-06T20-11-31.913Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "5641eefd5f0f0bade81fac0911ddd4a96987502fedc00357b6e0c99a840999b0"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-edit/2026-10-06T20-17-39.551Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "88aa4f71d99844b02db7a502d4ccb4b7bfc720806d54ad005a21f3655eb854db"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-link/2026-10-06T20-11-59.474Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "359b0f6d9416f6552eade9900ad9d37e1cb1bc3b68bcc70358f00ef3af9acf72"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-link-create/2026-10-06T20-18-41.464Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "5eb3a5727d5f499982994f00af274d8f337d89442bd69626bbe4dce62dc68c22"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-map/2026-10-06T20-11-45.499Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "0a52d1daae203b5c9697a03881fc97bf972c36066cf9816b7d3690c95a888e30"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/source-sync/2026-10-06T20-12-18.330Z/result.json",
+        "status": "COMPLETE",
+        "cases": 5,
+        "sha256": "fe0a1ddd33a475ae80fdc44eeae9c1d5bfb582008c2b02840bf3fcf7ae33e31f"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-06T20-10-34.255Z/result.json",
+        "status": "COMPLETE",
+        "cases": 11,
+        "sha256": "207ca9f4ad2a1acf7ebd206f89077a47fd2798d23b3dbd6a2a2e095c9b265e2b"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/window-close-keys/2026-10-06T20-19-25.581Z/result.json",
+        "status": "COMPLETE",
+        "cases": 4,
+        "sha256": "583db5b9a9db18b2eea43a9a28d3d8bb908ece4430ce890b2d22a3e6d6f2cdbb"
+      },
+      {
+        "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/workspace-appearance/2026-10-06T20-10-14.336Z/result.json",
+        "status": "COMPLETE",
+        "cases": 8,
+        "sha256": "c463b1d291bad3fbf87a54dd3f9baffa9c24d7729d7b150b1366474e35200f12"
+      }
+    ],
+    "scope": "Original workflow succeeded; receipt count includes nested legacy shell and package receipts, not command count."
+  },
+  "diagnostics": {
+    "docs": {
+      "path": "evidence/workspace-surface/ci37524176999/desktop-packaged-evidence-original/evidence/docs-context-native/2026-10-06T20-16-14.125Z/result.json",
+      "sha256": "b3dad568a3e358856da6ef199f39cdff543c6e22600f0a255d2f406d8605b936",
+      "traceEvents": 79
+    },
+    "intro": {
+      "path": "evidence/workspace-surface/ci37524176999/desktop-native-desktop-evidence-original/evidence/guided-intro-2026-10-06T20-17-08.613Z/result.json",
+      "sha256": "b14e47ae4800c7a5eb4a6c5861f3a3d5d55611f7ba1da4e8b50cb2e4ce939691",
+      "traceEvents": 95
+    }
+  },
+  "archives": [
+    {
+      "name": "desktop-development-evidence",
+      "sha256": "74fefa922d3752ffd09bad9ba6da16b8a83cc1a5d9368331d5fc65a03fd453ed",
+      "id": 11442211212,
+      "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37524176999\\desktop-development-evidence-original.zip",
+      "files": 5,
+      "bytes": 56965,
+      "uncompressed": 299700,
+      "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed."
+    },
+    {
+      "bytes": 9599807,
+      "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37524176999\\desktop-packaged-evidence-original.zip",
+      "sha256": "22f128a4fafd9e76419e8c0817da12199ddd5be86fec61f49bcc85fa1ba259dd",
+      "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+      "name": "desktop-packaged-evidence",
+      "uncompressed": 10203958,
+      "id": 11441454018,
+      "files": 191
+    },
+    {
+      "files": 105,
+      "name": "desktop-native-desktop-evidence",
+      "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37524176999\\desktop-native-desktop-evidence-original.zip",
+      "bytes": 4334221,
+      "uncompressed": 4737431,
+      "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+      "sha256": "be19dc8a0ebf2b16d4839a4516eb6cdc24b6edf6fef8c8a62223e3d058863f1d",
+      "id": 11442321833
+    },
+    {
+      "name": "desktop-native-sources-evidence",
+      "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+      "sha256": "9affbf7cf70f00b82be3a6a9c549792835f9fb61e5c20f391e01ae125c629b79",
+      "files": 86,
+      "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37524176999\\desktop-native-sources-evidence-original.zip",
+      "id": 11442496136,
+      "bytes": 3213801,
+      "uncompressed": 3536696
+    },
+    {
+      "id": 11441927590,
+      "scope": "Exact original GitHub ZIP retained; bounded inert JSON/PNG/log/text extraction only. No artifact code executed.",
+      "zip": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37524176999\\desktop-native-diagrams-evidence-original.zip",
+      "files": 146,
+      "sha256": "e013f29646b770a8058fcb2bfa4b30b6196646250a8796eeb142483aefcbd775",
+      "bytes": 7471401,
+      "name": "desktop-native-diagrams-evidence",
+      "uncompressed": 7928021
+    }
+  ],
+  "limits": [
+    "This actual run verifies unchanged fd20 product with passive diagnostic fixtures, not the uncommitted export/Lock correction.",
+    "Original failed runs remain FAILURE; success with observation does not establish their causes or a fix.",
+    "Instrumentation has nonzero scheduling cost; no timing-neutral or identical-archive local reproduction claim.",
+    "No independent release approval, main merge, production release or installed application replacement."
+  ]
+}

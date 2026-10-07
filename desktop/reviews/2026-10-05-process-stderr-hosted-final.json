@@ -1,0 +1,40 @@
+{
+  "author": "/root",
+  "observedAt": "2026-10-05 20:58:35 UTC",
+  "run": {
+    "id": 37368649162,
+    "headSha": "55db7c6f369d7fb8f43b418494c3f869b8f0d93c",
+    "status": "completed",
+    "conclusion": "failure",
+    "updatedAt": "2026-10-05T20:41:12Z"
+  },
+  "jobs": [
+    {
+      "id": 111959917034,
+      "name": "Qualification scope",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 111965198162,
+      "name": "SIREN merge qualification",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 111965198791,
+      "name": "desktop",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 111965199113,
+      "name": "launcher",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "scope": "Scope cancelled before product qualification; desktop/launcher skipped. Merge gate correctly refused incomplete scope. Cause of scope cancellation remains unknown. No hosted product PASS.",
+  "mergeGateError": "SIREN qualification incomplete: change scope did not succeed",
+  "separateFromCurrentUI": true
+}

@@ -1,0 +1,298 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "role": "Owner qualification, not independent approval",
+  "sourceCommit": "d938ee2fd4d092fc5b4cc754d2ed7cb9d88bb717",
+  "scope": "Home saved backup correction plus guided observer test-only worker dispatch; no PIN product change",
+  "fullSuite": {
+    "path": "evidence/workspace-surface/home-backup-final-suite-2026-10-06T22-37-51.976Z/result.json",
+    "bytes": 109165,
+    "sha256": "ef2914e7bce6ecf86341bf73f476a508cf56de812aeadaadbae2c0d4f2777bf7",
+    "tests": 1264,
+    "identity": 3,
+    "units": 1261,
+    "changedInputs": []
+  },
+  "homeNative": {
+    "path": "evidence/home-backup-export-native/2026-10-06T22-30-38.657Z/result.json",
+    "bytes": 115203,
+    "sha256": "b1ccb8f0334add5079394ebb475a6d087f211b37ef204fbbb8ed27b1a241cffe",
+    "executor": "/root/media_batch_review",
+    "cases": 4,
+    "scope": "Development Electron only; actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. No manual OS chooser, packaged application, readonly native mode, physical monitor or maximum-capacity qualification.",
+    "fixture": {
+      "projectId": "23ce3831-35f6-400f-9f1b-078f7318d369",
+      "revision": 2,
+      "lineCount": 100000,
+      "sourceBytes": 2388891,
+      "sourceSha256": "176539d1f7d883c886e2db508f9946b96f64f00de6c9b608a01a72dd17a8d99c",
+      "expectedBundleBytes": 3187531,
+      "expectedBundleSha256": "039ffc01f0c8b77c16fec7388c3199d0d745420626646fbdec327effe5fa6d12"
+    },
+    "unchangedInputs": 532
+  },
+  "guidedNative": {
+    "path": "evidence/guided-intro-2026-10-06T22-31-46.655Z/result.json",
+    "bytes": 67274,
+    "sha256": "920185eb29d3593c813cd430cc493e43e25daa369df594d5955d24a1585b6119",
+    "scope": "Actual development Guided edit/replay/reduced-motion/first-paint/PIN setup correction, separate from original hosted failure"
+  },
+  "package": {
+    "preview": "dist/development-0052b09e-9e73-445d-a223-69f0fb09b1ca",
+    "receipt": {
+      "schema": 1,
+      "kind": "development-preview",
+      "releaseAdmitted": false,
+      "sourceCommit": "d938ee2fd4d092fc5b4cc754d2ed7cb9d88bb717",
+      "desktopVersion": "0.1.0-dev.1",
+      "rendererVersion": "1.131.0",
+      "renderer": {
+        "schema": 1,
+        "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+        "rendererSha256": "b5f8ec3de7a4d11eaf97588e4300e6f456cdf4b60de1405f4568516998b50187",
+        "scriptCount": 4,
+        "electron": "44.5.1",
+        "windowEntrypoints": {
+          "code": "6a4bceb8555ab0c1f928006a7558223424e439df9f8f400992f8b761d0fa4c60",
+          "docs": "9e9770e641939ce58e304709ccb2c805427133bd0b41429516b08f85fd6dc580",
+          "diagram": "1c29c78d6ac1a644bd28142b3e76568374290c72d0c2704492a34bbfd2fb417c",
+          "presenter": "05e3c96b2c4b655ac21676f2c5d46613dce4b9089510dfc1daf07dd35e598efe",
+          "audience": "7a8d375779c5a96a2765689d908019656bdd2d6f27f0f7670140b61d211e4398"
+        },
+        "homeEntrypoint": {
+          "sha256": "1c0c2b1da33877eb09cfad881b6d99e98d3b59fa17a207d372ca3423e476ecff",
+          "bytes": 65309,
+          "scriptCount": 4
+        },
+        "presentationRender": {
+          "entrySha256": "d1281deb441243198cb75ba75552a6d25d71a9b85cbb4dac99d62164f34da47e"
+        },
+        "diagramVector": {
+          "entrySha256": "97f124a740c19e906392a9af4f911a8916791d474c6df055118450c8185c2acc"
+        },
+        "sourceAnalysis": {
+          "entrySha256": "fc1cc0dd38adae7f16a03827cec6c399c3a1a7217ea1df2e900e282f21cb6879",
+          "bytes": 119349,
+          "pythonModuleSha256": "594371c934fb01689a144bd350c854497c0f2d18499fee86cc4e3209b658a589"
+        },
+        "importValidation": {
+          "schema": 1,
+          "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+          "entrySha256": "0f63785b4cc88658c5a0c248ccfbcf5096c048ac6a5921b5964222b5e467b81f",
+          "scriptCount": 3
+        }
+      },
+      "processReader": {
+        "schema": 1,
+        "kind": "windows-process-reader",
+        "sourceSha256": "4d751525c646cdc652d5f2e263697ec1b033568167b99cfcabc993c625b726a8",
+        "compilerSha256": "46809206887326d2d24db1eff1f3064de972c3451abe766b49111450a5e08e00",
+        "binary": {
+          "bytes": 6144,
+          "sha256": "485d4fe26225c75670e2ce425fa0daa816f5b8ef93b1561042b7138e01fed6a3"
+        }
+      },
+      "electron": "44.5.1",
+      "dataSchema": 1,
+      "appRelativePath": "App/versions/0.1.0/SIREN.exe",
+      "appArchive": {
+        "bytes": 53871774,
+        "sha256": "e7ea02604c00272a6123c97af85c6c5d8e17a8cc74efe0e8b755eb20cf4f8196"
+      },
+      "runtimeBinary": {
+        "bytes": 245726208,
+        "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+      },
+      "inventoryQualified": false,
+      "launcherQualified": false,
+      "accountConfigured": false,
+      "updatesConfigured": false
+    },
+    "identity": {
+      "path": "evidence/workspace-surface/source-bundle-package-identity-2026-10-06T22-42-14.999Z/result.json",
+      "bytes": 45351,
+      "sha256": "eee1907da39eaa2980b048b3e477d111f0773343302a95a2fb4b22c1cef36d9a",
+      "files": 262
+    },
+    "native": {
+      "path": "evidence/workspace-surface/home-backup-package-native-2026-10-06T22-42-17.596Z/result.json",
+      "bytes": 115120,
+      "sha256": "134c3c67fbc4bdfdbc51868e19cab3b132e97ec12c35f3ab2ac42ad4a7c474db",
+      "results": [
+        {
+          "name": "shell",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        },
+        {
+          "name": "packaged",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        },
+        {
+          "name": "source-bundle-import",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        }
+      ],
+      "scope": "Copied-package shell isolation, lifecycle/save/recovery and 300k Code-only actual Home/legacy import. Controlled OS chooser only; no physical-monitor, fluidity, maximum-size or production admission."
+    }
+  },
+  "currentInputs": [
+    {
+      "path": "src/navigation/backup-export.mjs",
+      "bytes": 3342,
+      "sha256": "2b814ae5380b0a3ed0a7768d08f76f53ba379222458f58a6a84c976371ae165b"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 100675,
+      "sha256": "4e7d6a8a11562780af28275211b7d4b9c944d3520e8549d6a5265cc3c7337315"
+    },
+    {
+      "path": "src/preload.cjs",
+      "bytes": 6860,
+      "sha256": "ce9012ef4e05826ea2bbbe26b2a03cb9accc5f06b7cca4c9c6d32c3160b9a8f2"
+    },
+    {
+      "path": "src/ui/workspace/home.js",
+      "bytes": 32910,
+      "sha256": "cb7d79a30febe80b4b10db5b19b20dfc97ac2c48cd00b633bf2515ff1136c48e"
+    },
+    {
+      "path": "src/ui/workspace/guide.js",
+      "bytes": 7883,
+      "sha256": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7"
+    },
+    {
+      "path": "scripts/package.mjs",
+      "bytes": 10904,
+      "sha256": "eebdd65a05eae5a3049b294df492826fc08bbdaa2099a176a4ef6d7e107e1a03"
+    },
+    {
+      "path": "tests/native/guided-intro.mjs",
+      "bytes": 17463,
+      "sha256": "c99cd2c047e415bad4354b85730f56b5c2ff836a4f928e0af12742e92bfffee0"
+    },
+    {
+      "path": "tests/native/home-backup-export.mjs",
+      "bytes": 14323,
+      "sha256": "8128dc7ab8dd188c1ae3bc77587ab7b146d51dd83230dde8ceecf2d18f961834"
+    },
+    {
+      "path": "tests/home-backup-ci.test.mjs",
+      "bytes": 1893,
+      "sha256": "e3847b8f2d6a79f93768eb8629fabce03c4640edff461acc015cd8aab8b0ae22"
+    },
+    {
+      "path": "../.github/workflows/desktop-verify.yml",
+      "bytes": 40711,
+      "sha256": "c4b0dcd912f343d1b66e145c4d1df3a274413a10f4100c66fa305715c33aed64"
+    }
+  ],
+  "independentReports": [
+    {
+      "path": "reviews/2026-10-07-home-saved-backup-boundary-revalidation.md",
+      "bytes": 12389,
+      "sha256": "84cf8f69ac526ac5ad66b7727dcac505df747423978814975322fa977ba065b8"
+    },
+    {
+      "path": "reviews/2026-10-07-home-backup-implementation-independent.md",
+      "bytes": 7813,
+      "sha256": "0fc9e9c9162e5035a3d713aeb555315a0bd1ce9ffa41456d0c58d722558796db"
+    },
+    {
+      "path": "reviews/2026-10-07-home-backup-implementation-independent-recheck.md",
+      "bytes": 5980,
+      "sha256": "d74864ec9ff4b09f0ac3acd0f766449e7d3bc3638bbd7865902a5903aeecdeda"
+    },
+    {
+      "path": "reviews/2026-10-07-home-backup-export-native-observation.md",
+      "bytes": 5503,
+      "sha256": "f9e4e7a649771080ef452c75d4bc66e374d4c63a312d6ddb7d03bc033dc41728"
+    },
+    {
+      "path": "reviews/2026-10-07-guided-observer-pin-worker-independent.md",
+      "bytes": 10444,
+      "sha256": "0480ed081d97be12ed522edf6f36bb0e1b71e334153fb95909e3ef0d986af39c"
+    },
+    {
+      "path": "reviews/2026-10-07-home-backup-ci-observer-independent.md",
+      "bytes": 5447,
+      "sha256": "99adc0045804ee3b9d13a4525cae2ed35e50b78925342e51769e127e078d3e4e"
+    },
+    {
+      "path": "reviews/2026-10-07-pin-crash-hosted-evidence.md",
+      "bytes": 7508,
+      "sha256": "bca6951d446282f2de5540222087583e0e2e739b40b26a813c39fe69b066d709"
+    },
+    {
+      "path": "reviews/2026-10-07-native-docs-single-export-boundary-analysis.md",
+      "bytes": 18011,
+      "sha256": "8623a6b0dfb0be542fd3e7eb2ab07066484f07b04083a948efcceec1a2359612"
+    }
+  ],
+  "retainedAdverse": [
+    {
+      "path": "evidence/workspace-surface/home-backup-final-suite-2026-10-06T22-25-29.654Z/result.json",
+      "bytes": 108955,
+      "sha256": "5cb6e978749b6cf23c1db0e488a5a8770e30e8acd043f3cdafed66c0e685a993"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-red.log",
+      "bytes": 7647,
+      "sha256": "c770132b22a484b8ba5b66f80272667ab25a1227341c61ed09cd45baedf46772"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-ui-red.log",
+      "bytes": 2490,
+      "sha256": "66e6776472d48a61740995822059dc8cbcace99bc80d59bf964eeba8ad0c13a3"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-publication-red.log",
+      "bytes": 2034,
+      "sha256": "da98cdf47ae6dec0e41a41bf32a67f81d1b81f948ba34cfcb32b649e62101167"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-review-findings-red.log",
+      "bytes": 4309,
+      "sha256": "4ca4d994a6e44d96d36484068ece50fe78bc2b0f06146bdc49adabc4e8b1d5d4"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-ci-red.log",
+      "bytes": 1241,
+      "sha256": "4c47ad23f012e5dcd73040f05a563f9f8bf4511fbbd7e3390a6f28b3a5ff70b4"
+    },
+    {
+      "path": "evidence/workspace-surface/home-backup-renderer-build.log",
+      "bytes": 677,
+      "sha256": "dfb3c1488efb10a8071e0b9a2d512c92e341cf2fba8d67326efc0f60123fa3de"
+    }
+  ],
+  "priorHosted": {
+    "runId": 37539190289,
+    "status": "completed",
+    "conclusion": "failure",
+    "retention": {
+      "path": "reviews/2026-10-07-pin-crash-hosted-evidence.json",
+      "bytes": 81410,
+      "sha256": "eb159c5d9068ff9fc20f5b132ffe5cd7fef12958c005242c42f53dcedd07c427"
+    },
+    "ownerOriginalZipReadback": {
+      "path": "evidence/workspace-surface/pin-hosted-owner-zip-readback.json",
+      "bytes": 1362,
+      "sha256": "ea671596fd5f10874d52511113b8c90e253b48900e363faf20123a46851a3e27"
+    },
+    "note": "Guided second PIN setup failed; dedicated development PIN crash step skipped. Original artifacts remain original; corrected local native result does not change this run."
+  },
+  "limits": [
+    "Home native is development only, OS chooser adapted; no Home packaged/manual OS chooser/dirty-owner/native-readonly qualification",
+    "Original Diagram hosted Close/reopen timeout cause remains open despite later observations",
+    "No power-loss/maximum-source-size/physical-monitor/DPI/fluidity claim",
+    "Docs/Presenter export parity and other rich UI controls remain separate open work",
+    "No merge, release or installed-app replacement; new hosted verdict pending guarded feature sync"
+  ]
+}

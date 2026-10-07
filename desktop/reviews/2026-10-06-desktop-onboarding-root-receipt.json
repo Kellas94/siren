@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "kind": "local-implementation-qualification",
+  "sourceCommit": "dd1ec00ebe538de9aa879febe440f60cbd3e2583",
+  "full": {
+    "tests": 1080,
+    "capturedInputs": 447,
+    "path": "evidence/workspace-surface/full-suite-2026-10-06T00-48-05.091Z/result.json"
+  },
+  "priorNative": {
+    "sourceCommit": "ea9e08b96720bdd0c0d789c0225e338f8abb3a9c",
+    "children": 39,
+    "path": "evidence/workspace-surface/onboarding-native-2026-10-06T00-40-03.772Z/result.json",
+    "notRelabelled": true
+  },
+  "freshNative": {
+    "children": 3,
+    "path": "evidence/workspace-surface/early-theme-native-2026-10-06T00-48-55.253Z/result.json"
+  },
+  "copied": {
+    "children": 7,
+    "path": "evidence/workspace-surface/package-native-2026-10-06T00-49-53.622Z/result.json",
+    "preview": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\dist\\development-9dfec408-1462-4fa0-80fd-90f21ea70864",
+    "archive": {
+      "bytes": 53647250,
+      "sha256": "e06ec808b64f7bfd484d08d9f0f44478ec1ec362ef56921dab81510ee9c3baa1"
+    },
+    "runtime": {
+      "bytes": 245726208,
+      "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+    }
+  },
+  "records": [
+    {
+      "path": "evidence/workspace-surface/full-suite-2026-10-06T00-48-05.091Z/result.json",
+      "sha256": "0a9a7dcb168bba01cc53f1df2474c91ff5d02c3f71758a0ff2fe9eb739e55bce"
+    },
+    {
+      "path": "evidence/workspace-surface/onboarding-native-2026-10-06T00-40-03.772Z/result.json",
+      "sha256": "781e2b01fae0a853c93343a1e10d95044acac3129487ca212a80e7c66be574f1"
+    },
+    {
+      "path": "evidence/workspace-surface/early-theme-native-2026-10-06T00-48-55.253Z/result.json",
+      "sha256": "11e7afa6eace2039cfbbd940adda951a0f339877b947a0961c8c88f7c34267a7"
+    },
+    {
+      "path": "evidence/workspace-surface/package-identity-2026-10-06T00-49-25.511Z/result.json",
+      "sha256": "1eb1ba3cb361fc56b8a86dddb5f5516ba8e2bf93bc778b520a87772c12fb65ba"
+    },
+    {
+      "path": "evidence/workspace-surface/package-native-2026-10-06T00-49-53.622Z/result.json",
+      "sha256": "b175fad2f332b2004754d83c5567d67ccd20e4f5b85023b119b4c70dd0486f0a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37393614417/run-final.json",
+      "sha256": "ffd9fbbeed53463a776e2e7dff6e06ce977740d4ba608e64c9cf516a81c3c1b7"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37393614417/jobs-final.json",
+      "sha256": "bc939364d36325b4f99631f322a018b822356e07cedffe5b251189dfb2f688ab"
+    }
+  ],
+  "independentOriginal": {
+    "path": "reviews/2026-10-06-shared-workspace-review.md",
+    "sha256": "441bc4fa1615e9afc33e2b8c89721862389bdf9c0fb687923fbab82b711a611a",
+    "author": "/root/shared_workspace_review",
+    "scope": "Original23 own units and mocked-IPC probes; no independent approval fabricated for later root work."
+  },
+  "hosted": {
+    "id": 37393614417,
+    "head": "f41b043208893c045c331e6ac0ab47958b1495b4",
+    "conclusion": "failure",
+    "next": "pending after guarded feature sync"
+  },
+  "notAdmitted": [
+    "main merge",
+    "release",
+    "installed replacement",
+    "all rich feature/decorative parity",
+    "physical monitors/DPI/IME"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "date": "2026-10-07",
+  "verdict": "SCOPED_INDEPENDENT_RECHECK_PASS",
+  "kind": "VM fixture missing-dependency correction",
+  "baseline": "f0104c590bdbaaaa63b3ad52f859fb6733d40115:desktop/tests/native-window-integration.test.mjs",
+  "originalSha256": "103cff5635050e5fbe5d3ee98987c594c36305cb2c32b1e89062e39683b5f1b9",
+  "originalMatchesAdverseManifest": true,
+  "fixedSha256": "1df53319a03676e925e29e95339d7ae50ba41bd8de17fc0b8f055b6195330a00",
+  "onlyChanges": [
+    "real NativeDiagramCatalogue import",
+    "real NativeDiagramCatalogue VM context property"
+  ],
+  "assertionsOrExpectedValuesChanged": false,
+  "mockCatalogueAdded": false,
+  "originalAdversePreserved": true,
+  "originalSuiteCounts": {
+    "cancelled": 0,
+    "skipped": 0,
+    "total": 1566,
+    "fail": 8,
+    "pass": 1558
+  },
+  "originalUndefinedReferenceErrors": 8,
+  "ownFiniteRecheck": {
+    "tests": 8,
+    "exitCode": 0,
+    "fail": 0,
+    "cancelled": 0,
+    "pass": 8,
+    "skipped": 0,
+    "timeoutMs": 15000
+  },
+  "testFileUnchanged": true,
+  "srcBuildGeneratedCount": 217,
+  "srcBuildGeneratedUnchangedSinceAdverseAndThroughRecheck": true,
+  "guiExecuted": false,
+  "fullsuiteExecuted": false,
+  "buildExecuted": false,
+  "packageExecuted": false,
+  "reviewerSourceTestChanges": false,
+  "artifacts": [
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/original-git-blob.mjs.txt",
+      "sha256": "103cff5635050e5fbe5d3ee98987c594c36305cb2c32b1e89062e39683b5f1b9",
+      "bytes": 14880
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/fixed-reviewed.mjs.txt",
+      "sha256": "1df53319a03676e925e29e95339d7ae50ba41bd8de17fc0b8f055b6195330a00",
+      "bytes": 14980
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/diff-observations.json",
+      "sha256": "1ac56e47a7595c695b6fce60cfa89133c1ffaf6d97c5e66b868cb6b3ca20d048",
+      "bytes": 56616
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/diff-check.log",
+      "sha256": "d643c949358bb4d4aa23bbef845ac36bace19e7c7bd1a944086b6bccc1b59ae0",
+      "bytes": 1311
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/independent-finite-recheck.log",
+      "sha256": "7421bfc2241332c325907bbc57485f1eb17bfe29afc3e9297f897f0b3a6daec6",
+      "bytes": 1029
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/execution.json",
+      "sha256": "dd620adf8a59a01f3ddc1ce6c50dce5e608a689b88da3d1e1a032fc0bde97a58",
+      "bytes": 56928
+    },
+    {
+      "path": "evidence/workspace-surface/catalogue-vm-fixture-independent/initial-git-read-error.txt",
+      "sha256": "2c084671e1b14b0e9c0df940b81d817146758cbe2faebdd81b58558b166cb6a9",
+      "bytes": 312
+    }
+  ]
+}

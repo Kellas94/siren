@@ -1,0 +1,865 @@
+{
+  "author": "/root/catalogue_view",
+  "createdUtc": "2026-10-07T13:59:25.289Z",
+  "scope": "Independent read-only hosted receipt, canonical blob and retained PNG review; no GUI, rerun, build, push, source/test edits",
+  "runId": 37629602152,
+  "originalFinal": "FAILURE",
+  "canonicalCommit": "9120b32861401b892a3e605528e68a5e351b148d",
+  "integrationCommit": "411fd552b05995c00d65c97a28d2529980f91212",
+  "tree": {
+    "path": "evidence/workspace-surface/ci37629602152/tree-api-original.json",
+    "bytes": 662045,
+    "sha256": "5c89fff80e7d862c3cb802977152e50ad79e1c37869fb0afbfd19e585bd5ae53"
+  },
+  "retentionCheckpoint": {
+    "path": "evidence/workspace-surface/ci37629602152/FINAL-RETENTION-CHECKPOINT-2026-10-07.json",
+    "bytes": 3649,
+    "sha256": "fc7f7c829ad74dcfd795653a92e1ddaed309b993aa4692bcd3d4cd6996aa71a7"
+  },
+  "sources": [
+    {
+      "path": "tests/native/ui-personality.mjs",
+      "canonicalBlob": "051b91fa1504a4ba9aa7e286537aadbaa3fe7286",
+      "canonicalBytes": 25096,
+      "canonicalSha256": "f2f285a20adb7719aabd6fe1700441b8c54226819c86a48d5e97bf41ecc83916",
+      "currentRawSha256": "bf36a3d0eb5eb56793816ca804e2ec54a29be9dfd67821554080f14f1ae4cb17",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "src/ui/presentation/window.js",
+      "canonicalBlob": "c807350522a0a6aff9b04184d56ac6f538806df7",
+      "canonicalBytes": 10264,
+      "canonicalSha256": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+      "currentRawSha256": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "src/windows/presentation.mjs",
+      "canonicalBlob": "ad68d6ea3a4856a08d2e97dfb217e5ea69f231e3",
+      "canonicalBytes": 13193,
+      "canonicalSha256": "12ec79a34cdd253b0f9f68e00eecfb53ca6fcd19452f7b62cfe10a0d5967925e",
+      "currentRawSha256": "12ec79a34cdd253b0f9f68e00eecfb53ca6fcd19452f7b62cfe10a0d5967925e",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "src/main.mjs",
+      "canonicalBlob": "735c805680b9b56e67c974723e4c79b106e1ef5d",
+      "canonicalBytes": 107004,
+      "canonicalSha256": "8d56f9a1ff14da0e6db4e7fafc3033a478d8c4fe22ae0ae10ba5abcfebe7f077",
+      "currentRawSha256": "aae5717f76d1a69f0db9768f27818976bc5d206718d21f604a7855a8eaf680a1",
+      "currentLFMatchesCanonical": false
+    },
+    {
+      "path": "src/preload.cjs",
+      "canonicalBlob": "8f1a719ac5ef443cbdf99bf0d330d5f2b65b0176",
+      "canonicalBytes": 7335,
+      "canonicalSha256": "b4e53b39fc19cd6807dc66bc441797f94130fe805d7b00ec22a78c5fa3235e8e",
+      "currentRawSha256": "5c48fc6e29f1bfe967d9cc4300f07cfe360b0686facf3db3d764b413e47475c1",
+      "currentLFMatchesCanonical": false
+    },
+    {
+      "path": "src/windows/presentation-preload.cjs",
+      "canonicalBlob": "c2026286dab6ce5eb88c56a89173d6e53de0d971",
+      "canonicalBytes": 4094,
+      "canonicalSha256": "96a6fc49c28e042dcaef14d331726894a5df19f60bab3ea012f928b3cea30118",
+      "currentRawSha256": "49bcb17ce60d75ac18d189f407685f52e1ec86fa27d1eefeb0b937513cbc4162",
+      "currentLFMatchesCanonical": false
+    },
+    {
+      "path": "src/ui/shared/shell.js",
+      "canonicalBlob": "4dc4b4481f772cfd3c39ea568a2761b9a98fb90f",
+      "canonicalBytes": 7452,
+      "canonicalSha256": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b",
+      "currentRawSha256": "6ec3149cc866143531b7f051b7b8a685aca6075ddd0e71aa01f9a008e1c92064",
+      "currentLFMatchesCanonical": false
+    },
+    {
+      "path": "src/appearance/render.mjs",
+      "canonicalBlob": "a134284139d51c677d8bbc655452e99d4bace661",
+      "canonicalBytes": 13160,
+      "canonicalSha256": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+      "currentRawSha256": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "src/ui/presentation/render.js",
+      "canonicalBlob": "1a9e0b535805b15c5c066219ba0f7e92dba6905d",
+      "canonicalBytes": 5139,
+      "canonicalSha256": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+      "currentRawSha256": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "build/presentation-render.mjs",
+      "canonicalBlob": "183598d9197999eef757e0c010c71ebaaf3c5997",
+      "canonicalBytes": 1942,
+      "canonicalSha256": "f7fadd68db0efeb13fdd59dd92ef8ab557a2475266b0962011b6c6a215bf67cf",
+      "currentRawSha256": "f7fadd68db0efeb13fdd59dd92ef8ab557a2475266b0962011b6c6a215bf67cf",
+      "currentLFMatchesCanonical": true
+    },
+    {
+      "path": "tests/native/workspace-appearance.mjs",
+      "canonicalBlob": "ca65dd9bfb3c01e50fa0a3909fc7e2ab660d50f9",
+      "canonicalBytes": 18645,
+      "canonicalSha256": "80267cd607b4a3b3f30ecb0627cd2b387f512629adfe79b819dcc4c17a46801b",
+      "currentRawSha256": "80267cd607b4a3b3f30ecb0627cd2b387f512629adfe79b819dcc4c17a46801b",
+      "currentLFMatchesCanonical": true
+    }
+  ],
+  "originals": [
+    {
+      "identity": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/result.json",
+        "bytes": 51043,
+        "sha256": "eb0dc6a1f4a350fd943db9ef6eae49d38885a17a060928cf22a5015998b629a9"
+      },
+      "status": "ADVERSE",
+      "cases": [
+        {
+          "name": "real top-bar input selects original KPMG Blue among 39 themes; atomic preference saved without changing project content",
+          "ok": true
+        },
+        {
+          "name": "three real private native views share original palette/navigation while explicit imported Mermaid colour is retained",
+          "ok": true
+        },
+        {
+          "name": "actual Code-to-Docs navigation focuses main library and commits another window’s dirty document through existing native barrier; original code exact",
+          "ok": true
+        },
+        {
+          "name": "actual Find from Code searches saved names across modules and opens the exact selected Docs entity using its native grant without exposing document bodies in search",
+          "ok": true
+        },
+        {
+          "name": "actual second palette choice propagates across existing views without changing imported colour or source versions",
+          "ok": true
+        },
+        {
+          "name": "global Find exposes distinct Diagram/Present results and real input opens the exact saved entity with a native Presenter grant",
+          "ok": true
+        }
+      ],
+      "personality": [
+        {
+          "theme": "kpmg",
+          "role": "code",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "codeTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "docs",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "documentTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "diagram",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "diagramTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "presenter",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "diagram-style-input",
+          "radius": "9px",
+          "background": "rgb(255, 255, 255)",
+          "expectedBackground": "rgb(255, 255, 255)"
+        }
+      ],
+      "appearanceObservation": [
+        {
+          "url": "/home.html",
+          "role": "workspace",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/code.html",
+          "role": "code",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/docs.html",
+          "role": "docs",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/diagram.html",
+          "role": "diagram",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        }
+      ],
+      "inputs": {
+        "src/main.mjs": "8d56f9a1ff14da0e6db4e7fafc3033a478d8c4fe22ae0ae10ba5abcfebe7f077",
+        "src/preload.cjs": "b4e53b39fc19cd6807dc66bc441797f94130fe805d7b00ec22a78c5fa3235e8e",
+        "src/windows/preload.cjs": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+        "src/windows/presentation-preload.cjs": "96a6fc49c28e042dcaef14d331726894a5df19f60bab3ea012f928b3cea30118",
+        "src/protocol.mjs": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+        "src/appearance/contracts.mjs": "01d6d2dbce39b9b739e165cc73a15f36b40c1b7bdc032e78b34da559aa2ffc49",
+        "src/appearance/store.mjs": "8741e13ba72a8f8711e8a719db3c2b6880b45d80549dfda589f9c583ea9f374e",
+        "src/appearance/ipc.mjs": "a734cfb2aa0ced3f985a739b1bbcb7e57b1c2cbf3f9e63d02d2da38b80f811a8",
+        "src/ui/shared/shell.js": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b",
+        "src/ui/shared/search.js": "0bde78315e364dcc624100db6d98bfc50e073becb04acf4323cc1bf9c3976653",
+        "src/ui/shared/shell.css": "c2539c77dc66cefacffa16628920efc2c45d3db940a771d1be1ebebd729b09d0",
+        "src/ui/docs/reader.js": "b63b3a92a680e68411a143a6c3396456943b56883bc0ed36987a5612687bf68a",
+        "src/ui/workspace/guide.js": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7",
+        "src/ui/workspace/home.js": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+        "build/appearance.mjs": "efce6199f68e96dbd8e35a04f84793561b05386d51221af81b86f64f9873e9f0",
+        "generated/assets/shell.js": "58c01491e04b922307e2233e289dde1605c19da67fc37e6149ebbb40e9ce1f60",
+        "generated/assets/shell.css": "b173a3bd69c9097dbeed41744cd6b08f0ec63588a36d6207c73ed9f846fb3b8a",
+        "generated/app.html": "a760af1fd55fe3312386e6950c86afbb4055325ae7ed99e7d4a491b86d9254bf",
+        "generated/home.html": "b13b730b55e1d3b38b9b90f9e001a9a24299ffaefe38a42cd0b8f8ce684cecdd",
+        "generated/windows/code.html": "b43da62ae7ada50a8585282e16fd400af50986b9acf3c8286238741ad5ae5f5a",
+        "generated/windows/docs.html": "ec39d7c0a9b6ddd33f1607cca6e9c23e3a5a351b39572ff4bd3ab9949375e91d",
+        "generated/windows/diagram.html": "f88af00fabd76dd354788d0ab77343ff9b9efeda2eb81d89a47738d9c91b0646",
+        "generated/windows/presenter.html": "448e85c37758853b52759b1a035a12bdb7e87813adce7ebed3751a1f84ea1425",
+        "generated/windows/audience.html": "bce3ac51a389e6bc077366b86afa660048f1030185540b630135e74de1b566b0",
+        "tests/native/ui-personality.mjs": "f2f285a20adb7719aabd6fe1700441b8c54226819c86a48d5e97bf41ecc83916",
+        "tests/native/native-keyboard.mjs": "51966a4884cf8f6ff22ebf5f55a2ee3dffa787050ddfe4d8a5d3373cc248f963",
+        "src/ui/shared/chrome.css": "5947b20b1d715a1e647b32e053f10a9f22d7cd79c81da095a592bdc7aff90077",
+        "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+        "tests/native/package-context.mjs": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+      },
+      "afterInputs": {
+        "src/main.mjs": "8d56f9a1ff14da0e6db4e7fafc3033a478d8c4fe22ae0ae10ba5abcfebe7f077",
+        "src/preload.cjs": "b4e53b39fc19cd6807dc66bc441797f94130fe805d7b00ec22a78c5fa3235e8e",
+        "src/windows/preload.cjs": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+        "src/windows/presentation-preload.cjs": "96a6fc49c28e042dcaef14d331726894a5df19f60bab3ea012f928b3cea30118",
+        "src/protocol.mjs": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+        "src/appearance/contracts.mjs": "01d6d2dbce39b9b739e165cc73a15f36b40c1b7bdc032e78b34da559aa2ffc49",
+        "src/appearance/store.mjs": "8741e13ba72a8f8711e8a719db3c2b6880b45d80549dfda589f9c583ea9f374e",
+        "src/appearance/ipc.mjs": "a734cfb2aa0ced3f985a739b1bbcb7e57b1c2cbf3f9e63d02d2da38b80f811a8",
+        "src/ui/shared/shell.js": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b",
+        "src/ui/shared/search.js": "0bde78315e364dcc624100db6d98bfc50e073becb04acf4323cc1bf9c3976653",
+        "src/ui/shared/shell.css": "c2539c77dc66cefacffa16628920efc2c45d3db940a771d1be1ebebd729b09d0",
+        "src/ui/docs/reader.js": "b63b3a92a680e68411a143a6c3396456943b56883bc0ed36987a5612687bf68a",
+        "src/ui/workspace/guide.js": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7",
+        "src/ui/workspace/home.js": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+        "build/appearance.mjs": "efce6199f68e96dbd8e35a04f84793561b05386d51221af81b86f64f9873e9f0",
+        "generated/assets/shell.js": "58c01491e04b922307e2233e289dde1605c19da67fc37e6149ebbb40e9ce1f60",
+        "generated/assets/shell.css": "b173a3bd69c9097dbeed41744cd6b08f0ec63588a36d6207c73ed9f846fb3b8a",
+        "generated/app.html": "a760af1fd55fe3312386e6950c86afbb4055325ae7ed99e7d4a491b86d9254bf",
+        "generated/home.html": "b13b730b55e1d3b38b9b90f9e001a9a24299ffaefe38a42cd0b8f8ce684cecdd",
+        "generated/windows/code.html": "b43da62ae7ada50a8585282e16fd400af50986b9acf3c8286238741ad5ae5f5a",
+        "generated/windows/docs.html": "ec39d7c0a9b6ddd33f1607cca6e9c23e3a5a351b39572ff4bd3ab9949375e91d",
+        "generated/windows/diagram.html": "f88af00fabd76dd354788d0ab77343ff9b9efeda2eb81d89a47738d9c91b0646",
+        "generated/windows/presenter.html": "448e85c37758853b52759b1a035a12bdb7e87813adce7ebed3751a1f84ea1425",
+        "generated/windows/audience.html": "bce3ac51a389e6bc077366b86afa660048f1030185540b630135e74de1b566b0",
+        "tests/native/ui-personality.mjs": "f2f285a20adb7719aabd6fe1700441b8c54226819c86a48d5e97bf41ecc83916",
+        "tests/native/native-keyboard.mjs": "51966a4884cf8f6ff22ebf5f55a2ee3dffa787050ddfe4d8a5d3373cc248f963",
+        "src/ui/shared/chrome.css": "5947b20b1d715a1e647b32e053f10a9f22d7cd79c81da095a592bdc7aff90077",
+        "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+        "tests/native/package-context.mjs": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+      },
+      "inputsUnchanged": true,
+      "inputHashesIndependentlyEqual": true,
+      "package": {
+        "sourceCommit": "411fd552b05995c00d65c97a28d2529980f91212",
+        "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\ui-personality\\2026-10-07T13-42-00.587Z\\Pachet-Știință-UI",
+        "archive": {
+          "bytes": 54596310,
+          "sha256": "2898ce1caa73472e97794eb4ffb198401ade5356ce4333b6ff3786195d271815"
+        },
+        "runtime": {
+          "bytes": 245726208,
+          "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+        }
+      },
+      "packageUnchanged": true,
+      "error": {
+        "messageSha256": "b9548d02ef676f6270dd3462438ebbb35ddc7e1e20bc3e2aaa3d10f7260ae177",
+        "messageBytes": 20121,
+        "strictEqualMismatch": true,
+        "truncationMarkers": 2,
+        "stackSite": "at file:///D:/a/siren/siren/desktop/tests/native/ui-personality.mjs:83:10"
+      },
+      "pngs": [
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/code-kpmg.png",
+          "bytes": 59147,
+          "sha256": "a5dc6c000812e72d8d441d0875924b02d6e567fd97a52200661ee4c3d4e877d1",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/diagram-dark-imported-colour.png",
+          "bytes": 87915,
+          "sha256": "246c3507533021e0c55fe6d4d8fdf75843285b588bac93ccb489ee86f61d5a2d",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/diagram-kpmg.png",
+          "bytes": 89670,
+          "sha256": "ed1c86a0be667123ce24a87f059f9e8ad0c6a664ce82355a8421bd4ea009ac2c",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/diagram-style-kpmg.png",
+          "bytes": 99110,
+          "sha256": "eecdb83541d76473bdf014e6e42d92fd9564b5a0e32a79cb51eb671f8f68e318",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/docs-kpmg.png",
+          "bytes": 64576,
+          "sha256": "9dc769aec6726b04600e76aa46d349e67a969f6e62a10d6db1b5f4c34939ac03",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/docs-library-after-native-navigation.png",
+          "bytes": 90021,
+          "sha256": "9fc2e159987c40a7e53bbad07d79d981d7ee848a644877693b4730d953cbc297",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/failure.png",
+          "bytes": 67020,
+          "sha256": "2cb057af8ce95dddccbbcc1464997bfa17ecc28169bb82f5b8ff925fa8a976cd",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/home-kpmg.png",
+          "bytes": 67020,
+          "sha256": "2cb057af8ce95dddccbbcc1464997bfa17ecc28169bb82f5b8ff925fa8a976cd",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/presenter-kpmg.png",
+          "bytes": 75605,
+          "sha256": "f0094abac17fe4ffeba5a9188239447a12df0c456d546480fbdda535a9262be0",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/project-find.png",
+          "bytes": 85337,
+          "sha256": "2b9cd7beccde68d62871a3f5b6fb96af1bd3b1df8a1e014089653b357b0f8bdd",
+          "width": 1008,
+          "height": 655
+        }
+      ],
+      "log": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/electron.log",
+        "bytes": 7550,
+        "sha256": "44a1dc64ce294c4d49508e7383cbc0ba4fbc1b8d2e1d7115b3cf068f3ecb103d"
+      }
+    },
+    {
+      "identity": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/result.json",
+        "bytes": 50549,
+        "sha256": "362acf510d006dac231a384fbf08782c423d814228babc17b7f486cea6786381"
+      },
+      "status": "ADVERSE",
+      "cases": [
+        {
+          "name": "real top-bar input selects original KPMG Blue among 39 themes; atomic preference saved without changing project content",
+          "ok": true
+        },
+        {
+          "name": "three real private native views share original palette/navigation while explicit imported Mermaid colour is retained",
+          "ok": true
+        },
+        {
+          "name": "actual Code-to-Docs navigation focuses main library and commits another window’s dirty document through existing native barrier; original code exact",
+          "ok": true
+        },
+        {
+          "name": "actual Find from Code searches saved names across modules and opens the exact selected Docs entity using its native grant without exposing document bodies in search",
+          "ok": true
+        },
+        {
+          "name": "actual second palette choice propagates across existing views without changing imported colour or source versions",
+          "ok": true
+        },
+        {
+          "name": "global Find exposes distinct Diagram/Present results and real input opens the exact saved entity with a native Presenter grant",
+          "ok": true
+        }
+      ],
+      "personality": [
+        {
+          "theme": "kpmg",
+          "role": "code",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "codeTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "docs",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "documentTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "diagram",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [
+            {
+              "id": "diagramTheme",
+              "hidden": true
+            }
+          ],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "presenter",
+          "radius": "12px",
+          "shadow": "0 8px 24px rgba(0,51,141,.09)",
+          "controls": [],
+          "themeChoice": "kpmg",
+          "elementRadius": "12px"
+        },
+        {
+          "theme": "kpmg",
+          "role": "diagram-style-input",
+          "radius": "9px",
+          "background": "rgb(255, 255, 255)",
+          "expectedBackground": "rgb(255, 255, 255)"
+        }
+      ],
+      "appearanceObservation": [
+        {
+          "url": "/home.html",
+          "role": "workspace",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/code.html",
+          "role": "code",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/docs.html",
+          "role": "docs",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        },
+        {
+          "url": "/windows/diagram.html",
+          "role": "diagram",
+          "theme": "kpmg",
+          "choice": "kpmg",
+          "navigationHidden": false,
+          "choiceDisabled": false,
+          "inert": false,
+          "visibility": "",
+          "preference": {
+            "ok": true,
+            "theme": "kpmg",
+            "projectName": "SIREN reference workspace"
+          }
+        }
+      ],
+      "inputs": {
+        "src/main.mjs": "8d56f9a1ff14da0e6db4e7fafc3033a478d8c4fe22ae0ae10ba5abcfebe7f077",
+        "src/preload.cjs": "b4e53b39fc19cd6807dc66bc441797f94130fe805d7b00ec22a78c5fa3235e8e",
+        "src/windows/preload.cjs": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+        "src/windows/presentation-preload.cjs": "96a6fc49c28e042dcaef14d331726894a5df19f60bab3ea012f928b3cea30118",
+        "src/protocol.mjs": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+        "src/appearance/contracts.mjs": "01d6d2dbce39b9b739e165cc73a15f36b40c1b7bdc032e78b34da559aa2ffc49",
+        "src/appearance/store.mjs": "8741e13ba72a8f8711e8a719db3c2b6880b45d80549dfda589f9c583ea9f374e",
+        "src/appearance/ipc.mjs": "a734cfb2aa0ced3f985a739b1bbcb7e57b1c2cbf3f9e63d02d2da38b80f811a8",
+        "src/ui/shared/shell.js": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b",
+        "src/ui/shared/search.js": "0bde78315e364dcc624100db6d98bfc50e073becb04acf4323cc1bf9c3976653",
+        "src/ui/shared/shell.css": "c2539c77dc66cefacffa16628920efc2c45d3db940a771d1be1ebebd729b09d0",
+        "src/ui/docs/reader.js": "b63b3a92a680e68411a143a6c3396456943b56883bc0ed36987a5612687bf68a",
+        "src/ui/workspace/guide.js": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7",
+        "src/ui/workspace/home.js": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+        "build/appearance.mjs": "efce6199f68e96dbd8e35a04f84793561b05386d51221af81b86f64f9873e9f0",
+        "generated/assets/shell.js": "58c01491e04b922307e2233e289dde1605c19da67fc37e6149ebbb40e9ce1f60",
+        "generated/assets/shell.css": "b173a3bd69c9097dbeed41744cd6b08f0ec63588a36d6207c73ed9f846fb3b8a",
+        "generated/app.html": "a760af1fd55fe3312386e6950c86afbb4055325ae7ed99e7d4a491b86d9254bf",
+        "generated/home.html": "b13b730b55e1d3b38b9b90f9e001a9a24299ffaefe38a42cd0b8f8ce684cecdd",
+        "generated/windows/code.html": "b43da62ae7ada50a8585282e16fd400af50986b9acf3c8286238741ad5ae5f5a",
+        "generated/windows/docs.html": "ec39d7c0a9b6ddd33f1607cca6e9c23e3a5a351b39572ff4bd3ab9949375e91d",
+        "generated/windows/diagram.html": "f88af00fabd76dd354788d0ab77343ff9b9efeda2eb81d89a47738d9c91b0646",
+        "generated/windows/presenter.html": "448e85c37758853b52759b1a035a12bdb7e87813adce7ebed3751a1f84ea1425",
+        "generated/windows/audience.html": "bce3ac51a389e6bc077366b86afa660048f1030185540b630135e74de1b566b0",
+        "tests/native/ui-personality.mjs": "f2f285a20adb7719aabd6fe1700441b8c54226819c86a48d5e97bf41ecc83916",
+        "tests/native/native-keyboard.mjs": "51966a4884cf8f6ff22ebf5f55a2ee3dffa787050ddfe4d8a5d3373cc248f963",
+        "src/ui/shared/chrome.css": "5947b20b1d715a1e647b32e053f10a9f22d7cd79c81da095a592bdc7aff90077",
+        "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+        "tests/native/package-context.mjs": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+      },
+      "afterInputs": {
+        "src/main.mjs": "8d56f9a1ff14da0e6db4e7fafc3033a478d8c4fe22ae0ae10ba5abcfebe7f077",
+        "src/preload.cjs": "b4e53b39fc19cd6807dc66bc441797f94130fe805d7b00ec22a78c5fa3235e8e",
+        "src/windows/preload.cjs": "92a58a961132c13ed34814ae27be167127c71fad4ddc4f59005490e597cd329c",
+        "src/windows/presentation-preload.cjs": "96a6fc49c28e042dcaef14d331726894a5df19f60bab3ea012f928b3cea30118",
+        "src/protocol.mjs": "9c3012a011948fc9ce6cceffbb6670f216bd1709af224c4e3575e20e846c083f",
+        "src/appearance/contracts.mjs": "01d6d2dbce39b9b739e165cc73a15f36b40c1b7bdc032e78b34da559aa2ffc49",
+        "src/appearance/store.mjs": "8741e13ba72a8f8711e8a719db3c2b6880b45d80549dfda589f9c583ea9f374e",
+        "src/appearance/ipc.mjs": "a734cfb2aa0ced3f985a739b1bbcb7e57b1c2cbf3f9e63d02d2da38b80f811a8",
+        "src/ui/shared/shell.js": "c2197003229293d4a962ca015fd60e53f2da10ac9b5e2ff776162d40ce42457b",
+        "src/ui/shared/search.js": "0bde78315e364dcc624100db6d98bfc50e073becb04acf4323cc1bf9c3976653",
+        "src/ui/shared/shell.css": "c2539c77dc66cefacffa16628920efc2c45d3db940a771d1be1ebebd729b09d0",
+        "src/ui/docs/reader.js": "b63b3a92a680e68411a143a6c3396456943b56883bc0ed36987a5612687bf68a",
+        "src/ui/workspace/guide.js": "690dc9dcd720c96c0a63436b2fa7d2751d38fd83021214df6d8e0d94262df7f7",
+        "src/ui/workspace/home.js": "fe38e9f73c3a25acb0b0d2fbbb1f01876a71aa3a8669fdbae5c29f1d36ab06b4",
+        "build/appearance.mjs": "efce6199f68e96dbd8e35a04f84793561b05386d51221af81b86f64f9873e9f0",
+        "generated/assets/shell.js": "58c01491e04b922307e2233e289dde1605c19da67fc37e6149ebbb40e9ce1f60",
+        "generated/assets/shell.css": "b173a3bd69c9097dbeed41744cd6b08f0ec63588a36d6207c73ed9f846fb3b8a",
+        "generated/app.html": "a760af1fd55fe3312386e6950c86afbb4055325ae7ed99e7d4a491b86d9254bf",
+        "generated/home.html": "b13b730b55e1d3b38b9b90f9e001a9a24299ffaefe38a42cd0b8f8ce684cecdd",
+        "generated/windows/code.html": "b43da62ae7ada50a8585282e16fd400af50986b9acf3c8286238741ad5ae5f5a",
+        "generated/windows/docs.html": "ec39d7c0a9b6ddd33f1607cca6e9c23e3a5a351b39572ff4bd3ab9949375e91d",
+        "generated/windows/diagram.html": "f88af00fabd76dd354788d0ab77343ff9b9efeda2eb81d89a47738d9c91b0646",
+        "generated/windows/presenter.html": "448e85c37758853b52759b1a035a12bdb7e87813adce7ebed3751a1f84ea1425",
+        "generated/windows/audience.html": "bce3ac51a389e6bc077366b86afa660048f1030185540b630135e74de1b566b0",
+        "tests/native/ui-personality.mjs": "f2f285a20adb7719aabd6fe1700441b8c54226819c86a48d5e97bf41ecc83916",
+        "tests/native/native-keyboard.mjs": "51966a4884cf8f6ff22ebf5f55a2ee3dffa787050ddfe4d8a5d3373cc248f963",
+        "src/ui/shared/chrome.css": "5947b20b1d715a1e647b32e053f10a9f22d7cd79c81da095a592bdc7aff90077",
+        "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+        "tests/native/package-context.mjs": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+      },
+      "inputsUnchanged": true,
+      "inputHashesIndependentlyEqual": true,
+      "error": {
+        "messageSha256": "b9548d02ef676f6270dd3462438ebbb35ddc7e1e20bc3e2aaa3d10f7260ae177",
+        "messageBytes": 20121,
+        "strictEqualMismatch": true,
+        "truncationMarkers": 2,
+        "stackSite": "at file:///D:/a/siren/siren/desktop/tests/native/ui-personality.mjs:83:10"
+      },
+      "pngs": [
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/code-kpmg.png",
+          "bytes": 59147,
+          "sha256": "a5dc6c000812e72d8d441d0875924b02d6e567fd97a52200661ee4c3d4e877d1",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/diagram-dark-imported-colour.png",
+          "bytes": 87890,
+          "sha256": "a53ee0339a61ea8aa125b9da2f743136307991564183229d6bf51abd0e04708f",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/diagram-kpmg.png",
+          "bytes": 89670,
+          "sha256": "ed1c86a0be667123ce24a87f059f9e8ad0c6a664ce82355a8421bd4ea009ac2c",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/diagram-style-kpmg.png",
+          "bytes": 99110,
+          "sha256": "eecdb83541d76473bdf014e6e42d92fd9564b5a0e32a79cb51eb671f8f68e318",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/docs-kpmg.png",
+          "bytes": 64576,
+          "sha256": "9dc769aec6726b04600e76aa46d349e67a969f6e62a10d6db1b5f4c34939ac03",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/docs-library-after-native-navigation.png",
+          "bytes": 90021,
+          "sha256": "9fc2e159987c40a7e53bbad07d79d981d7ee848a644877693b4730d953cbc297",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/failure.png",
+          "bytes": 67020,
+          "sha256": "2cb057af8ce95dddccbbcc1464997bfa17ecc28169bb82f5b8ff925fa8a976cd",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/home-kpmg.png",
+          "bytes": 67020,
+          "sha256": "2cb057af8ce95dddccbbcc1464997bfa17ecc28169bb82f5b8ff925fa8a976cd",
+          "width": 1008,
+          "height": 655
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/presenter-kpmg.png",
+          "bytes": 75605,
+          "sha256": "f0094abac17fe4ffeba5a9188239447a12df0c456d546480fbdda535a9262be0",
+          "width": 944,
+          "height": 575
+        },
+        {
+          "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/project-find.png",
+          "bytes": 85337,
+          "sha256": "2b9cd7beccde68d62871a3f5b6fb96af1bd3b1df8a1e014089653b357b0f8bdd",
+          "width": 1008,
+          "height": 655
+        }
+      ],
+      "log": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/electron.log",
+        "bytes": 7539,
+        "sha256": "d49e3640a7bf5aa4a7d736dad860367ae7b5b85d49c5d7c6ba0836c45c2e507b"
+      }
+    }
+  ],
+  "supporting": [
+    {
+      "identity": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-native-sources-evidence-original/evidence/workspace-appearance/2026-10-07T13-45-48.267Z/result.json",
+        "bytes": 8168,
+        "sha256": "e246a47610430f5e55de2e9703973216d1755edfdbf6d3a3a92876f6a3f2a581"
+      },
+      "status": "COMPLETE",
+      "cases": [
+        {
+          "name": "real top-bar input selects original KPMG Blue among 39 themes; atomic preference saved without changing project content",
+          "ok": true
+        },
+        {
+          "name": "three real private native views share original palette/navigation while explicit imported Mermaid colour is retained",
+          "ok": true
+        },
+        {
+          "name": "actual Code-to-Docs navigation focuses main library and commits another window’s dirty document through existing native barrier; original code exact",
+          "ok": true
+        },
+        {
+          "name": "actual Find from Code searches saved names across modules and opens the exact selected Docs entity using its native grant without exposing document bodies in search",
+          "ok": true
+        },
+        {
+          "name": "actual second palette choice propagates across existing views without changing imported colour or source versions",
+          "ok": true
+        },
+        {
+          "name": "global Find exposes distinct Diagram/Present results and real input opens the exact saved entity with a native Presenter grant",
+          "ok": true
+        },
+        {
+          "name": "real global theme input rerenders the current Presenter public PNG with higher sequence and unchanged exact saved deck/project",
+          "ok": true
+        },
+        {
+          "name": "real retained Studio theme menu and new chooser share native persistence, classic lifecycle and Home continuation while original Code bytes stay exact",
+          "ok": true
+        },
+        {
+          "name": "common Lock removes private navigation and refuses appearance metadata while retaining saved work",
+          "ok": true
+        }
+      ],
+      "inputsUnchanged": true,
+      "fixtureIdentity": "80267cd607b4a3b3f30ecb0627cd2b387f512629adfe79b819dcc4c17a46801b"
+    },
+    {
+      "identity": {
+        "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/workspace-appearance/2026-10-07T13-41-33.098Z/result.json",
+        "bytes": 8668,
+        "sha256": "a3829d221dec12afef5c5b51f04bbb2384632f0b3822ee9989e3effece9b1a00"
+      },
+      "status": "COMPLETE",
+      "cases": [
+        {
+          "name": "real top-bar input selects original KPMG Blue among 39 themes; atomic preference saved without changing project content",
+          "ok": true
+        },
+        {
+          "name": "three real private native views share original palette/navigation while explicit imported Mermaid colour is retained",
+          "ok": true
+        },
+        {
+          "name": "actual Code-to-Docs navigation focuses main library and commits another window’s dirty document through existing native barrier; original code exact",
+          "ok": true
+        },
+        {
+          "name": "actual Find from Code searches saved names across modules and opens the exact selected Docs entity using its native grant without exposing document bodies in search",
+          "ok": true
+        },
+        {
+          "name": "actual second palette choice propagates across existing views without changing imported colour or source versions",
+          "ok": true
+        },
+        {
+          "name": "global Find exposes distinct Diagram/Present results and real input opens the exact saved entity with a native Presenter grant",
+          "ok": true
+        },
+        {
+          "name": "real global theme input rerenders the current Presenter public PNG with higher sequence and unchanged exact saved deck/project",
+          "ok": true
+        },
+        {
+          "name": "real retained Studio theme menu and new chooser share native persistence, classic lifecycle and Home continuation while original Code bytes stay exact",
+          "ok": true
+        },
+        {
+          "name": "common Lock removes private navigation and refuses appearance metadata while retaining saved work",
+          "ok": true
+        }
+      ],
+      "inputsUnchanged": true,
+      "packageUnchanged": true,
+      "fixtureIdentity": "80267cd607b4a3b3f30ecb0627cd2b387f512629adfe79b819dcc4c17a46801b"
+    }
+  ],
+  "finding": {
+    "id": "HOSTED-UI-PERSONALITY-ORACLE",
+    "priority": "P2",
+    "location": "tests/native/ui-personality.mjs:83",
+    "classification": "Conflicting fixture invariant; not independently reproduced",
+    "observation": "Both ADVERSE originals compare first KPMG Audience PNG with initial Dark PNG after six cases and all five recorded KPMG personality checks. Canonical workspace-appearance.mjs:69-75 deliberately requires public PNG change on that theme change while saved deck/project stay exact; both separate originals COMPLETE nine cases.",
+    "recommendation": "After theme application, wait for higher Presenter sequence and matching Audience deckVersion, slideId and sequence; compare exact image bytes for that same published frame. Keep exact saved project/deck/source and Audience isolation checks. Retain every named palette, style, minimum size, Studio and Lock assertion; do not disable intentional public theme rerender."
+  },
+  "visuallyInspected": [
+    {
+      "path": "evidence/workspace-surface/ci37629602152/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T13-42-00.587Z/presenter-kpmg.png",
+      "observation": "KPMG private chrome/light public canvas, imported green node retained, contextual node light blue; screenshot observation only, not pixel colour measurement or Audience parity."
+    },
+    {
+      "path": "evidence/workspace-surface/ci37629602152/desktop-native-diagrams-evidence-original/evidence/ui-personality/2026-10-07T13-46-10.478Z/diagram-dark-imported-colour.png",
+      "observation": "Dark Diagram chrome/canvas with green imported node and dark contextual node; screenshot states, not frame synchronization."
+    }
+  ],
+  "limitations": [
+    "Original ADVERSE and FINAL FAILURE retained; no replacement approval.",
+    "Full initial Audience PNG and full compared data URLs absent; assertion display truncates both. No complete pixel diff possible from these error strings.",
+    "No frame sequence observations captured at failing assertion; exact eventual Presenter/Audience parity needs new execution after reviewed fixture correction.",
+    "Later palette iterations, subsequent isolation, minimum-size, Studio and Lock were not reached by these ui-personality runs.",
+    "Hosted ASAR not extracted or executed by reviewer; copied package identity is the original receipt evidence.",
+    "Current main/preload/shell changed for later Help work; historical analysis uses exact canonical Git blobs. Generated output source blobs absent from Git tree; original receipts retain output hashes.",
+    "Bounded log tail read; unrelated diagram-edit timeout not diagnosed.",
+    "Reviewer discovery errors: unavailable commit tree in git show; corrected using retained tree and locally available exact blob IDs. Incorrect assumed native-desktop workspace receipt directory; located actual native-sources. Report assembly initially called find on object-valued inputs; corrected to map lookup before any report write. None are product tests."
+  ],
+  "approval": {
+    "independentGUI": false,
+    "hostedRerun": false,
+    "packagedRuntimeApproval": false,
+    "releaseApproval": false
+  }
+}

@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: successful real package build removes its own staging and preserves its archive and historical sibling
+ok 1 - successful real package build removes its own staging and preserves its archive and historical sibling
+  ---
+  duration_ms: 11202.2265
+  type: 'test'
+  ...
+# Subtest: failed real package build removes its own populated staging and preserves original error and partial preview
+ok 2 - failed real package build removes its own populated staging and preserves original error and partial preview
+  ---
+  duration_ms: 10622.0527
+  type: 'test'
+  ...
+# Subtest: staging lifetime removes only its own populated tree and returns the build result
+ok 3 - staging lifetime removes only its own populated tree and returns the build result
+  ---
+  duration_ms: 14.9295
+  type: 'test'
+  ...
+# Subtest: build failure is rethrown by identity after its staging is removed
+ok 4 - build failure is rethrown by identity after its staging is removed
+  ---
+  duration_ms: 5.6818
+  type: 'test'
+  ...
+# Subtest: cooperative cancellation removes staging and preserves the exact cancellation
+ok 5 - cooperative cancellation removes staging and preserves the exact cancellation
+  ---
+  duration_ms: 5.833
+  type: 'test'
+  ...
+# Subtest: falsy build rejection is not mistaken for success
+ok 6 - falsy build rejection is not mistaken for success
+  ---
+  duration_ms: 5.6933
+  type: 'test'
+  ...
+# Subtest: staging refuses a junction parent before invoking the build
+ok 7 - staging refuses a junction parent before invoking the build
+  ---
+  duration_ms: 3.9875
+  type: 'test'
+  ...
+# Subtest: nested junction refuses cleanup and preserves the target and staged diagnostics
+ok 8 - nested junction refuses cleanup and preserves the target and staged diagnostics
+  ---
+  duration_ms: 6.4433
+  type: 'test'
+  ...
+# Subtest: cleanup refusal preserves both errors and discloses the exact retained staging path
+ok 9 - cleanup refusal preserves both errors and discloses the exact retained staging path
+  ---
+  duration_ms: 4.7661
+  type: 'test'
+  ...
+# Subtest: replaced staging root is not deleted even when the replacement is a normal directory
+ok 10 - replaced staging root is not deleted even when the replacement is a normal directory
+  ---
+  duration_ms: 5.9635
+  type: 'test'
+  ...
+# Subtest: replaced staging root junction is refused without deleting its target
+ok 11 - replaced staging root junction is refused without deleting its target
+  ---
+  duration_ms: 5.6248
+  type: 'test'
+  ...
+# Subtest: replaced parent refuses cleanup without deleting replacement or moved trees
+ok 12 - replaced parent refuses cleanup without deleting replacement or moved trees
+  ---
+  duration_ms: 5.4262
+  type: 'test'
+  ...
+# Subtest: concurrent builds clean their own staging without touching another invocation
+ok 13 - concurrent builds clean their own staging without touching another invocation
+  ---
+  duration_ms: 6.124
+  type: 'test'
+  ...
+# Subtest: staged application includes the actual cold Home entry and every finite generated destination
+ok 14 - staged application includes the actual cold Home entry and every finite generated destination
+  ---
+  duration_ms: 55.8966
+  type: 'test'
+  ...
+# Subtest: package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps
+ok 15 - package source allowlist refuses credentials, tests, development issuer, original source baseline and source maps
+  ---
+  duration_ms: 0.3773
+  type: 'test'
+  ...
+# Subtest: every relative native module reachable from the actual startup entry is admitted by the package allowlist
+ok 16 - every relative native module reachable from the actual startup entry is admitted by the package allowlist
+  ---
+  duration_ms: 27.7323
+  type: 'test'
+  ...
+# Subtest: supplemental notices resolve only their exact runtime reference and verified bytes
+ok 17 - supplemental notices resolve only their exact runtime reference and verified bytes
+  ---
+  duration_ms: 17.0109
+  type: 'test'
+  ...
+# Subtest: runtime inventory requires known production dependency licenses and all Chromium component notices
+ok 18 - runtime inventory requires known production dependency licenses and all Chromium component notices
+  ---
+  duration_ms: 1.9116
+  type: 'test'
+  ...
+# Subtest: inventory preserves unresolved upstream license references without claiming distribution admission
+ok 19 - inventory preserves unresolved upstream license references without claiming distribution admission
+  ---
+  duration_ms: 4.192
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22024.0156

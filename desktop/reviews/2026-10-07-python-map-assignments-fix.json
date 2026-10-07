@@ -1,0 +1,238 @@
+{
+  "author": "/root/catalogue_view",
+  "role": "implementer",
+  "createdUtc": "2026-10-07T15:14:44.314Z",
+  "status": "FOCUSED_SOURCE_AND_VM_TESTS_COMPLETE",
+  "scope": "Authorized isolated Python syntax-map omission repair. Real admitted parser in memory; actual browser controller in VM. No GUI, build, full suite, generated/baseline changes, install, commit, push, package or release qualification.",
+  "foundationFrozen": [
+    {
+      "path": "reviews/2026-10-07-python-learning-foundation-review.md",
+      "bytes": 8517,
+      "sha256": "4652ba8bd454ee66b646e8239354f0a8888d759005d4642654a58bab051e89bb"
+    },
+    {
+      "path": "reviews/2026-10-07-python-learning-foundation-review.json",
+      "bytes": 16137,
+      "sha256": "c262c7d7b7e58d918b7875cd6fed0fe30e114915d3667abdada780b141c5117c"
+    }
+  ],
+  "originalSource": {
+    "path": "reviews/2026-10-07-python-map-assignments-first-original.mjs",
+    "bytes": 2200,
+    "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+  },
+  "red": {
+    "author": "/root/catalogue_view",
+    "scope": "real admitted parser, source projection and actual map-view VM only",
+    "startedUtc": "2026-10-07T15:12:19.824Z",
+    "completedUtc": "2026-10-07T15:12:20.027Z",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "tests/source-map-projection.test.mjs"
+    ],
+    "exitCode": 1,
+    "signal": null,
+    "inputs": [
+      {
+        "path": "src/sources/map-worker.mjs",
+        "bytes": 2200,
+        "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+      },
+      {
+        "path": "tests/source-map-projection.test.mjs",
+        "bytes": 10735,
+        "sha256": "903b283c69b2d8c9477c908a5ddedb815e435a5e82b2f0d35a34ba9736567031"
+      },
+      {
+        "path": "src/ui/code/analysis.js",
+        "bytes": 17096,
+        "sha256": "e3052cd4c131c685a70fa1ceee1ccc8a2c7bc65043d95ff6d1f6da831fe1c4e4"
+      },
+      {
+        "path": "baseline/R78.html",
+        "bytes": 13626609,
+        "sha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+      }
+    ],
+    "tests": 9,
+    "passed": 2,
+    "failed": 7
+  },
+  "green": {
+    "author": "/root/catalogue_view",
+    "scope": "real admitted parser and actual map-view VM regression only",
+    "startedUtc": "2026-10-07T15:12:59.919Z",
+    "completedUtc": "2026-10-07T15:13:00.121Z",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "tests/source-map-projection.test.mjs",
+      "tests/source-analysis-view.test.mjs"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "inputs": [
+      {
+        "path": "src/sources/map-worker.mjs",
+        "bytes": 2410,
+        "sha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76"
+      },
+      {
+        "path": "tests/source-map-projection.test.mjs",
+        "bytes": 10735,
+        "sha256": "903b283c69b2d8c9477c908a5ddedb815e435a5e82b2f0d35a34ba9736567031"
+      },
+      {
+        "path": "tests/source-analysis-view.test.mjs",
+        "bytes": 9005,
+        "sha256": "c0376d7ce83ea52dd4723cb54640b57ca177e5cd3066eb22b65323cff5cd28c0"
+      },
+      {
+        "path": "src/ui/code/analysis.js",
+        "bytes": 17096,
+        "sha256": "e3052cd4c131c685a70fa1ceee1ccc8a2c7bc65043d95ff6d1f6da831fe1c4e4"
+      },
+      {
+        "path": "baseline/R78.html",
+        "bytes": 13626609,
+        "sha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+      }
+    ],
+    "changedInputs": [],
+    "tests": 17,
+    "passed": 17,
+    "failed": 0,
+    "newProjectionTests": 9,
+    "existingViewTests": 8
+  },
+  "artifacts": [
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-first-original.mjs",
+      "bytes": 2200,
+      "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-red.json",
+      "bytes": 1032,
+      "sha256": "2afaa5a6425ad45c2c1893639fcd6cc95046a1be3dac4452bbf859095f6715be"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-red.log",
+      "bytes": 8034,
+      "sha256": "5a6ae0d606f449bb62894808c91e5b6ef579342eec1078934d3ea16f6ba64bf5"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-green.json",
+      "bytes": 1260,
+      "sha256": "3577ee9d7d66cd806d3dfc2de3832af84ea6c7d306909c966a2caae7d86bce87"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-green.log",
+      "bytes": 1945,
+      "sha256": "44f3851aa244a66e7474428595f0bee752ad620901e477f2d78f7e2a8aaeceeb"
+    },
+    {
+      "path": "reviews/2026-10-07-python-learning-foundation-review.md",
+      "bytes": 8517,
+      "sha256": "4652ba8bd454ee66b646e8239354f0a8888d759005d4642654a58bab051e89bb"
+    },
+    {
+      "path": "reviews/2026-10-07-python-learning-foundation-review.json",
+      "bytes": 16137,
+      "sha256": "c262c7d7b7e58d918b7875cd6fed0fe30e114915d3667abdada780b141c5117c"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "@lezer/common",
+      "version": "1.5.3",
+      "manifest": {
+        "path": "node_modules/@lezer/common/package.json",
+        "bytes": 814,
+        "sha256": "bf0794d0ce31fcb9f182dac58209efe3f1e563a7e455576d84d1ad49b2ad2996"
+      },
+      "esm": {
+        "path": "node_modules/@lezer/common/dist/index.js",
+        "bytes": 83369,
+        "sha256": "4f08d3cc772b63930aa424b5f75f41c244f2de98da43cd0d72e157a6cbff2dd5"
+      }
+    },
+    {
+      "name": "@lezer/lr",
+      "version": "1.4.10",
+      "manifest": {
+        "path": "node_modules/@lezer/lr/package.json",
+        "bytes": 810,
+        "sha256": "2825a6410bc0c81635fb91525e2a8bca3a211c82265f5aeeac1dde6b535dc11e"
+      },
+      "esm": {
+        "path": "node_modules/@lezer/lr/dist/index.js",
+        "bytes": 71678,
+        "sha256": "8d9b94f7c47b5226914e60613ec8bb49c3c3043df4e8d78ee7d19852fe34d582"
+      }
+    },
+    {
+      "name": "@lezer/highlight",
+      "version": "1.2.5",
+      "manifest": {
+        "path": "node_modules/@lezer/highlight/package.json",
+        "bytes": 752,
+        "sha256": "e50eb1fc5c2831ab58274ce2ea6cac989a0c80cc84f9fbabcb4100eee4327710"
+      },
+      "esm": {
+        "path": "node_modules/@lezer/highlight/dist/index.js",
+        "bytes": 29921,
+        "sha256": "8984bb2887a6354d3e5ac79bdd7e522948f1cee1dda16aac77d9473f10696d7c"
+      }
+    }
+  ],
+  "foundationInputsChanged": [
+    {
+      "path": "src/sources/map-worker.mjs",
+      "bytes": 2410,
+      "sha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76",
+      "originalSha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+    }
+  ],
+  "changes": [
+    {
+      "path": "src/sources/map-worker.mjs",
+      "before": {
+        "path": "src/sources/map-worker.mjs",
+        "bytes": 2200,
+        "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+      },
+      "after": {
+        "path": "src/sources/map-worker.mjs",
+        "bytes": 2410,
+        "sha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76"
+      },
+      "detail": "Use actual admitted AssignStatement and UpdateStatement parser names. Classify direct TypeDef without direct AssignOp as annotation. Preserve traversal, ranges, parent IDs, contains edges, diagnostics and caps."
+    },
+    {
+      "path": "tests/source-map-projection.test.mjs",
+      "identity": {
+        "path": "tests/source-map-projection.test.mjs",
+        "bytes": 10735,
+        "sha256": "903b283c69b2d8c9477c908a5ddedb815e435a5e82b2f0d35a34ba9736567031"
+      },
+      "detail": "Nine permanent regression tests evaluate the exact baseline/factory-hash-verified parser in memory, without invoking the generated-worker builder."
+    }
+  ],
+  "verifiedCases": [
+    "Ordinary, annotated and update assignments appear; annotation-only declarations are distinct and do not claim stored values.",
+    "Literal equals inside a type annotation is not treated as a direct assignment operator; default parameters, equality comparisons and keyword argument syntax produce no extra statement nodes.",
+    "Chained and destructured assignments, attribute and subscript targets, Unicode identifiers, CRLF and nonzero absolute ranges/line offsets.",
+    "Nested assignments contain call/await blocks and remain children of function/branch blocks; yield blocks remain present.",
+    "Malformed syntax keeps bounded absolute diagnostics; graph node, edge and traversal caps remain enforced; shortened labels avoid splitting a surrogate pair.",
+    "Actual unchanged browser view accepts annotation kind literally, uses its existing generic syntax tooltip, navigates immutable ranges and rejects changed-version navigation. Existing eight VM tests preserve cancellation, Lock, dirty source and comparison behavior."
+  ],
+  "limitations": [
+    "This is a syntax-containment map, not execution, data-flow, type evaluation or CPython validation. Assignment blocks describe source syntax rather than proof that a value was stored at runtime.",
+    "Annotation uses existing generic UI explanation. This isolated repair adds no educational subsystem or detailed annotation lesson.",
+    "Graph budgets remain finite (default 120 nodes and 120 edges; 200000 visits). More visible assignment nodes can make a formerly sparse selection reach the existing map cap earlier; limited=true remains explicit.",
+    "No generated code-analysis-worker.cjs was rebuilt. Parent must build and qualify the integrated worker/runtime separately. No claim about installed or copied package, hosted CI or independent GUI.",
+    "This report is written by the fix implementer. The original foundation review and RED are retained; this is not an independent approval of this patch."
+  ]
+}

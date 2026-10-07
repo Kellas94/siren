@@ -1,0 +1,26 @@
+(() => {
+ 'use strict';
+ window.SirenNativeDiagramSession=Object.freeze({create({read,render,onSource,onPreview,onError}){
+  let generation=0,paused=false,disposed=false,context=null;const pending=new Set();
+  const current=token=>!paused&&!disposed&&token===generation;
+  function refresh(){
+   if(paused||disposed)return Promise.resolve(false);
+   const token=++generation;
+   const operation=(async()=>{
+    try{
+     const result=await read();if(!current(token))return false;
+     if(result?.ok!==true||typeof result.readonly!=='boolean'||typeof result.diagram?.source!=='string')throw Error('Diagram unavailable');
+     context=result;onSource(result);
+     const preview=await render({source:result.diagram.source,diagram:result.diagram,token,isCurrent:()=>current(token)});if(!current(token))return false;
+     onPreview(preview);return true;
+    }catch{if(current(token))onError();return false;}
+   })();pending.add(operation);operation.finally(()=>pending.delete(operation));return operation;
+  }
+  function renderLocal(source,diagram){
+   if(paused||disposed||!context||typeof source!=='string')return Promise.resolve(false);
+   const token=++generation,operation=(async()=>{try{const preview=await render({source,diagram:diagram??{...context.diagram,source},token,isCurrent:()=>current(token)});if(!current(token))return false;onPreview(preview);return true;}catch{if(current(token))onError();return false;}})();
+   pending.add(operation);operation.finally(()=>pending.delete(operation));return operation;
+  }
+  return Object.freeze({refresh,renderLocal,invalidate(){if(paused||disposed)return false;++generation;return true;},get context(){return context;},async pause(){paused=true;++generation;await Promise.allSettled([...pending]);return !disposed&&context!==null;},resume(){if(!disposed)paused=false;},dispose(){disposed=true;paused=true;++generation;context=null;}});
+ }});
+})();

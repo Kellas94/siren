@@ -1,0 +1,74 @@
+import {randomUUID} from 'node:crypto';
+import {navigationFields} from '../navigation/contracts.mjs';
+const fail=code=>Object.freeze({ok:false,code});
+
+/** Main-owned scoped view preparation transport. Main supplies a captured grant
+ * and a synchronous sender adapter. No IPC channel/preload or all-view Lock is
+ * installed here. A renderer ACK merely requests sealing actual owner receipts. */
+export class NativeViewControl {
+  #registry;#owner;#send;#timeout;#roles;#pending=new Map();#disposed=false;#progress;
+  constructor({registry,owner,send,timeoutMs=10000,onProgress=()=>{}},roles=['code','docs','diagram']) {
+    if(!registry || !['capture','eventFor','isCurrent'].every(key=>typeof registry[key]==='function') || !owner ||
+      !['beginViewFlush','finishViewFlush','cancelViewFlush'].every(key=>typeof owner[key]==='function') || typeof send!=='function')throw TypeError('Native view control adapters required');
+    if(!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw TypeError('Native view deadline refused');
+    if(!Array.isArray(roles)||!roles.length||roles.some(role=>!['workspace','code','docs','diagram','presenter','audience'].includes(role)))throw TypeError('Native control roles refused');
+    if(typeof onProgress!=='function')throw TypeError('Native control diagnostic adapter required');
+    this.#registry=registry;this.#owner=owner;this.#send=send;this.#timeout=timeoutMs;this.#roles=new Set(roles);this.#progress=onProgress;
+  }
+  #observe(ticket,stage) {
+    try{this.#progress(Object.freeze({stage,role:ticket.grant.role,elapsedMs:Math.round(performance.now()-ticket.started)}));}catch{/* Diagnostics cannot alter preparation authority or deadlines. */}
+  }
+  #settle(ticket,result) {
+    if(this.#pending.get(ticket.requestId)!==ticket)return false;
+    this.#pending.delete(ticket.requestId);clearTimeout(ticket.timer);
+    for(const [name,callback] of ticket.listeners)ticket.event.sender.off(name,callback);
+    if(result.ok!==true)try{this.#owner.cancelViewFlush(ticket.grant,ticket.nonce);}catch{ /* Authority remains fenced; never turn cancellation failure into success. */ }
+    this.#observe(ticket,result.ok===true?'prepared':'refused');ticket.resolve(result);return true;
+  }
+  flushView(grant) {
+    if(this.#disposed)return Promise.resolve(fail('CONTROL_DISPOSED'));
+    if(!this.#roles.has(grant?.role) || !this.#registry.isCurrent(grant))return Promise.resolve(fail('ACCESS_REFUSED'));
+    if(this.#pending.size>=64 || [...this.#pending.values()].some(item=>item.grant.windowId===grant.windowId))return Promise.resolve(fail('VIEW_BUSY'));
+    const event=this.#registry.eventFor(grant);
+    if(!event || typeof event.sender?.on!=='function' || typeof event.sender?.off!=='function')return Promise.resolve(fail('ACCESS_REFUSED'));
+    let nonce;try{nonce=this.#owner.beginViewFlush(grant);}catch{return Promise.resolve(fail('VIEW_FLUSH_REFUSED'));}
+    const requestId=randomUUID();let resolve;const promise=new Promise(done=>{resolve=done;});
+    const ticket={requestId,nonce,grant,event,resolve,listeners:[],sealing:false,started:performance.now()};this.#pending.set(requestId,ticket);
+    const retired=()=>this.#settle(ticket,fail('VIEW_RETIRED'));
+    for(const name of ['destroyed','render-process-gone','did-start-navigation']){event.sender.on(name,retired);ticket.listeners.push([name,retired]);}
+    ticket.timer=setTimeout(()=>this.#settle(ticket,fail('VIEW_TIMEOUT')),this.#timeout);
+    try{this.#observe(ticket,'sent');this.#send(event,Object.freeze({requestId,nonce}));}catch{this.#settle(ticket,fail('VIEW_TRANSPORT_FAILED'));}
+    return promise;
+  }
+  async acknowledge(event,input) {
+    if(this.#disposed)return fail('CONTROL_DISPOSED');
+    let payload;try{payload=navigationFields(input,['requestId','ok','code'],['requestId','ok']);}catch{return fail('REQUEST_REFUSED');}
+    if(typeof payload.requestId!=='string'||typeof payload.ok!=='boolean'||Object.hasOwn(payload,'code') &&
+      (typeof payload.code!=='string'||!/^[A-Z][A-Z0-9_]{0,63}$/.test(payload.code)) || payload.ok && Object.hasOwn(payload,'code'))return fail('REQUEST_REFUSED');
+    const ticket=this.#pending.get(payload.requestId);if(!ticket)return fail('CONTROL_STALE');
+    const caller=this.#registry.capture(event);
+    if(!this.#registry.isCurrent(caller) || !this.#registry.isCurrent(ticket.grant) || event.sender!==ticket.event.sender || event.senderFrame!==ticket.event.senderFrame)return fail('ACCESS_REFUSED');
+    if(ticket.sealing)return fail('VIEW_BUSY');
+    this.#observe(ticket,'acknowledged');
+    if(!payload.ok){const result=fail('VIEW_FLUSH_FAILED');this.#settle(ticket,result);return result;}
+    ticket.sealing=true;this.#observe(ticket,'sealing');let result;
+    try{result=await this.#owner.finishViewFlush(caller,ticket.nonce);}catch{result=fail('VIEW_FLUSH_FAILED');}
+    if(this.#pending.get(payload.requestId)!==ticket)return fail('CONTROL_STALE');
+    if(!this.#registry.isCurrent(ticket.grant))result=fail('VIEW_RETIRED');
+    if(result?.ok!==true)result=fail('VIEW_FLUSH_FAILED');
+    this.#settle(ticket,result);return result;
+  }
+  dispose() {
+    if(this.#disposed)return;this.#disposed=true;
+    for(const ticket of [...this.#pending.values()])this.#settle(ticket,fail('CONTROL_DISPOSED'));
+  }
+  // Trusted main rollback/failure adapter, not a renderer cancellation channel.
+  cancelView(grant) {
+    const ticket=[...this.#pending.values()].find(item=>item.grant===grant);
+    if(!ticket)return fail('CONTROL_STALE');
+    this.#settle(ticket,fail('VIEW_CANCELLED'));return Object.freeze({ok:true});
+  }
+}
+// Preserve the already qualified strict Code-only interface.
+export class NativeCodeControl extends NativeViewControl {constructor(options){super(options,['code']);}}
+export class NativeAllViewControl extends NativeViewControl {constructor(options){super(options,['workspace','code','docs','diagram','presenter','audience']);}}

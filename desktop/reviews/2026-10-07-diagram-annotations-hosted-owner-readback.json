@@ -1,0 +1,485 @@
+{
+  "author": "/root",
+  "status": "ORIGINAL_FINAL_FAILURE_READBACK_COMPLETE",
+  "runId": 37565124075,
+  "canonical": "03c76b877173c466de06de89c757609cd8adda1a",
+  "runConclusion": "failure",
+  "liveUpdatedUtc": "2026-10-07T03:20:44Z",
+  "originalReport": {
+    "path": "reviews/2026-10-07-diagram-annotations-hosted-evidence.json",
+    "bytes": 1903820,
+    "sha256": "2dabf8bd924ef553a9f643c5c467b58db78002c2d8d720538bc9dbe9e404846e"
+  },
+  "originalRecords": [
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "bytes": 7921,
+      "sha256": "93a7c4d005e2c6e296fa6604626e5824edccf47a41f061a35cd50d1f6b00e313"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "bytes": 7966,
+      "sha256": "e4454cfb72e64e64b21138318b111cb55856aa1b18928886eb038e7869c327b7"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "bytes": 8073,
+      "sha256": "1335491c9bd88dfa4a4b631be10c50402a0eda1b83807d5509f75b831d02d148"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/home-backup-export-native/2026-10-07T03-17-19.786Z/result.json",
+      "bytes": 127488,
+      "sha256": "98eb55df17cf1953291164d7b649c58cabbed66b046b4a0101dae7b5af86668d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/guided-intro-2026-10-07T03-14-01.605Z/result.json",
+      "bytes": 56741,
+      "sha256": "7145119999334df8e10b7307c2b9826f2d8b6f56957a4a14cf79b35bb2132b5d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/home-recovery/2026-10-07T03-16-24.296Z/result.json",
+      "bytes": 2739,
+      "sha256": "a6bc9d42facb56b2ee4cbfa938395af930ed98148c0ccd58a1c01bbe7658af80"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/docs-export-native/2026-10-07T03-17-24.888Z/result.json",
+      "bytes": 132602,
+      "sha256": "587296543a242a34f6ab1ef61a1935cf2dcc7b353c4b1faa5b1a97756d538600"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-export-native/2026-10-07T03-07-23.517Z/result.json",
+      "bytes": 133100,
+      "sha256": "70dcc7df389ec251aedf3065c5b0da4866026adbdff8de61e03d63bb5acd5199"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/presenter-notes-export-native/2026-10-07T03-17-36.297Z/result.json",
+      "bytes": 137548,
+      "sha256": "108d2a3c89e891cb1538c13b3b9d4331e90290521fdccbab0ab56a3e49a4b244"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/presenter-notes-export-native/2026-10-07T03-07-35.402Z/result.json",
+      "bytes": 138056,
+      "sha256": "07b2ca36ba01415d3ce3161f8e4ede1948b9e01dacdc04d833837fd27169ff38"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/diagram-history-typography-native/2026-10-07T03-17-54.320Z/result.json",
+      "bytes": 154167,
+      "sha256": "41ed882a162fcb30451fd125b17a31c5697482340aaf9d1a0bf970da5b0b1a90"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-history-typography-native/2026-10-07T03-07-54.200Z/result.json",
+      "bytes": 154680,
+      "sha256": "2cf92c9ed88ef20d7bdc4a4feb7ca2a59b60220dee68fe2488caedf81901b168"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/result.json",
+      "bytes": 41746,
+      "sha256": "c989a41c2f2c33b5e349e80ed1778d15bbb2da47434a5bd52c9fa2e6d5ce782f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-abrupt-1/result.json",
+      "bytes": 4700,
+      "sha256": "1cf948484f96bdf5b2711084b7e8fe932934ccb26170fa22d4c5e990ebe810c3"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-abrupt-2/result.json",
+      "bytes": 4700,
+      "sha256": "6d1eee79d603771cd9eee02d7af8088884a0d924c65b9f07b8e5847853d64046"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-lock-abrupt-1/result.json",
+      "bytes": 4897,
+      "sha256": "ed3dd1242d436d1fda88bd26c056f0ae17e7f0bd066b442b35d0d9bb8eec813f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-lock-abrupt-2/result.json",
+      "bytes": 4899,
+      "sha256": "1fa8e5a30c20a1e7660252df7932103b7b8edeb55c2cd98a4453d5ad54897a64"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-lock-graceful-1/result.json",
+      "bytes": 5262,
+      "sha256": "3f86e3908e1f5c36872d23af47e32d4fdd3ed72831e9ac804d7f4e7a66fe879d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-16-59.503Z/setup-lock-graceful-2/result.json",
+      "bytes": 5262,
+      "sha256": "170c33a8a62abf217e50788654c5b20c7dc1f3ccd4886d7fe081eafed5572fa6"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-06-54.074Z/result.json",
+      "bytes": 58556,
+      "sha256": "c2c31ed5a3129ecf6113614e896ecde3884be3ae3ef5a7a9aa9abf8077e120ef"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-06-54.074Z/setup-abrupt-1/result.json",
+      "bytes": 5246,
+      "sha256": "af6cee69d656f0ae322664fb563c93c1a8b24744003cc7e7f75b35e4a8acad3e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-06-54.074Z/setup-lock-abrupt-1/result.json",
+      "bytes": 5457,
+      "sha256": "473db810b60f8d548237e517a73b77be735de3db378424127dc429b39eb93a7e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-07T03-06-54.074Z/setup-lock-graceful-1/result.json",
+      "bytes": 5826,
+      "sha256": "2547ea27188ced452d771793fc4a3c182f73ec63bfc7d2127d9d6c48e8b3a57d"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/code-context-commands-native/2026-10-07T03-08-24.499Z/result.json",
+      "bytes": 139271,
+      "sha256": "8cd5fd036bc852b766932db67d6530dad3bdc39d5c2f05038da66e28365aed3f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-annotations-native/2026-10-07T03-09-09.237Z/result.json",
+      "bytes": 134551,
+      "sha256": "347ea03fc2ca6c93783c409c2efcef7e71b6bd8482bfa95f8ed587062a1a3478"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-build/2026-10-07T03-15-53.296Z/result.json",
+      "bytes": 18390,
+      "sha256": "bd032d9a857d25efa5a0a1b3b76f8bac1a0d49b0c6b34f4392b59d7cced0bb72"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-dock/2026-10-07T03-15-23.178Z/result.json",
+      "bytes": 5863,
+      "sha256": "2d3d94e19a80ba2908424acc32237a0bc452f47e691531ff27b79a7d1ae83776"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-edit/2026-10-07T03-13-40.432Z/result.json",
+      "bytes": 49452,
+      "sha256": "dc58d04d6cc6b754558e1170e381c8018c0da9402b2017edbb146b2ce8254110"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-export/2026-10-07T03-15-01.404Z/result.json",
+      "bytes": 5168,
+      "sha256": "2574285373326a62c5892b84c469740e962cc4bff8d9939f64e4919658ac84bb"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-guided/2026-10-07T03-14-11.398Z/result.json",
+      "bytes": 6226,
+      "sha256": "d6f90d23f7298067176ffce4924017f35e520a12d5501e7d507324091c30d344"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-preview/2026-10-07T03-13-22.608Z/result.json",
+      "bytes": 5482,
+      "sha256": "6a277848b562cbfe763fc4fa3a0a9d18956afa2a013cd192afcaa6ec9106d7aa"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-style/2026-10-07T03-14-33.030Z/result.json",
+      "bytes": 10120,
+      "sha256": "a001ad7cf7560e6ab9d0b123b060d4154dfd262b1da0da847acefac7d9bc01b6"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/diagram-walkthrough-native/2026-10-07T03-08-42.963Z/result.json",
+      "bytes": 158730,
+      "sha256": "99b5714f61ca8aad0bb0af1fcf0b15cf728b72fedcc665d3e376293028fb6b2a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-context-native/2026-10-07T03-16-26.963Z/result.json",
+      "bytes": 31102,
+      "sha256": "24410a9c700cb846d2b93173f785a938d4dae28643da0175e7bf6d17efc876ce"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-edit/2026-10-07T03-12-40.100Z/result.json",
+      "bytes": 7331,
+      "sha256": "3d030d482d89bb838da4943e424969b4885a32eac0b8a004b45ccbfb64911a9a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-format/2026-10-07T03-13-08.695Z/result.json",
+      "bytes": 9097,
+      "sha256": "ce4293114a6eec61af91e4e7fc46acb7dfa0e5ec3baca8ff683b138dd18d8456"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-reader/2026-10-07T03-11-12.433Z/result.json",
+      "bytes": 3067,
+      "sha256": "ca7e273ab24aee83fd3be22a14800508e1f4b1937d46946227db1a146d9b31fc"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-sources/2026-10-07T03-19-07.809Z/result.json",
+      "bytes": 4262,
+      "sha256": "153e537a9a15dddffd7786b2b3dd7e09a3d47d429fa620fa27220a2db30131f4"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/docs-structured/2026-10-07T03-17-04.256Z/result.json",
+      "bytes": 2828,
+      "sha256": "0933bd050b2cfd0269778fbbc0aa5eec859de52e70406a17ab15910ba4a2b156"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/home-documents/2026-10-07T03-17-33.335Z/result.json",
+      "bytes": 2954,
+      "sha256": "e5131a833e279e2e2fff541b8559b132730fb3b03321722fef44c776a6981526"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/home-library-search/2026-10-07T03-17-22.940Z/result.json",
+      "bytes": 5135,
+      "sha256": "b65aff83bf8c147f5c574c1c5511dba65e27ef1652a6d3103c0539ed35a90aa2"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/home-source-projects/2026-10-07T03-18-12.373Z/result.json",
+      "bytes": 10307,
+      "sha256": "4cafc645fc27f8d2ffaa7991b3fc9b5e6c46120c4a87f05e4a846bf35749c54e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/presentation-authoring-native/2026-10-07T03-16-41.651Z/result.json",
+      "bytes": 3413,
+      "sha256": "7077a69ace7774130cd7561aacf76cd792d48735b57d0f0c5a40c6bf4312ff1e"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/presentation-windows/2026-10-07T03-19-42.335Z/result.json",
+      "bytes": 9913,
+      "sha256": "2b16a205c7961254175d7c4706ff7d464e113916dda781ec9e29943ed2fe0cdd"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-analysis/2026-10-07T03-11-20.966Z/result.json",
+      "bytes": 8571,
+      "sha256": "fe9d6c6320d6e6ed26ff61311f7d146c46afaa70d57039809f8b32acb47032da"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-bundle-import-native/2026-10-07T03-09-56.193Z/result.json",
+      "bytes": 4758,
+      "sha256": "61468802a8056936819256b33b87123e7f76912cb703623f2b29df7880ca3cc4"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-diff/2026-10-07T03-11-34.985Z/result.json",
+      "bytes": 8509,
+      "sha256": "386115bf0b81bfcfaad153dfd7877b35b219ca584c892af8976c6056e5d2548a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-edit/2026-10-07T03-17-51.899Z/result.json",
+      "bytes": 4705,
+      "sha256": "4e610ae68c30dbfa23729a0e41a3b0bf97213eba030b9a0509d7800ac0923b77"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-link-create/2026-10-07T03-18-46.822Z/result.json",
+      "bytes": 4401,
+      "sha256": "4bf61d0afb1c118490139184d82e7f19a0593c34db9e13d5d1675f524cf40480"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-link/2026-10-07T03-12-02.683Z/result.json",
+      "bytes": 6654,
+      "sha256": "d48556c5d6dcb70486c2fbe41ee0bf0f0480b7e8a8cf4f00dade635e18c26061"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-map/2026-10-07T03-11-48.644Z/result.json",
+      "bytes": 8476,
+      "sha256": "eaead9e1952094df82085be36f773727bef36736343f24872bf6acf95d91fc53"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/source-sync/2026-10-07T03-12-20.657Z/result.json",
+      "bytes": 3969,
+      "sha256": "fa5914386c35a66caebea55d4f5167a3fc8d1dc4472977b758ef381c3d6f74a3"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-07T03-10-35.824Z/result.json",
+      "bytes": 18659,
+      "sha256": "feae1a95d462344ea39948c2a779d2fd80142c1dcd3a17e68e2078a0badc09fa"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/window-close-keys/2026-10-07T03-19-34.403Z/result.json",
+      "bytes": 4242,
+      "sha256": "b20c99059079506baf33553886b8abeea95488e517e596855340282fc091b654"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/workspace-appearance/2026-10-07T03-10-15.804Z/result.json",
+      "bytes": 7674,
+      "sha256": "430086a6e80e73964180dcb663c4ee039e2f601f2e3d6ab04d31b9f4ea801c88"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/packaged-2026-10-07T03-09-31.823Z/result.json",
+      "bytes": 1462,
+      "sha256": "a9ff4aa12dbca2b751cbf65dfb0362c962bf5204e2d30e61219df2226d4f272f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/evidence/shell-2026-10-07T03-07-14.019Z/result.json",
+      "bytes": 1366,
+      "sha256": "25b51299b65983e9794e99b52b3d58395a93a08e99915c86f188c39b5fed3a24"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original/dist/development-ae76a7a8-b0b6-4da9-9ec0-a03ad10a5ed7/BUILD-IDENTITY.json",
+      "bytes": 2682,
+      "sha256": "29c85fea7d98778dfb13ec2294b988606ab270f6a4852e6b7237182c4eb11e02"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-diagrams-evidence-original.zip",
+      "bytes": 7673064,
+      "sha256": "fe131aae515c64c157ea6ad597bc25db5ff8f561f2e9dde56043a58791a9e5f6"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-diagrams-evidence-file-inventory.json",
+      "bytes": 29040,
+      "sha256": "6bca0d6b89e978efd8eefbb7d92910d7c4ac32cc7895de66a05787db7f5d2db2"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-original.zip",
+      "bytes": 11113669,
+      "sha256": "242eeccd77a7c2ef2fc13548cb6ffe08b0658098d230d33d44c3bc1b058f339f"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-packaged-evidence-file-inventory.json",
+      "bytes": 42199,
+      "sha256": "965b8801688cec470dffabc216e0a9ca824af82a4e2c24b43c63bfeea72ae9c6"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-sources-evidence-original.zip",
+      "bytes": 3714798,
+      "sha256": "2ecd3c2d3e4419c6172d31d427aa9f942cc828cf32d25d29e1006af5a331f9fb"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-sources-evidence-file-inventory.json",
+      "bytes": 17961,
+      "sha256": "ead4b3f24f667d4cddca58de92e0fb044c2f11ac07bdd49444d3d3efd996b8ca"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-original.zip",
+      "bytes": 4541175,
+      "sha256": "4d90041bc0ef325d6294205f4baa7f0cd261f8e102e83a6355b406b29db7fac1"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-desktop-evidence-file-inventory.json",
+      "bytes": 22408,
+      "sha256": "8be6af4281bb5e972661aa409cc4b8fb911ee607cc3986684bfb5ad6eb0fa524"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-development-evidence-original.zip",
+      "bytes": 70242,
+      "sha256": "82ded31b81b8d63a53be822c2f74b9a71bf4f73e5b1342831f597a837a883a47"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-development-evidence-file-inventory.json",
+      "bytes": 875,
+      "sha256": "ee9d51e98905e83f5a56916e6141abe222d0ea841759c8f45c2fcb3418e183b8"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/unit-job-decoded-original.json",
+      "bytes": 670533,
+      "sha256": "24b54646188960ccb2ed57e64c36035a27fb462996d8c7563f1203df5249a81a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/package-job-decoded-original.json",
+      "bytes": 49783,
+      "sha256": "c96cc1a7715b90d7df42151b0b595247d10761c06c9fdbcea281ccce2cd27b2a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-job-decoded-original.json",
+      "bytes": 46455,
+      "sha256": "55ada3c875ea17abbf34ea936284facae99ac4ddce87c2a75e94202f8ac33993"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/sources-job-decoded-original.json",
+      "bytes": 44301,
+      "sha256": "24af9a7c6a00abca72bf1a5d42d9538f31e9512803a78a2227bdde333d8df530"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/diagrams-job-decoded-original.json",
+      "bytes": 41546,
+      "sha256": "40ef98b8fb1172e0cdf965a12db59cf3b0ed4244cae2aaa4eddc0af41308f0e6"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/run-api-original.json",
+      "bytes": 13190,
+      "sha256": "928c31caea02c7b71fe795747da066e5a1e20755e7cfb1012e92c66379dbc946"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/jobs-api-original.json",
+      "bytes": 30146,
+      "sha256": "02d5134e9ccf6c827db530c34156df947157b65c30bc28c6687f7dc71d827702"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/artifacts-api-original.json",
+      "bytes": 4358,
+      "sha256": "c662c6d506183ce8a9aab097a17244f55a645e0977ff66f7a6313d5205cae162"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/canonical-api-original.json",
+      "bytes": 1630,
+      "sha256": "08aeae4cb40fdbc66f5b0fcccbaba1c5bb0da6f030b74d856f02b3ff596d338a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/integration-api-original.json",
+      "bytes": 2588,
+      "sha256": "632208773704c7425a1d8c894daea95c73ae4508f5eefd8d4e90d592262d5704"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/main-ref-api-original.json",
+      "bytes": 327,
+      "sha256": "5a22b3b40aa644e6c9931833e690d34a07bbf5d4a07d94efa23cbbe95aa78c9c"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/tree-api-original.json",
+      "bytes": 479331,
+      "sha256": "202686ae395d39bfd8af68efd2b21f35e0ad3889cdc26563eaf9d129deca15ff"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/candidate-compare-api-original.json",
+      "bytes": 365949,
+      "sha256": "5934de5c5e62f34a7ee79ccdaaae3efdf3f17b45000efb546296969ae68e3acf"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-sources-evidence-original/evidence/code-context-commands-native/2026-10-07T03-16-56.270Z/result.json",
+      "bytes": 138358,
+      "sha256": "0439f743cabc4a0bd93da699d8c0417eafd2daded90e32ad25f3f1cacf858d9a"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37565124075/desktop-native-diagrams-evidence-original/evidence/diagram-preview/2026-10-07T03-12-23.838Z/result.json",
+      "bytes": 6117,
+      "sha256": "8e61c17d8708e86ce3e27f90d5dac99003579354f9c21dd5f4863a731946e2f3"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 112610954377,
+      "name": "Qualification scope",
+      "conclusion": "success"
+    },
+    {
+      "id": 112611008518,
+      "name": "desktop / Windows packaged workspaces",
+      "conclusion": "success"
+    },
+    {
+      "id": 112611008622,
+      "name": "launcher / launcher",
+      "conclusion": "success"
+    },
+    {
+      "id": 112611008647,
+      "name": "desktop / windows",
+      "conclusion": "success"
+    },
+    {
+      "id": 112612443255,
+      "name": "desktop / Windows native (sources)",
+      "conclusion": "success"
+    },
+    {
+      "id": 112612443301,
+      "name": "desktop / Windows native (diagrams)",
+      "conclusion": "failure"
+    },
+    {
+      "id": 112612443331,
+      "name": "desktop / Windows native (desktop)",
+      "conclusion": "success"
+    },
+    {
+      "id": 112614618560,
+      "name": "desktop / Desktop qualification",
+      "conclusion": "failure"
+    },
+    {
+      "id": 112614650909,
+      "name": "SIREN merge qualification",
+      "conclusion": "failure"
+    }
+  ],
+  "actualCopiedAnnotations": 8,
+  "actualDevelopmentAnnotations": "SKIPPED",
+  "originalPanFailure": "OPEN; no causal closure",
+  "limits": [
+    "Readback of inert retained originals and fresh live API only; no downloaded code executed",
+    "No whole-run PASS, release approval or historical Save-to-Attach closure",
+    "New local Docs changes are outside this hosted canonical"
+  ]
+}

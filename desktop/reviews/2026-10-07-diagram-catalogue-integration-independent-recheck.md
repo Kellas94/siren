@@ -1,0 +1,11 @@
+# Independent package-collector correction recheck
+
+Author: `/root/hosted_resume_retention`, independent reviewer subagent. Date: 2026-10-07. Verdict: **SCOPED INDEPENDENT RECHECK PASS** for `CATALOGUE_HOME_ASSETS_NOT_COLLECTED` only. This does not replace the original ADVERSE review or qualify a package, GUI or release.
+
+Root separately corrected `scripts/package.mjs`. Comparing the current complete file against the retained original proves the only difference is the `candidates.push` line adding the two already-allowlisted exact paths: `generated/assets/home-workspace.js` and `generated/assets/diagram-catalogue.css`. No new resource allowlist or budget exception was introduced. Reviewed fixed collector SHA-256: `05dc6020dbbaf1845c7588d452010ac9c1625e9a7b80fcd7ccf9c9596c03a164`.
+
+I ran the **same unchanged independent probe**, SHA-256 `9e834a47b601c45dad6afb042e7bc537c96f32fbf76f525f156c0909cb50ce55`, with the same finite Node invocation and 15-second deadline as the original negative. Actual collector output now contains both required assets. Result: **1 passed, 0 failed, 0 cancelled, 0 skipped**, exit 0. The probe still independently checks existence, exact Home references, the existing allowlist and actual inclusion, with no new retry or relaxed assertion.
+
+Eight inputs/evidence files were hashed immediately before and after; all remained unchanged during recheck. These include the fixed collector, unchanged probe, generated Home and both assets, original MD/JSON and original negative log. The original report hashes remain MD `7e4fc76d6056785e4558759f0841fec58d0ae402d4b297a6cd5dcd014cae7a39`, JSON `859229b8bea0a65b169e188553c6dbcb492c1f1f6ceadc370f164ac5d781d4a6`. The original collector failure and its original source snapshot remain intact.
+
+Recheck evidence directory: `evidence/workspace-surface/catalogue-integration-independent-recheck/`. It contains before/after hashes, execution receipt, exact fixed collector copy and `collector-unchanged-recheck.log`. No source/test/build mutation, builder, GUI, ASAR/package creation, git or hosted action was performed. Root's separate tests/native receipts were not adopted as independent evidence. This recheck proves the actual collector-input defect was corrected; it does not prove successful copying into an archive or application startup from that archive.

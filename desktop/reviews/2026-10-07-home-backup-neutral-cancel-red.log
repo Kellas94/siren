@@ -1,0 +1,45 @@
+✔ manual uses real catalog search, scoped diagnosis and local category filtering (33.8605ms)
+✔ flow has finite interactive decisions, a text alternative and reset (6.5122ms)
+✔ Escape closes, clears diagnosis and restores initiator focus; dispose cannot reopen (5.5969ms)
+✔ unavailable or retired context cannot reveal a panel or accept arbitrary metadata (5.4756ms)
+✔ callbacks retained from a retired dialog cannot change a newly opened article (5.2782ms)
+✔ opening the manual without an error welcomes browsing instead of diagnosing an unknown failure (5.4781ms)
+✔ Escape is consumed so a containing Presenter does not also leave fullscreen (5.257ms)
+✔ shared manual closes synchronously on cover and cannot reopen before native resume (5.6812ms)
+✔ contextual error and static render help are finite, inert and retired on Lock (7.0695ms)
+✔ cover and resume retire earlier error controls and refuse results captured before the transition (5.0905ms)
+✔ delayed events from a closed dialog cannot close its replacement (4.6695ms)
+✔ unknown structured error keeps only its bounded code visible without guessing a cause (6.2621ms)
+✔ the actual Docs save callback cannot offer a diagnosis after native cover and resume (5.1563ms)
+✖ actual Home backup cancellation stays neutral with shared Help installed; real failures still explain (9.3549ms)
+✔ repeated open is a single dialog with an unknown-identity explanation (5.2283ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.3302
+
+✖ failing tests:
+
+test at tests\help-view.test.mjs:104:1
+✖ actual Home backup cancellation stays neutral with shared Help installed; real failures still explain (9.3549ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Backup export cancelled.Explain error'
+  - 'Backup export cancelled.'
+                             ^
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/help-view.test.mjs:113:57)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Backup export cancelled.Explain error',
+    expected: 'Backup export cancelled.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

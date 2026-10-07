@@ -1,0 +1,72 @@
+{
+  "author": "/root",
+  "status": "COMPLETE_SCOPED_SOURCE",
+  "fullSuite": {
+    "path": "evidence/workspace-surface/full-suite-2026-10-05T19-54-16.084Z/result.json",
+    "sha256": "5bb7701ce77b6183951e5dff64a8f2db7dd4faf2f09fcda4f2e5b31396798741",
+    "logSha256": "b3ead93df0320cdd2846a2c64cc9055f75a7ff449f2162f24619a99916c40a42",
+    "tests": 1053,
+    "inputEntries": 419,
+    "unchanged": true
+  },
+  "native": {
+    "path": "evidence/process-native-qualification/2026-10-05T19-58-51.524Z/result.json",
+    "sha256": "d05ba4f0480b029c82f6e191b3b4b4f254bc6f0fce9781d7769ac8be500e11ae",
+    "groups": 5,
+    "logs": [
+      {
+        "name": "shell",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\process-native-qualification\\2026-10-05T19-58-51.524Z/shell.log",
+        "sha256": "0895ff4ad968a3b0761872f6ccf84da74e604217210afafe51ffd4229c2deeec"
+      },
+      {
+        "name": "local-pin",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\process-native-qualification\\2026-10-05T19-58-51.524Z/local-pin.log",
+        "sha256": "3dab56890207143d9a692bb37029a22700d5e220997325b0a3ae6699201215df"
+      },
+      {
+        "name": "home-recovery",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\process-native-qualification\\2026-10-05T19-58-51.524Z/home-recovery.log",
+        "sha256": "6f8082ff5508b5fffe212fb9aa05ac35b2c4b0c98a99819883bd284ddc17f233"
+      },
+      {
+        "name": "window-close-keys",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\process-native-qualification\\2026-10-05T19-58-51.524Z/window-close-keys.log",
+        "sha256": "52eb97bcf199c164173340dbd0e49cfd3930cdda31d99ba9298cf36f0ddd2152"
+      },
+      {
+        "name": "diagram-export",
+        "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\process-native-qualification\\2026-10-05T19-58-51.524Z/diagram-export.log",
+        "sha256": "d0c02a2d0a9b80996f8f5af1776eb9a4f99268ba40205b3c086a100faad2ec6f"
+      }
+    ],
+    "unchanged": true
+  },
+  "observations": {
+    "red": {
+      "path": "evidence/process-module-refusal/2026-10-05T19-52-15.958Z/result.json",
+      "sha256": "1f260798914b7c00f6dabb8e10562d0d11892558e9cdf0da3ebd034e0f07d464",
+      "status": "ADVERSE",
+      "observed": "missing",
+      "cases": null
+    },
+    "green": {
+      "path": "evidence/process-module-refusal/2026-10-05T19-53-37.013Z/result.json",
+      "sha256": "9485119550f98f0be2de6711de5d9a87bbc5e2af2e07e6e6983c73c64ee6b626",
+      "status": "COMPLETE",
+      "observed": "unknown",
+      "cases": null
+    },
+    "unicode": {
+      "path": "evidence/source-unicode-capacity/2026-10-05T19-47-46.272Z/result.json",
+      "sha256": "2128590c2d87f660e7ee2e5c42a4bebb31831877ab90f18fbb4c3012a874dced",
+      "status": "COMPLETE",
+      "cases": 4
+    }
+  },
+  "independent": {
+    "reviews/2026-10-05-diagram-export-retention-canonical-independent.md": "08f17eb5b626baed455a426dbac2afbc678b730e2d921497ec0eab7aea9b995d",
+    "reviews/2026-10-05-process-identity-adverse-unicode-independent.md": "27c6a2a3df28ff4cb8d0c8846b6c23f1296fa2914f1f208342e4215d1e7409d4"
+  },
+  "scope": "Only demonstrated stderr-to-false-missing/ownership hardening, not permanent fix of hosted zero-output cancellation. Actual original5 native source probes plus frozen1053; focused11/deadline/native-module RED/GREEN separate. Unicode32MiB storage/reader only. New package/hosted on this changed source pending; historical hosted run1575 package remains adverse. No wholeplan/release/install replacement."
+}

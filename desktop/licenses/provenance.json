@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "electronVersion": "44.5.1",
+  "chromiumNoticeSha256": "7b328b8c7463ac9bfc7dc648c751533517c8441a0b5b21047d6c0b2620e60d70",
+  "notices": [
+    {
+      "name": "better_any",
+      "reference": "../LICENCE-Apache",
+      "version": "0.2.1",
+      "revision": "66802eb68397c7dbdaf3be9f5ab51e7506d238ed",
+      "source": "https://github.com/rrevenantt/better_any/blob/66802eb68397c7dbdaf3be9f5ab51e7506d238ed/LICENCE-Apache",
+      "file": "better_any-0.2.1-LICENCE-Apache.txt",
+      "sha256": "769f80b5bcb42ed0af4e4d2fd74e1ac9bf843cb80c5a29219d1ef3544428a6bb"
+    }
+  ]
+}

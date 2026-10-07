@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "date": "2026-10-07",
+  "author": "/root/hosted_resume_retention",
+  "kind": "independent-readonly-pan-cancel-event-addendum",
+  "verdict": "LOSTPOINTERCAPTURE_CONFIRMED_IN_NEW_OWNER_DIAGNOSTIC_UNDERLYING_CAUSE_OPEN",
+  "originalReportsUnmodified": true,
+  "ownerReceipt": {
+    "path": "evidence/diagram-pan-cancel-diagnostic/2026-10-07T10-21-47.076Z/result.json",
+    "status": "ADVERSE",
+    "partialMove": true,
+    "transform": "translate(0px, 0px) scale(1)",
+    "cancellation": {
+      "type": "lostpointercapture",
+      "id": 1,
+      "buttons": 1,
+      "x": 650.9140625,
+      "y": 388.1875,
+      "timeStamp": 6939.5999999940395,
+      "hasCapture": false,
+      "drag": {
+        "id": 1,
+        "x": 630.9140625,
+        "y": 378.1875,
+        "panX": 0,
+        "panY": 0
+      },
+      "panX": 0,
+      "panY": 0,
+      "paused": false,
+      "disposed": false
+    },
+    "inputsUnchanged": true
+  },
+  "conclusions": [
+    "New diagnostic supplies the previously missing event type: lostpointercapture while buttons1 at the partial move coordinate. Existing cancelPan sees the fresh id1 drag and clears it before move/up can apply endpoint.",
+    "This establishes the cancellation event in this instrumented diagnostic only. It does not establish why capture was lost, whether the original/historical run had the same browser event, or whether the product or unfocused CDP transport is at fault.",
+    "Legitimate lost capture must keep cancellation behavior; ignoring it would be unjustified and can create a stuck drag or accidental motion after leaving focus.",
+    "Original harness opens Code and then Docs before issuing flow-page pan. attach-page click/send is hit-tested CDP transport but does not independently ensure document/native OS focus. This makes background-window capture a relevant hypothesis, not an established explanation."
+  ],
+  "nextEvidence": "Observe document.hasFocus, native isFocused and real focus/blur transitions without changing focus first; correlate with down/cancel timestamp/buttons/capture and current owned window. Keep original endpoint oracle/adverse artifacts. A focused diagnostic can subsequently serve as a controlled comparison, never a replacement passing qualification.",
+  "guiExecuted": false,
+  "nativeExecuted": false,
+  "sourceTestsProbeMutation": false,
+  "historicalHostedCauseClosed": false,
+  "releaseApproval": false,
+  "inputCount": 9,
+  "allInputsUnchanged": true,
+  "inputsBefore": [
+    {
+      "path": "evidence/diagram-pan-cancel-diagnostic/2026-10-07T10-21-47.076Z/result.json",
+      "bytes": 22787,
+      "sha256": "de66909f329be2823e850b6ad5c9ee214eba5f86534b7cf0760374ae5746ec0c"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-pan-cancel-diagnostic-owner.mjs",
+      "bytes": 16947,
+      "sha256": "94b7a54815bbc1f781595678d39e9d8960091139d3c9234563886a1aa4324112"
+    },
+    {
+      "path": "evidence/workspace-surface/prepare-pan-cancel-diagnostic-owner.mjs",
+      "bytes": 1997,
+      "sha256": "184aa7c9a24e5077b9f0d12777cc6d4b9376dfe15e99ab9d51f2502358633c0b"
+    },
+    {
+      "path": "tests/native/diagram-pan-release.mjs",
+      "bytes": 15799,
+      "sha256": "aa0b265582f8ba11e4ffba5992c0320df44dea99cab79a744c6769e999280f47"
+    },
+    {
+      "path": "tests/native/attach-page.mjs",
+      "bytes": 2333,
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb"
+    },
+    {
+      "path": "tests/native/drive.mjs",
+      "bytes": 12270,
+      "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+    },
+    {
+      "path": "src/ui/windows/diagram.js",
+      "bytes": 28613,
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-pan-cancellation-independent.md",
+      "bytes": 2017,
+      "sha256": "13e66358e00783bde621b2fcd7d106dcd6a455628af9673d22d8c1ffa0bb1933"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-pan-cancellation-independent.json",
+      "bytes": 9707,
+      "sha256": "968b3fb64f4bf999d7d8928fee1437a7ef9aa7edcb658380f0070cf0bcaf38c2"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "evidence/diagram-pan-cancel-diagnostic/2026-10-07T10-21-47.076Z/result.json",
+      "sha256": "de66909f329be2823e850b6ad5c9ee214eba5f86534b7cf0760374ae5746ec0c",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-pan-cancel-diagnostic-owner.mjs",
+      "sha256": "94b7a54815bbc1f781595678d39e9d8960091139d3c9234563886a1aa4324112",
+      "unchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/prepare-pan-cancel-diagnostic-owner.mjs",
+      "sha256": "184aa7c9a24e5077b9f0d12777cc6d4b9376dfe15e99ab9d51f2502358633c0b",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/diagram-pan-release.mjs",
+      "sha256": "aa0b265582f8ba11e4ffba5992c0320df44dea99cab79a744c6769e999280f47",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/attach-page.mjs",
+      "sha256": "9adda5678dc537c070fe9dc3c8911f7efa8ba37f81637f434c61fe7b8b3fb7bb",
+      "unchanged": true
+    },
+    {
+      "path": "tests/native/drive.mjs",
+      "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+      "unchanged": true
+    },
+    {
+      "path": "src/ui/windows/diagram.js",
+      "sha256": "c1495a9b1df1a6a3477cf763d83322c3d70814bb592b18f679f833a6e66e3162",
+      "unchanged": true
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-pan-cancellation-independent.md",
+      "sha256": "13e66358e00783bde621b2fcd7d106dcd6a455628af9673d22d8c1ffa0bb1933",
+      "unchanged": true
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-pan-cancellation-independent.json",
+      "sha256": "968b3fb64f4bf999d7d8928fee1437a7ef9aa7edcb658380f0070cf0bcaf38c2",
+      "unchanged": true
+    }
+  ]
+}

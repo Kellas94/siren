@@ -1,0 +1,879 @@
+{
+  "schema": 1,
+  "author": "/root/disk_inventory",
+  "role": "Owner evidence retention; not independent product approval",
+  "retainedUtc": "2026-10-06T21:05:37.011Z",
+  "status": "HOSTED_FINAL_SUCCESS_ORIGINALS_RETAINED_VERIFIED",
+  "runId": 37528726783,
+  "runUrl": "https://github.com/Kellas94/siren/actions/runs/37528726783",
+  "canonicalCommit": "63e03994b6e13a88911a61d387d8afc33035baf9",
+  "canonicalTree": "d5cd608cfbd4842db6cf531380d991dfa8943eda",
+  "actualIntegrationCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+  "integrationParents": [
+    "1e5472dde446657e2dbb155868e28e033c6c9c92",
+    "63e03994b6e13a88911a61d387d8afc33035baf9"
+  ],
+  "mainUnchanged": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "localProductCommit": "59081e36f00629d6da4c0d474efe5dcb21f1312b",
+  "localSyncedCheckpoint": "708cf2cab7e941fc0c5285c4f57e0e43d4b14e4a",
+  "jobs": [
+    {
+      "id": 112492297153,
+      "name": "Qualification scope",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112492433587,
+      "name": "desktop / Windows packaged workspaces",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112492433624,
+      "name": "desktop / windows",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112492433656,
+      "name": "launcher / launcher",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112494613352,
+      "name": "desktop / Windows native (diagrams)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112494613436,
+      "name": "desktop / Windows native (sources)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112494613779,
+      "name": "desktop / Windows native (desktop)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112497547034,
+      "name": "desktop / Desktop qualification",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112497617996,
+      "name": "SIREN merge qualification",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "units": {
+    "identityTests": 3,
+    "remainingTests": 1158,
+    "uniqueUnitTests": 1161,
+    "earlyIoProbe": 1,
+    "earlyIoIncludedInRemainingSuite": true,
+    "rawJobTapTotal": 1162,
+    "failures": 0,
+    "scope": "Distinct suite executions are three admitted identity tests plus1158remaining tests; the separately repeatedIOprobe is not counted twice."
+  },
+  "nativeOriginalProbes": 60,
+  "nativeGroups": {
+    "desktop": {
+      "probes": 20,
+      "status": "COMPLETE",
+      "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "sha256": "873baa40ebc2ef6569e69ae08ab6f3c4c7b5fafdf157bce31696909ee5d87304",
+      "results": [
+        {
+          "script": "shell",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "protected-storage",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "account-transition",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-windows",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "desktop-ui",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-recovery",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "recovery-zoom",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-diagram-interaction",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "guided-intro",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "dev-first-run",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "access-screen",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "local-pin",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "headless-import",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "readonly-roster",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-entry",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-navigation",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-recovery",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-library",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-focus",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "toast-transition",
+          "code": 0,
+          "signal": null
+        }
+      ],
+      "inputHashesStable": true
+    },
+    "sources": {
+      "probes": 20,
+      "status": "COMPLETE",
+      "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "sha256": "4ac83f929f0bb254fef507b45cbe334d313f9bfa1f2e678352ecc30ca5e19860",
+      "results": [
+        {
+          "script": "source-owner",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-read",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-analysis",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-diff",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-map",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-link",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-link-create",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-sources",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-sync",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-format",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "view-control-rollback",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "large-source-docs",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-view-flush",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "domain-workspaces",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-close-keys",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-role-privacy",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "workspace-appearance",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "workspace-dock",
+          "code": 0,
+          "signal": null
+        }
+      ],
+      "inputHashesStable": true
+    },
+    "diagrams": {
+      "probes": 20,
+      "status": "COMPLETE",
+      "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "sha256": "47501aa3ea4fa214fdf104d02b8c51fe3dd89f82784adbb92d51c8d0df07136f",
+      "results": [
+        {
+          "script": "diagram-preview",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-guided",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-style",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-build",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-vector",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-export",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-dock",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-library-search",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-documents",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-structured",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-source-projects",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-render",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-style",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-cards",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-windows",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-reader",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "ui-personality",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-context",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-authoring",
+          "code": 0,
+          "signal": null
+        }
+      ],
+      "inputHashesStable": true
+    }
+  },
+  "packaged": {
+    "moduleProbes": 28,
+    "moduleCases": 145,
+    "probeReceipts": [
+      {
+        "name": "workspace-appearance",
+        "cases": 8,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/workspace-appearance/2026-10-06T20-46-29.162Z/result.json",
+        "sha256": "7445217dd5b0e6b6c4fc66e6e53254cc7fa7c2923b47d9c9e39f773a4b5b4ba4",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "ui-personality",
+        "cases": 11,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-06T20-46-49.193Z/result.json",
+        "sha256": "93096aadd4c28b35ecf4fa4da25161b9231d1ceb81b4799cf668e1f3e2b71054",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "docs-reader",
+        "cases": 2,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-reader/2026-10-06T20-47-26.485Z/result.json",
+        "sha256": "c738ce6003ddb05a4eeb3410cc1d807c4ec3a94d3e7e5433aacba382ebe790f9",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-analysis",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-analysis/2026-10-06T20-47-34.736Z/result.json",
+        "sha256": "76d6c451bde461482d22d79cc999a7c593aa694d553ddd39bd691511e972f365",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-diff",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-diff/2026-10-06T20-47-48.696Z/result.json",
+        "sha256": "f6c26d3b6216eea7e360fa0a85140f38f98a0c03d6dbd8ca36b2986ab54ccb2c",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-map",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-map/2026-10-06T20-48-02.792Z/result.json",
+        "sha256": "a486f7e51230eeabac81ba62102e3d3751b00d9b6f6222bd1b3f40ab416767c0",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-link",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-link/2026-10-06T20-48-16.611Z/result.json",
+        "sha256": "a1d484c194dee134fcffb3a5c6c0f5ec705c267b2d270032afdffc73196e67cb",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-sync",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-sync/2026-10-06T20-48-36.353Z/result.json",
+        "sha256": "ec8017388671c2d70075aa7e367001fdb9f4e5e88d5e0fc22586d90215e928f3",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "docs-edit",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-edit/2026-10-06T20-48-56.935Z/result.json",
+        "sha256": "f6d9edcaec50c4e7617ca3b71f0ed0c47f2d09dd9049843fac4fd0ef219df768",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "docs-format",
+        "cases": 6,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-format/2026-10-06T20-49-26.336Z/result.json",
+        "sha256": "bbb7d846ba31c97b7a7c0dda0ccfc4050a77238038d52bde335c399b3209dd28",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-preview",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-preview/2026-10-06T20-49-40.461Z/result.json",
+        "sha256": "a9fa380aa84934bc6ef0c817ca40405e670ad09b7e05b545c9051359d0306030",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-edit",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-edit/2026-10-06T20-49-58.108Z/result.json",
+        "sha256": "d6be21771617eabb7710586422b8447c071ebdcf7cb7d0e955145f629885c0e0",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-guided",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-guided/2026-10-06T20-50-28.933Z/result.json",
+        "sha256": "3b62bf452a1ddd76af23249410bd8516b2e72adab3dd1abee0e2b96bd7265ab3",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-style",
+        "cases": 6,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-style/2026-10-06T20-50-51.213Z/result.json",
+        "sha256": "9010f2029e20a2901503661da3b56089ec425b46904e848668a666b97a7aa697",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-export",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-export/2026-10-06T20-51-18.823Z/result.json",
+        "sha256": "b5d3830750bb823073a8a23fd939d1eeeddc3cc743ef7568feefa8a9da3376f3",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-dock",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-dock/2026-10-06T20-51-38.370Z/result.json",
+        "sha256": "defa9f453f44f2df4e5d9ac12cee59518fa9f74ac2e61c07e2a87bf8f2d6ab9b",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "diagram-build",
+        "cases": 7,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/diagram-build/2026-10-06T20-52-08.368Z/result.json",
+        "sha256": "c527b59ca8c89098539274144662cdf882e7ed7b15edc8992bc30508e82e5802",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "docs-context-native",
+        "cases": 6,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-context-native/2026-10-06T20-52-41.863Z/result.json",
+        "sha256": "e9656ce89b305ad93187d4af202e171c61dbf75cab312bc00c0e965e8346811c",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": null
+      },
+      {
+        "name": "presentation-authoring-native",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/presentation-authoring-native/2026-10-06T20-52-56.621Z/result.json",
+        "sha256": "30652d097110f1bdab790612440b4d2e41c69f689a5a2b5ceb37c49d930594e7",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": null
+      },
+      {
+        "name": "docs-structured",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-structured/2026-10-06T20-53-19.159Z/result.json",
+        "sha256": "b04d7713b08502c841614c48d51ab5cfa62136086cbd53b4b8af1f188bc41d20",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": null
+      },
+      {
+        "name": "home-library-search",
+        "cases": 7,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/home-library-search/2026-10-06T20-53-39.523Z/result.json",
+        "sha256": "a872a4e6c3b8cbbb89a478cb04af4359507fcaa1e6f65fe3abc5a92d45534c4d",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "home-documents",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/home-documents/2026-10-06T20-53-49.569Z/result.json",
+        "sha256": "a8c6718d59d530592ee2ee155e1cdd61a3ea7fd61b4849a2f477899119840527",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": null
+      },
+      {
+        "name": "source-edit",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-edit/2026-10-06T20-54-08.728Z/result.json",
+        "sha256": "3720f916ae5af694b35027d6b8020149b573bc1f609815e747b993ffaf6c4d82",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "home-source-projects",
+        "cases": 8,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/home-source-projects/2026-10-06T20-54-32.878Z/result.json",
+        "sha256": "663d46820e28376c7c3ce1a930d8faff571d1ab5fde026bec2c2cd6edb3f84fb",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "source-link-create",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/source-link-create/2026-10-06T20-55-10.472Z/result.json",
+        "sha256": "804e526f17473939a0d67a220e221625c90db167fdf40e83266a5e0f435a0b62",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "docs-sources",
+        "cases": 5,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/docs-sources/2026-10-06T20-55-32.664Z/result.json",
+        "sha256": "d0cb8ffd73fb19879c87ace269f0d0fe154deac2c87e50d0747d7b9f4ec3df0d",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "window-close-keys",
+        "cases": 4,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/window-close-keys/2026-10-06T20-55-56.646Z/result.json",
+        "sha256": "d38844b154e6501c84c63155d57a5b98a2db0c40f4535b9bf6721c3c2aaf1849",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      },
+      {
+        "name": "presentation-windows",
+        "cases": 6,
+        "originalPath": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original/evidence/presentation-windows/2026-10-06T20-56-03.853Z/result.json",
+        "sha256": "e65c818ff81a186ded3733f41f18d5703eb327c7d26f00d01f5c806a650bc084",
+        "status": "COMPLETE",
+        "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+        "archive": {
+          "bytes": 53811435,
+          "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+        },
+        "inputHashesStable": true
+      }
+    ],
+    "originalBuildIdentity": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37528726783\\desktop-packaged-evidence-original\\dist\\development-e22a9f21-bfd9-4a95-85ee-287eb98bb1b0\\BUILD-IDENTITY.json",
+    "buildIdentitySha256": "8389b25cef62f15683d1fc9f260153e1e9f3565df4a2f8cb7db3e5e91071a5f7",
+    "sourceCommit": "b213e2606520ab7be34e8f8e985901fa80e3e478",
+    "archive": {
+      "bytes": 53811435,
+      "sha256": "6db6124aded61085f9de2b5396f64f555be8292a904c5abeafecda17a5d97e07"
+    },
+    "coreProductionPackage": {
+      "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\ci37528726783\\desktop-packaged-evidence-original\\evidence\\packaged-2026-10-06T20-46-05.858Z\\result.json",
+      "sha256": "aa90f40c9b3d985df4a51a7c4180b192d292dec1a65ec00c77eebfdf298478d1",
+      "completed": true,
+      "scope": "Actual packaged app.asar/SIREN.exe, locked null snapshot/refused saves, production native fixture PIN unlock, pointer/keyboard editor save through production acknowledged flush with exact native bytes/revision/hash/full-bag readback, rejected dev CLI, Unicode folder copy relock/unlock, pointer recovery into a new project preserving the acknowledged saved original, native damaged-journal read-only authority despite correct PIN, and unconfigured updates. No launcher/apply/clean-PC/online account qualification."
+    },
+    "note": "28copied module probes with145named cases; additional production packaged core and shell checks are kept separately, not invented as numbered module cases. Hosted archive bytes can differ from local checkout builds; no byte-identical local package claim."
+  },
+  "artifacts": [
+    {
+      "name": "desktop-native-diagrams-evidence",
+      "id": 11444340292,
+      "zip": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-diagrams-evidence-original.zip",
+      "bytes": 7467326,
+      "sha256": "74cc63f6fd16e38457b30bf17cc64540b2d30f1fd7c6c24f935db2eca150025e",
+      "files": 146,
+      "uncompressed": 7923444,
+      "identityReceipt": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-diagrams-evidence-zip-identity.json"
+    },
+    {
+      "name": "desktop-packaged-evidence",
+      "id": 11444290396,
+      "zip": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-original.zip",
+      "bytes": 9604675,
+      "sha256": "1061da822257d9acf06f1b63beaf072885c4a2a2387338730c24cf7ca022c9b1",
+      "files": 191,
+      "uncompressed": 10210567,
+      "identityReceipt": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-packaged-evidence-zip-identity.json"
+    },
+    {
+      "name": "desktop-development-evidence",
+      "id": 11443985565,
+      "zip": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-development-evidence-original.zip",
+      "bytes": 57595,
+      "sha256": "b43068c1ab1019aa901b0afb940aee8a885a268cd035a08c4ca95d8b4526c942",
+      "files": 5,
+      "uncompressed": 304579,
+      "identityReceipt": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-development-evidence-zip-identity.json"
+    },
+    {
+      "name": "desktop-native-sources-evidence",
+      "id": 11443792792,
+      "zip": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-sources-evidence-original.zip",
+      "bytes": 3215450,
+      "sha256": "b5be5dc5f4a6273d049cd0a65600ce077e501b9d1ae0d3bf429ca1daca3bd65f",
+      "files": 86,
+      "uncompressed": 3537526,
+      "identityReceipt": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-sources-evidence-zip-identity.json"
+    },
+    {
+      "name": "desktop-native-desktop-evidence",
+      "id": 11443658352,
+      "zip": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-desktop-evidence-original.zip",
+      "bytes": 4317164,
+      "sha256": "c82d61bb6a8775ee80072aa1b45c46b132bc2857129d0b98aef6344e7143b6ff",
+      "files": 105,
+      "uncompressed": 4720110,
+      "identityReceipt": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-native-desktop-evidence-zip-identity.json"
+    }
+  ],
+  "originalLogs": {
+    "unit": {
+      "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/unit-job-decoded-original.json",
+      "sha256": "b96a3ae0a9727d89ba747999d67d1130f368ac018926905766543042c2d10f19",
+      "originalDecodedCharacters": 537437
+    },
+    "package": {
+      "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/package-job-decoded-original.json",
+      "sha256": "4760ec3c106c556c40025412543daf57e7a09caa39e642930e814d06a8109acc",
+      "originalDecodedCharacters": 41313
+    },
+    "desktop": {
+      "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/desktop-job-decoded-original.json",
+      "sha256": "0f522814bd889dc353a84eb66723a3e90fb956eddd942cb63b9e71c8dac91d4f",
+      "originalDecodedCharacters": 38693
+    },
+    "sources": {
+      "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/sources-job-decoded-original.json",
+      "sha256": "7155cd42385310a110d15e1b5205bd6e840bdd4dfb41dee756239dbaa800603a",
+      "originalDecodedCharacters": 40323
+    },
+    "diagrams": {
+      "path": "C:/Claude/SIREN_WORK/portable/desktop/evidence/workspace-surface/ci37528726783/diagrams-job-decoded-original.json",
+      "sha256": "50e75868827182a1625838eef3a1d706b8ed7b1d777f3b9325cd6c4500014e29",
+      "originalDecodedCharacters": 38238
+    }
+  },
+  "scope": "Actual completed originalGitHub run/jobs/API/logs/ZIPbytes and bounded inert extracted JSON/PNG/log/text. No artifact code executed, source/build/test/GUI/release/main/sync edits or cleanup. Existing adverse hosted evidence remains intact."
+}

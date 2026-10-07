@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "role": "Owner canonical synchronization receipt, not hosted approval",
+  "observedUtc": "2026-10-07 00:32:50 UTC",
+  "localBase": "727a277f7c1e423660d8d47b5f23c3936ef0aca3",
+  "qualifiedLocalCheckpoint": "8f92618c210f9f9f8abf530485d9d5637d6aaf1c",
+  "productSource": "63f21362c60d86443edebfe9a4400b2f377b3f47",
+  "previousCanonical": "1227e2aaafe827e05afa9564e86ab4dec423ac74",
+  "canonical": {
+    "sha": "d26f7c3b61d2a0ba66c038b8dba93877c6080498",
+    "tree": "6e13c5796890ba1a21c6fd97e8ea28b59fe26d3d",
+    "parent": "1227e2aaafe827e05afa9564e86ab4dec423ac74"
+  },
+  "integration": {
+    "sha": "bc42ea8bbb792038ce0f03529e68d1c0fe40b158",
+    "tree": "6e13c5796890ba1a21c6fd97e8ea28b59fe26d3d",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "d26f7c3b61d2a0ba66c038b8dba93877c6080498"
+    ]
+  },
+  "tree": {
+    "sha": "6e13c5796890ba1a21c6fd97e8ea28b59fe26d3d",
+    "blobs": 1747,
+    "localDeltaFiles": 40,
+    "remoteDeltaEntries": 41,
+    "newFiles": 21,
+    "untouchedBlobs": 1706
+  },
+  "ignore": {
+    "oldSha": "cbfcacfa002b5be24cd6e10d0091c85ba87a07c1",
+    "oldBytes": 24631,
+    "prefixPreserved": true,
+    "sha": "ebc0f7e84c34a4113e153913daec8f0561c363b7",
+    "bytes": 26086,
+    "exactAdditions": [
+      "desktop/build/native-node-style-validation.mjs",
+      "desktop/reviews/2026-10-07-diagram-history-typography-csp-followup-independent.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-independent-original.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-independent-recheck.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-local-qualification.json",
+      "desktop/reviews/2026-10-07-diagram-history-typography-local-qualification.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-native-csp-diagnostic.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-native-final-observation.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-native-original-adverse.md",
+      "desktop/reviews/2026-10-07-diagram-history-typography-native-select-observation.md",
+      "desktop/reviews/2026-10-07-native-code-parity-next-analysis.md",
+      "desktop/reviews/2026-10-07-native-diagram-history-removal-independent-preflight.md",
+      "desktop/reviews/2026-10-07-presenter-notes-canonical-sync.json",
+      "desktop/reviews/2026-10-07-presenter-notes-hosted-evidence.json",
+      "desktop/reviews/2026-10-07-presenter-notes-hosted-evidence.md",
+      "desktop/src/ui/diagram/history-view.js",
+      "desktop/tests/diagram-history-ci.test.mjs",
+      "desktop/tests/diagram-history-view.test.mjs",
+      "desktop/tests/diagram-history.test.mjs",
+      "desktop/tests/diagram-node-style-validation.test.mjs",
+      "desktop/tests/native/diagram-history-typography.mjs"
+    ]
+  },
+  "main": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {
+    "number": 2,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "url": "https://github.com/Kellas94/siren/pull/2"
+  },
+  "hostedAtObservation": {
+    "id": 37552477003,
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/Kellas94/siren/actions/runs/37552477003"
+  },
+  "limits": [
+    "Local qualifier and genuine original/recheck authors remain separate from actual GitHub execution",
+    "Historical earlier Diagram timeout remains OPEN",
+    "No main merge, production release or installed application replacement"
+  ]
+}

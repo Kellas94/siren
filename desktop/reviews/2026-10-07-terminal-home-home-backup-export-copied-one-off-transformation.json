@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "executionOwner": "/root",
+  "status": "PREPARED_NOT_EXECUTED_NOT_INDEPENDENT_APPROVAL",
+  "capturedAt": "2026-10-07T16:20:35.418Z",
+  "base": {
+    "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\tests\\native\\home-backup-export.mjs",
+    "copy": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\home-backup-export-base-99d8109c.mjs",
+    "bytes": 14487,
+    "sha256": "99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0",
+    "afterSha256": "99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0"
+  },
+  "probe": {
+    "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\home-backup-export-copied-one-off.mjs",
+    "bytes": 16938,
+    "sha256": "71498c1311621b9917102b4b5e2482c89a3afda08f0ae7c7092ffbb7070267f8"
+  },
+  "helper": {
+    "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\tests\\native\\package-context.mjs",
+    "sha256": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c",
+    "scope": "Existing copy and exact ASAR/runtime/process-reader checks, imported by absolute local file URL at future execution only"
+  },
+  "diff": {
+    "path": "C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\home-backup-export-copied-one-off.diff",
+    "sha256": "d1fe2151e59de9507ab474079dd46e1475d6195231135b9d4d477626ea565e24",
+    "added": 27,
+    "removed": 15
+  },
+  "preserved": {
+    "fixture100kSeedBodyByteIdentical": true,
+    "menuKeyboardLockCancelAssertionsAndUiDeadlinesByteIdentical": true,
+    "chooserInspectorBodyUnchanged": true,
+    "noTestRootArgument": true,
+    "requiresExplicitPackage": true,
+    "ownedData": "packaged.data",
+    "launcher": "launchDesktop({...packaged.launch,extraArgs:[inspector]})",
+    "postHashAfterExit": true
+  },
+  "transformations": [
+    {
+      "id": "absolute-import:src/projects/store.mjs",
+      "occurrences": 1,
+      "from": "from '../../src/projects/store.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/projects/store.mjs'"
+    },
+    {
+      "id": "absolute-import:src/sources/repository.mjs",
+      "occurrences": 1,
+      "from": "from '../../src/sources/repository.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/repository.mjs'"
+    },
+    {
+      "id": "absolute-import:src/recovery/checkpoints.mjs",
+      "occurrences": 1,
+      "from": "from '../../src/recovery/checkpoints.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/recovery/checkpoints.mjs'"
+    },
+    {
+      "id": "absolute-import:src/sources/manifest.mjs",
+      "occurrences": 1,
+      "from": "from '../../src/sources/manifest.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/manifest.mjs'"
+    },
+    {
+      "id": "absolute-import:src/sources/bundle-import.mjs",
+      "occurrences": 1,
+      "from": "from '../../src/sources/bundle-import.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/src/sources/bundle-import.mjs'"
+    },
+    {
+      "id": "absolute-import:tests/native/drive.mjs",
+      "occurrences": 1,
+      "from": "from './drive.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/drive.mjs'"
+    },
+    {
+      "id": "absolute-import:tests/native/native-keyboard.mjs",
+      "occurrences": 1,
+      "from": "from './native-keyboard.mjs'",
+      "to": "from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/native-keyboard.mjs'"
+    },
+    {
+      "id": "copied-package-helper-import",
+      "occurrences": 1,
+      "from": "import {reserveInspectorPort} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/native-keyboard.mjs';",
+      "to": "import {reserveInspectorPort} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/native-keyboard.mjs';\nimport {copiedPackageContext} from 'file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/package-context.mjs';\nimport {fileURLToPath} from 'node:url';"
+    },
+    {
+      "id": "absolute-source-root-and-one-off-evidence",
+      "occurrences": 1,
+      "from": "const root=resolve('.'),evidence=resolve('evidence/home-backup-export-native',new Date().toISOString().replaceAll(':','-'));",
+      "to": "const root=\"C:\\\\Claude\\\\SIREN_WORK\\\\portable\\\\desktop\",evidence=resolve(root,'evidence/workspace-surface/home-backup-neutral-cancel/runs',new Date().toISOString().replaceAll(':','-'));\nassert.ok(process.argv.includes('--package'),'This one-off requires an explicit development preview --package root');"
+    },
+    {
+      "id": "capture-own-harness",
+      "occurrences": 1,
+      "from": "paths.push(join(root,'node_modules/electron/dist/electron.exe'));",
+      "to": "paths.push(join(root,'node_modules/electron/dist/electron.exe'),fileURLToPath(import.meta.url));"
+    },
+    {
+      "id": "actual-preparer-and-execution-owner",
+      "occurrences": 1,
+      "from": "author:'/root/media_batch_review',scope:'Development Electron only; actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. No manual OS chooser, packaged application, readonly native mode, physical monitor or maximum-capacity qualification.'",
+      "to": "author:'/root/hosted_resume_retention',executionOwner:'/root',originalFixtureAuthor:'/root/media_batch_review',scope:'One-off owned copied development-preview probe prepared by /root/hosted_resume_retention for execution by ROOT; not independent approval. Actual native menu callback and WebContents keyboard input, actual Home/preload/main/exporter/atomic storage/PIN. PID-checked fixture replaces only OS Save chooser. Concurrency calls use the real Home bridge explicitly. Requires --package, copied Data and verified ASAR/runtime/process-reader before and after actual exit. No manual OS chooser, readonly native mode, physical monitor, release or maximum-capacity qualification.'"
+    },
+    {
+      "id": "retain-copy-context",
+      "occurrences": 1,
+      "from": "let driver,chooser;",
+      "to": "let driver,chooser,packaged;"
+    },
+    {
+      "id": "copied-data-and-prelaunch-identity",
+      "occurrences": 1,
+      "from": " const data=join(evidence,'owned-data'),outputs=join(evidence,'outputs');await mkdir(data);await mkdir(outputs);",
+      "to": " result.probe={path:fileURLToPath(import.meta.url),sha256:hash(await readFile(fileURLToPath(import.meta.url))),baseSha256:'99d8109c65f5d678fd41184f857c17de69be5e41a5c7f57c5b4ceb545365d8f0'};\n result.packageRequest={preview:resolve(process.argv[process.argv.indexOf('--package')+1]),expectedCopy:join(evidence,'Pachet-Știință-UI')};\n packaged=await copiedPackageContext(evidence);assert.ok(packaged,'Copied package context required');\n result.package={sourceCommit:packaged.receipt.sourceCommit,copy:packaged.copy,archive:packaged.receipt.appArchive,runtime:packaged.receipt.runtimeBinary,processReader:packaged.receipt.processReader};\n await packaged.verify();result.packageVerifiedBefore=true;\n const data=packaged.data,outputs=join(evidence,'outputs');await mkdir(data,{recursive:true});assert.deepEqual(await readdir(data),[],'Copied fixture Data must begin empty');await mkdir(outputs);"
+    },
+    {
+      "id": "copied-executable-launch-no-test-root",
+      "occurrences": 1,
+      "from": "driver=await launchDesktop({extraArgs:[`--siren-test-root=${data}`,`--inspect=127.0.0.1:${port}`]});",
+      "to": "driver=await launchDesktop({...packaged.launch,extraArgs:[`--inspect=127.0.0.1:${port}`]});"
+    },
+    {
+      "id": "record-actual-success-exit",
+      "occurrences": 1,
+      "from": "await driver.waitForExit();await driver.close();driver=null;",
+      "to": "await driver.waitForExit();result.exitObserved=true;await driver.close();driver=null;"
+    },
+    {
+      "id": "verify-copy-only-after-actual-exit-on-every-path",
+      "occurrences": 1,
+      "from": " try{await chooser?.close();}catch{}await driver?.close();result.afterInputs=await capture();",
+      "to": " try{await chooser?.close();}catch{}\n if(driver){try{await driver.close();await driver.waitForExit();result.exitObserved=true;}catch(cause){result.status='ADVERSE';result.exitError=cause.message;}}\n if(packaged){try{assert.equal(result.exitObserved,true,'Actual owned copied process exit must precede post-hash verification');await packaged.verify();result.packageUnchanged=true;}catch(cause){result.packageUnchanged=false;result.status='ADVERSE';result.packageError=cause.message;}}\n if(result.status==='COMPLETE'&&(!packaged||result.packageVerifiedBefore!==true||result.packageUnchanged!==true||result.exitObserved!==true))result.status='ADVERSE';\n result.afterInputs=await capture();"
+    },
+    {
+      "id": "console-copy-receipt",
+      "occurrences": 1,
+      "from": "changedInputs:result.changedInputs,error:result.error?.message",
+      "to": "changedInputs:result.changedInputs,copy:packaged?.copy,packageUnchanged:result.packageUnchanged,exitObserved:result.exitObserved,error:result.error?.message"
+    }
+  ],
+  "execution": {
+    "run": false,
+    "gui": false,
+    "build": false,
+    "tests": false,
+    "fullSuite": false,
+    "productEdited": false,
+    "baseTestEdited": false,
+    "git": false,
+    "commandTemplate": "node \"C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\home-backup-export-copied-one-off.mjs\" --package \"<exact frozen development preview root>\""
+  },
+  "limits": [
+    "Preparation only; no copied package was created or executed by this author.",
+    "Future result must bind actual preview/sourceCommit/copy ASAR/runtime/helper, real exit and post-run unchanged inputs.",
+    "OS Save chooser remains the same PID-checked fixture seam; no claim of a manual native OS dialog.",
+    "Local repositories seed only the copy Data; source fixture/oracle body remains byte-identical.",
+    "Development preview qualification only, no production release/independent approval."
+  ]
+}

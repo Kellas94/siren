@@ -1,0 +1,309 @@
+{
+  "schema": 1,
+  "author": "/root",
+  "role": "Owner local qualification, genuine independent authors and actual executors retained separately",
+  "sourceCommit": "63f21362c60d86443edebfe9a4400b2f377b3f47",
+  "scope": "Native Diagram bounded source/style history and supported typography; parsed CSP integrity correction",
+  "fullSuite": {
+    "path": "evidence/workspace-surface/diagram-history-final-suite-2026-10-07T00-20-01.609Z/result.json",
+    "bytes": 115988,
+    "sha256": "41d7fbb149e6c48236e93dfe717f80e2d67097dc669a8674e83bf6a508faec42",
+    "tests": 1340,
+    "changedInputs": []
+  },
+  "postSuiteNativeFixtureOnly": [
+    {
+      "path": "tests/native/diagram-history-typography.mjs",
+      "before": "ba0d90fe00b820e068c916b3674ec09158d08403eca6d2e4cd5993deeef68aa0",
+      "after": "d1beb7d0e4b3a03a459bd715a5e85828d2a2446e63b7e3d2a27941ebf3447da4",
+      "scope": "Native fixture-only enabled-option enumeration and finite executor metadata; no product or unit-test code change. Relevant CI/build tests4 and genuine current-harness native8 executed separately."
+    }
+  ],
+  "focusedAfterFixture": {
+    "path": "evidence/workspace-surface/diagram-final-harness-ci-green.log",
+    "bytes": 620,
+    "sha256": "20ee85d8c51d3d5dfbd0379f67cc597b660e34fd45aee7652d4efea80287ba1b",
+    "tests": 4
+  },
+  "native": [
+    {
+      "path": "evidence/diagram-history-typography-native/2026-10-07T00-24-52.032Z/result.json",
+      "bytes": 148926,
+      "sha256": "b564b7ccfa9429d46b6601f14827492839cb247431df1f7ddf98b84ab0583d00",
+      "cases": 8,
+      "harness": {
+        "path": "tests/native/diagram-history-typography.mjs",
+        "sha256": "d1beb7d0e4b3a03a459bd715a5e85828d2a2446e63b7e3d2a27941ebf3447da4"
+      },
+      "author": "/root/media_batch_review",
+      "executor": "/root/media_batch_review",
+      "packaged": false,
+      "fonts": {
+        "A": [
+          {
+            "family": "Georgia",
+            "size": "22px",
+            "weight": "700"
+          }
+        ],
+        "B": [
+          {
+            "family": "\"Courier New\", Courier, monospace",
+            "size": "24px",
+            "weight": "800"
+          }
+        ]
+      }
+    },
+    {
+      "path": "evidence/diagram-history-typography-native/2026-10-07T00-26-43.120Z/result.json",
+      "bytes": 149433,
+      "sha256": "a595149534db14bfd3af9236baa978d9925ef48f7a0c50a0d830815fb484a88e",
+      "cases": 8,
+      "harness": {
+        "path": "tests/native/diagram-history-typography.mjs",
+        "sha256": "d1beb7d0e4b3a03a459bd715a5e85828d2a2446e63b7e3d2a27941ebf3447da4"
+      },
+      "author": "/root/media_batch_review",
+      "executor": "/root",
+      "packaged": true,
+      "packageUnchanged": true,
+      "fonts": {
+        "A": [
+          {
+            "family": "Georgia",
+            "size": "22px",
+            "weight": "700"
+          }
+        ],
+        "B": [
+          {
+            "family": "\"Courier New\", Courier, monospace",
+            "size": "24px",
+            "weight": "800"
+          }
+        ]
+      }
+    }
+  ],
+  "package": {
+    "preview": "dist/development-82abdbac-eb10-4435-92f7-b93e235bdc92",
+    "receipt": {
+      "schema": 1,
+      "kind": "development-preview",
+      "releaseAdmitted": false,
+      "sourceCommit": "63f21362c60d86443edebfe9a4400b2f377b3f47",
+      "desktopVersion": "0.1.0-dev.1",
+      "rendererVersion": "1.131.0",
+      "renderer": {
+        "schema": 1,
+        "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+        "rendererSha256": "b5f8ec3de7a4d11eaf97588e4300e6f456cdf4b60de1405f4568516998b50187",
+        "scriptCount": 4,
+        "electron": "44.5.1",
+        "windowEntrypoints": {
+          "code": "6a4bceb8555ab0c1f928006a7558223424e439df9f8f400992f8b761d0fa4c60",
+          "docs": "75dd53a21b40ed3e71ee8ea3af03f1fb300b201b09fcb6d8f643d8670a0c202c",
+          "diagram": "1a8e1f0dcb95f2ddb5e5641e6e50508351e42abb656465c27f7ff686a7284b17",
+          "presenter": "0e2bc099bc6e0d029f970a05e890a1c413f0d9aefc446746da680ac1781b6cd3",
+          "audience": "8295cc040080d627e433e5109f0b8efa35368b6c62daab88ba7ba7371af3a959"
+        },
+        "homeEntrypoint": {
+          "sha256": "1c0c2b1da33877eb09cfad881b6d99e98d3b59fa17a207d372ca3423e476ecff",
+          "bytes": 65309,
+          "scriptCount": 4
+        },
+        "presentationRender": {
+          "entrySha256": "b3172652c5a7a7b9c96549b9e36bf92eb9a3ac29c6b87d4b046907c04e143ca9"
+        },
+        "diagramVector": {
+          "entrySha256": "50770d1116ce8700427db5eb0bd052ebb7976d31b7ad04becec6b98953ef42c1"
+        },
+        "sourceAnalysis": {
+          "entrySha256": "fc1cc0dd38adae7f16a03827cec6c399c3a1a7217ea1df2e900e282f21cb6879",
+          "bytes": 119349,
+          "pythonModuleSha256": "594371c934fb01689a144bd350c854497c0f2d18499fee86cc4e3209b658a589"
+        },
+        "importValidation": {
+          "schema": 1,
+          "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+          "entrySha256": "a424a8247de09788a791fa055e804c315c9a4201a7a0a79a536532a4354d6af3",
+          "scriptCount": 3
+        }
+      },
+      "processReader": {
+        "schema": 1,
+        "kind": "windows-process-reader",
+        "sourceSha256": "4d751525c646cdc652d5f2e263697ec1b033568167b99cfcabc993c625b726a8",
+        "compilerSha256": "46809206887326d2d24db1eff1f3064de972c3451abe766b49111450a5e08e00",
+        "binary": {
+          "bytes": 6144,
+          "sha256": "485d4fe26225c75670e2ce425fa0daa816f5b8ef93b1561042b7138e01fed6a3"
+        }
+      },
+      "electron": "44.5.1",
+      "dataSchema": 1,
+      "appRelativePath": "App/versions/0.1.0/SIREN.exe",
+      "appArchive": {
+        "bytes": 54339756,
+        "sha256": "818b00640a42c4eca25024f26bc4901843e2168996f02c505ba775028e4a27f4"
+      },
+      "runtimeBinary": {
+        "bytes": 245726208,
+        "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+      },
+      "inventoryQualified": false,
+      "launcherQualified": false,
+      "accountConfigured": false,
+      "updatesConfigured": false
+    },
+    "identity": {
+      "path": "evidence/workspace-surface/source-bundle-package-identity-2026-10-07T00-26-42.914Z/result.json",
+      "bytes": 51190,
+      "sha256": "303b8670a3fb3c82016b7eae424d2a0578e1b721f4a0711a38ca48bc1d73d53b",
+      "files": 295
+    },
+    "native": {
+      "path": "evidence/workspace-surface/diagram-history-package-native-2026-10-07T00-26-42.989Z/result.json",
+      "bytes": 122139,
+      "sha256": "b6eeef2e63a06e7985c32ec79b47a8271aa8c6298ccc534b881da10aaa711e64",
+      "results": [
+        {
+          "name": "diagram-history-typography",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        },
+        {
+          "name": "shell",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        },
+        {
+          "name": "packaged",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        },
+        {
+          "name": "source-bundle-import",
+          "code": 0,
+          "signal": null,
+          "scope": "Actual isolated portable copy"
+        }
+      ]
+    }
+  },
+  "reports": [
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-independent-original.md",
+      "bytes": 6841,
+      "sha256": "5b0d75fa1337a2fac09b618d902d7da8d5beba2c98b602e4297474af9d0c281b"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-independent-recheck.md",
+      "bytes": 4716,
+      "sha256": "75f356d293143c8b937b37926ce5f639fb7e506f7e7f99dd7fa3f1c0f01fb941"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-csp-followup-independent.md",
+      "bytes": 4985,
+      "sha256": "50adc6736c6edec439935ee97a03034d6bbe3551b83e2cf0c50aefb8d42453e9"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-native-original-adverse.md",
+      "bytes": 2749,
+      "sha256": "f0942cf14971da4770fcc8f0b02bf0fbb246da91d0a211af380f869729fb85fb"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-native-csp-diagnostic.md",
+      "bytes": 4037,
+      "sha256": "ebfb41735b868afe7627c89237ead7c26ded1903185df2b64dcde8875471f728"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-native-select-observation.md",
+      "bytes": 4734,
+      "sha256": "70c939cea52fc733140808776acbeaab249345dbea2757c7e6e34edd273b7d6e"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-history-typography-native-final-observation.md",
+      "bytes": 8020,
+      "sha256": "2c2ec6eb139bc92c4dc0377c006f751b09067774beac73fc69fdda2377103df1"
+    },
+    {
+      "path": "reviews/2026-10-07-native-diagram-history-removal-independent-preflight.md",
+      "bytes": 9454,
+      "sha256": "f1385a30cc80c850dfb87b237788fa7c858c9f8a59b340998563b18d36421636"
+    }
+  ],
+  "retainedOriginals": [
+    {
+      "path": "evidence/diagram-history-typography-native/2026-10-07T00-14-55.829Z/result.json",
+      "bytes": 121432,
+      "sha256": "7e1cfdc63f453b66b572989eb1f075342a2662e3b3d23739f91706114efb24d2"
+    },
+    {
+      "path": "evidence/diagram-history-typography-diagnostic/2026-10-07T00-16-50.990Z/result.json",
+      "bytes": 279156,
+      "sha256": "7b76a4548d55af63530c118597fd19fd4f77374a2d0b00052b4acaf5037b49d1"
+    },
+    {
+      "path": "evidence/diagram-history-typography-native/2026-10-07T00-20-29.149Z/result.json",
+      "bytes": 129601,
+      "sha256": "a9bda87ae1aa04948df5f5667d75cfdf3178fe25bb4cc5eb58b3ca44a4e533d0"
+    },
+    {
+      "path": "evidence/diagram-history-typography-select-diagnostic/2026-10-07T00-21-59.527Z/result.json",
+      "bytes": 149252,
+      "sha256": "ec6bf73c87965ae97e026dd9f672a3c10bc53b96dc0155c92a6411d17bccf350"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-prototype-admission-red.log",
+      "bytes": 1441,
+      "sha256": "40b7472ca0e57110af23f5cb808f94842ae02b79accff1634729b8471b2a70dd"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-parsed-csp-red.log",
+      "bytes": 1078,
+      "sha256": "5826b3aa3e3792fa6815c574e614b5a0fe93057612b41e7f74456c30efe7329a"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-parsed-csp-corrected-red.log",
+      "bytes": 1135,
+      "sha256": "c92b0d57285364492a2f177025d592e09618ed5a3951307c680436ddb29bc296"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-typography-feedback-red.log",
+      "bytes": 2843,
+      "sha256": "949d714681e2ccf7074cd123c6dea01c8b874bf96fe115a114fac622794cd704"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-inherit-size-red.log",
+      "bytes": 2043,
+      "sha256": "52abd1de49dbed4328a7e05a3019f8d4edc83ed077f24d5cfb2618c4cdcc9a68"
+    }
+  ],
+  "priorHosted": {
+    "runId": 37548819004,
+    "conclusion": "success",
+    "originalReceipt": {
+      "path": "reviews/2026-10-07-presenter-notes-hosted-evidence.json",
+      "bytes": 886301,
+      "sha256": "1d7de706ee59f25cdff3626b8b9cdeaaa1bc9e91c22f0fb86cea2c2b87281ee5"
+    },
+    "ownerReadback": {
+      "path": "evidence/workspace-surface/presenter-hosted-owner-readback.json",
+      "bytes": 18455,
+      "sha256": "74dd660b765ff337ff8349c171dc4cd4e1d882e1354842e08e7f42758785844f"
+    },
+    "scope": "Previous Presenter candidate only; not new Diagram approval"
+  },
+  "limits": [
+    "Narrow-window number placeholders clip and invalid-edit refusal feedback can remain after cancellation; retained UI refinements",
+    "History popover overlays editing area while open; no complete Studio/all-theme/minimum-window/physical-monitor/IME/fluidity acceptance",
+    "History budgets60states/8MiB do not establish large-diagram stress or maximum capacity",
+    "Historical original Diagram timeout remains OPEN; native current success does not explain it",
+    "No main merge, production release or installed application replacement; new hosted candidate verdict pending sync"
+  ]
+}

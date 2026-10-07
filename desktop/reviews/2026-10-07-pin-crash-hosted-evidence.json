@@ -1,0 +1,2256 @@
+{
+  "schema": 1,
+  "author": "/root/disk_inventory",
+  "role": "Owner original hosted evidence retention; not independent product approval",
+  "retainedUtc": "2026-10-06T22:27:28.536Z",
+  "status": "HOSTED_FINAL_ADVERSE_ORIGINALS_RETAINED_VERIFIED",
+  "runId": 37539190289,
+  "runUrl": "https://github.com/Kellas94/siren/actions/runs/37539190289",
+  "runConclusion": "failure",
+  "canonicalCommit": "afd1728d2fdb7e132db0bb81fd204a5e116dc83a",
+  "canonicalTree": "3881ec00ee4abfc3d0b721af46c66df055b74139",
+  "actualIntegrationCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+  "integrationParents": [
+    "1e5472dde446657e2dbb155868e28e033c6c9c92",
+    "afd1728d2fdb7e132db0bb81fd204a5e116dc83a"
+  ],
+  "mainAtRetention": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "jobs": [
+    {
+      "id": 112527714964,
+      "name": "Qualification scope",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112527798599,
+      "name": "desktop / Windows packaged workspaces",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112527798606,
+      "name": "launcher / launcher",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112527798754,
+      "name": "desktop / windows",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112529917630,
+      "name": "desktop / Windows native (sources)",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112529917647,
+      "name": "desktop / Windows native (diagrams)",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 112529917750,
+      "name": "desktop / Windows native (desktop)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "Actual development renderer and protected storage"
+      ]
+    },
+    {
+      "id": 112532259713,
+      "name": "desktop / Desktop qualification",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "Require development and packaged results"
+      ]
+    },
+    {
+      "id": 112532300284,
+      "name": "SIREN merge qualification",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "Require actual results for the selected scope"
+      ]
+    }
+  ],
+  "units": {
+    "identityTests": 3,
+    "remainingTests": 1239,
+    "uniqueUnitTests": 1242,
+    "earlyIoProbe": 1,
+    "earlyIoIncludedInRemainingSuite": true,
+    "earlyIoTitle": "owned reads refuse oversize files before allocating their body and preserve the original",
+    "rawJobTapCounts": [
+      1,
+      3,
+      1239
+    ],
+    "rawJobTapTotal": 1243,
+    "identityFailures": 0,
+    "remainingFailures": 0
+  },
+  "nativeOriginalProbes": 60,
+  "nativeGroups": {
+    "desktop": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-desktop-evidence-original/evidence/native-verification/desktop.json",
+      "bytes": 7943,
+      "sha256": "82aa8af088c459efd08e1a86f4aff20f61b9e0fc925ba74373ebbb61a1d1a349",
+      "probes": 20,
+      "status": "ADVERSE",
+      "ok": false,
+      "failed": [
+        "guided-intro"
+      ],
+      "changedInputs": [],
+      "results": [
+        {
+          "script": "shell",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "protected-storage",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "account-transition",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-windows",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "desktop-ui",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-recovery",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "recovery-zoom",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-diagram-interaction",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "guided-intro",
+          "code": 1,
+          "signal": null
+        },
+        {
+          "script": "dev-first-run",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "access-screen",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "local-pin",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "headless-import",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "readonly-roster",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-entry",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-navigation",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-recovery",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-library",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-focus",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "toast-transition",
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    "sources": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-sources-evidence-original/evidence/native-verification/sources.json",
+      "bytes": 7966,
+      "sha256": "bef6cfb87a86edbc1c240158ba2307c904bb8671599fff92e7b1eab656fe8694",
+      "probes": 20,
+      "status": "COMPLETE",
+      "ok": true,
+      "failed": [],
+      "changedInputs": [],
+      "results": [
+        {
+          "script": "source-owner",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-read",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-analysis",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-diff",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-map",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-link",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-link-create",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-sources",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "source-sync",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-format",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "view-control-rollback",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "large-source-docs",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "code-view-flush",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "domain-workspaces",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-close-keys",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "window-role-privacy",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "workspace-appearance",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "workspace-dock",
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    "diagrams": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-diagrams-evidence-original/evidence/native-verification/diagrams.json",
+      "bytes": 8048,
+      "sha256": "7eb2bd5c1228c0b9cac17999a3d593d4ae6d886c28eec1ed47bcc5bfbfdfa12a",
+      "probes": 20,
+      "status": "COMPLETE",
+      "ok": true,
+      "failed": [],
+      "changedInputs": [],
+      "results": [
+        {
+          "script": "diagram-preview",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-edit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-guided",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-style",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-build",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-vector",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-export",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "diagram-dock",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-library-search",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-documents",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-structured",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "home-source-projects",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-render",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-style",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-cards",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-windows",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-reader",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "ui-personality",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "docs-context",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "script": "presentation-authoring",
+          "code": 0,
+          "signal": null
+        }
+      ]
+    }
+  },
+  "pinCrashRecovery": {
+    "development": {
+      "status": "NOT_EXECUTED",
+      "actualCases": 0,
+      "expectedCases": 6,
+      "reason": "No aggregate PIN crash evidence in original artifact",
+      "jobId": 112529917750,
+      "stepConclusion": "skipped"
+    },
+    "packaged": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-06T22-14-40.657Z/result.json",
+      "bytes": 58558,
+      "sha256": "3eeaab2d81abd12c393ca21f4dd531d988db5705af58249caeb10731ce66fee9",
+      "status": "COMPLETE",
+      "mode": "packaged",
+      "expectedCases": 3,
+      "actualCases": 3,
+      "inputsUnchanged": true,
+      "inputIdentities": {
+        "package.json": {
+          "bytes": 1079,
+          "sha256": "dbce38460412c79f3ae8618279ec27c11ffcc01598aebab672e36e867adccb19"
+        },
+        "package-lock.json": {
+          "bytes": 47507,
+          "sha256": "dc3cdd517b8dd18759260f2f7cc898c74bc57a0b7151f51e5f3c55be368f3cab"
+        },
+        "scripts/package.mjs": {
+          "bytes": 10888,
+          "sha256": "1d2a0c9f9e4c67611096125a19c03057bc5a8c12204b7dfb77a60b294a5e7307"
+        },
+        "src/start.mjs": {
+          "bytes": 226,
+          "sha256": "1db3fb8b968168f69a915956927bcf5f544a59dd792be21c635e3e6d5a0b4f62"
+        },
+        "src/main.mjs": {
+          "bytes": 100064,
+          "sha256": "fe4930149de8121f3ce1d2519a6776bbf7bf2d343c560fc80071539c0c3b09f1"
+        },
+        "src/preload.cjs": {
+          "bytes": 6766,
+          "sha256": "440dbd2d5a9a148af406096ea2ce611b274d1fed5f2799be0923f19d6b01ca3d"
+        },
+        "src/account/local-pin.mjs": {
+          "bytes": 12893,
+          "sha256": "a41f4d6868820973b92f568239934b4d1a669db317b4388aed049e225b6eb537"
+        },
+        "src/account/pin-protection.mjs": {
+          "bytes": 4765,
+          "sha256": "1e47f90e02e0e17b29c6cc26ee555c85fdeebea289cb6e4bf66b0c2b437d79fb"
+        },
+        "src/account/pin-worker.mjs": {
+          "bytes": 2957,
+          "sha256": "cc7c1c07b18f939c527b1c872141cbc43f25458d5612b9ca8e22b1306eb0c995"
+        },
+        "src/account/pin-protocol.mjs": {
+          "bytes": 2300,
+          "sha256": "d673e53389c2f20e98fbd5b20bc53e8b496e12b913e467117c7fea19e2df2f5a"
+        },
+        "src/projects/atomic.mjs": {
+          "bytes": 4165,
+          "sha256": "803eb8c40edd5711bae3a51ade69ab935b779bae7d1ec6e8da5808dbeea77de4"
+        },
+        "src/projects/io.mjs": {
+          "bytes": 871,
+          "sha256": "a87fc4a0243eef18e3a14fb651b55cc8c1cfa49a137b21eb7239a262ce858687"
+        },
+        "src/projects/paths.mjs": {
+          "bytes": 1219,
+          "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+        },
+        "src/recovery/processes.mjs": {
+          "bytes": 3437,
+          "sha256": "031a1e273479e2be9b0d0b21451f96f8653bd7bc4befdb40f8428440944ac02a"
+        },
+        "src/recovery/native-process.mjs": {
+          "bytes": 1891,
+          "sha256": "3215546b9ef30cbec03c663ef2faa59628f058796241d0acaf6c4287bbf8e03f"
+        },
+        "native/generated/process-identity.json": {
+          "bytes": 346,
+          "sha256": "06295198894cb43a64b68feedc05c5156cf845f0256963b4c89c2df5e45ecd35"
+        },
+        "native/generated/process-identity.exe": {
+          "bytes": 6144,
+          "sha256": "bee1f377e092ce342eb60b3bc4729322b1ee0c69adac5d866fe34cb8eede2e05"
+        },
+        "generated/build.json": {
+          "bytes": 1530,
+          "sha256": "05c2742184c851e51d0cc5ae94bdcece5de1779eb0a7c7b7e5a85ae8ad872d4c"
+        },
+        "generated/home.html": {
+          "bytes": 65360,
+          "sha256": "3f7619e8daf4557ef77a62959a43e2b7eca74201f0891af5fbe6e94ed9461603"
+        },
+        "tests/native/drive.mjs": {
+          "bytes": 12270,
+          "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+        },
+        "tests/native/condition.mjs": {
+          "bytes": 648,
+          "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+        },
+        "tests/native/pointer.mjs": {
+          "bytes": 1764,
+          "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d"
+        },
+        "tests/native/pin-crash-recovery.mjs": {
+          "bytes": 19161,
+          "sha256": "89e8edbb5e665e9d3e182e47eaad66cfad0cb08ad5869ec6ed33db57a2bc9070"
+        },
+        "node_modules/electron/dist/electron.exe": {
+          "bytes": 245726208,
+          "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+        }
+      },
+      "afterInputIdentities": {
+        "package.json": {
+          "bytes": 1079,
+          "sha256": "dbce38460412c79f3ae8618279ec27c11ffcc01598aebab672e36e867adccb19"
+        },
+        "package-lock.json": {
+          "bytes": 47507,
+          "sha256": "dc3cdd517b8dd18759260f2f7cc898c74bc57a0b7151f51e5f3c55be368f3cab"
+        },
+        "scripts/package.mjs": {
+          "bytes": 10888,
+          "sha256": "1d2a0c9f9e4c67611096125a19c03057bc5a8c12204b7dfb77a60b294a5e7307"
+        },
+        "src/start.mjs": {
+          "bytes": 226,
+          "sha256": "1db3fb8b968168f69a915956927bcf5f544a59dd792be21c635e3e6d5a0b4f62"
+        },
+        "src/main.mjs": {
+          "bytes": 100064,
+          "sha256": "fe4930149de8121f3ce1d2519a6776bbf7bf2d343c560fc80071539c0c3b09f1"
+        },
+        "src/preload.cjs": {
+          "bytes": 6766,
+          "sha256": "440dbd2d5a9a148af406096ea2ce611b274d1fed5f2799be0923f19d6b01ca3d"
+        },
+        "src/account/local-pin.mjs": {
+          "bytes": 12893,
+          "sha256": "a41f4d6868820973b92f568239934b4d1a669db317b4388aed049e225b6eb537"
+        },
+        "src/account/pin-protection.mjs": {
+          "bytes": 4765,
+          "sha256": "1e47f90e02e0e17b29c6cc26ee555c85fdeebea289cb6e4bf66b0c2b437d79fb"
+        },
+        "src/account/pin-worker.mjs": {
+          "bytes": 2957,
+          "sha256": "cc7c1c07b18f939c527b1c872141cbc43f25458d5612b9ca8e22b1306eb0c995"
+        },
+        "src/account/pin-protocol.mjs": {
+          "bytes": 2300,
+          "sha256": "d673e53389c2f20e98fbd5b20bc53e8b496e12b913e467117c7fea19e2df2f5a"
+        },
+        "src/projects/atomic.mjs": {
+          "bytes": 4165,
+          "sha256": "803eb8c40edd5711bae3a51ade69ab935b779bae7d1ec6e8da5808dbeea77de4"
+        },
+        "src/projects/io.mjs": {
+          "bytes": 871,
+          "sha256": "a87fc4a0243eef18e3a14fb651b55cc8c1cfa49a137b21eb7239a262ce858687"
+        },
+        "src/projects/paths.mjs": {
+          "bytes": 1219,
+          "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+        },
+        "src/recovery/processes.mjs": {
+          "bytes": 3437,
+          "sha256": "031a1e273479e2be9b0d0b21451f96f8653bd7bc4befdb40f8428440944ac02a"
+        },
+        "src/recovery/native-process.mjs": {
+          "bytes": 1891,
+          "sha256": "3215546b9ef30cbec03c663ef2faa59628f058796241d0acaf6c4287bbf8e03f"
+        },
+        "native/generated/process-identity.json": {
+          "bytes": 346,
+          "sha256": "06295198894cb43a64b68feedc05c5156cf845f0256963b4c89c2df5e45ecd35"
+        },
+        "native/generated/process-identity.exe": {
+          "bytes": 6144,
+          "sha256": "bee1f377e092ce342eb60b3bc4729322b1ee0c69adac5d866fe34cb8eede2e05"
+        },
+        "generated/build.json": {
+          "bytes": 1530,
+          "sha256": "05c2742184c851e51d0cc5ae94bdcece5de1779eb0a7c7b7e5a85ae8ad872d4c"
+        },
+        "generated/home.html": {
+          "bytes": 65360,
+          "sha256": "3f7619e8daf4557ef77a62959a43e2b7eca74201f0891af5fbe6e94ed9461603"
+        },
+        "tests/native/drive.mjs": {
+          "bytes": 12270,
+          "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+        },
+        "tests/native/condition.mjs": {
+          "bytes": 648,
+          "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+        },
+        "tests/native/pointer.mjs": {
+          "bytes": 1764,
+          "sha256": "a55d6f22b8fb1fbb781e4d3ac32710fab622e49b1153046ebcbea57dcf4ddd8d"
+        },
+        "tests/native/pin-crash-recovery.mjs": {
+          "bytes": 19161,
+          "sha256": "89e8edbb5e665e9d3e182e47eaad66cfad0cb08ad5869ec6ed33db57a2bc9070"
+        },
+        "node_modules/electron/dist/electron.exe": {
+          "bytes": 245726208,
+          "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+        }
+      },
+      "scope": "Fresh owned profiles; actual normal SIREN entry and native PIN API; one restart per case. Process termination only, not power loss, OS reboot, other-user or release qualification.",
+      "package": {
+        "receipt": {
+          "schema": 1,
+          "kind": "development-preview",
+          "releaseAdmitted": false,
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "desktopVersion": "0.1.0-dev.1",
+          "rendererVersion": "1.131.0",
+          "renderer": {
+            "schema": 1,
+            "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+            "rendererSha256": "fbf59fd11031f7eb11d6a7c50d831dcb9c704308bc4c11b47b6f758d6688f299",
+            "scriptCount": 4,
+            "electron": "44.5.1",
+            "windowEntrypoints": {
+              "code": "3c1b6322bf79ba15bf279d42dbdd8bd3a772d008463673d3368a46e78387bb1a",
+              "docs": "ced11b14e16dad302b273d36948be3a0577c968284c374fa5fdcd78b2a498731",
+              "diagram": "4f70b53a1fe606c00f4dbc1ffe588f43ab1375e2cc65484317c0f35bd50ea59b",
+              "presenter": "ea9c7bbd60829a7879968c8b41a25fb0e45f9aee776c38aa4e52abaec678e8a6",
+              "audience": "7a8d375779c5a96a2765689d908019656bdd2d6f27f0f7670140b61d211e4398"
+            },
+            "homeEntrypoint": {
+              "sha256": "3f7619e8daf4557ef77a62959a43e2b7eca74201f0891af5fbe6e94ed9461603",
+              "bytes": 65360,
+              "scriptCount": 4
+            },
+            "presentationRender": {
+              "entrySha256": "d1281deb441243198cb75ba75552a6d25d71a9b85cbb4dac99d62164f34da47e"
+            },
+            "diagramVector": {
+              "entrySha256": "97f124a740c19e906392a9af4f911a8916791d474c6df055118450c8185c2acc"
+            },
+            "sourceAnalysis": {
+              "entrySha256": "fc1cc0dd38adae7f16a03827cec6c399c3a1a7217ea1df2e900e282f21cb6879",
+              "bytes": 119349,
+              "pythonModuleSha256": "594371c934fb01689a144bd350c854497c0f2d18499fee86cc4e3209b658a589"
+            },
+            "importValidation": {
+              "schema": 1,
+              "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+              "entrySha256": "0f63785b4cc88658c5a0c248ccfbcf5096c048ac6a5921b5964222b5e467b81f",
+              "scriptCount": 3
+            }
+          },
+          "processReader": {
+            "schema": 1,
+            "kind": "windows-process-reader",
+            "sourceSha256": "4d751525c646cdc652d5f2e263697ec1b033568167b99cfcabc993c625b726a8",
+            "compilerSha256": "46809206887326d2d24db1eff1f3064de972c3451abe766b49111450a5e08e00",
+            "binary": {
+              "bytes": 6144,
+              "sha256": "bee1f377e092ce342eb60b3bc4729322b1ee0c69adac5d866fe34cb8eede2e05"
+            }
+          },
+          "electron": "44.5.1",
+          "dataSchema": 1,
+          "appRelativePath": "App/versions/0.1.0/SIREN.exe",
+          "appArchive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtimeBinary": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          },
+          "inventoryQualified": false,
+          "launcherQualified": false,
+          "accountConfigured": false,
+          "updatesConfigured": false
+        },
+        "copyScope": "App and BUILD-IDENTITY only; original Data is excluded",
+        "originalUnchanged": true,
+        "inputFiles": 78
+      },
+      "cases": [
+        {
+          "name": "setup-abrupt-1",
+          "kind": "setup-abrupt",
+          "repetition": 1,
+          "status": "COMPLETE",
+          "stage": "finished",
+          "restartCount": 1,
+          "dataRoot": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-abrupt-1\\owned-preview\\Data",
+          "executableIdentity": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          },
+          "package": {
+            "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+            "archive": {
+              "bytes": 53866014,
+              "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+            },
+            "copiedBuildIdentity": {
+              "bytes": 2682,
+              "sha256": "36876a0444aa51b33a13b9cb34c4d9487733d40db0f8fc7e1283e55526ef7160"
+            }
+          },
+          "first": {
+            "identity": {
+              "pid": 7120,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-abrupt-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:44.0628519Z"
+            },
+            "profile": {
+              "pid": 7120,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeSetup": {
+            "configured": false,
+            "pinLength": null,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "setupAcknowledged": true,
+          "afterSetup": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "9c06582fd9aa3bea137c59be117a21fbf9c5b4cbd20e53652d77e2fa8c28aa00"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "59eb4431aeac7b8c08e672b6ec87bd29e9d6ab5a4fb938e23749b87995cd0a30"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "runtimeOutputBytes": 1324,
+          "afterFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "9c06582fd9aa3bea137c59be117a21fbf9c5b4cbd20e53652d77e2fa8c28aa00"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "59eb4431aeac7b8c08e672b6ec87bd29e9d6ab5a4fb938e23749b87995cd0a30"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "restart": {
+            "identity": {
+              "pid": 10220,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-abrupt-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:45.7582877Z"
+            },
+            "profile": {
+              "pid": 10220,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "9c06582fd9aa3bea137c59be117a21fbf9c5b4cbd20e53652d77e2fa8c28aa00"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "59eb4431aeac7b8c08e672b6ec87bd29e9d6ab5a4fb938e23749b87995cd0a30"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "restartUnlockAcknowledged": true,
+          "afterRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "afterRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "49b081286901b703fb8e26c82afffcf55f5ca26ef9f28a7d8414aed633a481b5"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "59eb4431aeac7b8c08e672b6ec87bd29e9d6ab5a4fb938e23749b87995cd0a30"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "cleanup": "graceful",
+          "copiedPackageUnchanged": true
+        },
+        {
+          "name": "setup-lock-abrupt-1",
+          "kind": "setup-lock-abrupt",
+          "repetition": 1,
+          "status": "COMPLETE",
+          "stage": "finished",
+          "restartCount": 1,
+          "dataRoot": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-abrupt-1\\owned-preview\\Data",
+          "executableIdentity": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          },
+          "package": {
+            "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+            "archive": {
+              "bytes": 53866014,
+              "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+            },
+            "copiedBuildIdentity": {
+              "bytes": 2682,
+              "sha256": "36876a0444aa51b33a13b9cb34c4d9487733d40db0f8fc7e1283e55526ef7160"
+            }
+          },
+          "first": {
+            "identity": {
+              "pid": 5460,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-abrupt-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:50.3139138Z"
+            },
+            "profile": {
+              "pid": 5460,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeSetup": {
+            "configured": false,
+            "pinLength": null,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "setupAcknowledged": true,
+          "afterSetup": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "lockAcknowledged": true,
+          "afterLock": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "3379192e82cfa68284f0d3caca355f465877fdc2a927151fbcfd5fcb9473d473"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "4b23915a49fb6984a9ce1ae4be81a7a2ad4203459649b96d33915dbce5c8a4b2"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "runtimeOutputBytes": 1324,
+          "afterFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "3379192e82cfa68284f0d3caca355f465877fdc2a927151fbcfd5fcb9473d473"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "4b23915a49fb6984a9ce1ae4be81a7a2ad4203459649b96d33915dbce5c8a4b2"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "restart": {
+            "identity": {
+              "pid": 2764,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-abrupt-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:51.5346251Z"
+            },
+            "profile": {
+              "pid": 2764,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "3379192e82cfa68284f0d3caca355f465877fdc2a927151fbcfd5fcb9473d473"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "4b23915a49fb6984a9ce1ae4be81a7a2ad4203459649b96d33915dbce5c8a4b2"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "restartUnlockAcknowledged": true,
+          "afterRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "afterRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "3095f2a65b7933fdf8d6c599c1eecc06d308012312bd51bdeb09f7b61d28bc8b"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "4b23915a49fb6984a9ce1ae4be81a7a2ad4203459649b96d33915dbce5c8a4b2"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "cleanup": "graceful",
+          "copiedPackageUnchanged": true
+        },
+        {
+          "name": "setup-lock-graceful-1",
+          "kind": "setup-lock-graceful",
+          "repetition": 1,
+          "status": "COMPLETE",
+          "stage": "finished",
+          "restartCount": 1,
+          "dataRoot": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-graceful-1\\owned-preview\\Data",
+          "executableIdentity": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          },
+          "package": {
+            "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+            "archive": {
+              "bytes": 53866014,
+              "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+            },
+            "copiedBuildIdentity": {
+              "bytes": 2682,
+              "sha256": "36876a0444aa51b33a13b9cb34c4d9487733d40db0f8fc7e1283e55526ef7160"
+            }
+          },
+          "first": {
+            "identity": {
+              "pid": 2140,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-graceful-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:56.0491179Z"
+            },
+            "profile": {
+              "pid": 2140,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeSetup": {
+            "configured": false,
+            "pinLength": null,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "setupAcknowledged": true,
+          "afterSetup": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "lockAcknowledged": true,
+          "afterLock": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "6fc47d0ca7e7d3e3e55737d9398e496badb9eb2dd14583a8a28dabdf02d8369a"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "f81f6633013a8d52d449a4bbb0d304d07decaa71321eae7b55ba70c0253e394e"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          "runtimeOutputBytes": 1817,
+          "afterFirstCloseFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "6fc47d0ca7e7d3e3e55737d9398e496badb9eb2dd14583a8a28dabdf02d8369a"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "f81f6633013a8d52d449a4bbb0d304d07decaa71321eae7b55ba70c0253e394e"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "240a1642b658244be54f476f5ce1d4881557a3f4f6293dede7bbba285da72efe"
+            },
+            "Preferences": {
+              "exists": true,
+              "bytes": 57,
+              "sha256": "be4b8924ab38e8acf350e6e3b9f1f63a1a94952d8002759acd6946c4d5d0b5de"
+            }
+          },
+          "restart": {
+            "identity": {
+              "pid": 4860,
+              "path": "D:\\a\\siren\\siren\\desktop\\evidence\\pin-crash-recovery\\2026-10-06T22-14-40.657Z\\setup-lock-graceful-1\\owned-preview\\App\\versions\\0.1.0\\SIREN.exe",
+              "startedAt": "2026-10-06T22:14:57.1924758Z"
+            },
+            "profile": {
+              "pid": 4860,
+              "userDataMatches": true,
+              "sessionDataMatches": true,
+              "executableMatches": true,
+              "ready": true,
+              "packaged": true,
+              "electron": "44.5.1"
+            }
+          },
+          "beforeRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "beforeRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "6fc47d0ca7e7d3e3e55737d9398e496badb9eb2dd14583a8a28dabdf02d8369a"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "f81f6633013a8d52d449a4bbb0d304d07decaa71321eae7b55ba70c0253e394e"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "240a1642b658244be54f476f5ce1d4881557a3f4f6293dede7bbba285da72efe"
+            },
+            "Preferences": {
+              "exists": true,
+              "bytes": 57,
+              "sha256": "be4b8924ab38e8acf350e6e3b9f1f63a1a94952d8002759acd6946c4d5d0b5de"
+            }
+          },
+          "restartUnlockAcknowledged": true,
+          "afterRestartUnlockState": {
+            "configured": true,
+            "pinLength": 4,
+            "unlocked": true,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          },
+          "afterRestartUnlockFiles": {
+            "Access/local-pin.bin": {
+              "exists": true,
+              "bytes": 232,
+              "sha256": "0ddd51007822777fc27e6b93d31cc8a92fc0c5b401029c9f01e549a04ccfd2b3"
+            },
+            "Access/PinProtection/Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "f81f6633013a8d52d449a4bbb0d304d07decaa71321eae7b55ba70c0253e394e"
+            },
+            "Access/PinProtection/Preferences": {
+              "exists": false,
+              "bytes": null,
+              "sha256": null
+            },
+            "Local State": {
+              "exists": true,
+              "bytes": 490,
+              "sha256": "240a1642b658244be54f476f5ce1d4881557a3f4f6293dede7bbba285da72efe"
+            },
+            "Preferences": {
+              "exists": true,
+              "bytes": 57,
+              "sha256": "be4b8924ab38e8acf350e6e3b9f1f63a1a94952d8002759acd6946c4d5d0b5de"
+            }
+          },
+          "cleanup": "graceful",
+          "copiedPackageUnchanged": true
+        }
+      ],
+      "caseReceipts": [
+        {
+          "name": "setup-abrupt-1",
+          "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-06T22-14-40.657Z/setup-abrupt-1/result.json",
+          "bytes": 5250,
+          "sha256": "27113e3471b35d9378c7504cdf2b5f82e94e476e1165d168486d13c6f823a1be"
+        },
+        {
+          "name": "setup-lock-abrupt-1",
+          "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-06T22-14-40.657Z/setup-lock-abrupt-1/result.json",
+          "bytes": 5457,
+          "sha256": "86f28610e38872e26be4bdf028a671fb2b9c8491b982e8fe2d0d399de29b0232"
+        },
+        {
+          "name": "setup-lock-graceful-1",
+          "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/pin-crash-recovery/2026-10-06T22-14-40.657Z/setup-lock-graceful-1/result.json",
+          "bytes": 5824,
+          "sha256": "58780d4f56e6f6b5da140d988eefda1cbf79e42bc10fa84739ce1e17f94f27ba"
+        }
+      ]
+    }
+  },
+  "packaged": {
+    "moduleProbes": 29,
+    "completeModuleProbes": 29,
+    "adverseModuleProbes": 0,
+    "recordedCases": 149,
+    "recordedPassedCases": 149,
+    "completeModuleCases": 149,
+    "moduleReceipts": [
+      {
+        "name": "diagram-build",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-build/2026-10-06T22-21-28.075Z/result.json",
+        "bytes": 18390,
+        "sha256": "2045e8d1de814b50858c58c13ae534edba8ea08add8cbadc02297661aaddabad",
+        "status": "COMPLETE",
+        "cases": 7,
+        "recordedPassedCases": 7,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-dock",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-dock/2026-10-06T22-20-58.956Z/result.json",
+        "bytes": 5863,
+        "sha256": "dac0bf3322f9a4ef0afc6429137b8572576b247e57f06e1eef4cc83dfc75cbe2",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-edit",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-edit/2026-10-06T22-19-22.152Z/result.json",
+        "bytes": 49383,
+        "sha256": "b0a0fd1d4a6c770166356e4759a14f3f30e12739c4e908e3a21421fbbc21b321",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-export",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-export/2026-10-06T22-20-39.318Z/result.json",
+        "bytes": 5168,
+        "sha256": "602beb4efdf764adedc88ccdc520d2c1cc0ab4029335e792acfe0a2878a1f3f0",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-guided",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-guided/2026-10-06T22-19-51.379Z/result.json",
+        "bytes": 6226,
+        "sha256": "e3f9018c69148fcb5f2b84da2b3002d4bca53f6ca1fe1f2a3407c070188c1345",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-preview",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-preview/2026-10-06T22-19-04.244Z/result.json",
+        "bytes": 5482,
+        "sha256": "0d0fbeeb0b5cc4fa9175363eee17c7627c6e0bdca2e5df06358efb1f0567e6ad",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 100000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "diagram-style",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/diagram-style/2026-10-06T22-20-13.176Z/result.json",
+        "bytes": 10119,
+        "sha256": "1b6c5dfb1d36943344758157f72f99841b5feaf53bedac936be1ad5e215cab71",
+        "status": "COMPLETE",
+        "cases": 6,
+        "recordedPassedCases": 6,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "docs-context-native",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-context-native/2026-10-06T22-22-00.354Z/result.json",
+        "bytes": 31152,
+        "sha256": "df48620f216b24b66e2fdee36da91e0eacf4114751bed83a20c885d2264bb58c",
+        "status": "COMPLETE",
+        "cases": 6,
+        "recordedPassedCases": 6,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\docs-context-native\\2026-10-06T22-22-00.354Z\\Pachet-Știință-Context"
+        }
+      },
+      {
+        "name": "docs-edit",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-edit/2026-10-06T22-18-21.415Z/result.json",
+        "bytes": 7331,
+        "sha256": "c721d4d7945a81311439984d2eb62be76e023f667c452debfe99d2b8efd5eea8",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 100000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "docs-format",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-format/2026-10-06T22-18-50.362Z/result.json",
+        "bytes": 9097,
+        "sha256": "97f555ad991009b536c882a4806a7dbccaba2c93bfa565e240a6f86b92dc078c",
+        "status": "COMPLETE",
+        "cases": 6,
+        "recordedPassedCases": 6,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 100000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "docs-reader",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-reader/2026-10-06T22-16-49.686Z/result.json",
+        "bytes": 3067,
+        "sha256": "dc552b8f80ee34342373704a671f36d4e1cc1f22db21ea56e193edcd807b356a",
+        "status": "COMPLETE",
+        "cases": 2,
+        "recordedPassedCases": 2,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\docs-reader\\2026-10-06T22-16-49.686Z\\Pachet-Știință-UI",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "docs-sources",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-sources/2026-10-06T22-24-39.418Z/result.json",
+        "bytes": 4262,
+        "sha256": "be8ec4f9354335168245bc88e313865009442febd96df827b4f440df947bc2a3",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "docs-structured",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/docs-structured/2026-10-06T22-22-37.331Z/result.json",
+        "bytes": 2828,
+        "sha256": "fe95acaaf0697d0e0948515a2ea1945aa408f339d3b5039523e9c13f0146ee8e",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          }
+        }
+      },
+      {
+        "name": "home-documents",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/home-documents/2026-10-06T22-23-06.564Z/result.json",
+        "bytes": 2954,
+        "sha256": "ebc059bcc12ce1f4462e3db4fc8f1d2b813ada35de4866c1ed3dbcecdf9c05eb",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          }
+        }
+      },
+      {
+        "name": "home-library-search",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/home-library-search/2026-10-06T22-22-56.599Z/result.json",
+        "bytes": 5135,
+        "sha256": "5081253aac230fec7268215851de2a6a043b2119ddc750e9542f1872274f5f47",
+        "status": "COMPLETE",
+        "cases": 7,
+        "recordedPassedCases": 7,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "home-source-projects",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/home-source-projects/2026-10-06T22-23-44.704Z/result.json",
+        "bytes": 10307,
+        "sha256": "ff6518cfab94b28ac147e755b0e29230367f722f52d0f4bcf7415734715d7acc",
+        "status": "COMPLETE",
+        "cases": 8,
+        "recordedPassedCases": 8,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "presentation-authoring-native",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/presentation-authoring-native/2026-10-06T22-22-16.309Z/result.json",
+        "bytes": 3413,
+        "sha256": "8d63e03702b410a226081c135881d35ad0f1646b2c71e0b677b5a74009a5fb24",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\presentation-authoring-native\\2026-10-06T22-22-16.309Z\\Pachet-Știință-Prezentări"
+        }
+      },
+      {
+        "name": "presentation-windows",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/presentation-windows/2026-10-06T22-25-11.183Z/result.json",
+        "bytes": 9913,
+        "sha256": "93fa4a6bb458cc10169e440b84f4bba9d9c5a9481e0992fc104e848fe9d09dd6",
+        "status": "COMPLETE",
+        "cases": 6,
+        "recordedPassedCases": 6,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-analysis",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-analysis/2026-10-06T22-16-57.958Z/result.json",
+        "bytes": 7168,
+        "sha256": "3100e0396e5caac094ac6612430b6150dbb4f5a8bb5e1ed6649c9152000cda06",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-bundle-import-native",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-bundle-import-native/2026-10-06T22-15-34.516Z/result.json",
+        "bytes": 4758,
+        "sha256": "3b2eb84ba7bc7dc8ba9ab7f3c78173cc92a15eeecb05b7fee5c8e93ba3bc34d2",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          }
+        }
+      },
+      {
+        "name": "source-diff",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-diff/2026-10-06T22-17-12.605Z/result.json",
+        "bytes": 7254,
+        "sha256": "7267663a515af39a9ae2c9c5d4b46aaa76417187cadf6ff362fb68b9b33c5694",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-edit",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-edit/2026-10-06T22-23-24.253Z/result.json",
+        "bytes": 4705,
+        "sha256": "16beb41bb7c5a1921b47161ae222e04e80516e2a5f56f82b7603ab1f9b218161",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-link-create",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-link-create/2026-10-06T22-24-17.501Z/result.json",
+        "bytes": 4401,
+        "sha256": "67cb570ac8def171e61b9c8deb1ca4663d5aeafbb3dd0767336b657614be9875",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-link",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-link/2026-10-06T22-17-41.430Z/result.json",
+        "bytes": 6654,
+        "sha256": "446e7fd4dab3d681e382a7cdf81bebd48e18248e55069b5a3acca8df16037737",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 100000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-map",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-map/2026-10-06T22-17-27.607Z/result.json",
+        "bytes": 7074,
+        "sha256": "9b8ce4976111396e4f529801b98f24806f4697921d131d4ffccb8ab24cca9931",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 300000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "source-sync",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-sync/2026-10-06T22-18-00.081Z/result.json",
+        "bytes": 3969,
+        "sha256": "fa94f200f70945cb8417c04dc98f5962b558b5c515c08a02d7b121ecc84b56f4",
+        "status": "COMPLETE",
+        "cases": 5,
+        "recordedPassedCases": 5,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": 100000,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "ui-personality",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/ui-personality/2026-10-06T22-16-12.768Z/result.json",
+        "bytes": 18607,
+        "sha256": "cf6425575f4eb748710756f1670ecf9114e42665d7d7247c64299a51193e0d85",
+        "status": "COMPLETE",
+        "cases": 11,
+        "recordedPassedCases": 11,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\ui-personality\\2026-10-06T22-16-12.768Z\\Pachet-Știință-UI",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "window-close-keys",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/window-close-keys/2026-10-06T22-25-03.316Z/result.json",
+        "bytes": 4242,
+        "sha256": "85a8544f675464b450072d79c1231e9a5895dd6732c0b775f2d02537c0ab1970",
+        "status": "COMPLETE",
+        "cases": 4,
+        "recordedPassedCases": 4,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      },
+      {
+        "name": "workspace-appearance",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/workspace-appearance/2026-10-06T22-15-52.323Z/result.json",
+        "bytes": 7674,
+        "sha256": "788bc45311f8459deb655b073d6a185cd02de32a5020eb32833abbdd656a1a1a",
+        "status": "COMPLETE",
+        "cases": 8,
+        "recordedPassedCases": 8,
+        "inputsUnchanged": true,
+        "error": null,
+        "lineCount": null,
+        "package": {
+          "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+          "copy": "D:\\a\\siren\\siren\\desktop\\evidence\\workspace-appearance\\2026-10-06T22-15-52.323Z\\Pachet-Știință-UI",
+          "archive": {
+            "bytes": 53866014,
+            "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+          },
+          "runtime": {
+            "bytes": 245726208,
+            "sha256": "49b61a030a520fc36a4b8fa5cce53fb4e935a7bdbbe4b80e9222f598e49cc7fa"
+          }
+        }
+      }
+    ],
+    "coreProbes": [
+      {
+        "name": "packaged-2026-10-06T22-15-10.131Z",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/packaged-2026-10-06T22-15-10.131Z/result.json",
+        "bytes": 1462,
+        "sha256": "4a590a7595a12e62cb6ba6c8c5e3e5a0dd902efe8619d57b7aff8f86aae2fd97",
+        "completed": true,
+        "scope": "Actual packaged app.asar/SIREN.exe, locked null snapshot/refused saves, production native fixture PIN unlock, pointer/keyboard editor save through production acknowledged flush with exact native bytes/revision/hash/full-bag readback, rejected dev CLI, Unicode folder copy relock/unlock, pointer recovery into a new project preserving the acknowledged saved original, native damaged-journal read-only authority despite correct PIN, and unconfigured updates. No launcher/apply/clean-PC/online account qualification."
+      },
+      {
+        "name": "shell-2026-10-06T22-15-00.161Z",
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/shell-2026-10-06T22-15-00.161Z/result.json",
+        "bytes": 1366,
+        "sha256": "03ad921feeb3ffc8ed4c864859ca93aaa1f532827fc73d31c0be7981341d8565",
+        "completed": true,
+        "scope": "Task1 shell only; no production auth/update or project recovery certification"
+      }
+    ],
+    "buildIdentity": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/dist/development-5f4be585-cc5f-4109-8dce-3c013e60ea29/BUILD-IDENTITY.json",
+      "bytes": 2682,
+      "sha256": "36876a0444aa51b33a13b9cb34c4d9487733d40db0f8fc7e1283e55526ef7160"
+    },
+    "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+    "archive": {
+      "bytes": 53866014,
+      "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+    },
+    "releaseAdmitted": false,
+    "inventoryQualified": false,
+    "launcherQualified": false,
+    "rawArchiveRetainedInArtifact": false
+  },
+  "sourceBundle": {
+    "name": "source-bundle-import-native",
+    "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original/evidence/source-bundle-import-native/2026-10-06T22-15-34.516Z/result.json",
+    "bytes": 4758,
+    "sha256": "3b2eb84ba7bc7dc8ba9ab7f3c78173cc92a15eeecb05b7fee5c8e93ba3bc34d2",
+    "status": "COMPLETE",
+    "cases": [
+      {
+        "name": "Home actual chosen bundle copies exact 100k/300k source and durable checkpoint",
+        "ok": true
+      },
+      {
+        "name": "Imported Code and linked Docs render exact remapped source identities",
+        "ok": true
+      },
+      {
+        "name": "Common Lock destroys satellites and restart reopens completed source import",
+        "ok": true
+      },
+      {
+        "name": "Actual legacy Open/import door restores another independent exact copy",
+        "ok": true
+      }
+    ],
+    "recordedPassedCases": 4,
+    "inputsUnchanged": true,
+    "error": null,
+    "lineCount": 300000,
+    "package": {
+      "sourceCommit": "32479e1390340ee255e80e72dd80cc98e4ab2189",
+      "archive": {
+        "bytes": 53866014,
+        "sha256": "981f5669d78f367f99e13ae354f5c923a75906469b9bdc189aa26660492d44ca"
+      }
+    },
+    "sourceBytes": 7088891,
+    "bundleBytes": 9454085,
+    "fixtureScriptSha256": "130452c72648288f4068da20ade3a8f851eb24d5f35c15a549e510dd538d0aff",
+    "parserSha256": "df8c9ff13a91cbb6769dba8faa90b7512d4fd62715d26da8c88345a1e960839f",
+    "validatorEntrySha256": "0f63785b4cc88658c5a0c248ccfbcf5096c048ac6a5921b5964222b5e467b81f",
+    "rawSourceBytesRetainedInArtifact": false
+  },
+  "artifacts": [
+    {
+      "id": 11447808452,
+      "name": "desktop-development-evidence",
+      "path": "evidence/workspace-surface/ci37539190289/desktop-development-evidence-original.zip",
+      "bytes": 61479,
+      "sha256": "3a62a1be96ec6821c181371ec9be12baa081f170212dda024a73a303ef20ee23",
+      "files": 5,
+      "uncompressedBytes": 325295,
+      "fileInventory": {
+        "path": "evidence/workspace-surface/ci37539190289/desktop-development-evidence-file-inventory.json",
+        "bytes": 875,
+        "sha256": "148601c5aea267f5dc39c26d03bcfc04c2b82850ba62ad81fc83a60d60bdc2fe"
+      }
+    },
+    {
+      "id": 11447464277,
+      "name": "desktop-native-sources-evidence",
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-sources-evidence-original.zip",
+      "bytes": 3212702,
+      "sha256": "3677d45da083c856c8665064ee8da56822ce90d2bc2bf1c013b5126cd9d0fa31",
+      "files": 86,
+      "uncompressedBytes": 3538336,
+      "fileInventory": {
+        "path": "evidence/workspace-surface/ci37539190289/desktop-native-sources-evidence-file-inventory.json",
+        "bytes": 16640,
+        "sha256": "9467c0a77cd650791fafd09aff7e014d64fad54e0d0b9f148cf52cbe1d11906a"
+      }
+    },
+    {
+      "id": 11447339402,
+      "name": "desktop-packaged-evidence",
+      "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-original.zip",
+      "bytes": 9632851,
+      "sha256": "2b236085c3e0782ce5ca7e7cee04008539d459fc6d5fa2c975f997261b419d4b",
+      "files": 196,
+      "uncompressedBytes": 10346451,
+      "fileInventory": {
+        "path": "evidence/workspace-surface/ci37539190289/desktop-packaged-evidence-file-inventory.json",
+        "bytes": 38576,
+        "sha256": "4d5e31a53a1942a4c09689fad5535e2d2f87553fcb5da36a57c8af448fc7d887"
+      }
+    },
+    {
+      "id": 11447199336,
+      "name": "desktop-native-desktop-evidence",
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-desktop-evidence-original.zip",
+      "bytes": 4406009,
+      "sha256": "3f73707a0a16823f602570672a3cdfeee61bf1f018a846285f31b37d93875a4c",
+      "files": 106,
+      "uncompressedBytes": 4798069,
+      "fileInventory": {
+        "path": "evidence/workspace-surface/ci37539190289/desktop-native-desktop-evidence-file-inventory.json",
+        "bytes": 20315,
+        "sha256": "8a7738d87c6c2c0a26a86085dbd5c3a09845213add62f25e45cdab865bea59a9"
+      }
+    },
+    {
+      "id": 11447059938,
+      "name": "desktop-native-diagrams-evidence",
+      "path": "evidence/workspace-surface/ci37539190289/desktop-native-diagrams-evidence-original.zip",
+      "bytes": 7478029,
+      "sha256": "25a0501b4d39767f9095998238180be2c5f314b70513dc566b2426cd029a9b5f",
+      "files": 146,
+      "uncompressedBytes": 7976398,
+      "fileInventory": {
+        "path": "evidence/workspace-surface/ci37539190289/desktop-native-diagrams-evidence-file-inventory.json",
+        "bytes": 28815,
+        "sha256": "0632b22063e74cd9afbf978adf4b25a47da95e14fa3563b131b7f96258f96a6b"
+      }
+    }
+  ],
+  "zipTotalBytes": 24791070,
+  "inertFiles": 539,
+  "originalLogs": {
+    "unit": {
+      "path": "evidence/workspace-surface/ci37539190289/unit-job-decoded-original.json",
+      "bytes": 589433,
+      "sha256": "4f3f2015d6c9196521c665d76a255208e2119877a2690e8007b8edaa7a8d2b24",
+      "decodedCharacters": 572510,
+      "decodedUtf8Sha256": "9f7ed2a76a375cf1ddc86ea29f130bcc6e75e7e6e415d5750f3c12ca89a6ba39"
+    },
+    "package": {
+      "path": "evidence/workspace-surface/ci37539190289/package-job-decoded-original.json",
+      "bytes": 46393,
+      "sha256": "92fde6c5587403e01ca8d8bf6bcb5119bb427d3720bdbe565c7907aa72c155da",
+      "decodedCharacters": 43145,
+      "decodedUtf8Sha256": "8b6ecc27b1b10f84d544bb7339c441ac64a1db2c575508387002d030b0ee93ef"
+    },
+    "desktop": {
+      "path": "evidence/workspace-surface/ci37539190289/desktop-job-decoded-original.json",
+      "bytes": 42161,
+      "sha256": "383aed9849577e71bf0cc67c7cb214a4d0aa613fddedbbbb79f3ff34d1b0e77e",
+      "decodedCharacters": 39624,
+      "decodedUtf8Sha256": "b0c56e9ed8127d193482743a4eb97e624da59037e5d5e4964b2f8fcee45c2edf"
+    },
+    "sources": {
+      "path": "evidence/workspace-surface/ci37539190289/sources-job-decoded-original.json",
+      "bytes": 43157,
+      "sha256": "87318fca83b76bd3cf1700c84f1bf01b468e568efc18a60bedc1ea3aee05cded",
+      "decodedCharacters": 40586,
+      "decodedUtf8Sha256": "6ed611c376f3479ef9c2fae2c3b7ccdb7c63e388efeefb7ebaa0dc47afaa296a"
+    },
+    "diagrams": {
+      "path": "evidence/workspace-surface/ci37539190289/diagrams-job-decoded-original.json",
+      "bytes": 41011,
+      "sha256": "752890487d0a89bf3b6aab40339cf7f0cb0852ac77ddf10723e7dc83dd003e00",
+      "decodedCharacters": 38498,
+      "decodedUtf8Sha256": "0be93331b1480aa84b3747bd9f547d2c7d080a97d7eb173189074e97effe77e6"
+    }
+  },
+  "metadata": {
+    "run": {
+      "path": "evidence/workspace-surface/ci37539190289/run-api-original.json",
+      "bytes": 14592,
+      "sha256": "a67f6d3018e0795c67bdbb4ca3da92ceb5a54184187af6023335fab0f86b655e"
+    },
+    "jobs": {
+      "path": "evidence/workspace-surface/ci37539190289/jobs-api-original.json",
+      "bytes": 37340,
+      "sha256": "c7609d17ad9ad897da25bb71f127e9560c6ea754f705c4e2a6da00ff5266e9fd"
+    },
+    "artifacts": {
+      "path": "evidence/workspace-surface/ci37539190289/artifacts-api-original.json",
+      "bytes": 5009,
+      "sha256": "2cf88f353898c2d22678858c894a5ce4b4a900665546b7dbe900cc693186aea1"
+    },
+    "canonical": {
+      "path": "evidence/workspace-surface/ci37539190289/canonical-api-original.json",
+      "bytes": 1586,
+      "sha256": "f5c8cbee92153503d17981a902b4e2d5de78397c4e5408c18900fa3dcf59eb0b"
+    },
+    "integration": {
+      "path": "evidence/workspace-surface/ci37539190289/integration-api-original.json",
+      "bytes": 2790,
+      "sha256": "85424cd05de327e11ac4c3cf925c69156e142aca566e84b1f730f47c53542552"
+    },
+    "main-ref": {
+      "path": "evidence/workspace-surface/ci37539190289/main-ref-api-original.json",
+      "bytes": 365,
+      "sha256": "427b35d549b2fe5337e7279d1086123065f8a31713161dd476bbf1a26ad3ac71"
+    }
+  },
+  "scope": "Actual FINAL hosted observations only. Exact original ZIPs retained and inertly extracted; no downloaded code executed. No source/test/workflow/GUI changes, rerun/cancel/push, release approval, fabricated reviewer or power-loss claim. Prior adverse evidence remains unchanged."
+}

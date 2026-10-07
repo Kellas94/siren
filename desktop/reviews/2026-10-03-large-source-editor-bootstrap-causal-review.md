@@ -1,0 +1,34 @@
+# Extracted native probe: initial readiness predicate race
+
+The first extracted `tests/native/large-source-editor.mjs` run remains **ADVERSE**, exit 1: compact100k and Unicode300k completed, while compact300k, Python100k, Python300k and Unicode100k failed before editor-open admission with `ReferenceError: probe is not defined`. The earlier independently measured six-case functional pass remains separately qualified; it does not turn this extracted test run into a pass.
+
+Retained extraction evidence: `desktop/evidence/large-source-editor/2026-10-03T06-13-33-528Z/result.json`, SHA-256 `2c40afff3c0d94e83ea66d3fe9ef181e152c52be6f023588a757b2379d43614c`. Tracked probe SHA `207e710c6f971e34ecb8b9aa0405c9c0b070303506dbb60c9eda26200e546ee7` is byte-identical to the syntax-only extraction candidate. Captured product inputs, probe and bundle remained unchanged during that native run.
+
+The exact defect is the initial predicate at line57: `driver.waitFor('probe.ready||probe.error')`. The unchanged native driver discovers the real target by URL and enables Runtime/Page; it does not promise completion of HTML scripts. The generated HTML loads the 485,311-byte editor bundle before `page.js`. Only `page.js` creates `window.probe`. A target may therefore have a valid default execution context and URL while this global is still absent. Evaluating the bare identifier throws immediately; drive.waitFor propagates evaluation exceptions instead of treating them as pending.
+
+Concrete retained evidence supports this startup boundary:
+
+| Failed fixture | Native attachment ms | Predicate failure ms after attachment | Retained native source operations before close |
+|---|---:|---:|---|
+| Compact300k | 351.74 | 2.01 | openRead, 5 readChunk, closeRead; all successful |
+| Python100k | 302.66 | 4.42 | openRead, 48 readChunk, closeRead; all successful |
+| Python300k | 298.36 | 2.19 | openRead, 14 readChunk; all successful before early close |
+| Unicode100k | 249.68 | 1.12 | openRead, 49 readChunk, closeRead; all successful |
+
+The first three failed cases' event streams include initial `://` contexts, context replacement by `siren://app`, and DOMContent/load/frameStoppedLoading events. Unicode100k already has the `siren://app` context but similarly emits subsequent DOMContent/load events. There are no captured Runtime.exceptionThrown events from product scripts; the reported exceptions are the driver's Runtime.evaluate response at the test expression. Electron logs contain normal DevTools startup. A retained compact300k screenshot shows the real editor toolbar and `Opening verified source…`, establishing that page.js and the product open path ran after the premature probe evaluation. This is a precise test bootstrap race, not demonstrated source corruption, product refusal, or renderer crash. It does not establish full product success in those four aborted cases.
+
+An isolated Node VM control extracts the actually failed expression from the frozen tracked test and exercises absent global, defined/opening, ready, refused, and loading-stage transition states. The unchanged expression produced **RED: 3 pass / 2 fail**, 68.645 ms, with exactly `ReferenceError: probe is not defined` for absent-global states. The proposed expression `Boolean(window.probe?.ready || window.probe?.error)` produced **GREEN: 5/5**, 69.952 ms. A refused bootstrap still ends the wait, and the existing subsequent `probe.error === null` assertion still fails. Thus no real bootstrap refusal is converted to success.
+
+Control files are ignored evidence: `desktop/evidence/native-source-editor/bootstrap-predicate.test.mjs`, SHA-256 `d0f72f7ea774bbf7044f0bc5af002e3758552918cfe0916df669f2fb52f5f90c`, and `bootstrap-predicate-red.tap` / `bootstrap-predicate-green.tap`. This VM control verifies JavaScript predicate behavior only; it is not a native rerun or editor qualification.
+
+The minimal proposed tracked-test repair is **only** the guarded initial expression. Absence returns false and lets the original driver's bounded 30-second wait continue. A ready fixture or reported fixture error follows the existing branches. Native driver code, target URL, flags, polling, timeouts, fixture hashes, complete-text/hash checks, native input sequence, exact EOF Find selection, Save and fresh-disk/reopen oracles remain unchanged. No sleep, deadline increase, suppressed actual refusal or product-source repair is warranted by this failure.
+
+No tracked source, test or build was edited by this reviewer, no native process was launched, and no full suite was run. Root owns any test repair after its frozen suite completes, followed by one explicitly labeled changed-test native qualification. The extracted run must remain failed in the historical record. [Earlier independent native qualification](2026-10-03-code-editor-native-independent-review.md) and its separate original startup/Find adverse reports remain immutable.
+
+## Subsequent owner-run qualification, independently inspected
+
+After root's frozen unit suite completed, root changed only the initial readiness expression to the guarded form and ran the tracked native test once. Changed test SHA-256 is `3151f140e1a29a2d182a1b404e9d44e593b229ae7704c144558613cad655710c`. Owner-run evidence `desktop/evidence/large-source-editor/2026-10-03T06-17-02-790Z/result.json`, independently read and hashed as `2b2513eee11d657e3c334979d083c5b90e496d08b9d0a96f11d42ccdda61f2c3`, records **6/6 COMPLETE**, exit0 reported by the owner, all fourteen recorded stages passing per case, and captured inputs/probe/bundle unchanged. The product bundle stayed `71c00ab24f7ad5d6d173bdd521f857f1efda7827d9b836f06143aa8a7d5dd661`; native driver, original fixture hashes and exact functional oracles were unchanged.
+
+I independently compared all six final fresh-disk hashes to the earlier independently generated expected outcomes: every hash matched; each receipt was committed at version6, original source/blob and project preservation passed, and owned driver closure was recorded. This owner-run result establishes changed extracted-probe qualification for the isolated seam. It does **not** relabel the original two-complete/four-failed extraction run as passing, expand production integration scope, or establish input-to-frame p95 performance.
+
+An approved independent read-only CIM observation matching each of the failed and passing extraction evidence roots found **zero remaining owned Electron processes** for both. This observation is retained in `desktop/evidence/native-source-editor/extracted-probe-cleanup.json`. Root additionally retained its approved exact owned-PID/executable census in the passing evidence's `cleanup.json`; no unrelated process was killed. A denied or sandbox-blocked inventory call would not establish cleanup, and none is used as evidence here.

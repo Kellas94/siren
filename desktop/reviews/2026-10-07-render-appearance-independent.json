@@ -1,0 +1,404 @@
+{
+  "author": "/root/terminal_foundation_review",
+  "firstCurrentBackgroundProbe": {
+    "sourceHash": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "expectedOriginalHash": "ff9c5caed017e103e5bdfa7648ca4beba5b57e42e4789dd5a6e7fc98326fe4de",
+    "originalSourceCaptured": false,
+    "scope": "Exact current vector and built style adapters with simulated Mermaid declarations/DOM; no native/browser claims",
+    "mermaidChosenBackground": "#123456",
+    "exportedBackground": "#123456",
+    "expectedSourceBackground": "#123456",
+    "nativePaletteBackground": "#ffffff",
+    "output": "<svg><rect fill=\"#123456\"/></svg>",
+    "findingReproduced": false
+  },
+  "originalBackgroundReproduction": {
+    "provenance": "Current correction reversed in memory only; exact resulting SHA256 values verified against initial review-read hashes before execution. Suggested Git HEAD was older d18ae509/d211adf0 and was not claimed as matching.",
+    "sourceHashes": {
+      "vector": "ff9c5caed017e103e5bdfa7648ca4beba5b57e42e4789dd5a6e7fc98326fe4de",
+      "style": "62edcd6d1d57c5933b41ff288dabcc72e70524f13ac3f8a2baaead22070c55a7"
+    },
+    "hashesMatchOriginalRead": true,
+    "observed": {
+      "mermaidBackground": "#123456",
+      "exportedBackground": "#ffffff"
+    },
+    "defectReproduced": true,
+    "scope": "Exact hash-matching original adapter strings in pure Node VM; Mermaid declaration/config and DOM simulated, no Electron claim"
+  },
+  "intermediateInvalidColourProbe": {
+    "styleSha256": "cbeb25fde303fa7ad943adf0c67ba28d67501a4082545ee9c45d1ca19e1bd5f5",
+    "observed": [
+      {
+        "input": "notacolour",
+        "surfaceBackground": "notacolour"
+      },
+      {
+        "input": "#12345",
+        "surfaceBackground": "#12345"
+      },
+      {
+        "input": "#1234567",
+        "surfaceBackground": "#1234567"
+      },
+      {
+        "input": "url(https://bad.invalid)",
+        "surfaceBackground": null
+      },
+      {
+        "input": "inherit",
+        "surfaceBackground": null
+      }
+    ],
+    "finding": "Invalid CSS colour names and 5/7 digit hex admitted as effective source surface",
+    "scope": "Pure Node exact built adapter; browser interpretation not executed by reviewer"
+  },
+  "createdUtc": "2026-10-07T12:51:02.168Z",
+  "currentVerdict": "NO_REMAINING_FINDINGS_WITHIN_CAPTURED_PURE_SCOPE",
+  "currentInputsBefore": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "currentInputsAfter": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "currentInputsUnchanged": true,
+  "reviewScopeTests": {
+    "command": "node --test tests/render-appearance.test.mjs tests/public-render-appearance.test.mjs tests/presentation-ui.test.mjs tests/diagram-style.test.mjs",
+    "pass": 18,
+    "fail": 0,
+    "exitCode": 0,
+    "durationMs": 787.3751
+  },
+  "independentCurrentProbes": {
+    "pass": 11,
+    "fail": 0,
+    "results": [
+      {
+        "name": "all39 descriptors/configs and source-owned versus sidecar node colours",
+        "status": "PASS",
+        "observed": {
+          "namedThemes": 39,
+          "sourceStyledNodeProtected": true,
+          "unstyledSidecarNodeApplied": true
+        }
+      },
+      {
+        "name": "descriptor refuses accessor/unknown/extra/inconsistent fields and returned config mutation cannot persist",
+        "status": "PASS",
+        "observed": {
+          "getterCalls": 0,
+          "contractMutation": false
+        }
+      },
+      {
+        "name": "corrected colour grammar refuses malformed names/hex/resources/context while valid hex survives",
+        "status": "PASS",
+        "observed": {
+          "mode": "Nonbrowser exact-hex fallback",
+          "results": [
+            {
+              "value": "#123",
+              "surface": "#123"
+            },
+            {
+              "value": "#1234",
+              "surface": "#1234"
+            },
+            {
+              "value": "#123456",
+              "surface": "#123456"
+            },
+            {
+              "value": "#12345678",
+              "surface": "#12345678"
+            },
+            {
+              "value": "#12345",
+              "surface": null
+            },
+            {
+              "value": "#1234567",
+              "surface": null
+            },
+            {
+              "value": "notacolour",
+              "surface": null
+            },
+            {
+              "value": "inherit",
+              "surface": null
+            },
+            {
+              "value": "currentcolor",
+              "surface": null
+            },
+            {
+              "value": "url(https://outside.invalid)",
+              "surface": null
+            },
+            {
+              "value": "rgb(,,)",
+              "surface": null
+            },
+            {
+              "value": "red",
+              "surface": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "browser colour authority hook is consulted; rejected colours cannot become surfaces",
+        "status": "PASS",
+        "observed": {
+          "simulatedCSS": true,
+          "calls": [
+            [
+              "color",
+              "red"
+            ],
+            [
+              "color",
+              "notacolour"
+            ],
+            [
+              "color",
+              "rgb(10,20,30)"
+            ]
+          ]
+        }
+      },
+      {
+        "name": "all39 public section/title/text/table card palettes ignore opposite OS",
+        "status": "PASS",
+        "observed": {
+          "themes": 39,
+          "casesPerTheme": 4,
+          "publicRenderCalls": 156
+        }
+      },
+      {
+        "name": "exact native appearance helper re-reads store and refuses after await retirement",
+        "status": "PASS",
+        "observed": {
+          "storeReads": 4,
+          "postAwaitRetirementRefused": true,
+          "invalidPreferenceFallback": true,
+          "otherFailureRefused": true,
+          "scope": "Exact helper with simulated native store/Theme/scope"
+        }
+      },
+      {
+        "name": "Presenter100-event burst coalesces into latest slide; Lock retires pending appearance",
+        "status": "PASS",
+        "observed": {
+          "appearanceEvents": 100,
+          "navigationsIncludingInitial": 3,
+          "latestSlide": "second",
+          "LockFollowups": 0
+        }
+      },
+      {
+        "name": "Failed appearance signature and invalid events produce zero automatic retries",
+        "status": "PASS",
+        "observed": {
+          "failedNavigations": 1,
+          "duplicateEvents": 50,
+          "retries": 0
+        }
+      },
+      {
+        "name": "Pagehide retires render and pending theme work without another native request",
+        "status": "PASS",
+        "observed": {
+          "navigations": 2,
+          "pagehideFollowups": 0
+        }
+      },
+      {
+        "name": "Lock while image decode is pending prevents late public publication",
+        "status": "PASS",
+        "observed": {
+          "latePublicFrames": 0,
+          "privateNotesAfterLock": "",
+          "navigations": 2
+        }
+      },
+      {
+        "name": "Current exact vector and public PNG adapters retain source surface and letterbox together",
+        "status": "PASS",
+        "observed": {
+          "MermaidChosenBackground": "#123456",
+          "SVGBackground": "#123456",
+          "PNGCanvasFillOrder": [
+            "#ffffff",
+            "#123456",
+            "drawImage"
+          ],
+          "inputUnchanged": true,
+          "scope": "Exact source adapters; simulated Mermaid parsing, DOM, SVG raster image and canvas; no native/pixel claim"
+        }
+      }
+    ]
+  },
+  "reviewerHarnessCorrection": "First combined own-probe attempt stopped because reviewer Presenter fixture supplied {theme,mode} instead of production {id,mode} palette rows. Corrected fixture is tested in separate follow-up; this was not attributed as a product finding.",
+  "nativeExecutionByReviewer": false,
+  "presenterProbeInputsBefore": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "presenterProbeInputsAfter": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "presenterProbeInputsUnchanged": true,
+  "surfaceRecheckInputsBefore": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "surfaceRecheckInputsAfter": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "surfaceRecheckInputsUnchanged": true,
+  "findings": [
+    {
+      "id": "RENDER-APPEARANCE-01",
+      "priority": "P2",
+      "title": "Source-declared Mermaid surface overwritten by application palette",
+      "originalStatus": "ADVERSE_REPRODUCED_ON_EXACT_ORIGINAL_HASHES",
+      "currentStatus": "CLOSED_WITHIN_PURE_ADAPTER_SCOPE",
+      "evidence": "Original Mermaid background #123456 became #ffffff; corrected exact vector now #123456 and public canvas letterbox reset to #123456."
+    },
+    {
+      "id": "RENDER-APPEARANCE-02",
+      "priority": "P2",
+      "title": "Intermediate source surface validator admitted invalid CSS colours",
+      "originalStatus": "ADVERSE_REPRODUCED_ON_INTERMEDIATE_STYLE_HASH",
+      "currentStatus": "CLOSED_WITHIN_PURE_ADAPTER_SCOPE",
+      "evidence": "notacolour and hex5/7 previously returned as surface; final grammar refuses and browser authority hook consulted. Actual CSS.supports/rendering remains owner native qualification."
+    }
+  ],
+  "initialReviewReadInputs": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "62edcd6d1d57c5933b41ff288dabcc72e70524f13ac3f8a2baaead22070c55a7",
+    "src/ui/diagram/vector.js": "ff9c5caed017e103e5bdfa7648ca4beba5b57e42e4789dd5a6e7fc98326fe4de",
+    "src/ui/windows/diagram.js": "7e71a0c42e5e5a0a97a98438f7eb8e1bead566c4e33eb906b23401e9ff78e210",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "77d98d3a5512b7da901fd39b4e18793769d6d7a966f577cbcb6b0c05f6cf58e6",
+    "src/ui/presentation/window.js": "08e5428eb237b15db3ad3e930dd2c382c370572f25f622550e53857fa7f24eef",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "7412b97afa3c023afc4d5ddf4354f9319ab02b32e3df5546fb4301ca5870f646"
+  },
+  "initialScopeTestRun": {
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "exitCode": 0,
+    "note": "Initial pre-correction focused run; separate from final18 tests."
+  },
+  "scope": "Independent current appearance source/code review and pure Node adapter/VM probes only",
+  "limits": [
+    "No reviewer Electron, real browser CSS engine, native application/IPC, GPU/font/raster/pixel, physical display, package, copied package or release execution.",
+    "All Mermaid parser/DB calls in reviewer probes are controlled mocks; actual Mermaid import/theme behaviour requires ROOT native evidence. The existing frozen helper was read and tests executed.",
+    "CSS.supports hook was probed with a simulated authority. Exact hex syntax was independently checked without a browser. Actual Chromium interpretation is not claimed.",
+    "nativeRenderAppearance was extracted exactly and tested with simulated native store/nativeTheme/scope; native main integration and end-to-end appearance selection remain owner proof.",
+    "Hidden utility lifetime and full-application Lock are outside these renderer VM tests. Controlled Presenter serial/cover states establish local stale-result refusal only.",
+    "ROOT concurrently corrected the sources after the first read. Original and intermediate adverse results are preserved separately; only final frozen begin/end manifests support the current narrow recheck verdict.",
+    "Reviewer changed only the two report files. No source/test edits, dependency installs, downloads, native executions, packaging or full-suite run."
+  ],
+  "reportFinalInputHashes": {
+    "src/appearance/render.mjs": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f",
+    "src/ui/diagram/style.js": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb",
+    "src/ui/diagram/vector.js": "0f402e50c48b72619b0a5ee17a988c559326cab963bd61332df5e765caf368a7",
+    "src/ui/windows/diagram.js": "f688a36b1cfb129a81fc0eda00480c2ff887fc362a1623da8a2489b647de5dd1",
+    "src/ui/presentation/cards.js": "afe6e9e67134b240cd719b1b5321a6cfd27e0a7c9f157e44296ed28038421a14",
+    "src/ui/presentation/render.js": "f1a4ee4d7f9a07d9e2a3a3d670c6b28060062b09620c9fe346f06253f02c0ca3",
+    "src/ui/presentation/window.js": "c92acdef3514271b426a294bdad45d6acec62e69f19305d269d8fae6cc5ca24d",
+    "build/diagram-style.mjs": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e",
+    "src/main.mjs": "77ce71e5eeb207b80b391fcbcbeadcc475c6cee141024713cb45401260c43275",
+    "tests/render-appearance.test.mjs": "59b1bc33736c273e4ff8d8d6b52c33b200eff8a15e86fd95e2aef0644db0e909",
+    "tests/public-render-appearance.test.mjs": "80c2c7fad5d904f6b6a190aa7ccb378f9a4748c95b7351b9a85de280030903fa",
+    "tests/presentation-ui.test.mjs": "d34e97af15d2fcd8f22c4139d5a55b8f5a3db38095492d021faaba26fe8df260",
+    "tests/diagram-style.test.mjs": "489e9c8dd7b4a7005b75c1c4ca2768c53176f817acb8d53f486d7f6224bcdff8",
+    "baseline/R78.html": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+  },
+  "reportFinalInputsUnchanged": true
+}

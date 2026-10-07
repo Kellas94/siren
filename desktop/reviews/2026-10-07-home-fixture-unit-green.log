@@ -1,0 +1,15 @@
+✔ tests/native/home-library.mjs accepts actual Settings with all four named actions in order (6.2426ms)
+✔ tests/native/home-library.mjs refuses missing, renamed, reordered and unexpected Settings actions (7.0909ms)
+✔ tests/native/home-library-search.mjs accepts actual Settings with all four named actions in order (1.7877ms)
+✔ tests/native/home-library-search.mjs refuses missing, renamed, reordered and unexpected Settings actions (5.7685ms)
+✔ recovery privacy waits for actual DOM after real locked preload admission (3.7193ms)
+✔ recovery admission still fails if the admitted body exposes the private project label (3.5163ms)
+✔ recovery never treats absent body as privacy success or extends the existing deadline (80.3328ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.7346

@@ -1,0 +1,69 @@
+{
+  "author": "/root",
+  "createdUtc": "2026-10-07T12:30:41.653Z",
+  "scope": "Pure Terminal session/input state, output credits and policy; no native shell integration",
+  "nativeExecutionAdmitted": false,
+  "nativeOwnershipStatus": "NOT_ADMITTED",
+  "baseCommit": "4e39f0ac2fc7ed7d7b5c50bbd67f6fbfe01b4926",
+  "fullSuite": {
+    "path": "evidence/workspace-surface/terminal-state-full-suite-2026-10-07T12-21-28.353Z/result.json",
+    "sha256": "b5d85ba5cdf5fe2067126d4a289784d72bda0299c855b12427332062ee455c41",
+    "tests": 1610,
+    "pass": 1610,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "capturedInputs": 644,
+    "changedInputs": []
+  },
+  "focused": {
+    "tests": 40,
+    "pass": 40,
+    "log": "evidence/workspace-surface/terminal-foundation-owner-final-focused.log"
+  },
+  "independent": {
+    "author": "/root/terminal_foundation_review",
+    "verdict": "NO_BLOCKING_FINDINGS_WITHIN_PURE_FOUNDATION_SCOPE",
+    "path": "reviews/2026-10-07-terminal-foundation-independent.json",
+    "sha256": "ecd30448df65c20e9d2a94a30a4cd7abd8a5cef0ef21c922369af0734c8537a8",
+    "markdownSha256": "2ec00c67f7e33a66c58c46f33b404e4f94a1a3e4aa01154efed249312084860c",
+    "tests": 23,
+    "probes": 10,
+    "creditOracleOperations": 30000
+  },
+  "inputs": {
+    "src/terminal/session-state.mjs": "bdaccf7b0246d1b8d5429674f615b8bb648b3da03e3cfa9c6020bf823eac61b7",
+    "src/terminal/credits.mjs": "e739005886735bdf39faf0b62e60cb995a0718d1ec0755686220990d354b0f16",
+    "src/terminal/policy.mjs": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115",
+    "tests/terminal-session-state.test.mjs": "cb5fc93ebb74ced3bac0c7606df183af2c24e5112e6818bbdaa95ec855fcd161",
+    "tests/terminal-credits.test.mjs": "8f689ddf4ad4a7607768decba6404e76bd45482fb4b41b317bff77046b69d863",
+    "tests/terminal-policy.test.mjs": "c8dfbb25cbbea0c35c4394a8fc0945a5e7ae7facb5c126edc1359cdf8dc98778",
+    "tests/terminal-state-stress.test.mjs": "62002ea02d9df42fc631dd7e2983b03ab61244d92f7a52b8a75ca6ee63660a72",
+    "src/terminal/contracts.mjs": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e",
+    "src/terminal/output.mjs": "13617af44f8b0023cd8dff735c90638c780671e58ae0840c7e2bf9108b0c1baf",
+    "../docs/superpowers/specs/2026-10-03-siren-terminal-design.md": "eb7d3ff43defc73026207faf7f1d6f53dce037be8d66ff205ff9106cf0d2f1d5",
+    "../docs/superpowers/plans/2026-10-03-siren-terminal.md": "509d19c2c04ace952406551a2e745965db0f38d3eebf520412606795c814c045"
+  },
+  "originalsPreserved": [
+    "reviews/2026-10-07-terminal-state-independent.md",
+    "reviews/2026-10-07-terminal-state-independent.json",
+    "evidence/workspace-surface/terminal-host-loss-owner-red.log",
+    "evidence/workspace-surface/terminal-writable-owner-red.log"
+  ],
+  "stress": {
+    "scope": "Node components only, eight sessions with stalled consumers",
+    "producedBytes": 536870912,
+    "retainedBytes": 33554432,
+    "peakCreditBytes": 2097152,
+    "peakRingAllocationBytes": 33554432,
+    "visibleGaps": 80,
+    "ownerSampleRssBytes": 185982976,
+    "ownerSampleElapsedMs": 621
+  },
+  "limits": [
+    "No native manager/host/ownership/caller wiring",
+    "No PTY/xterm/GUI/package qualification",
+    "No native host input fence acknowledgement",
+    "Approved Terminal task checkboxes remain open"
+  ]
+}

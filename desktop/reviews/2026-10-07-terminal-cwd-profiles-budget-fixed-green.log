@@ -1,0 +1,12 @@
+✔ cwd rejects malformed shallow and 8192-component evidence within 64MiB (52.1621ms)
+✔ cwd admits exact128 ancestry and refuses129 without changing depth budget (51.8484ms)
+✔ profiles rejects malformed shallow and 8192-component evidence within 64MiB (43.1876ms)
+✔ profiles admits exact128 ancestry and refuses129 without changing depth budget (53.5083ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 263.5159

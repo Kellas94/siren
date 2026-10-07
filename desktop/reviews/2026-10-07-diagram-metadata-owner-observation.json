@@ -1,0 +1,130 @@
+{
+  "author": "/root",
+  "role": "Owner finite metadata source observation, not independent approval or native GUI qualification",
+  "status": "SCOPED_GREEN",
+  "inputs": [
+    {
+      "path": "src/documents/diagram-metadata.mjs",
+      "bytes": 4726,
+      "sha256": "24e4cf66628cc7455b29db7f01853bde262b0c4a98ac93668d5e708b1ccbd848"
+    },
+    {
+      "path": "build/diagram-metadata.mjs",
+      "bytes": 213,
+      "sha256": "8ed4e8446394f4fbf1c226204148d0a604b9c5f8c95af0d19988e16802f3ea91"
+    },
+    {
+      "path": "build/import-validation.mjs",
+      "bytes": 11609,
+      "sha256": "74332ac827681dd2bdc59e1c88fb1b9d4779cc5e4567954fc7eb9ac0335cbb55"
+    },
+    {
+      "path": "src/windows/domain.mjs",
+      "bytes": 16818,
+      "sha256": "f77617382cbedceb8b4dde474d54d93bcf09d74027a1d2e155a45da6d063ae9c"
+    },
+    {
+      "path": "src/ui/diagram/draft.js",
+      "bytes": 15347,
+      "sha256": "3f39f927198993e1fc31de6a7ab12f35a5a00ee77833522b61e60a4574957699"
+    },
+    {
+      "path": "tests/diagram-metadata.test.mjs",
+      "bytes": 5170,
+      "sha256": "2203d85cd69dc55b9af20eb6da46022fb809c203952f5ed5b001145f2b334e27"
+    },
+    {
+      "path": "tests/diagram-metadata-validation.test.mjs",
+      "bytes": 1473,
+      "sha256": "2206ee895bb4437f057d2b366df912f9dd2cfc87df7436042b97f3f38cd43d5a"
+    },
+    {
+      "path": "tests/diagram-metadata-draft.test.mjs",
+      "bytes": 6290,
+      "sha256": "577b4fff3667048ce5d18d9c8ca97f053b73b6a341f1e7208085406123d16ece"
+    },
+    {
+      "path": "tests/diagram-metadata-retained.test.mjs",
+      "bytes": 5916,
+      "sha256": "4f6e5999845efaabcb10b09b854fe298a2b38d435ed62b8fa54902d7cc3b50c3"
+    },
+    {
+      "path": "tests/domain-owner.test.mjs",
+      "bytes": 30989,
+      "sha256": "e21905772517630ed14668b78c4e095d18d6ff0e10d3adf1d77f335c31821982"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-metadata-independent-review.md",
+      "bytes": 7013,
+      "sha256": "c9705c78ae69a268e73e6f7b20830e4d9c37b8b991f9f3ce18e861abd4d0e843"
+    }
+  ],
+  "logs": [
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-contract-red.log",
+      "bytes": 7085,
+      "sha256": "4eeddcc8b6e8bef1572816bc873f815fd23750e5c35ad785a7ef53730af23496"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-contract-green.log",
+      "bytes": 736,
+      "sha256": "29ea1e7fab8cfe582dc00a7b30925d13c650130308888c6014ad21fc1fd28f01"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-owner-red.log",
+      "bytes": 3066,
+      "sha256": "f5e60749372d5c81e54b10eb737e6eabefbe3397c90d5782fb19f3524d60abd4"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-owner-green.log",
+      "bytes": 4743,
+      "sha256": "08a578e9d561d6bb4ef1fb43294613dacf5c29751f197757aa655e544bb0fecc"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-draft-red.log",
+      "bytes": 6081,
+      "sha256": "9e9bb3e312689a5ea01f9d99e99c092a8acc3d1c5560b795a63c9b90a754d195"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-draft-green.log",
+      "bytes": 6523,
+      "sha256": "ce98d381303c9cbecc07b412d5d9db6b8c00d26bbdca400a4ef31c9185ef9872"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-retention-red.log",
+      "bytes": 3995,
+      "sha256": "0ff46df6cf929b7a2a99d0dca96ede88a5c21b02cc4f3ad7dd02f7238dfed1da"
+    },
+    {
+      "path": "evidence/workspace-surface/diagram-metadata-retention-green.log",
+      "bytes": 8445,
+      "sha256": "4af39a427efb398499f9affba11ac7e5cdce99f91a6b677d5524a1d2c75b7a90"
+    }
+  ],
+  "actual": {
+    "initialContractRed": 6,
+    "initialContractGreen": 6,
+    "ownerHelperRed": 3,
+    "ownerCombinedGreen": 39,
+    "draftRed": 5,
+    "draftCombinedGreen": 53,
+    "independentRetentionCorrectionRed": 4,
+    "correctionCombinedGreen": 70
+  },
+  "independent": {
+    "author": "/root/diagram_history_final_review",
+    "originalReportSha256": "c9705c78ae69a268e73e6f7b20830e4d9c37b8b991f9f3ce18e861abd4d0e843",
+    "findings": [
+      "R1 managed-field opaque pointer loss",
+      "R2 unsupported scalar correction then Undo cannot save"
+    ],
+    "disposition": "Root one correction pass verified by meaningful4RED→GREEN; original report unchanged"
+  },
+  "ruling": "All unsupported imported managed values immutable at original paths; valid string siblings editable. No arbitrary invalid-input restoration authority.",
+  "limits": [
+    "Task3 UI/controller is separate agent work in progress",
+    "No full suite/build/generated/native/package/hosted Inspector qualification yet",
+    "Original native harnesses unchanged; new native annotations harness only syntax checked",
+    "No production release, main merge or installed replacement"
+  ]
+}

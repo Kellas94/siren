@@ -1,0 +1,9 @@
+# Diagram preview space — owner local qualification
+
+Author and native executor: /root. Source306bcfd6e04efd5194055fd10ec2413bbff88603. Single HTML change moves pan/zoom guidance from the wrapping toolbar to an accessible viewport description and hover tooltip. All actual controls remain. Original native>60% preview requirement is unchanged.
+
+Prior Walkthrough source884 had a frozen1375 full suite. Owner readback proves window.html is its only captured source/test/build/workflow difference; no new1375 run is claimed. Existing18 focused tests passed in actual task tool output. The unchanged original native Build harness completed7 development and7 copied cases, including original height, exact saved data, Guided/Build/Style and common Lock. Original Walkthrough8 also completed from a separate copy. Every captured input and copied package remained unchanged.
+
+Separate preview C:\Claude\SIREN_WORK\portable\desktop\dist\development-5d81c949-99df-43ba-9663-00ccd454e626: ASAR54367497B/f78ab714fa885346ed9d078de50e4da1ce91b4af00303dc0ab85721d50281860. Exactly296 members read back; compared with prior qualified package, only generated/build.json and generated/windows/diagram.html differ (294 unchanged). Fixed external helper and Electron runtime remain exact. Root personally inspected actual corrected Guided Dark screenshot; full physical-monitor/all-theme certification is not claimed.
+
+Original one-run passive diagnostic ADVERSE2 remains unchanged: Save actually succeeded/version2, then preview-height assertion failed. It is distinct from historical37552477003 Save→Attach cause, stillOPEN. Genuine analysisb599 and receipt recheckb7d8 retain their real author; reviewer did not execute root's native run. Current hosted37559978738 tests olderd027/a531 and must be retained separately. No retries, relaxed oracles, main merge, installed replacement or production release.

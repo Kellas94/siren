@@ -1,0 +1,232 @@
+{
+  "report": "Home native fixture repairs: author/implementer verification",
+  "createdAt": "2026-10-07T15:18:34.778Z",
+  "role": "AUTHOR_IMPLEMENTER; NOT INDEPENDENT APPROVAL",
+  "scope": "Three authorized native fixture lines plus new regression unit and original/evidence preservation. No product/shared-helper edits by this author.",
+  "fixtures": [
+    {
+      "path": "tests/native/home-library.mjs",
+      "original": "reviews/2026-10-07-home-library-original.mjs",
+      "originalSha256": "58033606386cdc66c0a6d577e1464ff8a354eab68744ea5e0c7cee9678692989",
+      "currentSha256": "f585601591bb3127d6f340b112056d10ec2026aa040d99952963b229d33f2c7b",
+      "deltas": [
+        {
+          "line": 19,
+          "before": " assert.equal(await driver.evaluate('document.querySelectorAll(\"#homeSettingsPanel .home-project-row\").length'),3);",
+          "after": " assert.deepEqual(await driver.evaluate('Array.from(document.querySelectorAll(\"#homeSettingsPanel .home-project-row\"),node=>({id:node.id,label:node.textContent.trim()}))'),[{id:'homePinSettings',label:'Change PIN'},{id:'homeSettingsUpdates',label:'Check for updates'},{id:'homeQuickGuide',label:'Quick guide'},{id:'homeHelpDiagnostics',label:'Help & diagnostics'}]);"
+        }
+      ],
+      "assertCallsBefore": 12,
+      "assertCallsAfter": 12,
+      "allOtherLinesExact": true,
+      "syntaxExitCode": 0,
+      "compiledCompleteLiteralExpressions": 19
+    },
+    {
+      "path": "tests/native/home-library-search.mjs",
+      "original": "reviews/2026-10-07-home-library-search-original.mjs",
+      "originalSha256": "af8ee7d8cf9512defae75fbe69c663ae68a542f9d0753b81ebbe514e4b86f23a",
+      "currentSha256": "30053b6a3f795c518a3e4395b2f8d2344c618566ad2d782bdeba2293936f97e9",
+      "deltas": [
+        {
+          "line": 26,
+          "before": " assert.equal(await driver.evaluate('document.querySelectorAll(\"#homeSettingsPanel .home-project-row\").length'),3);",
+          "after": " assert.deepEqual(await driver.evaluate('Array.from(document.querySelectorAll(\"#homeSettingsPanel .home-project-row\"),node=>({id:node.id,label:node.textContent.trim()}))'),[{id:'homePinSettings',label:'Change PIN'},{id:'homeSettingsUpdates',label:'Check for updates'},{id:'homeQuickGuide',label:'Quick guide'},{id:'homeHelpDiagnostics',label:'Help & diagnostics'}]);"
+        }
+      ],
+      "assertCallsBefore": 26,
+      "assertCallsAfter": 26,
+      "allOtherLinesExact": true,
+      "syntaxExitCode": 0,
+      "compiledCompleteLiteralExpressions": 31
+    },
+    {
+      "path": "tests/native/home-recovery.mjs",
+      "original": "reviews/2026-10-07-home-recovery-original.mjs",
+      "originalSha256": "3ec788ae0e79ef306b06b80175a499b220c8cf253454ea01ccb2e37f002ad38e",
+      "currentSha256": "fc77ff0559372814ff23c040e6bc3f4a8ee95034a1d82f07e97eea1b449da547",
+      "deltas": [
+        {
+          "line": 17,
+          "before": " result.startup=await waitForDesktopStartup(driver);",
+          "after": " result.startup=await waitForDesktopStartup({...driver,waitFor:expression=>driver.waitFor('document.body!==null&&[\"interactive\",\"complete\"].includes(document.readyState)&&('+expression+')')});"
+        }
+      ],
+      "assertCallsBefore": 11,
+      "assertCallsAfter": 11,
+      "allOtherLinesExact": true,
+      "syntaxExitCode": 0,
+      "compiledCompleteLiteralExpressions": 11
+    }
+  ],
+  "originalHostedEvidence": [
+    {
+      "path": "evidence/workspace-surface/ci37640219262/desktop-native-desktop-evidence-original/evidence/home-library/2026-10-07T15-01-49.196Z/result.json",
+      "sha256": "374ea3e12573858c0c152c83e739dd8aaa924dc7f105a17aa44b4a44168d6b56",
+      "status": "ADVERSE",
+      "cases": 0,
+      "error": {
+        "message": "Expected values to be strictly equal:\n\n4 !== 3\n",
+        "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 3\n\n    at file:///D:/a/siren/siren/desktop/tests/native/home-library.mjs:19:9"
+      },
+      "inputsUnchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/desktop-native-diagrams-evidence-original/evidence/home-library-search/2026-10-07T15-01-11.031Z/result.json",
+      "sha256": "6b98a46145b64f62e68f6549f7f4e0d58c8e973c7de3b86ba95fc206fb2eb369",
+      "status": "ADVERSE",
+      "cases": 0,
+      "error": {
+        "message": "Expected values to be strictly equal:\n\n4 !== 3\n",
+        "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 3\n\n    at file:///D:/a/siren/siren/desktop/tests/native/home-library-search.mjs:26:9"
+      },
+      "inputsUnchanged": true
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/desktop-native-desktop-evidence-original/evidence/home-recovery/2026-10-07T15-01-43.771Z/result.json",
+      "sha256": "fd9d2b34901760cfa78c9777df6e23b5b5b892b14efecc8a43299c6ed8c06c1b",
+      "status": "ADVERSE",
+      "cases": 0,
+      "error": {
+        "message": "{\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":14,\"scriptId\":\"12\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"12\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":14}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"TypeError\",\"description\":\"TypeError: Cannot read properties of null (reading 'innerText')\\n    at <anonymous>:1:15\",\"objectId\":\"5139333421483998759.3.2\"}}",
+        "stack": "Error: {\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":14,\"scriptId\":\"12\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"12\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":14}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"TypeError\",\"description\":\"TypeError: Cannot read properties of null (reading 'innerText')\\n    at <anonymous>:1:15\",\"objectId\":\"5139333421483998759.3.2\"}}\n    at Object.evaluate (file:///D:/a/siren/siren/desktop/tests/native/drive.mjs:117:37)\n    at async file:///D:/a/siren/siren/desktop/tests/native/home-recovery.mjs:19:15"
+      },
+      "inputsUnchanged": true,
+      "startup": {
+        "url": "siren://app/home.html",
+        "readyState": "loading",
+        "bridge": "function",
+        "bootstrap": {
+          "mode": "locked",
+          "readonly": true,
+          "snapshotPresent": false,
+          "pin": {
+            "configured": false,
+            "pinLength": null,
+            "unlocked": false,
+            "available": true,
+            "blocked": false,
+            "retryAfterMs": 0
+          }
+        }
+      }
+    }
+  ],
+  "unit": {
+    "path": "tests/home-native-fixture-contracts.test.mjs",
+    "sha256": "a8a1b7689e752d2af230cddb2dad4adb4a51c06cbaea6a2663533b59095c2273",
+    "originalReplay": {
+      "pass": 0,
+      "fail": 7,
+      "exitCode": 1,
+      "log": "reviews/2026-10-07-home-fixture-unit-original-replay-red.log",
+      "technique": "Final unit source read in memory; only import-root/original-fixture paths redirected to exact retained copies. Repaired native fixtures not temporarily reverted."
+    },
+    "green": {
+      "pass": 7,
+      "fail": 0,
+      "exitCode": 0,
+      "log": "reviews/2026-10-07-home-fixture-unit-green.log"
+    },
+    "focused": {
+      "command": "node --test tests/home-native-fixture-contracts.test.mjs tests/native-home-ready.test.mjs tests/home-commands.test.mjs tests/home-startup.test.mjs tests/home-entrypoints.test.mjs",
+      "pass": 18,
+      "fail": 0,
+      "exitCode": 0,
+      "log": "reviews/2026-10-07-home-fixture-focused-green.log"
+    },
+    "firstGreenAttempt": {
+      "pass": 6,
+      "fail": 1,
+      "log": "reviews/2026-10-07-home-fixture-unit-green-attempt-01.log",
+      "cause": "New test expected raw condition error; real waitForDesktopStartup wraps it with Native PIN startup receipt unavailable. Test now checks outer message, cause and exact 30000ms expiry. No product/fixture change made for this correction."
+    }
+  },
+  "evidenceHashes": {
+    "reviews/2026-10-07-home-fixture-unit-red.log": "c38b897776104d5b1795a5c8b34608a4e0699b31cc0092acd9ba5bf3a0c56b9d",
+    "reviews/2026-10-07-home-fixture-unit-red-final.log": "df6ed5b4d9a54dfb57705f07fe8a95bc9037bac9dd7934868235970f5d257700",
+    "reviews/2026-10-07-home-fixture-unit-original-replay-red.log": "bff20622e6449379f10e52327584f44ef016367bb94826f6df26c932c0f72696",
+    "reviews/2026-10-07-home-fixture-unit-green-attempt-01.log": "1cc44cf120c4bf8bc52613489c17802f59931670a3d789eada852aa6474990cc",
+    "reviews/2026-10-07-home-fixture-unit-green.log": "22031bb74d46229f93bc7f2c357e92eb02e0a071e0a50c09408c030ca5202c32",
+    "reviews/2026-10-07-home-fixture-focused-green.log": "a129ec81cef807b76ad66fc06749750b11c30efc7ef31274ab2cd53b1cca164d"
+  },
+  "currentRelevantInputHashes": {
+    "src/main.mjs": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619",
+    "src/preload.cjs": "5c48fc6e29f1bfe967d9cc4300f07cfe360b0686facf3db3d764b413e47475c1",
+    "src/ui/workspace/home.js": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7",
+    "src/ui/workspace/guide.js": "1e36e72074b897b9239c1ce251e7aa288cffdf310f4237a2991ee5d21c7d919b",
+    "src/ui/workspace/workspace.css": "35361459260c12b24d3ee4717112c68364674f3ee960f8ca024fe4420147a7d8",
+    "generated/assets/shell.js": "e83e6773d122866b7c2213d031fbfd12e34c8351cbfc7a2e6b24e7b880947a1c",
+    "generated/home.html": "a9c2ce2443093cc4c63710fb953a8e33dead0986472fa0a1f3858123b4a898af",
+    "generated/app.html": "9d89ef1e2c28ae960e5a9c777395884024cf77abe8c4a4b6970d38b0a19c9475",
+    "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+    "tests/native/condition.mjs": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4",
+    "tests/native/native-keyboard.mjs": "00ca593774046622dc1e7f98a31751795979922eb5a46cde7a64271ff368eb35",
+    "tests/native/home-ready.mjs": "8b784ca4eb39a187a9981fed53a03e642214e93f784871f665d76346b5e00901",
+    "tests/native/home-search-race-cases.mjs": "e41a04d28ebe534825258f931f1f0d9bfc36574e0f3e3f2c232785dc9d4fe01f"
+  },
+  "priorCaptureComparison": {
+    "priorReport": "reviews/2026-10-07-help-hosted-lock-readback.json",
+    "comparablePaths": [
+      "src/main.mjs",
+      "src/preload.cjs",
+      "src/ui/workspace/home.js",
+      "tests/native/drive.mjs",
+      "tests/native/condition.mjs"
+    ],
+    "changed": []
+  },
+  "verification": [
+    "Actual Home source executes in a minimal DOM fixture. Both real native Settings assertions require four exact ordered {id,label} values.",
+    "Missing Help, renamed label, reversed last actions and unexpected extra action each fail both strengthened native assertions.",
+    "Actual preload source exposes locked receipt while body is null. Recovery real startup/privacy prefix now waits until body exists and readyState is interactive or complete before reading private label.",
+    "Private project label still makes unchanged privacy assertion fail. No privileged preload invoke occurs during startup admission.",
+    "Absent body expires at exactly existing 30000ms condition deadline. Admission is conjoined inside one existing wait, no second wait or timeout increase.",
+    "Every unchanged line in each fixture is byte-equivalent as text including line endings; one changed line per fixture. Recovery original assertion lines preserved verbatim; Settings count is strengthened to exact identity/order/label.",
+    "Syntax checks pass for all three fixtures; complete literal driver expressions compile. Changed dynamic recovery condition is actually executed by permanent tests."
+  ],
+  "limits": [
+    "No GUI/Electron/native fixture execution by this author. Original hosted ADVERSE receipts remain original; no native or package PASS claimed.",
+    "No application build command, install, download, full suite, commit or push. Existing focused home-entrypoints unit calls buildWorkspaceEntrypoint solely into a fresh temporary output directory; workspace generated files were not intentionally written.",
+    "Minimal DOM/fake-clock unit probes establish fixture admission/oracle behavior, not actual native rendering/input delivery or packaging.",
+    "Author/implementer report is not independent review approval. Parent retains separate native/full-suite ownership.",
+    "Initial RED logs and first 6/7 attempt remain preserved alongside final exact-original 0/7 replay and 7/7 GREEN."
+  ],
+  "completionReadbackAt": "2026-10-07T15:19:06.341Z",
+  "completionInputHashes": {
+    "src/main.mjs": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619",
+    "src/preload.cjs": "5c48fc6e29f1bfe967d9cc4300f07cfe360b0686facf3db3d764b413e47475c1",
+    "src/ui/workspace/home.js": "bf4271ffd2956461882f9b2badea59116788441df5a95d9115bf84e5ae814db7",
+    "src/ui/workspace/guide.js": "1e36e72074b897b9239c1ce251e7aa288cffdf310f4237a2991ee5d21c7d919b",
+    "src/ui/workspace/workspace.css": "35361459260c12b24d3ee4717112c68364674f3ee960f8ca024fe4420147a7d8",
+    "generated/assets/shell.js": "e83e6773d122866b7c2213d031fbfd12e34c8351cbfc7a2e6b24e7b880947a1c",
+    "generated/home.html": "a9c2ce2443093cc4c63710fb953a8e33dead0986472fa0a1f3858123b4a898af",
+    "generated/app.html": "9d89ef1e2c28ae960e5a9c777395884024cf77abe8c4a4b6970d38b0a19c9475",
+    "tests/native/drive.mjs": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca",
+    "tests/native/condition.mjs": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4",
+    "tests/native/native-keyboard.mjs": "00ca593774046622dc1e7f98a31751795979922eb5a46cde7a64271ff368eb35",
+    "tests/native/home-ready.mjs": "8b784ca4eb39a187a9981fed53a03e642214e93f784871f665d76346b5e00901",
+    "tests/native/home-search-race-cases.mjs": "e41a04d28ebe534825258f931f1f0d9bfc36574e0f3e3f2c232785dc9d4fe01f"
+  },
+  "changedDuringReportCompletion": [],
+  "originalFixtureAgainstHostedReceipt": [
+    {
+      "path": "tests/native/home-library.mjs",
+      "copySha256": "58033606386cdc66c0a6d577e1464ff8a354eab68744ea5e0c7cee9678692989",
+      "hostedSha256": "58033606386cdc66c0a6d577e1464ff8a354eab68744ea5e0c7cee9678692989",
+      "exactMatch": true
+    },
+    {
+      "path": "tests/native/home-library-search.mjs",
+      "copySha256": "af8ee7d8cf9512defae75fbe69c663ae68a542f9d0753b81ebbe514e4b86f23a",
+      "hostedSha256": "af8ee7d8cf9512defae75fbe69c663ae68a542f9d0753b81ebbe514e4b86f23a",
+      "exactMatch": true
+    },
+    {
+      "path": "tests/native/home-recovery.mjs",
+      "copySha256": "3ec788ae0e79ef306b06b80175a499b220c8cf253454ea01ccb2e37f002ad38e",
+      "hostedSha256": "3ec788ae0e79ef306b06b80175a499b220c8cf253454ea01ccb2e37f002ad38e",
+      "exactMatch": true
+    }
+  ]
+}
