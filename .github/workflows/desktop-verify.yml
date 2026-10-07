@@ -283,6 +283,9 @@ jobs:
       - name: Actual Diagram history and typography
         if: matrix.group == 'desktop'
         run: node tests/native/diagram-history-typography.mjs
+      - name: Actual Code context and commands
+        if: matrix.group == 'sources'
+        run: node tests/native/code-context-commands.mjs
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -293,6 +296,8 @@ jobs:
             desktop/evidence/docs-export-native/*/result.json
             desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/diagram-history-typography-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/*.png
             desktop/evidence/native-verification/*.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
@@ -503,6 +508,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged Presenter notes export failed" }
           node tests/native/diagram-history-typography.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram history and typography failed" }
+          node tests/native/code-context-commands.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Code context and commands failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-bundle-import.mjs --package $preview.previewRoot --300k --code-only
@@ -572,6 +579,8 @@ jobs:
             desktop/evidence/docs-export-native/*/result.json
             desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/diagram-history-typography-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/result.json
+            desktop/evidence/code-context-commands-native/*/*.png
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json

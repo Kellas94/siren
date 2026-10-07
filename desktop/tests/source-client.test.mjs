@@ -20,6 +20,16 @@ const mutation = (request, durability = 'draft', sha256 = H2) => ({ ok: true, so
 const metrics = (sha256 = H1) => ({ ok: true, sourceId: 'source-a', version: 1, sha256, utf8Bytes: 8, utf16Units: 5, lines: 1, longestLineUnits: 5, encoding: 'utf8', bom: false, newline: 'none' });
 const bridge = (overrides = {}) => ({ getMetrics: async () => metrics(), readRange: async request => ({ ok: true, ...request, text: 'a😀b'.slice(request.start, request.end) }), applyEdit: async request => mutation(request), commitSource: async request => mutation(request, 'committed', H2), ...overrides });
 
+check('only an exact successful commit can replay its native operation; edit reuse and changed identities stay fenced',async()=>{
+ let calls=0;const client=sourceClient({sourceRef:ref(),bridge:bridge({commitSource:async request=>{calls++;return mutation(request,'committed',H1);}})}),request={operationId:'verified-save',expectedVersion:1};
+ assert.equal((await client.commitSource(request)).ok,true);assert.equal((await client.commitSource(request)).ok,true);assert.equal(calls,2);
+ assert.equal((await client.applyEdit(edit('verified-save'))).code,'OPERATION_CONFLICT');
+ const changed=sourceClient({sourceRef:ref(),bridge:bridge({commitSource:async r=>mutation(r,'committed',H1)})});
+ assert.equal((await changed.commitSource(request)).ok,true);assert.equal((await changed.applyEdit(edit('new-edit'))).ok,true);
+ assert.equal((await changed.commitSource({operationId:'verified-save',expectedVersion:2})).code,'OPERATION_CONFLICT');
+ const reset=sourceClient({sourceRef:ref(),bridge:bridge({commitSource:async r=>mutation(r,'committed',H1)})});await reset.commitSource(request);reset.reset(ref());assert.equal((await reset.commitSource(request)).code,'OPERATION_CONFLICT');
+});
+
 check('view pause rejects new edits without fencing admitted local edits; drain waits for every native receipt', async () => {
   const gate=deferred();let count=0;
   const client=sourceClient({sourceRef:ref(),bridge:bridge({applyEdit:async request=>{count++;if(count===1)await gate.promise;return mutation(request,'draft',count===1?H2:H1);}})});

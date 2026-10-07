@@ -25,7 +25,7 @@ async function fixture(t, text = '\ufeffa😀b\r\nc\nd\rbare', readonly = false)
   const bridge = {
     getMetrics: async request => { const { provenance, ...info } = await repo.getMetrics({ projectId, ...request }); return { ok: true, ...info }; },
     readRange: async request => ({ ok: true, ...request, text: await repo.readRange({ projectId, ...request }) }),
-    applyEdit: async request => { edits++; const refusal = await beforeEdit(request); return refusal || repo.applyEdit({ projectId, edit: request }); },
+    applyEdit: async request => { edits++; const refusal = await beforeEdit(request),result=refusal||await repo.applyEdit({projectId,edit:request});return result.ok===false?{ok:false,code:result.code}:result; },
     commitSource: request => { commits++; return repo.commitSource({ projectId, ...request }); },
     openRead: async request => { await beforeOpen(); const readId = randomUUID(), reader = await repo.openReader({ projectId, ...request }); readers.set(readId, reader); return { ok: true, readId, ...reader.info }; },
     readChunk: async request => ({ ok: true, readId: request.readId, ...await readers.get(request.readId).readChunk(request) }),
@@ -37,6 +37,23 @@ async function fixture(t, text = '\ufeffa😀b\r\nc\nd\rbare', readonly = false)
     delayEdit: fn => { beforeEdit = fn; }, delayOpen: fn => { beforeOpen = fn; },
     export: version => repo.exportSource({ projectId, sourceId: ref.sourceId, version }) };
 }
+
+check('a reopened clean working view replays its verified commit after another window advances without rewinding latest',async t=>{
+ const f=await fixture(t,'saved\n');
+ const saved=await f.repo.commitSource({projectId:f.projectId,sourceId:f.ref.sourceId,expectedVersion:1,operationId:'original-saved-base'});
+ assert.equal(saved.ok,true);
+ const editor=adapter.createEditorAdapter({client:f.client,committedOperationId:saved.operationId});t.after(()=>editor.dispose());
+ assert.equal((await editor.open(f.ref)).ok,true);
+ const latest=await f.repo.applyEdit({projectId:f.projectId,edit:{sourceId:f.ref.sourceId,expectedVersion:1,operationId:'other-view-edit',start:0,end:0,insertedText:'new '}});
+ const replay=await editor.flush();assert.equal(replay.ok,true);assert.equal(replay.operationId,saved.operationId);assert.equal(replay.version,1);
+ assert.equal((await editor.flush()).ok,true);
+ assert.equal((await f.repo.getMetrics({projectId:f.projectId,sourceId:f.ref.sourceId})).sha256,latest.sha256);
+ assert.deepEqual(await f.export(2),Buffer.from('new saved\n'));
+ assert.equal(editor.getState().doc.toString(),'saved\n');assert.equal(editor.getStatus().dirty,false);
+ // A real new local edit still uses fresh CAS and must refuse the stale base.
+ assert.equal(editor.dispatch({changes:{from:0,insert:'local '}}).ok,true);
+ assert.equal((await editor.flush()).code,'REVISION_CONFLICT');assert.equal(editor.getStatus().dirty,true);
+});
 
 check('summary metrics track exact local Unicode bytes/lines while source identity advances only on native acknowledgement',async t=>{
  const original='a😀\r\nȘ\n',f=await fixture(t,original);await f.editor.open(f.ref);

@@ -45,6 +45,10 @@ export class NativeWorkingSources {
    entry.unsubscribe=this.#owner.subscribe(grant,ref.sourceId,(receipt,originWindowId)=>{
     if(this.#disposed||this.#views.get(grant.windowId)!==entry||!this.#context(grant))return;
     const next=reference(receipt);
+    // The owner may replay a previously verified historical commit during a
+    // clean view's preparation. It is a proof, never a new source head. Lower
+    // draft edits and equal-version hash changes remain invalidating anomalies.
+    if(next?.sourceId===entry.ref.sourceId&&next.version<entry.ref.version&&['committed','recovery-degraded'].includes(receipt.durability))return;
     if(!next||next.sourceId!==entry.ref.sourceId||next.version<entry.ref.version||next.version===entry.ref.version&&next.sha256!==entry.ref.sha256){entry.invalid=true;return;}
     const changed=next.version!==entry.ref.version;entry.ref=next;
     if(changed&&originWindowId!==grant.windowId&&this.#owner.canRead(grant,next.sourceId))try{this.#notify?.(grant,next);}catch{/* Metadata delivery cannot invalidate the actual durable edit. */}

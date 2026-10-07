@@ -2,6 +2,7 @@ import {navigationFields} from '../navigation/contracts.mjs';
 import {workspaceMetadata,validEntityId} from './entities.mjs';
 import {validId} from '../projects/paths.mjs';
 import {documentTypes} from '../documents/context.mjs';
+import {createSourceContext} from './source-context.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 const label=(value,max=160)=>{const short=value.toWellFormed().slice(0,max);return /[\uD800-\uDBFF]$/.test(short)?short.slice(0,-1):short;};
 
@@ -22,9 +23,12 @@ export class NativeWindowCatalog {
    let cursor,role,query,details=false,filters={};try{
     const request=navigationFields(payload??{},['cursor','role','query','details','filters'],[]);cursor=request.cursor??0;role=request.role;query=request.query??'';
     if(Object.hasOwn(request,'query')&&(typeof request.query!=='string'||!request.query.isWellFormed()||request.query.length>160||/[\u0000-\u001f\u007f]/.test(request.query))||!Number.isSafeInteger(cursor)||cursor<0||cursor>4096||role!==undefined&&!['code','docs','diagram','presenter','all'].includes(role))return fail('REQUEST_REFUSED');
-    if(Object.hasOwn(request,'details')&&(typeof request.details!=='boolean'||role!=='docs')||Object.hasOwn(request,'filters')&&role!=='docs')return fail('REQUEST_REFUSED');details=request.details===true;
-    if(request.filters!==undefined){filters=navigationFields(request.filters,['type','status','owner','links'],[]);
+    if(Object.hasOwn(request,'details')&&(typeof request.details!=='boolean'||!['docs','code'].includes(role))||Object.hasOwn(request,'filters')&&!['docs','code'].includes(role))return fail('REQUEST_REFUSED');details=request.details===true;
+    if(request.filters!==undefined&&role==='docs'){filters=navigationFields(request.filters,['type','status','owner','links'],[]);
      if(filters.type!==undefined&&!documentTypes.includes(filters.type)||filters.status!==undefined&&!['draft','in-review','approved'].includes(filters.status)||filters.links!==undefined&&!['linked','unlinked'].includes(filters.links)||filters.owner!==undefined&&(typeof filters.owner!=='string'||!filters.owner.isWellFormed()||filters.owner.length>80))return fail('REQUEST_REFUSED');
+    }
+    if(request.filters!==undefined&&role==='code'){filters=navigationFields(request.filters,['language','links','document','agent'],[]);
+     if(filters.language!==undefined&&!['python','text','unknown'].includes(filters.language)||filters.links!==undefined&&!['linked','earlier','unlinked','unknown'].includes(filters.links)||['document','agent'].some(k=>filters[k]!==undefined&&(typeof filters[k]!=='string'||!filters[k].isWellFormed()||filters[k].length>80||/[\u0000-\u001f\u007f]/.test(filters[k]))))return fail('REQUEST_REFUSED');
     }
     query=query.trim().normalize('NFKC').toLowerCase();
    }catch{return fail('REQUEST_REFUSED');}
@@ -43,10 +47,13 @@ export class NativeWindowCatalog {
     if(!validId(ref?.sourceId)||!Number.isSafeInteger(ref.version)||ref.version<1||typeof ref.sha256!=='string'||!/^[a-f0-9]{64}$/.test(ref.sha256))return fail('CATALOG_REFUSED');
     if(!refs.has(ref.sourceId)||refs.get(ref.sourceId).version<ref.version)refs.set(ref.sourceId,ref);
    }
-   const key=ref=>ref&&`${ref.sourceId}:${ref.version}:${ref.sha256}`,names=new Map(),linked=new Set();
-   for(const file of metadata.codeFiles??[]){if(typeof file?.name==='string'&&file.name&&!/[\\/:\u0000-\u001f]/.test(file.name)&&file.name!=='.'&&file.name!=='..'&&file.sourceRef)names.set(key(file.sourceRef),file.name);}
-   for(const document of metadata.workpapers??[])for(const block of document.blocks??[])if(block?.kind==='knowledge')for(const row of block.rows??[])if(row?.sourceRef)linked.add(key(row.sourceRef));
-   for(const ref of refs.values()){const name=names.get(key(ref)),text=name?name+(linked.has(key(ref))?'':' · Unlinked'):'Source '+ref.sourceId.slice(0,8);rows.push({role:'code',entityId:ref.sourceId,label:label(text),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256}});}
+   const sourceContext=createSourceContext(snapshot);
+   for(const ref of refs.values()){
+    const context=sourceContext.describe(ref);if(!context)continue;
+    if(role==='code'&&(filters.language!==undefined&&context.language!==filters.language||filters.links!==undefined&&context.linkState!==filters.links||!sourceContext.matches(ref,filters)))continue;
+    const name=context.displayName,suffix={linked:'',earlier:' · Earlier version linked',unlinked:' · Unlinked',unknown:' · Links limited'}[context.linkState],text=name?name+suffix:'Source '+ref.sourceId.slice(0,8);
+    rows.push({role:'code',entityId:ref.sourceId,label:label(text),readonly:true,sourceRef:{sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256},...(details&&role==='code'?{context}:{})});
+   }
    const diagramIds=new Set();
    for(const diagram of metadata.diagrams??[]){
     if(!validEntityId(diagram?.id))continue;if(diagramIds.has(diagram.id))return fail('CATALOG_REFUSED');diagramIds.add(diagram.id);

@@ -5,7 +5,7 @@
   const linkButton=document.getElementById('linkCodeDocs');let links=null,analysis=null;
   const changeNotice=document.getElementById('sourceChangesNotice'),changeMessage=document.getElementById('sourceChangesMessage'),reviewLatest=document.getElementById('reviewLatestSource');let sourceChanges=null,unsubscribeEditor=null,nativeSourceId=null,nativeSourceName=null;
   const appearance=()=>theme.value==='system'?(media.matches?'dark':'light'):theme.value;
-  const clear=()=>{window.SirenNativeViewIdentity.clear('code');nativeSourceName=null;analysis?.reset();links?.pause();sourceChanges?.reset();unsubscribeEditor?.();unsubscribeEditor=null;linkButton.hidden=true;editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines'])delete document.body.dataset[key];analysis?.reconcile();};
+  const clear=()=>{window.SirenNativeViewIdentity.clear('code');nativeSourceName=null;analysis?.reset();links?.pause();sourceChanges?.reset();unsubscribeEditor?.();unsubscribeEditor=null;linkButton.hidden=true;editor?.dispose();client?.dispose();editor=null;client=null;surface.replaceChildren();document.body.dataset.sourceReady='false';for(const key of ['sourceId','sourceVersion','sourceSha256','sourceUnits','sourceLines','sourceLanguage'])delete document.body.dataset[key];analysis?.reconcile();};
   const paint=()=>{const value=appearance();document.documentElement.style.colorScheme=value;editor?.setTheme(value);};
   async function connect({preserveCurrent=false}={}){
     if(disposed||paused)return false;
@@ -27,7 +27,7 @@
       const metrics=await candidateClient.getMetrics();if(token!==generation||disposed)return false;
       if(!metrics.ok)throw Error('Source metrics refused');
       if(preserve){staging=document.createElement('div');staging.style.cssText=`position:fixed;left:-100000px;top:0;width:${surface.clientWidth}px;height:${surface.clientHeight}px;visibility:hidden`;document.body.append(staging);}
-      candidateEditor=SirenCodeEditor.createCodeEditor({container:staging??surface,client:candidateClient,theme:appearance(),readonly});
+      candidateEditor=SirenCodeEditor.createCodeEditor({container:staging??surface,client:candidateClient,theme:appearance(),readonly,language:context.language??'unknown',committedOperationId:context.committedOperationId});
       const ownEditor=candidateEditor,receipt=await ownEditor.open(context.sourceRef);
       if(token!==generation||disposed||paused)return false;
       if(!receipt.ok)throw Error('Source load refused');
@@ -45,6 +45,7 @@
       document.body.dataset.sourceReady='true';document.body.dataset.sourceId=context.sourceRef.sourceId;document.body.dataset.sourceVersion=String(context.sourceRef.version);document.body.dataset.sourceSha256=context.sourceRef.sha256;
       document.body.dataset.sourceUnits=String(state.doc.length);document.body.dataset.sourceLines=String(metrics.lines);
       document.body.dataset.sourceReadonly=String(readonly);
+      document.body.dataset.sourceLanguage=context.language??'unknown';
       linkButton.hidden=readonly;
       client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
       let sourceSummary=null;
@@ -75,7 +76,7 @@
     const ok=await connect({preserveCurrent:true});if(ok&&cursor&&editor){const length=editor.getState().doc.length;editor.select(Math.min(cursor.anchor,length),Math.min(cursor.head,length));}return ok;
   },onRetained:ref=>{changeNotice.hidden=false;changeMessage.textContent=`Version ${ref.version} was stored in another window. Your local text is retained.`;},onClear:()=>{changeNotice.hidden=true;}});
   const changed=()=>paint();theme.addEventListener('change',changed);media.addEventListener('change',changed);
-  analysis=window.SirenNativeAnalysis.create({button:document.getElementById('toggleAnalysis'),panel:document.getElementById('codeAnalysis'),editorFor:()=>editor,bridge:window.sirenSourceAnalysis});
+  analysis=window.SirenNativeAnalysis.create({button:document.getElementById('toggleAnalysis'),compareButton:document.getElementById('compareSources'),panel:document.getElementById('codeAnalysis'),editorFor:()=>editor,bridge:window.sirenSourceAnalysis,languageFor:()=>document.body.dataset.sourceLanguage??'unknown',nameFor:()=>nativeSourceName});
   const replaceLatest=()=>{
     if(disposed||paused)return;const state=editor?.getStatus();
     if((state?.dirty||state?.fenced)&&!window.confirm('Discard the local text in this window and load the latest stored source? Other windows and stored source versions are retained.'))return;

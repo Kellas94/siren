@@ -13,6 +13,11 @@ async function fixture(){
  const catalog=new module.NativeWindowCatalog({registry,snapshotFor:grant=>provider(grant)}),event={sender,senderFrame:frame};
  return {...f,registry,catalog,event,primary,call:(payload,e=event)=>catalog.invoke({event:e,payload}),select:value=>{selected=value;},provider:value=>{provider=value;},lock:()=>{unlocked=false;registry.invalidateEpoch({preserveWorkspace:true});}};
 }
+test('Code register returns exact-version document/agent metadata and filters without private source bodies',async()=>{
+ const f=await fixture(),ref=f.refs[0];f.select({...f.selected,json:JSON.stringify({codeFiles:[{name:'Review.py',language:'python',sourceRef:ref}],workpapers:[{id:'doc-a',title:'Agent design',agent:{agentId:'AG-7',agentVersion:'2',instructions:'PRIVATE'},blocks:[{kind:'knowledge',rows:[{sourceRef:ref,fileType:'python',content:'PRIVATE_BODY'}]}]}]})});
+ const answer=await f.call({role:'code',details:true,filters:{language:'python',links:'linked',agent:'AG-7',document:'design'}});assert.equal(answer.ok,true,JSON.stringify(answer));assert.equal(answer.items.length,1);assert.equal(answer.items[0].context.exactCount,1);assert.equal(answer.items[0].context.exactLinks[0].agentId,'AG-7');assert.equal(JSON.stringify(answer).includes('PRIVATE'),false);
+ assert.equal((await f.call({role:'code',details:true,filters:{language:'text'}})).items.length,0);assert.equal((await f.call({role:'code',filters:{owner:'x'}})).code,'REQUEST_REFUSED');
+});
 test('native App catalog lists readonly Docs and exact selected Code versions without content or future drafts',async()=>{
  const f=await fixture();const result=await f.call();assert.equal(result.ok,true);assert.equal(result.items.length,3);
  const ordered=values=>values.map(({sourceId,version,sha256})=>({sourceId,version,sha256})).sort((a,b)=>a.sourceId.localeCompare(b.sourceId));

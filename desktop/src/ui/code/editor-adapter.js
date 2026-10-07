@@ -34,17 +34,17 @@ function removedBytes(doc, from, to) {
  * A failed partial multi-range write retains the complete local document and
  * fences further editing instead of rolling back accepted native versions.
  */
-export function createEditorAdapter({ client, readonly = false, extensions = [] } = {}) {
+export function createEditorAdapter({ client, readonly = false, extensions = [], committedOperationId } = {}) {
   const methods = {};
   for (const name of ['getState', 'loadDocument', 'applyEdit', 'commitSource']) {
     const descriptor = client && Object.getOwnPropertyDescriptor(client, name);
     if (typeof descriptor?.value !== 'function') throw new TypeError('INVALID_CLIENT');
     methods[name] = descriptor.value.bind(client);
   }
-  if (typeof readonly !== 'boolean' || !Array.isArray(extensions)) throw new TypeError('INVALID_EDITOR_OPTIONS');
+  if (typeof readonly !== 'boolean' || !Array.isArray(extensions) || committedOperationId!==undefined && (typeof committedOperationId!=='string'||!/^[a-z0-9][a-z0-9_-]{0,127}$/.test(committedOperationId))) throw new TypeError('INVALID_EDITOR_OPTIONS');
   const configured = [...extensions];
   let state = null, bound = null, bytes = 0, disposed = false, opening = false, fenced = false, dirty = false, paused = false;
-  let error = null, generation = 0, pending = 0, queuedBytes = 0, saving = null, lastReceipt = null;
+  let error = null, generation = 0, pending = 0, queuedBytes = 0, saving = null, lastReceipt = null, initialCommit = null;
   let tail = Promise.resolve(), loadingController = null;
   const observers = new Set();
   const lifecycle = () => {
@@ -89,6 +89,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
       else {
         state = EditorState.create({ doc: loaded.doc, extensions: [...configured, EditorState.lineSeparator.of('\n'), EditorState.readOnly.of(readonly)] });
         bound = requested; bytes = loaded.metrics.utf8Bytes; error = null;
+        initialCommit=committedOperationId?{...requested,operationId:committedOperationId}:null;
         result = Object.freeze({ ok: true, ...bound });
       }
     } catch { result = disposed ? failure('EDITOR_DISPOSED') : failure('EDITOR_LOAD_FAILED'); }
@@ -169,7 +170,12 @@ export function createEditorAdapter({ client, readonly = false, extensions = [] 
     saving = tail.then(async () => {
       if (fenced) return failure(error || 'EDITOR_FENCED');
       const stale = live(token); if (stale) return disposed ? stale : refuse(stale.code);
-      const previous = bound, operationId = crypto.randomUUID(); let receipt;
+      const previous = bound;
+      // A clean view may lag another window. Replay an actual exact native
+      // commit instead of issuing a new CAS for an already saved old version.
+      // Native still verifies the operation, bytes and durability on every call.
+      const saved=!dirty&&(same(previous,lastReceipt)?lastReceipt:same(previous,initialCommit)?initialCommit:null);
+      const operationId = saved?.operationId ?? crypto.randomUUID(); let receipt;
       try { receipt = await methods.commitSource({ sourceId: previous.sourceId, expectedVersion: previous.version, operationId }); }
       catch { return disposed ? failure('EDITOR_DISPOSED') : refuse('SOURCE_TRANSPORT_FAILED'); }
       if (disposed || token !== generation) return failure('EDITOR_DISPOSED');

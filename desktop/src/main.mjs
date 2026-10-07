@@ -25,8 +25,9 @@ import {NativeWorkingSources} from './windows/working-sources.mjs';
 import {NativeDocsEdits} from './windows/docs-edits.mjs';
 import {NativeCodeDocs} from './windows/code-docs.mjs';
 import {DocsLinkService} from './windows/docs.mjs';
-import {NativeSourceReads,selectedSourceReference,selectedSourceDisplayName} from './windows/source-reads.mjs';
+import {NativeSourceReads,selectedSourceReference} from './windows/source-reads.mjs';
 import {NativeSourceAnalysis} from './windows/source-analysis.mjs';
+import {selectedCodeMetadata} from './windows/source-context.mjs';
 import {NativeDocsReads} from './windows/docs-reads.mjs';
 import {NativeDocsSources} from './windows/docs-sources.mjs';
 import {NativeDiagramReads} from './windows/diagram-reads.mjs';
@@ -906,7 +907,8 @@ ipcMain.handle('siren:sources', async (event, method, payload) => {
 ipcMain.handle('siren:source-readers', async (event, method, payload) => {
   sourceReads??=new NativeSourceReads({registry:windowRegistry,owner:workspaceOwner,
     referenceFor:sourceReferenceFor,readonlyFor:grant=>!workingSources?.isWorking(grant),editingState:canOpenWorking,
-    displayNameFor:(_grant,reference)=>selectedSourceDisplayName(snapshot,reference),
+    displayNameFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.displayName,
+    languageFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.language,
     repositoryFactory:({canWrite,readers})=>new SourceRepository(dataRoot,{...writerOptions,canWrite,readers}),
   });
   const operation=sourceReads.invoke({event,method,payload});writes.add(operation);
@@ -920,6 +922,8 @@ ipcMain.handle('siren:source-analysis',async(event,method,payload)=>{
    const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
    if(!windowRegistry.isCurrent(grant)||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
    sourceAnalysis??=new NativeSourceAnalysis({registry:windowRegistry,owner:workspaceOwner,referenceFor:sourceReferenceFor,windowsFor:()=>nativeShells.values(),
+    languageFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.language,
+    displayNameFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.displayName,
     repositoryFactory:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),workerPath:join(rendererRoot,'code-analysis-worker.cjs'),workerSha256:build.sourceAnalysis?.entrySha256,onActivity:state=>console.info('SIREN_ANALYSIS_ACTIVITY',JSON.stringify(state))});
   }
   return sourceAnalysis.invoke({event,method,payload});

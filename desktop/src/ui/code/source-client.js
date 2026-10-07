@@ -73,7 +73,7 @@ export function sourceClient({ bridge, sourceRef, readonly = false } = {}) {
   let disposed = false, fenced = false, paused = false, lastFailure = null, durability = null, generation = 0, readGeneration = 0, pending = 0, pendingBytes = 0;
   let tail = Promise.resolve();
   const inFlight = new Set(); let pausedOperations = [], pauseGeneration = 0;
-  const operations = new Set(), subscribers = new Set();
+  const operations = new Set(), subscribers = new Set();let lastCommit=null;
   const loads = new Set();
   const abortLoads = () => { for (const controller of loads) controller.abort(); };
   const getState = () => Object.freeze({ ...current, durability, fenced, disposed, paused });
@@ -157,7 +157,7 @@ export function sourceClient({ bridge, sourceRef, readonly = false } = {}) {
       if (fenced) return failure('CLIENT_FENCED');
       if (!data || !id(data.operationId) || !version(data.expectedVersion)
         || (Object.hasOwn(data, 'sourceId') && data.sourceId !== current.sourceId)) return fence(failure('INVALID_EDIT'));
-      if (operations.has(data.operationId)) return fence(failure('OPERATION_CONFLICT'));
+      if (operations.has(data.operationId) && !(method==='commitSource'&&lastCommit?.operationId===data.operationId&&lastCommit.sourceId===current.sourceId&&lastCommit.version===current.version&&lastCommit.sha256===current.sha256&&data.expectedVersion===current.version)) return fence(failure('OPERATION_CONFLICT'));
       if (data.expectedVersion !== current.version) return fence(failure('REVISION_CONFLICT'));
       if (method === 'applyEdit' && (!units(data.start) || !units(data.end) || data.end < data.start
         || typeof data.insertedText !== 'string' || !data.insertedText.isWellFormed()
@@ -177,6 +177,7 @@ export function sourceClient({ bridge, sourceRef, readonly = false } = {}) {
         || accepted.version !== bound.version + (method === 'applyEdit' ? 1 : 0) || !hash(accepted.sha256)
         || !validDurability.includes(accepted.durability) || (method === 'commitSource' && accepted.sha256 !== bound.sha256)) return fence(failure('INVALID_RECEIPT'));
       current = Object.freeze({ sourceId: bound.sourceId, version: accepted.version, sha256: accepted.sha256 });
+      if(method==='commitSource')lastCommit=Object.freeze({...accepted});
       durability = accepted.durability; publish(durability);
       return Object.freeze({ ...accepted });
     });
@@ -223,7 +224,7 @@ export function sourceClient({ bridge, sourceRef, readonly = false } = {}) {
       if (paused) return failure('CLIENT_PAUSED');
       const next = reference(sourceRef);
       if (!next || next.sourceId !== current.sourceId) return failure('INVALID_REFERENCE');
-      generation++; readGeneration++; abortLoads(); current = next; fenced = false; lastFailure = null; durability = null; publish('reset');
+      generation++; readGeneration++; abortLoads(); current = next; fenced = false; lastFailure = null; durability = null;lastCommit=null; publish('reset');
       return Object.freeze({ ok: true, ...current });
     },
     dispose: () => { if (!disposed) { disposed = true; generation++; readGeneration++; abortLoads(); subscribers.clear(); } },

@@ -7,8 +7,10 @@ const empty=input=>input==null||[Object.prototype,null].includes(Object.getProto
 /** Code-only static analysis. Requests carry no path, text, project or native
  * identity. Main derives scope and rechecks real authority throughout I/O. */
 export class NativeSourceAnalysis {
- #registry;#owner;#reference;#factory;#service;#windows;#jobs=new Map();#disposed=false;
- constructor({registry,owner,referenceFor,repositoryFactory,windowsFor=()=>[],workerPath,workerSha256,onActivity}){
+ #registry;#owner;#reference;#factory;#service;#windows;#jobs=new Map();#disposed=false;#language;#displayName;
+ constructor({registry,owner,referenceFor,repositoryFactory,windowsFor=()=>[],workerPath,workerSha256,onActivity,languageFor,displayNameFor}){
+  if(languageFor!==undefined&&typeof languageFor!=='function'||displayNameFor!==undefined&&typeof displayNameFor!=='function')throw TypeError('NATIVE_ANALYSIS_METADATA_ADAPTERS_REQUIRED');
+  this.#language=languageFor;this.#displayName=displayNameFor;
   this.#registry=registry;this.#owner=owner;this.#reference=referenceFor;this.#factory=repositoryFactory;
   this.#windows=windowsFor;
   this.#service=new AnalysisService({workerPath,workerSha256,onActivity,loadSource:async(ref,{jobId,side})=>{
@@ -46,7 +48,13 @@ export class NativeSourceAnalysis {
  async invoke({event,method,payload}){
   if(!['submit','cancel','listComparisons'].includes(method))return fail('REQUEST_REFUSED');
   const context=this.#capture(event);if(!context)return fail('ACCESS_REFUSED');
-  if(method==='listComparisons')return empty(payload)?{ok:true,items:this.#comparisons(context).map(other=>({windowId:other.grant.windowId,sourceRef:other.ref}))}:fail('REQUEST_REFUSED');
+  if(method==='listComparisons'){
+   if(!empty(payload))return fail('REQUEST_REFUSED');
+   const items=this.#comparisons(context).map(other=>{let name;try{name=this.#displayName?.(other.grant,other.ref);}catch{}
+    const safe=typeof name==='string'&&name.length>0&&name.length<=200&&name.isWellFormed()&&!/[\\/:\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(name);
+    return {windowId:other.grant.windowId,sourceRef:other.ref,...(safe?{displayName:name}:{})};});
+   return this.#current(context)?{ok:true,items}:fail('ACCESS_REFUSED');
+  }
   if(method==='cancel'){
    if(!empty(payload)&&(!payload||![Object.prototype,null].includes(Object.getPrototypeOf(payload))||Reflect.ownKeys(payload).length!==1||typeof Object.getOwnPropertyDescriptor(payload,'jobId')?.value!=='string'))return fail('REQUEST_REFUSED');
    const jobId=Object.getOwnPropertyDescriptor(payload??{},'jobId')?.value;
@@ -68,6 +76,7 @@ export class NativeSourceAnalysis {
    if(!right||!same(right.ref,request.rightRef))return fail('ACCESS_REFUSED');
   }else if(rightWindowId!==undefined)return fail('REQUEST_REFUSED');
   if(!same(context.ref,request))return fail('ACCESS_REFUSED');
+  if(request.kind!=='diff'&&this.#language){let language;try{language=this.#language(context.grant,context.ref);}catch{}if(language!=='python')return fail('LANGUAGE_NOT_SUPPORTED');}
   if([...this.#jobs.values()].some(job=>job.grant.windowId===context.grant.windowId))return fail('ANALYSIS_BUSY');
   const key=randomUUID();let done;const job={...context,right,key,publicId:request.jobId,done:new Promise(resolve=>{done=resolve;})};this.#jobs.set(key,job);
   const closed=()=>{void this.#service.cancel(key);},rightSender=right?this.#registry.eventFor(right.grant)?.sender:null;event.sender.once('destroyed',closed);rightSender?.once('destroyed',closed);

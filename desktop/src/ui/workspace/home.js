@@ -1,39 +1,7 @@
 (() => {
   'use strict';
   const modules=[['diagrams','Diagrams','Connections made clear.'],['docs','Docs','Context, decisions and agents.'],['code','⌘ Code','Explore how your code works.'],['present','Present','Share the bigger picture.']];
-  // Local vector artwork; the SVG namespace identifies elements, not a network resource.
-  const iconPaths={
-    diagrams:[
-      ['M9 13v6a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-6M20 21v6',1,false],
-      ['M6 4h7a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z',1,true],
-      ['M27 4h7a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z',1,true],
-      ['M16 27h8a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3Z',1,true]
-    ],
-    docs:[
-      ['M14 4h15a3 3 0 0 1 3 3v22',.45,false],
-      ['M9 9h13l7 7v18a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3ZM22 9v7h7',1,true],
-      ['M12 21h11M12 26h11M12 31h7',1,false]
-    ],
-    present:[
-      ['M9 3h25a3 3 0 0 1 3 3v19',.45,false],
-      ['M6 8h25a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V11a3 3 0 0 1 3-3Z',1,true],
-      ['M18.5 30v7M11 37h15M9 15h9M9 20h6M23 23v-4M28 23v-9',1,false]
-    ]
-  };
-  const moduleIcon=(card,surface)=>{
-    const holder=document.createElement('span');holder.className='home-module-icon';holder.setAttribute('aria-hidden','true');card.append(holder);
-    if(surface==='code'){holder.textContent='⌘';return;}
-    const namespace='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(namespace,'svg');
-    for(const [name,value] of Object.entries({viewBox:'0 0 40 40',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round',focusable:'false'}))svg.setAttribute(name,value);
-    for(const [d,opacity,filled] of iconPaths[surface]){
-      const path=document.createElementNS(namespace,'path');path.setAttribute('d',d);path.setAttribute('opacity',String(opacity));
-      if(filled){path.setAttribute('fill','currentColor');path.setAttribute('fill-opacity','.1');}
-      svg.append(path);
-    }
-    holder.append(svg);
-  };
-
+  const moduleIcon=(card,surface)=>window.SirenModuleIcon(card,surface);
   const make=(tag,parent,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;parent?.append(node);return node;};
   window.installSirenHomeCommands=({desktop,commands,enabled})=>{
     const allowed=new Set(['desktopPinSettings','desktopLockPin','desktopOpenProject','desktopCheckUpdates','desktopRecovery','desktopGuide','desktopExportProject']);
@@ -223,9 +191,10 @@
       const search=make('form',dialog,undefined,'home-library-search'),searchLabel=make('label',search,'Find by name');searchLabel.htmlFor='homeLibraryQuery';
       const queryInput=make('input',search);queryInput.id='homeLibraryQuery';queryInput.type='search';queryInput.maxLength=160;queryInput.autocomplete='off';
       const submit=make('button',search,'Search');submit.id='homeLibrarySearch';submit.type='submit';
-      const filterFields=[];if(surface==='docs'){
+      const filterFields=[];if(['docs','code'].includes(surface)){
         const register=make('details',search);register.className='home-docs-filters';make('summary',register,'Filter register');const grid=make('div',register);grid.style.cssText='display:flex;flex-wrap:wrap;gap:10px';
-        for(const [key,title,choices]of [['type','Type',['agent-spec','narrative','control','note']],['status','Status',['draft','in-review','approved']],['links','References',['linked','unlinked']],['owner','Owner',null]]){const label=make('label',grid,title),field=make(choices?'select':'input',label);field.id='homeDocsFilter-'+key;field.dataset.registerFilter=key;field.setAttribute('aria-label',title);if(choices){const any=make('option',field,'All');any.value='';for(const value of choices){const option=make('option',field,value);option.value=value;}}else{field.maxLength=80;field.autocomplete='off';}filterFields.push(field);}
+        const definitions=surface==='code'?[['language','Language',['python','text','unknown']],['links','Docs links',['linked','earlier','unlinked','unknown']],['document','Document',null],['agent','Agent metadata',null]]:[['type','Type',['agent-spec','narrative','control','note']],['status','Status',['draft','in-review','approved']],['links','References',['linked','unlinked']],['owner','Owner',null]];
+        for(const [key,title,choices]of definitions){const label=make('label',grid,title),field=make(choices?'select':'input',label);field.id=(surface==='code'?'homeCodeFilter-':'homeDocsFilter-')+key;field.dataset.registerFilter=key;field.setAttribute('aria-label',title);if(choices){const any=make('option',field,'All');any.value='';for(const value of choices){const option=make('option',field,value);option.value=value;}}else{field.maxLength=80;field.autocomplete='off';}filterFields.push(field);}
       }
       const rows=make('div',dialog,undefined,'home-library-items'),note=make('p',dialog,'Loading…');note.setAttribute('role','status');
       let cursor=0,found=0,query=selected?.label??'',loading=false,opening=false,handingOff=false,active=true;queryInput.value=query;
@@ -238,9 +207,9 @@
       const loadPage=async()=>{
       if(loading||opening||blocked||disposed||turn!==serial||!active||!dialog.open)return;loading=true;more.disabled=submit.disabled=queryInput.disabled=true;for(const field of filterFields)field.disabled=true;
       try{
-        const filters=Object.fromEntries(filterFields.filter(f=>f.value).map(f=>[f.dataset.registerFilter,f.value]));const result=await bridge.getCatalog({cursor,role:surface,...(query?{query}:{}),...(surface==='docs'?{details:true,filters}:{})});if(disposed||blocked||turn!==serial||!active||!dialog.open)return;
+        const filters=Object.fromEntries(filterFields.filter(f=>f.value).map(f=>[f.dataset.registerFilter,f.value]));const result=await bridge.getCatalog({cursor,role:surface,...(query?{query}:{}),...(['docs','code'].includes(surface)?{details:true,filters}:{})});if(disposed||blocked||turn!==serial||!active||!dialog.open)return;
         if(!result?.ok){note.textContent=message(result);return;}
-        for(const item of result.items.filter(item=>item.role===surface)){found++;const row=make('button',rows,item.label,'home-project-row');row.type='button';if(surface==='docs'&&item.context){const facts=make('small',row,[item.context.type,item.context.status,item.context.owner,item.context.agentId,item.context.agentVersion,item.context.referenceCount+' references'].filter(Boolean).join(' · '));facts.style.cssText='display:block;font-weight:400;opacity:.72;margin-top:5px;overflow-wrap:anywhere';}const open=async()=>{
+        for(const item of result.items.filter(item=>item.role===surface)){found++;const row=make('button',rows,item.label,'home-project-row');row.type='button';if(item.context){row.style.display='block';row.style.textAlign='left';}if(surface==='docs'&&item.context){const facts=make('small',row,[item.context.type,item.context.status,item.context.owner,item.context.agentId,item.context.agentVersion,item.context.referenceCount+' references'].filter(Boolean).join(' · '));facts.style.cssText='display:block;font-weight:400;opacity:.72;margin-top:5px;overflow-wrap:anywhere';}if(surface==='code'&&item.context){const c=item.context,links=[...c.exactLinks.map(link=>link.title+' · this version'),...c.earlierLinks.map(link=>link.title+' · v'+link.version+' only')],agents=[...new Set([...c.exactLinks,...c.earlierLinks].filter(link=>link.agentId).map(link=>link.agentId+(link.agentVersion?' v'+link.agentVersion:'')))];const facts=make('small',row,['Selected v'+item.sourceRef.version,item.sourceRef.sourceId.slice(0,8),c.language==='unknown'?'Language unclassified':c.language,c.exactCount+' exact Docs references',c.earlierCount?c.earlierCount+' earlier-version references':'',...links,agents.length?'Agent metadata: '+agents.join(', '):'',c.linksTruncated?'Relationship preview limited':''].filter(Boolean).join(' · '));facts.style.cssText='display:block;font-weight:400;opacity:.72;margin-top:5px;overflow-wrap:anywhere';}const open=async()=>{
           if(blocked||disposed||turn!==serial||opening||!active)return;opening=true;row.disabled=true;note.textContent='Opening…';
           try{const opened=await bridge.openView({role:item.role,entityId:item.entityId,...(item.sourceRef?{version:item.sourceRef.version}:{})});
             if(blocked||disposed||turn!==serial||!active)return;

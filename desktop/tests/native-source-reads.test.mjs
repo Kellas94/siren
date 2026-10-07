@@ -12,6 +12,26 @@ async function fixture(t){
  const service=new NativeSourceReads(options);t.after(()=>service.dispose());
  return {...f,service,options,call:(method,payload,event=f.event(0))=>service.invoke({event,method,payload}),wrap:fn=>{wrap=fn;},select:value=>{snapshot=value;},factories:()=>factories};
 }
+
+test('working read context offers only an independently verified exact saved operation and rechecks Lock after proof',async t=>{
+ const f=await fixture(t),ref=f.refs[0];
+ const service=new NativeSourceReads({...f.options,readonlyFor:()=>false});t.after(()=>service.dispose());
+ assert.equal(Object.hasOwn(await service.invoke({event:f.event(0),method:'getReference'}),'committedOperationId'),false);
+ assert.equal((await f.sources.commitSource({projectId:f.selected.project.id,sourceId:ref.sourceId,expectedVersion:1,operationId:'actual-base-save'})).ok,true);
+ assert.equal((await service.invoke({event:f.event(0),method:'getReference'})).committedOperationId,'actual-base-save');
+ await f.sources.applyEdit({projectId:f.selected.project.id,edit:{sourceId:ref.sourceId,expectedVersion:1,operationId:'later-edit',start:0,end:0,insertedText:'later '}});
+ await f.sources.commitSource({projectId:f.selected.project.id,sourceId:ref.sourceId,expectedVersion:2,operationId:'later-save'});
+ assert.equal(Object.hasOwn(await service.invoke({event:f.event(0),method:'getReference'}),'committedOperationId'),false);
+ const racing=new NativeSourceReads({...f.options,readonlyFor:()=>false,repositoryFactory:options=>{const repository=f.options.repositoryFactory(options),load=repository.load.bind(repository);repository.load=async(...args)=>{const result=await load(...args);f.lock();return result;};return repository;}});t.after(()=>racing.dispose());
+ assert.equal((await racing.invoke({event:f.event(0),method:'getReference'})).code,'ACCESS_REFUSED');
+});
+
+test('selected owner language is finite metadata and cannot alter immutable source admission',async t=>{
+ const f=await fixture(t),service=new NativeSourceReads({...f.options,languageFor:()=> 'text'});t.after(()=>service.dispose());
+ const result=await service.invoke({event:f.event(0),method:'getReference'});assert.equal(result.language,'text');assert.equal(result.sourceRef.sha256,f.refs[0].sha256);
+ const invalid=new NativeSourceReads({...f.options,languageFor:()=> 'C:/PRIVATE/python'});t.after(()=>invalid.dispose());assert.equal((await invalid.invoke({event:f.event(0),method:'getReference'})).language,'unknown');
+ f.lock();assert.equal((await service.invoke({event:f.event(0),method:'getReference'})).code,'ACCESS_REFUSED');
+});
 test('native Code reference is selected-version metadata only; historical admission and private capture checks remain exact',async t=>{
  const f=await fixture(t),ref=f.refs[0];
  assert.deepEqual(await f.call('getReference'),{ok:true,readonly:true,sourceRef:{sourceId:ref.sourceId,version:1,sha256:ref.sha256}});

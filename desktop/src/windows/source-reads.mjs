@@ -40,12 +40,12 @@ export function selectedSourceReference(snapshot,registry,grant,request){
 /** Immutable native read leases only; no editor write admission. All callers
  * retain genuine frame/owner/selected-reference checks during actual I/O. */
 export class NativeSourceReads {
- #registry;#owner;#referenceFor;#service;#disposed=false;#readonlyFor;#editingState;#displayNameFor;
- constructor({registry,owner,referenceFor,repositoryFactory,readonlyFor,editingState,displayNameFor}){
+ #registry;#owner;#referenceFor;#service;#disposed=false;#readonlyFor;#editingState;#displayNameFor;#languageFor;#repository;
+ constructor({registry,owner,referenceFor,repositoryFactory,readonlyFor,editingState,displayNameFor,languageFor}){
   if(!['capture','isCurrent','sourceScope'].every(key=>typeof registry?.[key]==='function')||typeof owner?.canRead!=='function'||typeof referenceFor!=='function'||typeof repositoryFactory!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#owner=owner;this.#referenceFor=referenceFor;
-  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function'||displayNameFor!==undefined&&typeof displayNameFor!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
-  this.#readonlyFor=readonlyFor;this.#editingState=editingState;this.#displayNameFor=displayNameFor;
+  this.#registry=registry;this.#owner=owner;this.#referenceFor=referenceFor;this.#repository=repositoryFactory;
+  if(readonlyFor!==undefined&&typeof readonlyFor!=='function'||editingState!==undefined&&typeof editingState!=='function'||displayNameFor!==undefined&&typeof displayNameFor!=='function'||languageFor!==undefined&&typeof languageFor!=='function')throw TypeError('NATIVE_SOURCE_READ_ADAPTERS_REQUIRED');
+  this.#readonlyFor=readonlyFor;this.#editingState=editingState;this.#displayNameFor=displayNameFor;this.#languageFor=languageFor;
   this.#service=new SourceReadService({registry,repositoryFactory,access:(_grant,scope,event)=>Boolean(this.#context(event,scope))});
  }
  #context(event,request){
@@ -64,7 +64,24 @@ export class NativeSourceReads {
     if(payload!=null&&(![Object.prototype,null].includes(Object.getPrototypeOf(payload))||Reflect.ownKeys(payload).length))return fail('REQUEST_REFUSED');
     const context=this.#context(event);if(!context)return fail('ACCESS_REFUSED');
     let displayName;try{displayName=safeName(this.#displayNameFor?.(context.grant,context.reference));}catch{displayName=null;}
-    const result={ok:true,readonly:this.#readonlyFor?this.#readonlyFor(context.grant)!==false:true,sourceRef:context.reference,...(this.#editingState?{canEdit:this.#editingState(context.grant)===true}:{}),...(displayName?{displayName}:{})};
+    let language;try{language=this.#languageFor?.(context.grant,context.reference);}catch{language='unknown';}
+    const readonly=this.#readonlyFor?this.#readonlyFor(context.grant)!==false:true;
+    let committedOperationId;
+    if(!readonly){
+     // Optional replay identity only, never a synthetic save acknowledgement.
+     // The repository independently verifies the exact selected historical bytes
+     // and actual commit chain; imports/uncommitted drafts have no such proof.
+     try{
+      const repository=this.#repository({canWrite:scope=>scope?.action==='read'&&scope.projectId===context.grant.projectId&&scope.sourceId===context.reference.sourceId&&same(this.#context(event)?.reference,context.reference)});
+      const loaded=await repository.load(context.grant.projectId,context.reference.sourceId,context.reference.version,{materializeModel:false});
+      const operationId=loaded.pointer.commitHead?.operationId;
+      if(typeof operationId==='string'&&/^[a-z0-9][a-z0-9_-]{0,127}$/.test(operationId)){
+       const proof=await repository.getCommitReceipt({projectId:context.grant.projectId,sourceId:context.reference.sourceId,expectedVersion:context.reference.version,sha256:context.reference.sha256,operationId});
+       if(proof?.ok===true&&same(proof,context.reference)&&proof.operationId===operationId&&['committed','recovery-degraded'].includes(proof.durability))committedOperationId=operationId;
+      }
+     }catch{/* Missing/unverifiable proof keeps ordinary fresh CAS semantics. */}
+    }
+    const result={ok:true,readonly,sourceRef:context.reference,...(committedOperationId?{committedOperationId}:{}),...(this.#editingState?{canEdit:this.#editingState(context.grant)===true}:{}),...(displayName?{displayName}:{}),...(this.#languageFor?{language:['python','text'].includes(language)?language:'unknown'}:{})};
     const current=this.#context(event);return current&&same(current.reference,context.reference)?Object.freeze(result):fail('ACCESS_REFUSED');
    }
    const request=normalizeSourceReadRequest(method,payload);if(!request)return fail('REQUEST_REFUSED');

@@ -4,14 +4,36 @@ import {sourceReadFixture} from './fixtures/source-read-context.mjs';
 import {WorkspaceCoordinator} from '../src/windows/coordinator.mjs';
 import {SourceRepository} from '../src/sources/repository.mjs';
 import {NativeWorkingSources} from '../src/windows/working-sources.mjs';
+import {selectedCodeMetadata} from '../src/windows/source-context.mjs';
+import {NativeSourceReads} from '../src/windows/source-reads.mjs';
 
 async function fixture(t,options={}){
- const f=await sourceReadFixture();let enabled=true;
+ const {metadata,...workingOptions}=options,f=await sourceReadFixture(metadata);let enabled=true;
  const owner=new WorkspaceCoordinator({registry:f.registry,access:()=>f.isUnlocked()&&enabled,sources:({canWrite})=>new SourceRepository(f.root,{canWrite})});
- const working=new NativeWorkingSources({registry:f.registry,owner,enabled:()=>enabled&&f.isUnlocked(),snapshotFor:()=>f.selected,...options});t.after(()=>working.dispose());
+ const working=new NativeWorkingSources({registry:f.registry,owner,enabled:()=>enabled&&f.isUnlocked(),snapshotFor:()=>f.selected,...workingOptions});t.after(()=>working.dispose());
  const grant=()=>f.registry.capture(f.event(0));
  return {...f,owner,working,grant,disable:()=>{enabled=false;}};
 }
+
+test('historical native commit replay keeps both working grants current and cannot replace latest durability',async t=>{
+ const f=await fixture(t),sourceId=f.refs[0].sourceId,first=f.grant();await f.working.admit(first);
+ await f.registry.openView({role:'code',entityId:sourceId});const second=f.registry.capture(f.event(2));await f.working.admit(second);
+ const commit=(grant,expectedVersion,operationId,nonce)=>f.owner.invoke(grant,{kind:'source',method:'commitSource',payload:{sourceId,expectedVersion,operationId}},nonce);
+ const edit=(grant,expectedVersion,operationId)=>f.owner.invoke(grant,{kind:'source',method:'applyEdit',payload:{sourceId,expectedVersion,operationId,start:0,end:0,insertedText:'new '}});
+ assert.equal((await commit(first,1,'base-durable')).ok,true);
+ const latest=await edit(first,1,'first-new');assert.equal(latest.ok,true);
+ const replay=await commit(second,1,'base-durable');assert.equal(replay.ok,true);assert.equal(replay.version,1);
+ for(const grant of [first,second]){assert.equal(f.working.isWorking(grant),true);assert.equal(f.working.referenceFor(grant).version,2);assert.equal(f.working.referenceFor(grant).sha256,latest.sha256);}
+ f.owner.pause('test-clean-replay');
+ assert.equal((await f.owner.reconcileSourceReceipts([first,second],[replay],()=>true)).ok,false);f.owner.resume();
+ const saved=await commit(first,2,'latest-durable');assert.equal(saved.ok,true);
+ f.owner.pause('test-clean-replay');
+ assert.equal((await f.owner.reconcileSourceReceipts([first,second],[replay,saved],()=>true)).ok,true);f.owner.resume();
+ const continuation=await edit(second,2,'second-continuation');assert.equal(continuation.ok,true);assert.equal(continuation.version,3);
+ for(const grant of [first,second])assert.equal(f.working.referenceFor(grant).version,3);
+ assert.equal((await commit(second,1,'fresh-stale-attempt')).code,'REVISION_CONFLICT');
+ assert.deepEqual(await f.projects.readProject(f.selected.project.id),f.selected);
+});
 test('working-source admission reads the actual latest draft while immutable selected refs and Docs remain exact',async t=>{
  const f=await fixture(t),ref=f.refs[0];
  assert.equal(f.working.referenceFor(f.grant()),null);
@@ -58,4 +80,19 @@ test('working-source pause, disposal and removed selected membership revoke cach
  f.owner.pause('Lock');assert.equal((await f.working.admit(grant)).code,'WORKSPACE_PAUSED');f.owner.resume();
  f.selected.sourceRefs=[];assert.equal(f.working.referenceFor(grant),null);assert.equal(f.working.isWorking(grant),false);
  f.working.dispose();assert.equal(f.working.referenceFor(grant),null);assert.equal((await f.working.admit(grant)).code,'ACCESS_REFUSED');
+});
+
+test('real saved working v2 keeps exact-base Python metadata without selecting v2 in Docs or trusting a projected grant',async t=>{
+ const f=await fixture(t,{metadata:refs=>({workpapers:[{id:'doc-a',blocks:[{kind:'knowledge',rows:[{sourceRef:{sourceId:refs[0].sourceId,version:1,sha256:refs[0].sha256},fileType:'python',name:'agent.py'}]}]}]})}),base=f.refs[0];
+ const before=structuredClone(f.selected),grant=f.grant();assert.equal((await f.working.admit(grant)).ok,true);
+ const edit=await f.owner.invoke(grant,{kind:'source',method:'applyEdit',payload:{sourceId:base.sourceId,expectedVersion:1,operationId:'language-v2-edit',start:0,end:0,insertedText:'def hello():\n    pass\n'}});assert.equal(edit.ok,true);
+ assert.equal((await f.owner.invoke(grant,{kind:'source',method:'commitSource',payload:{sourceId:base.sourceId,expectedVersion:2,operationId:'language-v2-save'}})).ok,true);
+ const current=f.working.referenceFor(grant),metadata=(g,r)=>selectedCodeMetadata(f.selected,f.registry,f.working,g,r);
+ assert.equal(current.version,2);assert.equal(metadata(grant,current).language,'python');assert.equal(metadata(grant,current).displayName,'agent.py');assert.equal(metadata(grant,current).exactLinks,undefined);assert.equal(metadata({...grant},current),null);assert.equal(metadata(grant,{...current,sha256:'f'.repeat(64)}),null);assert.deepEqual(f.selected,before);
+ const reader=new NativeSourceReads({registry:f.registry,owner:f.owner,referenceFor:g=>f.working.referenceFor(g),languageFor:(g,r)=>metadata(g,r)?.language,displayNameFor:(g,r)=>metadata(g,r)?.displayName,repositoryFactory:({canWrite,readers})=>new SourceRepository(f.root,{canWrite,readers})});t.after(()=>reader.dispose());
+ const receipt=await reader.invoke({event:f.event(0),method:'getReference'});assert.equal(receipt.language,'python');assert.equal(receipt.displayName,'agent.py');assert.deepEqual(receipt.sourceRef,current);
+ assert.deepEqual(await f.projects.readProject(f.selected.project.id),before);
+ assert.equal(metadata(grant,{...base,sha256:'f'.repeat(64)}),null);assert.equal(metadata(grant,f.refs[1]),null);
+ f.selected.sourceRefs=[];assert.equal(metadata(grant,current),null);f.selected.sourceRefs=before.sourceRefs;
+ f.lock();assert.equal(metadata(grant,current),null);assert.equal((await reader.invoke({event:f.event(0),method:'getReference'})).code,'ACCESS_REFUSED');
 });
