@@ -92,6 +92,7 @@
   working.addEventListener('click',openWorking);reviewLatest.addEventListener('click',openWorking);
   document.getElementById('replaceLatestSource').addEventListener('click',replaceLatest);
   window.sirenViewControl.onPrepare(async()=>{
+    window.SirenHelpWorkspace?.cover();
     paused=true;analysis.pause();links.pause();sourceChanges.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
     window.SirenNativeViewIdentity.clear('code');
     const current=editor;

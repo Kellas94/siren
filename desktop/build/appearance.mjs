@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {transform} from 'esbuild';
 import {parse} from 'parse5';
 import {THEME_IDS} from '../src/appearance/contracts.mjs';
+import {readHelpBrowser} from './help.mjs';
 const fields=['app-bg','panel-bg','panel-alt','input-bg','text','muted','border','primary','primary-text','focus-ring'];
 const metricFields=['radius-xl','radius-lg','radius-md','radius-sm','shadow','shadow-soft'];
 // Only literal local shape tokens from the frozen baseline enter native CSS.
@@ -41,7 +42,7 @@ export async function readAppearancePalette(){
  });
 }
 export async function readDesktopShell(){
- const source=(await Promise.all(['workspace/icons.js','workspace/guide.js','shared/appearance-sync.js','shared/search.js','shared/shell.js'].map(path=>readFile(new URL('../src/ui/'+path,import.meta.url),'utf8')))).join('\n');
+ const source=(await readHelpBrowser())+'\n'+(await Promise.all(['workspace/icons.js','workspace/guide.js','shared/appearance-sync.js','shared/search.js','shared/help.js','shared/help-workspace.js','shared/shell.js'].map(path=>readFile(new URL('../src/ui/'+path,import.meta.url),'utf8')))).join('\n');
  const colors=[],index=value=>{let i=colors.indexOf(value);if(i<0){i=colors.length;colors.push(value);}return i;};
  const themes=(await readAppearancePalette()).map(t=>[t.id,t.name,t.mode,...fields.map(key=>index(t.colors[key])),...metricFields.map(key=>index(t.metrics[key]))]);
  return 'window.SirenAppearancePalette=(()=>{const c='+JSON.stringify(colors)+';return '+JSON.stringify(themes)+'.map(([id,name,mode,...v])=>({id,name,mode,colors:Object.fromEntries('+JSON.stringify(fields)+'.map((k,i)=>[k,c[v[i]]])),metrics:Object.fromEntries('+JSON.stringify(metricFields)+'.map((k,i)=>[k,c[v[i+'+fields.length+']]]))}));})();\n'+source;

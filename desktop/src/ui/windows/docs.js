@@ -197,6 +197,7 @@
   const own=readDocument();pending=own;own.finally(()=>{if(pending===own)pending=null;exportView.update();if(!disposed)activity.updateState({dirty:draft?.getStatus().dirty===true});});return own;
  }
  window.sirenViewControl.onPrepare(async()=>{
+  window.SirenHelpWorkspace?.cover();
   paused=true;activity.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
   window.SirenNativeViewIdentity.clear('docs');
   await exportView.pause();
@@ -210,7 +211,7 @@
   paused=false;draft?.resumeView();if(draft&&!readonly)paint(draft.getDocument());refreshActivitySaved(true);activity.resume();exportView.resume();updateState();document.body.inert=false;document.documentElement.style.visibility='';
  });
  const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
- const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const owner=draft,result=await owner.save();if(disposed||draft!==owner)return;if(result.ok)refreshActivitySaved();updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';}else delete document.body.dataset.documentSaveError;};
+ const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const context=window.SirenHelpWorkspace?.capture(),owner=draft,result=await owner.save();if(disposed||draft!==owner||context&&!window.SirenHelpWorkspace?.isCurrent(context))return;if(result.ok)refreshActivitySaved();updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';window.SirenHelpWorkspace?.explain(status,{namespace:'docs',operation:'save',code:result.code},context);}else delete document.body.dataset.documentSaveError;};
  const openCopy=async method=>{if(paused||disposed)return;const result=await window.sirenDocsEdit[method]();if(!result?.ok)status.textContent='The document window could not be opened. Existing work was retained.';};
  working.addEventListener('click',()=>{void openCopy('openWorkingCopy');});save.addEventListener('click',()=>{void saveCurrent();});
  document.getElementById('reviewLatestDocument').addEventListener('click',()=>{void openCopy('openLatest');});document.getElementById('replaceLatestDocument').addEventListener('click',replace);

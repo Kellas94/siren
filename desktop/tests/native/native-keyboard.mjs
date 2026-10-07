@@ -44,7 +44,7 @@ export async function attachNativeKeyboard({port,pid}){
   for(const type of ['keyDown','keyUp'])await evaluate(`(()=>{const w=${windowExpression(url)};if(!w)throw Error('Owned native input target unavailable');w.webContents.sendInputEvent(${JSON.stringify({type,keyCode,modifiers:['control','alt']})});return true;})()`);
  },
  shortcut:async(keyCode,modifiers)=>{
-  assert.ok([',','U','L'].includes(keyCode));assert.ok(Array.isArray(modifiers)&&modifiers.every(m=>['control','alt'].includes(m)));
+  assert.ok([',','U','L','F1'].includes(keyCode));assert.ok(Array.isArray(modifiers)&&modifiers.every(m=>['control','alt'].includes(m)));
   for(const type of ['keyDown','keyUp'])await evaluate(`(()=>{const e=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');const w=e.BaseWindow.getAllWindows().find(w=>w.webContents.getURL()==='siren://app/home.html');if(!w||w.isDestroyed())throw Error('Owned Home input target unavailable');w.webContents.focus();w.webContents.sendInputEvent(${JSON.stringify({type,keyCode,modifiers})});return true;})()`);
  }};
 }

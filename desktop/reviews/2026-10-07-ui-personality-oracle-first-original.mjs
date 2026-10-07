@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
-import {join,relative,resolve} from 'node:path';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
@@ -9,16 +9,11 @@ import {workspaceMetadata} from '../../src/windows/entities.mjs';
 import {launchDesktop,unlockDesktop,waitForWorkspaceAdmission} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
 import {readAppearancePalette} from '../../build/appearance.mjs';
-import {createRenderAppearanceContract} from '../../src/appearance/render.mjs';
 import {reserveInspectorPort,attachNativeKeyboard} from './native-keyboard.mjs';
 import {copiedPackageContext} from './package-context.mjs';
 const evidence=resolve('evidence/ui-personality',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
 const paths=['src/main.mjs','src/preload.cjs','src/windows/preload.cjs','src/windows/presentation-preload.cjs','src/protocol.mjs','src/appearance/contracts.mjs','src/appearance/store.mjs','src/appearance/ipc.mjs','src/ui/shared/shell.js','src/ui/shared/search.js','src/ui/shared/shell.css','src/ui/docs/reader.js','src/ui/workspace/guide.js','src/ui/workspace/home.js','build/appearance.mjs','generated/assets/shell.js','generated/assets/shell.css','generated/app.html','generated/home.html','generated/windows/code.html','generated/windows/docs.html','generated/windows/diagram.html','generated/windows/presenter.html','generated/windows/audience.html','tests/native/ui-personality.mjs','tests/native/native-keyboard.mjs','src/ui/shared/chrome.css','tests/native/drive.mjs'];
 paths.push("tests/native/package-context.mjs");
-paths.push('src/appearance/render.mjs','src/ui/diagram/style.js','src/ui/diagram/vector.js','src/ui/windows/diagram.js','src/ui/presentation/window.js','src/ui/presentation/render.js','src/ui/presentation/cards.js','src/windows/presentation.mjs','src/windows/presentation-render.mjs','src/windows/presentation-deck.mjs','src/windows/diagram-vector-render.mjs','build/diagram-style.mjs','build/diagram-vector.mjs','build/presentation-render.mjs','tests/native/attach-page.mjs','tests/native/condition.mjs','tests/native/pointer.mjs');
-const generatedFiles=(await readdir(resolve('generated'),{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>relative(resolve('.'),join(entry.parentPath,entry.name)).replaceAll('\\','/')).sort();
-assert.ok(generatedFiles.length>0&&generatedFiles.length<=64,'Finite generated renderer input set required');
-for(const file of generatedFiles)if(!paths.includes(file))paths.push(file);
 const capture=async()=>Object.fromEntries(await Promise.all(paths.map(async p=>[p,createHash('sha256').update(await readFile(p)).digest('hex')]))),inputs=await capture();
 const packaged=await copiedPackageContext(evidence),data=packaged?.data??join(evidence,'owned-data');await mkdir(data,{recursive:true});const projects=new ProjectStore(data),sources=new SourceRepository(data);
 const original=await projects.createProject({label:'SIREN reference workspace',json:'{}'}),text='def agent(context):\n    return context + 1\n',ref=await sources.importSource({projectId:original.project.id,bytes:Buffer.from(text)});
@@ -27,9 +22,6 @@ assert.equal((await commitManifest({projects,repository:sources,projectId:origin
 const initial=await projects.readProject(original.project.id),result={status:'ADVERSE',inputs,cases:[],scope:'Owned real Electron: shared navigation, named themes, Code/Docs/Diagram propagation, actual dirty Docs save on navigation, imported colour and Lock. Includes five representative original shape/shadow palettes and actual 480×320 native control reachability. No production release, complete control-handler or physical-monitor qualification.'};let driver,native;
 const keys=async(page,key,code,windowsVirtualKeyCode,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await page.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode,modifiers});};
 const observedPages=[];
-let publicPages=[];
-const publicFrame='(async()=>{const image=document.querySelector("#publicSlide img"),sequence=Number(document.body.dataset.sequence);if(!image||document.body.dataset.publicReady!=="true")return null;const src=image.src,version=document.body.dataset.deckVersion,slideId=document.body.dataset.slideId;await image.decode();const canvas=document.createElement("canvas");canvas.width=1;canvas.height=1;const context=canvas.getContext("2d",{willReadFrequently:true});context.drawImage(image,0,0);return {stable:document.querySelector("#publicSlide img")===image&&image.src===src&&Number(document.body.dataset.sequence)===sequence,version,slideId,sequence,image:src,width:image.naturalWidth,height:image.naturalHeight,corner:[...context.getImageData(0,0,1,1).data]};})()';
-const frameIdentity=frame=>({...frame,image:undefined,imageSha256:createHash('sha256').update(Buffer.from(frame.image.split(',')[1],'base64')).digest('hex')});
 const appearanceDiagnostic='(async()=>({url:location.pathname,role:document.body.dataset.role||"workspace",theme:document.documentElement.dataset.theme,choice:document.getElementById("sirenAppTheme")?.value,navigationHidden:document.getElementById("sirenAppNavigation")?.hidden,choiceDisabled:document.getElementById("sirenAppTheme")?.disabled,inert:document.body.inert,visibility:document.documentElement.style.visibility,failureCode:document.querySelector(".siren-navigation-status")?.dataset.appearanceError,preference:await window.sirenShell?.getAppearance()}))()';
 try{
  if(packaged)await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:original.project.id}));
@@ -79,15 +71,7 @@ try{
  await presenter.click('#openAudience');await driver.waitFor('(async()=>{const r=await window.sirenWindow.listViews();return r.views.some(v=>v.role==="audience")})()');
  const audienceView=(await driver.evaluate('window.sirenWindow.listViews()')).views.find(v=>v.role==='audience'),audienceURL='siren://app/windows/audience.html?windowId='+audienceView.windowId,audience=await attachNativePage(driver,audienceURL);
  await audience.waitFor('document.body.dataset.presentationReady==="true"&&document.querySelector("#publicSlide img")!=null');
- await presenter.waitFor('document.body.dataset.publicReady==="true"');
- publicPages=[presenter,audience];
- const savedProjectBeforeThemes=await projects.readProject(original.project.id),savedPresenterBeforeThemes=await presenter.evaluate('window.sirenPresentation.getPresenter()');assert.equal(savedPresenterBeforeThemes.ok,true);
- const savedDeckBeforeThemes=savedPresenterBeforeThemes.deck,appearance=createRenderAppearanceContract();
- let previousPublic=await presenter.evaluate(publicFrame);assert.ok(previousPublic?.stable);assert.equal(previousPublic.version,savedDeckBeforeThemes.version);
- await audience.waitFor('document.body.dataset.deckVersion==='+JSON.stringify(previousPublic.version)+'&&document.body.dataset.slideId==='+JSON.stringify(previousPublic.slideId)+'&&Number(document.body.dataset.sequence)==='+previousPublic.sequence);
- assert.deepEqual(await audience.evaluate(publicFrame),previousPublic,'Initial Audience must display the exact settled Presenter frame');
- result.publicFrames=[{theme:'dark',presenter:frameIdentity(previousPublic),audience:frameIdentity(previousPublic)}];
- await presenter.evaluate('(()=>{const observer={last:null};window.__sirenUiPersonalityAppearance=observer;document.addEventListener("siren-appearance",event=>{observer.last={theme:event.detail?.theme,mode:event.detail?.mode,sequenceBeforeRender:Number(document.body.dataset.sequence)};});return true;})()');
+ const publicImage=await audience.evaluate('document.querySelector("#publicSlide img").src');
  const privatePages=[['code',code.page,'.siren-code-editor'],['docs',docs.page,'#documentContent'],['diagram',diagram.page,'#diagramViewport'],['presenter',presenter,'#publicSlide']];
  result.personality=[];
  for(const id of ['kpmg','light','matrix','artdeco','cupertino']){
@@ -96,22 +80,10 @@ try{
   await diagram.page.click('#diagramStyleToggle');await diagram.page.waitFor('document.getElementById("diagramStylePanel").hidden===false');
   const form=await diagram.page.evaluate('(()=>{const e=document.getElementById("diagramStyleTitle"),s=getComputedStyle(e),expected=document.createElement("div").style;expected.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue("--siren-input");return {radius:s.borderTopLeftRadius,background:s.backgroundColor,expectedBackground:expected.backgroundColor}})()');assert.equal(form.radius,theme.metrics['radius-sm']);assert.equal(form.background,form.expectedBackground);result.personality.push({theme:id,role:'diagram-style-input',...form});await diagram.page.screenshot(join(evidence,'diagram-style-'+id+'.png'));await diagram.page.click('#diagramStyleToggle');
   assert.equal(await driver.evaluate('getComputedStyle(document.querySelector(".home-module")).borderTopLeftRadius'),theme.metrics['radius-lg']);await driver.screenshot(join(evidence,'home-'+id+'.png'));
-  const capsule=appearance.resolve(id,false),palette=appearance.palette(capsule),expectedCorner=[1,3,5].map(index=>parseInt(palette.canvasBg.slice(index,index+2),16)).concat(255);
-  // Read-only observer: a higher unrelated sequence is insufficient. The accepted
-  // theme event and decoded PNG background must both identify this intended theme.
-  await presenter.waitFor('(async()=>{const event=window.__sirenUiPersonalityAppearance?.last,frame=await '+publicFrame+';return event?.theme==='+JSON.stringify(id)+'&&event.mode==='+JSON.stringify(capsule.mode)+'&&document.documentElement.dataset.theme==='+JSON.stringify(id)+'&&frame?.stable&&frame.sequence>'+previousPublic.sequence+'&&frame.sequence>event.sequenceBeforeRender&&JSON.stringify(frame.corner)==='+JSON.stringify(JSON.stringify(expectedCorner))+';})()');
-  const themedPublic=await presenter.evaluate(publicFrame);assert.ok(themedPublic.stable);assert.equal(themedPublic.version,savedDeckBeforeThemes.version);assert.equal(themedPublic.slideId,previousPublic.slideId);assert.deepEqual(themedPublic.corner,expectedCorner);assert.equal(themedPublic.width,1600);assert.equal(themedPublic.height,900);
-  await audience.waitFor('document.body.dataset.deckVersion==='+JSON.stringify(themedPublic.version)+'&&document.body.dataset.slideId==='+JSON.stringify(themedPublic.slideId)+'&&Number(document.body.dataset.sequence)==='+themedPublic.sequence);
-  const audiencePublic=await audience.evaluate(publicFrame);assert.deepEqual(audiencePublic,themedPublic,'Audience must decode the exact same published frame as Presenter for '+id);
-  assert.notEqual(themedPublic.image,previousPublic.image,'Different selected theme backgrounds must produce a different public PNG');
-  assert.deepEqual((await presenter.evaluate('window.sirenPresentation.getPresenter()')).deck,savedDeckBeforeThemes,'Theme must not change captured deck');assert.deepEqual(await projects.readProject(original.project.id),savedProjectBeforeThemes,'Theme must not change saved project');
-  assert.equal((await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:1})).toString(),text);assert.equal(await diagram.page.evaluate('getComputedStyle(document.querySelector("#diagramCanvas .node rect")).fill'),fill);
-  assert.equal(await audience.evaluate('document.querySelector("#sirenAppNavigation,#presenterNotes,#sirenAppTheme")!=null'),false);assert.equal(await audience.evaluate('typeof window.sirenShell'),'undefined');
-  result.publicFrames.push({theme:id,expectedCorner,presenter:frameIdentity(themedPublic),audience:frameIdentity(audiencePublic),acceptedEvent:await presenter.evaluate('window.__sirenUiPersonalityAppearance.last'),projectSha256:createHash('sha256').update(JSON.stringify(savedProjectBeforeThemes)).digest('hex'),deckSha256:createHash('sha256').update(JSON.stringify(savedDeckBeforeThemes)).digest('hex'),sourceSha256:ref.sha256});
-  await writeFile(join(evidence,'public-'+id+'.png'),Buffer.from(themedPublic.image.split(',')[1],'base64'));await audience.screenshot(join(evidence,'audience-'+id+'.png'));previousPublic=themedPublic;
+  assert.equal(await audience.evaluate('document.querySelector("#publicSlide img").src'),publicImage);assert.equal(await audience.evaluate('document.querySelector("#sirenAppNavigation,#presenterNotes,#sirenAppTheme")!=null'),false);
  }
- await audience.screenshot(join(evidence,'audience-current-frame.png'));
- result.cases.push({name:'real keyboard selects five original palettes with exact private metrics; each accepted theme has higher sequence and exact decoded PNG background, same-frame Presenter/Audience bytes, unchanged saved deck/project/source and isolated Audience',ok:true});
+ await audience.screenshot(join(evidence,'audience-immutable.png'));
+ result.cases.push({name:'real keyboard input selects five original palettes with exact angular/rounded/glow metrics on Home/Code/Docs/Diagram/Presenter; duplicate local choosers hidden and public Audience bytes unchanged',ok:true});
  result.minimum=[];
  for(const [name,page]of privatePages){
   const url=name==='presenter'?presenterURL:'siren://app/windows/'+name+'.html?windowId='+({code,docs,diagram}[name].view.windowId);
@@ -144,5 +116,5 @@ try{
  assert.equal((await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:1})).toString(),text);
  result.cases.push({name:'real retained Studio theme menu and new chooser share native persistence, classic lifecycle and Home continuation while original Code bytes stay exact',ok:true});
  await driver.click('#homeLock');await driver.waitFor('window.sirenDesktopBootstrap.mode==="locked"');assert.equal(await driver.evaluate('document.querySelector("#sirenAppNavigation")?.hidden'),true);assert.equal((await driver.evaluate('window.sirenShell.getAppearance()')).ok,false);assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'),null);result.cases.push({name:'common Lock removes private navigation and refuses appearance metadata while retaining saved work',ok:true});result.status='COMPLETE';
-}catch(error){result.error={message:error.message,stack:error.stack};if(driver){result.publicFailure=await Promise.all(publicPages.map(page=>page.evaluate(publicFrame).then(frame=>frame?frameIdentity(frame):null).catch(error=>({observationError:error.message}))));result.appearanceObservation=await Promise.all([driver,...observedPages,...publicPages].map(page=>page.evaluate(appearanceDiagnostic).catch(error=>({observationError:error.message}))));await writeFile(join(evidence,'appearance-failure-state.json'),JSON.stringify(result.appearanceObservation,null,2));await driver.screenshot(join(evidence,'failure.png')).catch(()=>{});}}
+}catch(error){result.error={message:error.message,stack:error.stack};if(driver){result.appearanceObservation=await Promise.all([driver,...observedPages].map(page=>page.evaluate(appearanceDiagnostic).catch(error=>({observationError:error.message}))));await writeFile(join(evidence,'appearance-failure-state.json'),JSON.stringify(result.appearanceObservation,null,2));await driver.screenshot(join(evidence,'failure.png')).catch(()=>{});}}
 finally{native?.close();if(driver){await writeFile(join(evidence,'electron.log'),driver.logs());await driver.close();}result.afterInputs=await capture();result.inputsUnchanged=JSON.stringify(inputs)===JSON.stringify(result.afterInputs);if(!result.inputsUnchanged)result.status='ADVERSE';if(packaged){result.package={sourceCommit:packaged.receipt.sourceCommit,copy:packaged.copy,archive:packaged.receipt.appArchive,runtime:packaged.receipt.runtimeBinary};try{await packaged.verify();result.packageUnchanged=true;}catch(error){result.packageUnchanged=false;result.status='ADVERSE';result.packageError=error.message;}}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;}

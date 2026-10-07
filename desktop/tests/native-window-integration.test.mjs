@@ -1,4 +1,5 @@
 import {createRenderAppearanceContract} from '../src/appearance/render.mjs';
+import {dispatchNativeHelp,handleNativeHelpInput} from '../src/help/native.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -70,12 +71,12 @@ function fixture() {
   const dataRoot=resolve('evidence/native-window-context');
   const nativeLayoutMemory=new NativeLayoutMemory({store:new WindowLayoutStore(dataRoot),displays:()=>[{id:1,primary:true,workArea:{x:0,y:40,width:1280,height:800}}]});
   const context = vm.createContext({createRenderAppearanceContract,nativeTheme:{shouldUseDarkColors:false}, nativeLayoutMemory,WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,NativeDocsExports,NativePresenterExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
-    NativeDiagramCatalogue,AppearanceStore,invokeShell,NativeDocsSources,NativeDocsReferences,NativeDeckNavigation,NativeWindowFocus,bindNativeWindowFocusKeys,NativeWindowLayout,bindNativeDisplayRecovery,screen:Object.assign(new EventEmitter(),{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]}),
+    dispatchNativeHelp,handleNativeHelpInput,NativeDiagramCatalogue,AppearanceStore,invokeShell,NativeDocsSources,NativeDocsReferences,NativeDeckNavigation,NativeWindowFocus,bindNativeWindowFocusKeys,NativeWindowLayout,bindNativeDisplayRecovery,screen:Object.assign(new EventEmitter(),{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]}),
     localPin:{state:()=>({unlocked}),cancelPending(){},async drain(){}},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,accountTransition:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
     app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;}},
   });
-  vm.runInContext(slice('const nativeShells =','const exportHomeBackup=') + slice("ipcMain.handle('siren:home',",'const desktopCommand =') + '\n' + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
+  vm.runInContext(slice('const nativeShells =','const exportHomeBackup=') + slice("ipcMain.handle('siren:home',",'const desktopCommand =') + '\n' + slice('function desktopHelp(origin)','const nativeWindowFocus=') + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
   const event=()=>({sender:owner.webContents,senderFrame:owner.webContents.mainFrame});
   const bootstrap=()=>{const request=event(); handlers.get('siren:bootstrap')(request); return request.returnValue;};
   const invoke=(method,payload,eventOverride=event())=>handlers.get('siren:windows')(eventOverride,method,payload);
@@ -95,7 +96,8 @@ test('actual main binds exact native owner, scoped shell entries and locked null
   f.setLocked(false); assert.equal(f.bootstrap().snapshot.project.id,'owned_project');
   const docs=await f.invoke('openView',{role:'docs',entityId:'doc_a'}); const code=await f.invoke('openView',{role:'code',entityId:sourceId,version:1});
   assert.equal(docs.ok,true); assert.equal(code.ok,true); assert.equal(f.handles.slice(1).every(w=>w.shown),true);
-  assert.equal(f.handles.every(w=>w.webContents.listenerCount('before-input-event')===1),true);
+  assert.equal(f.owner.webContents.listenerCount('before-input-event'),1,'Extracted fixture binds the shared focus route on its primary owner');
+  assert.equal(f.handles.slice(1).every(w=>w.webContents.listenerCount('before-input-event')===2),true,'Each private view binds shared focus and the finite Help route');
   assert.equal((await f.invoke('openView',{role:'code',entityId:sourceId,version:2})).ok,false);
   assert.equal((await f.invoke('openView',{role:'code',entityId:'doc_a'})).ok,false);
   const satellite=f.handles[1]; const sender={sender:satellite.webContents,senderFrame:satellite.webContents.mainFrame};

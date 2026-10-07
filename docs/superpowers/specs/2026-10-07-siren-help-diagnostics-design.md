@@ -1,6 +1,6 @@
 # SIREN Help & diagnostics
 
-Date: 7 October 2026. Author: /root. Status: written specification for user review. The user approved the proposed structure in chat; this document has not yet been approved as an implementation specification.
+Date: 7 October 2026. Author: /root. Status: written specification approved by the user on 7 October 2026; the subsequent written implementation plan was approved separately.
 
 ## Purpose and accepted direction
 

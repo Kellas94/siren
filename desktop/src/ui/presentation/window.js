@@ -41,7 +41,7 @@
  const reconnect=()=>{const turn=serial;void Promise.resolve(connecting).then(()=>{if(!covered&&turn===serial&&document.body.dataset.presentationReady!=='true')return connect();});};
  bridge.onFrame(value=>{if(role==='audience')return frame(value);});window.sirenWindow.onReady(reconnect);
  bridge.onFullscreen(value=>{document.body.dataset.fullscreen=String(value.enabled);});
- window.sirenViewControl.onPrepare(()=>{covered=true;serial++;busy=false;pendingAppearance=false;appearanceSignature='';grant=null;state=null;blank();document.body.dataset.presentationReady='false';document.getElementById('presenterNotes')?.replaceChildren();document.getElementById('slideList')?.replaceChildren();document.body.inert=true;document.documentElement.style.visibility='hidden';return notesExport?.pause()??{ok:true};});
+ window.sirenViewControl.onPrepare(()=>{window.SirenHelpWorkspace?.cover();covered=true;serial++;busy=false;pendingAppearance=false;appearanceSignature='';grant=null;state=null;blank();document.body.dataset.presentationReady='false';document.getElementById('presenterNotes')?.replaceChildren();document.getElementById('slideList')?.replaceChildren();document.body.inert=true;document.documentElement.style.visibility='hidden';return notesExport?.pause()??{ok:true};});
  window.sirenViewControl.onResume(()=>{covered=false;serial++;document.body.inert=false;document.documentElement.style.visibility='';notesExport?.resume();blank();reconnect();});
  document.getElementById('closeView').addEventListener('click',()=>{if(grant)void window.sirenWindow.closeView({windowId:grant.windowId});});
  document.getElementById('fullscreen').addEventListener('click',()=>void bridge.setFullscreen({enabled:true}));

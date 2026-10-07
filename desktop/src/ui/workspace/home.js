@@ -16,7 +16,7 @@
     const events=[];
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
     const clear=()=>{catalogue?.dispose();catalogue=null;for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
-    const cover=()=>{blocked=true;serial++;clear();container.hidden=true;};
+    const cover=()=>{window.SirenHelpWorkspace?.cover();blocked=true;serial++;clear();container.hidden=true;};
     const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',DOCUMENT_CREATE_FAILED:'The document could not be created. Review Docs before trying again.',NAVIGATION_LIMIT:'The document catalog has reached its limit. Existing work was retained.',REVISION_CONFLICT:'Your project changed. Refresh Home before trying again.'}[result?.code]||window.SirenHomeMessages?.[result?.code]||'The action could not complete. Your work was retained.');
     const button=(parent,text,fn,{disabled=false,className='',id}={})=>{
       const node=make('button',parent,text,className);node.type='button';node.disabled=disabled;if(id)node.id=id;
@@ -34,7 +34,7 @@
         if(disposed||blocked||turn!==serial)return;
         if(result?.ok===true){if(location.href==='siren://app/home.html')await refresh();else say('Opening your workspace…');return;}
         if(result?.code==='CANCELLED'){say('');return;}
-        say(message(result));
+        say(message(result));window.SirenHelpWorkspace?.explain(status(),{namespace:method==='importSource'?'sources':'project',operation:method==='importSource'?'import':method==='convertProject'?'convert':'open',code:result?.code});
       }catch{if(!disposed&&!blocked&&turn===serial)say('The action could not complete. Your work was retained.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
     };
@@ -46,7 +46,7 @@
         if(disposed||blocked||turn!==serial)return;
         if(result?.ok===true){say(`Saved backup exported · revision ${result.revision}. Unsaved working copies remain in their windows.`);return;}
 
-        say(window.SirenHomeMessages?.[result?.code]||message(result));
+        say(window.SirenHomeMessages?.[result?.code]||message(result));window.SirenHelpWorkspace?.explain(status(),{namespace:'project',operation:'backup',code:result?.code});
       }catch{if(!disposed&&!blocked&&turn===serial)say('The backup could not be confirmed. Check the chosen destination before trying again.');}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
     };
@@ -147,6 +147,7 @@
       button(dialog,'Change PIN',()=>{dialog.close();window.sirenDesktopShowPin?.('change');},{id:'homePinSettings',className:'home-project-row'});
       button(dialog,'Check for updates',()=>{dialog.close();void showUpdates();},{id:'homeSettingsUpdates',className:'home-project-row'});
       button(dialog,'Quick guide',()=>{dialog.close();showGuide();},{id:'homeQuickGuide',className:'home-project-row'});
+      button(dialog,'Help & diagnostics',()=>{dialog.close();window.SirenHelpWorkspace?.open();},{id:'homeHelpDiagnostics',className:'home-project-row'});
       done(dialog);dialog.showModal();
     };
     const paint=value=>{
@@ -249,7 +250,7 @@
         if(surface==='find')window.SirenProjectSearch.open();else container.querySelector('#homeModule-'+surface)?.click();};open();
     });
     offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:exportSavedBackup}});
-    return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();offCatalog?.();}});
+    return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;window.SirenHelpWorkspace?.resume();return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();offCatalog?.();}});
   };
   const start=()=>{
     const boot=window.sirenDesktopBootstrap;

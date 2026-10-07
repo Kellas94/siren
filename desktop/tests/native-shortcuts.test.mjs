@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {EventEmitter} from 'node:events';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from '../src/windows/focus.mjs';
+import {handleNativeHelpInput} from '../src/help/native.mjs';
 const main=await readFile(new URL('../src/main.mjs',import.meta.url),'utf8');
 const start=main.indexOf("window.webContents.on('before-input-event'"),end=main.indexOf("await window.loadURL",start);assert.ok(start>=0&&end>start);
 function fixture(){
@@ -14,12 +15,16 @@ function fixture(){
  assert.ok(main.includes('bindNativeWindowFocusKeys(window,nativeWindowFocus,nativeWindowLayout);'));
  const nativeWindowFocus=new NativeWindowFocus({registry:{listViews:()=>[],capture:()=>null,focusView:()=>false,surfaceRecords:()=>[]},mainWindow:window,windowFor:()=>null,focusedWindow:()=>window,canCycle:()=>true});
  bindNativeWindowFocusKeys(window,nativeWindowFocus);
- vm.runInNewContext(main.slice(start,end),{window,desktopCommand:id=>calls.push(id)});
+ vm.runInNewContext(main.slice(start,end),{window,handleNativeHelpInput,desktopHelp:()=>calls.push('desktopHelpDiagnostics'),desktopCommand:id=>calls.push(id)});
  return {calls,press:input=>{let prevented=0;window.webContents.emit('before-input-event',{preventDefault:()=>{prevented++;}},input);return prevented;}};
 }
 test('actual native primary routes each reserved chord once and prevents duplicate page/menu delivery',()=>{
  const f=fixture();for(const [key,alt,command] of [[',',false,'desktopPinSettings'],['l',true,'desktopLockPin'],['o',true,'desktopOpenProject'],['u',true,'desktopCheckUpdates'],['r',true,'desktopRecovery'],['e',true,'desktopExportProject'],['q',false,'quit']]){assert.equal(f.press({type:'keyDown',control:true,alt,shift:false,key}),1);assert.equal(f.calls.at(-1),command);}
  assert.equal(f.calls.length,7);
+});
+test('actual primary input route dispatches unmodified F1 exactly once',()=>{
+ const f=fixture();assert.equal(f.press({type:'keyDown',key:'F1'}),1);assert.deepEqual(f.calls,['desktopHelpDiagnostics']);
+ assert.equal(f.press({type:'keyDown',key:'F1',isAutoRepeat:true}),1);assert.equal(f.press({type:'keyUp',key:'F1'}),0);assert.deepEqual(f.calls,['desktopHelpDiagnostics']);
 });
 test('keyup repeat composing and unrelated modifiers do not dispatch reserved native commands',()=>{
  const f=fixture();for(const patch of [{type:'keyUp'},{isComposing:true},{shift:true},{meta:true},{control:false},{key:'x'},{key:'constructor'}])assert.equal(f.press({type:'keyDown',control:true,alt:true,shift:false,key:'l',...patch}),0);

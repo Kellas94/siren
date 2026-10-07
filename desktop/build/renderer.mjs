@@ -172,6 +172,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
         };
         let accountTransitionBodyState = null;
         window.sirenDesktopBeginAccountTransition = async () => {
+          window.SirenHelpWorkspace?.cover();
           if (accountTransitionBodyState !== null) throw new Error('Account transition already pending');
           accountTransitionBodyState = document.body.inert;
           document.body.inert = true;
@@ -182,6 +183,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
           } catch (error) { window.sirenDesktopEndAccountTransition(); throw error; }
         };
         window.sirenDesktopEndAccountTransition = () => {
+          window.SirenHelpWorkspace?.resume();
           window.sirenDesktopStorageLocked = false;
           if (accountTransitionBodyState !== null) {
             document.body.inert = accountTransitionBodyState;

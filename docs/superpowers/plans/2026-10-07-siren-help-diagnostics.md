@@ -82,4 +82,4 @@ Operation adapters initially change `desktop/src/ui/shared/shell.js` (appearance
 
 ## Self-review and handoff
 
-Catalog/search/flow = Task 1; themes/accessibility and malformed content = Task 2; actual receipt namespace, lifecycle and existing UI controls = Task 3; portable byte identity and genuine provenance = Task 4. The manual neither admits Terminal execution nor closes the original hosted pointer timeout. Execution method proposed: implementation here in coherent batches, one separate review of completed source/package boundaries, matching the user's previously chosen method. Await approval of this written plan before product implementation.
+Catalog/search/flow = Task 1; themes/accessibility and malformed content = Task 2; actual receipt namespace, lifecycle and existing UI controls = Task 3; portable byte identity and genuine provenance = Task 4. The manual neither admits Terminal execution nor closes the original hosted pointer timeout. User approved this written plan on 7 October 2026: implementation here in coherent batches, with separate review of completed boundaries.

@@ -15,6 +15,7 @@ import {invokeDock} from './windows/dock-ipc.mjs';
 import {AppearanceStore} from './appearance/store.mjs';
 import {createRenderAppearanceContract} from './appearance/render.mjs';
 import {invokeShell} from './appearance/ipc.mjs';
+import {dispatchNativeHelp,handleNativeHelpInput} from './help/native.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
 import {WindowLayoutStore,NativeLayoutMemory} from './windows/layout-memory.mjs';
@@ -423,6 +424,7 @@ const windowRegistry = new WindowRegistry({
     });return surface;
   }:undefined,onCreated: (view, record, layoutTicket) => {
     nativeShells.set(record.windowId, view);
+    if(record.role!=='audience')view.webContents.on('before-input-event',(event,input)=>handleNativeHelpInput({event,input,originWindow:view,dispatch:desktopHelp}));
     let layoutTracked=false;
     view.on('show',()=>{
       const current=()=>Boolean(windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame}));
@@ -842,6 +844,11 @@ ipcMain.handle('siren:home-import',(event,input)=>{
   }}});
 });
 const desktopCommand = id => { if (!window.isDestroyed()) window.webContents.send('siren:command', id); };
+function desktopHelp(origin){return dispatchNativeHelp({mainWindow:window,originWindow:origin,
+      windowFor:id=>nativeShells.get(id),selectedSurface:()=>windowRegistry.surfaceRecords().find(row=>row.selected)?.windowId,
+      canRead:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier&&!nativeShellFailure,
+      capture:own=>{if(own.sender===window.webContents){const grant=homeAuthority.capture(own);return grant?{role:'workspace',kind:'home',grant}:null;}const grant=windowRegistry.capture(own);return grant?{role:grant.role,kind:'native',grant}:null;},
+      isCurrent:own=>Boolean(own&&(own.kind==='home'?homeAuthority.isCurrent(own.grant):windowRegistry.isCurrent(own.grant)))});}
 const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindow:window,
  windowFor:id=>nativeShells.get(id),focusedWindow:()=>typeof BaseWindow==='function'?BaseWindow.getFocusedWindow():BrowserWindow.getFocusedWindow(),
  canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
@@ -883,6 +890,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Check for Updates…', accelerator: 'Ctrl+Alt+U', click: () => desktopCommand('desktopCheckUpdates') },
     { label: 'Disaster Recovery…', accelerator: 'Ctrl+Alt+R', click: () => desktopCommand('desktopRecovery') },
     { type: 'separator' }, { label: 'Desktop guide…', click: () => desktopCommand('desktopGuide') },
+    {label:'Help & diagnostics…',accelerator:'F1',click:(_item,origin)=>desktopHelp(origin)},
   ] },
 ]));
 if (!app.isPackaged) window.webContents.on('console-message', event => { if (event.level === 'error' || event.level >= 2) console.error('Renderer:', event.message?.slice(0, 800)); });
@@ -1155,6 +1163,7 @@ window.webContents.on('will-navigate', event => { if (event.url !== window.webCo
 window.webContents.on('will-attach-webview', event => event.preventDefault());
 window.webContents.on('will-frame-navigate', event => { if (!event.isMainFrame || event.url!==window.webContents.getURL()&&event.url!==nativeNavigationTarget) event.preventDefault(); });
 window.webContents.on('before-input-event', (event, input) => {
+  if(handleNativeHelpInput({event,input,originWindow:window,dispatch:desktopHelp}))return;
   if(input.type!=='keyDown'||!input.control||input.shift||input.meta||input.isComposing||typeof input.key!=='string')return;
   const key=input.key.toLowerCase();
   const command=input.alt?new Map([['l','desktopLockPin'],['o','desktopOpenProject'],['e','desktopExportProject'],['u','desktopCheckUpdates'],['r','desktopRecovery']]).get(key):key===','?'desktopPinSettings':null;
