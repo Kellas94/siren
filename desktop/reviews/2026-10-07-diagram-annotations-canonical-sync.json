@@ -1,0 +1,460 @@
+{
+  "author": "/root",
+  "kind": "Guarded nonforce canonical source sync and actual dispatch identity; not hosted FINAL approval",
+  "localBase": "e709f4ef5678975013d575fadc0168ba491fdf6a",
+  "localQualifiedHead": "6e6874ba358c34048cad8b500e825957e5f37a1b",
+  "productSource": "a60300ea3d36f711ae99f1991824c5304cd6a1ae",
+  "remotePrevious": "10c63f68b5aa2003e061c62e9080f5eefcae6832",
+  "remotePreviousTree": "de16b5f45fec4ef5a2140a8c63b228e9a0dec6e9",
+  "canonical": "03c76b877173c466de06de89c757609cd8adda1a",
+  "tree": "2721b015bb6e9b5f774a593467ff7a732cb361fc",
+  "blobCount": 1850,
+  "unchangedBlobs": 1808,
+  "localEntries": 41,
+  "remoteEntries": 42,
+  "newExactPaths": 28,
+  "entries": [
+    {
+      "path": ".github/workflows/desktop-verify.yml",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "aed80084701a1b9c1b7e9daf51c8f4951f8258fe",
+      "sha": "da5c5c9dc65976d3f4275b3a09f8e9ceb7315385",
+      "type": "blob",
+      "bytes": 43831
+    },
+    {
+      "path": "desktop/build/diagram-metadata.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "1ad5e423b9f5ca881d4f20c79ca2db8111d5d69d",
+      "type": "blob",
+      "bytes": 213
+    },
+    {
+      "path": "desktop/build/diagram-window.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "e06f7d2d760e2c7f9ec54749a8ae4c28fa8aa538",
+      "sha": "25a89086734c22e7ee53eb69e4ba6342d4513137",
+      "type": "blob",
+      "bytes": 4353
+    },
+    {
+      "path": "desktop/build/import-validation.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "c380013c487d4880f29bb9f9554461abf4576455",
+      "sha": "0fc67d61c5b8e828c5439f9157846bc84c7f61cc",
+      "type": "blob",
+      "bytes": 11609
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-independent-recheck.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "e99a6b57dc8ca4a789ab5fcf24ecce360eaa5b16",
+      "type": "blob",
+      "bytes": 9315
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-independent-review.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "2dd4f312a807c3dfb82acf52f199e7fdb6713f33",
+      "type": "blob",
+      "bytes": 7540
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-owner-precommit.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "ce46e5364c5f56a11041bdb6dbe5fc4756738a93",
+      "type": "blob",
+      "bytes": 15013
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-owner-precommit.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "f422cb4ee6141df3dad1154873ff0c263ce3d115",
+      "type": "blob",
+      "bytes": 2025
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-owner-qualification.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "85b8cfceee271773fc6ab51dae66c6fce3a1c62a",
+      "type": "blob",
+      "bytes": 15076
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-owner-qualification.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "6d767facf784f1a0b288e51d814b98a5a8ad8160",
+      "type": "blob",
+      "bytes": 1509
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-task3-gesture-addendum.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4920549b3aef082faaefcd3822e863415c77a874",
+      "type": "blob",
+      "bytes": 3305
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-annotations-task3-implementation.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4404c4707576f9320b1de5a58164017d8dabf202",
+      "type": "blob",
+      "bytes": 9441
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-metadata-independent-review.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "c645bb760dd80b984e7736e8e0ad7fe08adce607",
+      "type": "blob",
+      "bytes": 7013
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-metadata-owner-observation.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "0dd31cf5a0f288c2528fbcbce6351fdfa8a19651",
+      "type": "blob",
+      "bytes": 4773
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-metadata-owner-observation.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "a35ccbcbe90fdeb2428e812e4801a66c9c1170bf",
+      "type": "blob",
+      "bytes": 1304
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-preview-space-canonical-sync.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "1edb92fbc6425c3f03562d79206c4eb11f2fa18f",
+      "type": "blob",
+      "bytes": 10719
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-diagram-preview-space-canonical-sync.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "642e377c59308e42451b1f61038c8c37f79b00f9",
+      "type": "blob",
+      "bytes": 1364
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-preview-space-hosted-evidence.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "df0935400643141ac8cb703312404689c283d59e",
+      "type": "blob",
+      "bytes": 1897354
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-preview-space-hosted-evidence.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "4b58f979bfaf2cef4499e41e07c6a9fa745619d5",
+      "type": "blob",
+      "bytes": 9121
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-preview-space-hosted-owner-readback.json",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "06201427a92c69ee59d3b7805c3becffb7c22fdb",
+      "type": "blob",
+      "bytes": 25112
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-preview-space-hosted-owner-readback.md",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "81fa095ea6802bfd991e191cdd7ba5014e5d1999",
+      "type": "blob",
+      "bytes": 708
+    },
+    {
+      "path": "desktop/scripts/package.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "46466b8a7f86d939491f560f332bac97b3bf818c",
+      "sha": "9b76b9849593d5c36dcfe2199fb6a4ddb1cc1b89",
+      "type": "blob",
+      "bytes": 11095
+    },
+    {
+      "path": "desktop/src/documents/diagram-metadata.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "1b0a90d75cb212e2a21a25d9240be888b2563d8d",
+      "type": "blob",
+      "bytes": 4726
+    },
+    {
+      "path": "desktop/src/ui/diagram/annotations.js",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "93a04e42aa3461c628f75ef5100f79fddae8d5eb",
+      "type": "blob",
+      "bytes": 14719
+    },
+    {
+      "path": "desktop/src/ui/diagram/draft.js",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "95963de7715aca433aea2e99e691abf79370fdcb",
+      "sha": "2230c46a240e78803e394aff40eb10a73489be62",
+      "type": "blob",
+      "bytes": 15347
+    },
+    {
+      "path": "desktop/src/ui/diagram/window.html",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "346957c109125fe2968fc20c2ca7ed3f87061016",
+      "sha": "9ed505446fbb72fc67b7f0de140e72d5fc2fb006",
+      "type": "blob",
+      "bytes": 12372
+    },
+    {
+      "path": "desktop/src/ui/windows/diagram.js",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "392c346b0d43f640a0878b2166eee8ded07a531b",
+      "sha": "f7bcf5129e0098f888f699be19fbbf9356b37312",
+      "type": "blob",
+      "bytes": 25930
+    },
+    {
+      "path": "desktop/src/windows/domain.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "132dd66b467fe49d5dbfa4ddf6a17f9cabe1c3cd",
+      "sha": "982a23ec978065f544838858156d125de4325aef",
+      "type": "blob",
+      "bytes": 16818
+    },
+    {
+      "path": "desktop/tests/diagram-annotations-ci.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "2ccd052308912c95340112a76612b4b5d67e50d0",
+      "type": "blob",
+      "bytes": 2011
+    },
+    {
+      "path": "desktop/tests/diagram-annotations-window.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "c96d8af2e2bd9184645795bb6f0a7d0ee7ea904f",
+      "type": "blob",
+      "bytes": 8279
+    },
+    {
+      "path": "desktop/tests/diagram-annotations.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "948ad73dab927283b34a64ac304bf8e416ea1cab",
+      "type": "blob",
+      "bytes": 16947
+    },
+    {
+      "path": "desktop/tests/diagram-metadata-draft.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "a7aa2ed45b427694c2f11948dd2bcd5e24d1632a",
+      "type": "blob",
+      "bytes": 6290
+    },
+    {
+      "path": "desktop/tests/diagram-metadata-retained.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "2a72d8411c715b4800b36a4fd5c7f5a8afc62807",
+      "type": "blob",
+      "bytes": 5916
+    },
+    {
+      "path": "desktop/tests/diagram-metadata-validation.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "cb065e65a4309dd9aedc993baa1219f3e0719c09",
+      "type": "blob",
+      "bytes": 1473
+    },
+    {
+      "path": "desktop/tests/diagram-metadata.test.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "7490259f62f72df992a75adbd37cb242509dece0",
+      "type": "blob",
+      "bytes": 5170
+    },
+    {
+      "path": "desktop/tests/diagram-placement-ready.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "dabbfec911d3f536acfc33513beb76a4b587e7b9",
+      "sha": "ff21b29c1435827a58d2ad024b9a8d0a1b232803",
+      "type": "blob",
+      "bytes": 4855
+    },
+    {
+      "path": "desktop/tests/diagram-security-config.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "9a4e8d0260554dd03486d99b34a56aedfe7f0d81",
+      "sha": "28e48bd98356939249235dcf8a36020bdac34c33",
+      "type": "blob",
+      "bytes": 3123
+    },
+    {
+      "path": "desktop/tests/diagram-walkthrough-window.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "93a0d6a6e7b0fff5d45e07afeeef2688d9d2ab43",
+      "sha": "a2aae2e2bf1815611f20b5dbf33e133cd2f6e361",
+      "type": "blob",
+      "bytes": 6866
+    },
+    {
+      "path": "desktop/tests/domain-owner.test.mjs",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "83d1abd4f222a9b576e25ab47c8fddb0b1ea1229",
+      "sha": "85faaa832b231ea21e1a79ec06ef85d047d69ca8",
+      "type": "blob",
+      "bytes": 30989
+    },
+    {
+      "path": "desktop/tests/native/diagram-annotations.mjs",
+      "oldMode": "000000",
+      "mode": "100644",
+      "oldSHA": "0000000000000000000000000000000000000000",
+      "sha": "b79385cba0a100df4c3a588cddbe3430d857253c",
+      "type": "blob",
+      "bytes": 22542
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-07-siren-diagram-inspector-filters.md",
+      "oldMode": "100644",
+      "mode": "100644",
+      "oldSHA": "fcb3479c496a67c73e9c20b65364a46c32673e5d",
+      "sha": "497361b614e1d8e90611daa0a7ecd1603e74f1e3",
+      "type": "blob",
+      "bytes": 13612
+    }
+  ],
+  "ignore": {
+    "beforeBytes": 31304,
+    "afterBytes": 33053,
+    "prefixPreserved": true,
+    "beforeSha": "8849f755a2931f1dae4c732748f3d435cb1726fc",
+    "afterSha": "4bd00a78a19b38aa57d2d4b16f99ecceaa638c99",
+    "newPaths": [
+      "desktop/build/diagram-metadata.mjs",
+      "desktop/reviews/2026-10-07-diagram-annotations-independent-recheck.md",
+      "desktop/reviews/2026-10-07-diagram-annotations-independent-review.md",
+      "desktop/reviews/2026-10-07-diagram-annotations-owner-precommit.json",
+      "desktop/reviews/2026-10-07-diagram-annotations-owner-precommit.md",
+      "desktop/reviews/2026-10-07-diagram-annotations-owner-qualification.json",
+      "desktop/reviews/2026-10-07-diagram-annotations-owner-qualification.md",
+      "desktop/reviews/2026-10-07-diagram-annotations-task3-gesture-addendum.md",
+      "desktop/reviews/2026-10-07-diagram-annotations-task3-implementation.md",
+      "desktop/reviews/2026-10-07-diagram-metadata-independent-review.md",
+      "desktop/reviews/2026-10-07-diagram-metadata-owner-observation.json",
+      "desktop/reviews/2026-10-07-diagram-metadata-owner-observation.md",
+      "desktop/reviews/2026-10-07-diagram-preview-space-canonical-sync.json",
+      "desktop/reviews/2026-10-07-diagram-preview-space-canonical-sync.md",
+      "desktop/reviews/2026-10-07-preview-space-hosted-evidence.json",
+      "desktop/reviews/2026-10-07-preview-space-hosted-evidence.md",
+      "desktop/reviews/2026-10-07-preview-space-hosted-owner-readback.json",
+      "desktop/reviews/2026-10-07-preview-space-hosted-owner-readback.md",
+      "desktop/src/documents/diagram-metadata.mjs",
+      "desktop/src/ui/diagram/annotations.js",
+      "desktop/tests/diagram-annotations-ci.test.mjs",
+      "desktop/tests/diagram-annotations-window.test.mjs",
+      "desktop/tests/diagram-annotations.test.mjs",
+      "desktop/tests/diagram-metadata-draft.test.mjs",
+      "desktop/tests/diagram-metadata-retained.test.mjs",
+      "desktop/tests/diagram-metadata-validation.test.mjs",
+      "desktop/tests/diagram-metadata.test.mjs",
+      "desktop/tests/native/diagram-annotations.mjs"
+    ]
+  },
+  "integration": {
+    "sha": "8bf69ee288811b56457adb4dba890475e54be5c0",
+    "tree": "2721b015bb6e9b5f774a593467ff7a732cb361fc",
+    "parents": [
+      "1e5472dde446657e2dbb155868e28e033c6c9c92",
+      "03c76b877173c466de06de89c757609cd8adda1a"
+    ]
+  },
+  "main": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {
+    "number": 2,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "url": "https://github.com/Kellas94/siren/pull/2"
+  },
+  "dispatch": {
+    "id": 37565124075,
+    "status": "in_progress",
+    "conclusion": null,
+    "head": "03c76b877173c466de06de89c757609cd8adda1a",
+    "url": "https://github.com/Kellas94/siren/actions/runs/37565124075"
+  },
+  "previousHosted": {
+    "id": 37561637890,
+    "status": "completed",
+    "conclusion": "success",
+    "ownerOriginalReadbackRecords": 86
+  },
+  "limits": [
+    "No main merge/installed replacement/production release",
+    "New hosted run is IN_PROGRESS; no inferred final or retrospective approval",
+    "Original startup/export-oracle/package failures and genuine original reviews preserved",
+    "HistoricalSave-to-Attach cause OPEN",
+    "Next sync local base is qualified6e6874ba, not subsequent metadata receipt commit"
+  ]
+}

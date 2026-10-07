@@ -40,16 +40,18 @@
    const extend=()=>{end=Math.min(end+24576,block.text.length);pre.textContent=block.text.slice(0,end);more.hidden=end===block.text.length;notice.textContent='Documented instructions · Not executed'+(more.hidden?'':' · Excerpt: '+end.toLocaleString()+' of '+block.text.length.toLocaleString()+' characters');};
    more.addEventListener('click',extend);extend();return true;
   }
-  card.remove();return false;
+  make('h3',card,'Preserved block');make('p',card,'This block is retained exactly. Its original fields are available in Preserved fields.').className='document-caption';return true;
  }
  window.SirenNativeDocsReader=Object.freeze({render({parent,outline,blocks}){
-  if(!Array.isArray(blocks)||!blocks.length)return;
-  if(!blocks.some(block=>['heading','text','table','checklist','prompt','image'].includes(block?.kind)))return;
-  const page=make('section',parent);page.className='document-reader';page.setAttribute('aria-label','Document content');
+  const cards=new Map();let page,holder,more,at=0;
+  function start(){if(page)return;page=make('section',parent);page.className='document-reader';page.setAttribute('aria-label','Document content');
   const nav=make('button',outline,'Contents');nav.type='button';nav.addEventListener('click',()=>page.scrollIntoView({block:'start'}));
-  const holder=make('div',page),more=make('button',page,'More document blocks');more.type='button';let at=0;
-  const extend=()=>{const end=Math.min(at+40,blocks.length);for(let index=at;index<end;index++){
-   const block=blocks[index];if(renderBlock(holder,block)&&block.kind==='heading'){const section=holder.lastElementChild;section.id='document-reading-'+index;const link=make('button',outline,block.text||'Untitled section');link.type='button';link.className='document-reader-outline';link.addEventListener('click',()=>section.scrollIntoView({block:'start'}));}
-  }at=end;more.hidden=at===blocks.length;};more.addEventListener('click',extend);extend();
+  holder=make('div',page);more=make('button',page,'More document blocks');more.type='button';more.addEventListener('click',()=>extend());}
+  function extend(target=-1){start();const end=Math.min(Math.max(at+40,target+1),blocks.length);for(let index=at;index<end;index++){
+   const block=blocks[index];if(renderBlock(holder,block)){const section=holder.lastElementChild;cards.set(index,section);if(block?.kind==='heading'){section.id='document-reading-'+index;const link=make('button',outline,block.text||'Untitled section');link.type='button';link.className='document-reader-outline';link.addEventListener('click',()=>section.scrollIntoView({block:'start'}));}}
+  }at=end;more.hidden=at===blocks.length;}
+  const handle=Object.freeze({reveal(id){const result=window.SirenDocumentActivity?.locate(blocks,id);if(result?.ok!==true)return result??{ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(parent.isConnected===false)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(result.index>=at)extend(result.index);const card=cards.get(result.index);if(!card)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};card.tabIndex=-1;card.scrollIntoView({block:'center'});card.focus({preventScroll:true});return {ok:true,index:result.index};}});
+  if(Array.isArray(blocks)&&blocks.some(block=>['heading','text','table','checklist','prompt','image'].includes(block?.kind)))extend();
+  return handle;
  }});
 })();

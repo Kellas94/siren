@@ -40,16 +40,16 @@ jobs:
         timeout-minutes: 12
         run: |
           New-Item -ItemType Directory -Force evidence | Out-Null
-          # Native process identity must not compete with large editor/storage
-          # worker fixtures. Preserve the product's bounded unknown/refusal path.
-          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs', 'tests/process-reader-native.test.mjs')
+          # Native process identity and the nested TEMP subprocess run serially,
+          # away from large editor/storage workers. Keep all original deadlines.
+          $identityFiles = @('tests/process-identity-deadline.test.mjs', 'tests/process-identity.test.mjs', 'tests/process-reader-native.test.mjs', 'tests/fixture-temp-alias.test.mjs')
           foreach ($identityFile in $identityFiles) {
             if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
           }
           node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
           $identityExit = $LASTEXITCODE
           $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
-            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs') } |
+            Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs', 'fixture-temp-alias.test.mjs') } |
             Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
           if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
           node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
@@ -277,6 +277,9 @@ jobs:
       - name: Actual Docs saved-document export
         if: matrix.group == 'desktop'
         run: node tests/native/docs-export.mjs
+      - name: Actual Docs Activity
+        if: matrix.group == 'desktop'
+        run: node tests/native/docs-activity.mjs
       - name: Actual Presenter captured-notes export
         if: matrix.group == 'desktop'
         run: node tests/native/presenter-notes-export.mjs
@@ -300,6 +303,8 @@ jobs:
           path: |
             desktop/evidence/home-backup-export-native/*/result.json
             desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/docs-activity-native/*/result.json
+            desktop/evidence/docs-activity-native/*/*.png
             desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/diagram-history-typography-native/*/result.json
             desktop/evidence/code-context-commands-native/*/result.json
@@ -514,6 +519,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
           node tests/native/docs-export.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Docs saved export failed" }
+          node tests/native/docs-activity.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Docs Activity failed" }
           node tests/native/presenter-notes-export.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Presenter notes export failed" }
           node tests/native/diagram-history-typography.mjs --package $preview.previewRoot
@@ -591,6 +598,8 @@ jobs:
           name: desktop-packaged-evidence
           path: |
             desktop/evidence/docs-export-native/*/result.json
+            desktop/evidence/docs-activity-native/*/result.json
+            desktop/evidence/docs-activity-native/*/*.png
             desktop/evidence/presenter-notes-export-native/*/result.json
             desktop/evidence/diagram-history-typography-native/*/result.json
             desktop/evidence/code-context-commands-native/*/result.json

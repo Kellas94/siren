@@ -1,0 +1,3 @@
+# Original hosted annotations run - owner readback
+
+Author: /root. Fresh live GitHub API confirms original37565124075 FINAL FAILURE on canonical03c76, nine completed jobs with three failed gates. Independently rehashed 83 retained original records, all bytes and SHA256 exact. Actual copied annotations8 COMPLETE with unchanged captures/package; development focused annotations and Walkthrough were skipped. Original development pan failure ADVERSE1 remains OPEN; copied success does not explain it. Full1417 units passed, not whole-run success. No downloaded code execution, release or main merge. New local Docs Activity work is separate.
