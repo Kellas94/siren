@@ -1,0 +1,52 @@
+✔ CI executes actual Help in development and a verified portable copy and retains its failure evidence (1.1049ms)
+✔ CI refuses missing Help, swallowed package exit, late execution and broad private uploads (2.8087ms)
+✔ text has an explicit Python limitation while visible Compare routes to saved diff (4.1903ms)
+✔ actual structure controller pages 64 literal labels and navigates exact offsets only for current immutable ref (11.6266ms)
+✔ comparison uses a real window choice, paints literal A/B snapshots and explicit approximation, and navigates only current A (3.4501ms)
+✔ late cancelled/Lock/stale replies never repopulate the real panel (3.8961ms)
+✔ dirty/pending edits refuse analysis; selected range request contains immutable metadata and offsets, never text/path (1.8307ms)
+✔ Cancel keeps its click target after completion and becomes Clear, so a finishing job cannot redirect the click (1.662ms)
+✔ starting a fresh job enables the genuine Cancel control even after changing analysis scope (0.9121ms)
+✔ selected map sends only genuine range metadata, draws literal bounded nesting and supports collapse/navigation (1.1031ms)
+✔ a type annotation has a specific explanation without pretending to assign or observe a value (0.9083ms)
+✔ real admitted parser projects values, annotations without values and updates distinctly (3.8753ms)
+✔ annotation classification follows direct parser operator, not equals in strings or nested calls (0.8609ms)
+✔ chained, destructured, attribute, subscript and Unicode assignments retain exact source ranges (1.0185ms)
+✔ function and branch containment includes assignments without claiming execution or data flow (0.5828ms)
+✔ existing yield, await and call blocks survive assignment projection (0.6116ms)
+✔ syntax errors retain absolute locations and bounded diagnostics, not successful runtime claims (16.2071ms)
+✔ new assignment blocks honor graph, edge and visit caps (5.8168ms)
+✔ shortened assignment labels never split a Unicode surrogate pair (0.317ms)
+✖ actual map view accepts annotation literally with an honest generic explanation and immutable navigation (16.293ms)
+✔ actual patched worker maps selected Python syntax containment and exact navigation without claiming execution (102.5069ms)
+✔ selected syntax map uses exact EOF ranges/lines beyond 300k and refuses a missing range before I/O (106.4753ms)
+✔ actual isolated analysis worker preserves assignment, update and annotation distinctions in the exact stored version (28.6294ms)
+✔ finite map budgets, incomplete syntax and literal labels remain explicitly partial and retain immutable bytes (56.1968ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 23
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 396.9966
+
+✖ failing tests:
+
+test at tests\source-map-projection.test.mjs:121:1
+✖ actual map view accepts annotation literally with an honest generic explanation and immutable navigation (16.293ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /A syntax block from the selected code/. Input:
+  
+  '变量: Literal["="]\n' +
+    'Adds a type annotation without assigning a value here. Static analysis does not check runtime types.'
+  
+      at TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/source-map-projection.test.mjs:138:9)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '变量: Literal["="]\nAdds a type annotation without assigning a value here. Static analysis does not check runtime types.',
+    expected: /A syntax block from the selected code/,
+    operator: 'match',
+    diff: 'simple'
+  }

@@ -14,7 +14,7 @@ try{
  driver=await launchDesktop({extraArgs:['--siren-test-root='+data]});result.ownedPid=driver.pid;
  // CDP target discovery can precede the committed frame and its native preload.
  // Qualify the real locked startup receipt before checking privacy, without unlocking.
- result.startup=await waitForDesktopStartup({...driver,waitFor:expression=>driver.waitFor('document.body!==null&&["interactive","complete"].includes(document.readyState)&&('+expression+')')});
+ result.startup=await waitForDesktopStartup(driver);
  assert.equal(await driver.evaluate('location.href'),'siren://app/home.html');assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'),null);
  assert.equal(await driver.evaluate('document.body.innerText.includes("OWNED_RECOVERY_PRIVATE_LABEL")'),false);
  await unlockDesktop(driver,{pin:'4826',autoSetup:true,surface:'home'});await driver.waitFor('document.getElementById("homeRecovery")!=null');

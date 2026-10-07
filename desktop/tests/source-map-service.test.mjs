@@ -23,6 +23,15 @@ test('selected syntax map uses exact EOF ranges/lines beyond 300k and refuses a 
  const r=await f.submit({range:{from:prefix.length,to:text.length}});assert.equal(r.status,'complete');assert.equal(r.coverage.from,prefix.length);assert.equal(r.result.nodes.find(node=>node.kind==='function').line,300001);assert.ok(r.result.nodes.every(node=>node.from>=prefix.length));assert.equal(hash(f.bytes),f.ref.sha256);
 });
 
+test('actual isolated analysis worker preserves assignment, update and annotation distinctions in the exact stored version',async t=>{
+ const text='value: int\r\nvalue = 1\r\nvalue += 2\r\nresult: str = convert(value)\r\n',f=fixture(t,text),r=await f.submit();
+ assert.equal(r.status,'complete');assert.equal(r.result.semantics,'syntax-containment');assert.deepEqual(r.result.errors,[]);
+ assert.deepEqual(r.result.nodes.filter(node=>['assignment','annotation'].includes(node.kind)).map(node=>[node.kind,node.label,node.line]),[['annotation','value: int',1],['assignment','value = 1',2],['assignment','value += 2',3],['assignment','result: str = convert(value)',4]]);
+ assert.equal(r.sourceId,f.ref.sourceId);assert.equal(r.version,f.ref.version);assert.equal(hash(f.bytes),f.ref.sha256);
+ for(const node of r.result.nodes){assert.ok(node.from>=0&&node.to<=text.length);if(node.kind==='assignment'||node.kind==='annotation')assert.equal(text.slice(node.from,node.to).trim(),node.label);}
+ assert.equal(r.result.edges.every(edge=>edge.kind==='contains'),true);
+});
+
 test('finite map budgets, incomplete syntax and literal labels remain explicitly partial and retain immutable bytes',async t=>{
  const text='def a():\n    return "<img src=x>"\n\ndef b():\n    a()\n',f=fixture(t,text),r=await f.submit({budget:{maxGraphNodes:2}});
  assert.equal(r.status,'partial');assert.equal(r.reason,'GRAPH_BUDGET');assert.equal(r.result.nodes.length,2);assert.equal(r.result.edges.length,1);assert.equal(r.coverage.limited,true);assert.equal(hash(f.bytes),f.ref.sha256);

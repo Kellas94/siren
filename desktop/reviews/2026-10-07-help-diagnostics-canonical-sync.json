@@ -1,0 +1,54 @@
+{
+  "author": "/root",
+  "kind": "Guarded canonical feature sync; no release",
+  "status": "SYNCED_HOSTED_PENDING",
+  "localBase": "f170e16b2b0aa8f4abcd72fb850ba7bf4258a918",
+  "localQualifiedHead": "9b2891607a387b5a68fc37e456051094dff4b303",
+  "productSource": "f04b4613dac2338d3ec0fd9f11c42cbc6bc50d9a",
+  "nextSyncLocalBase": "9b2891607a387b5a68fc37e456051094dff4b303",
+  "branch": "feature/portable-foundation-2026-10-02",
+  "oldCanonical": "9120b32861401b892a3e605528e68a5e351b148d",
+  "canonical": "e6e31fb7c9032b1dc1c423b96225f7aaa4d21f9d",
+  "tree": "91d6125185f9b582dad5c8fdab93befbc1575e6b",
+  "oldBlobs": 2069,
+  "newBlobs": 2109,
+  "preservedBlobs": 2047,
+  "qualifiedEntries": 61,
+  "originalIgnorePrefixExact": true,
+  "originalIgnoreBlob": "12032cbec1347aa54043b678d0947d496458c19b",
+  "newIgnoreBlob": "79ceb7e425901038ad4b1bfc784e2ea4a8a3e43e",
+  "newNarrowExceptions": 80,
+  "originalHostedReportBlob": "357fca4b41ee38d5c5b732149a6264b0b0e72a91",
+  "originalHostedReportSha256": "e5019187c0415b326ea6ba16b9bed2222a1e898c83fa903cd5cc443b5ee857d0",
+  "main": "1e5472dde446657e2dbb155868e28e033c6c9c92",
+  "pr": {
+    "url": "https://github.com/Kellas94/siren/pull/2",
+    "draft": true,
+    "state": "open",
+    "title": "SIREN portable: unified workspaces, shared appearance and offline diagnostics",
+    "bodyExact": true
+  },
+  "freshRuns": [
+    {
+      "id": 37640219262,
+      "url": "https://github.com/Kellas94/siren/actions/runs/37640219262",
+      "status": "in_progress",
+      "conclusion": null,
+      "event": "pull_request",
+      "head": "e6e31fb7c9032b1dc1c423b96225f7aaa4d21f9d"
+    }
+  ],
+  "validation": {
+    "sourceTests": 1650,
+    "developmentHelpCases": 12,
+    "copiedCases": 36,
+    "copies": 4,
+    "members": 305
+  },
+  "limits": [
+    "Original hosted37629602152 remains FINAL FAILURE; no rerun/cancel or replacement of its evidence",
+    "New hosted results pending; no next feature push until original FINAL retained",
+    "No main merge, release, installed-app replacement or native Terminal admission",
+    "Python teaching direction documented; no full course or AI tutor claimed"
+  ]
+}

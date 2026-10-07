@@ -60,3 +60,13 @@ test('selected map sends only genuine range metadata, draws literal bounded nest
  assert.equal(f.node('analysisDefinitions').children.length,3);assert.match(f.node('analysisStatus').textContent,/syntax nesting/);const row=f.node('analysisDefinitions').children[1],select=row.children.find(node=>node.dataset.mapNodeId==='1');assert.equal(select.children[0].textContent,'<img src=x>');select.listeners.click();assert.deepEqual(f.selected,[[3,39]]);
  row.children.find(node=>node.dataset.collapseId==='1').listeners.click();assert.equal(f.node('analysisDefinitions').children.length,2);f.node('analysisDefinitions').children[1].children.find(node=>node.dataset.collapseId==='1').listeners.click();assert.equal(f.node('analysisDefinitions').children.length,3);
 });
+
+test('a type annotation has a specific explanation without pretending to assign or observe a value',async()=>{
+ const f=fixture();f.node('analysisScope').value='map';f.node('analysisScope').listeners.change();f.run();
+ await f.finish({ok:true,sourceId:'source-a',version:1,jobId:'job-a',status:'complete',coverage:{from:2,to:40,totalUnits:500,truncated:false,syntaxErrors:0,limited:false},result:{semantics:'syntax-containment',nodes:[{id:0,kind:'selection',label:'Selected code',from:2,to:40,line:1,parent:null},{id:1,kind:'annotation',label:'value: int',from:8,to:18,line:2,parent:0}],edges:[{from:0,to:1,kind:'contains'}]}});
+ const row=f.node('analysisDefinitions').children[1],select=row.children.find(node=>node.dataset.mapNodeId==='1');
+ assert.match(select.title,/type annotation without assigning a value here/i);
+ assert.match(select.title,/does not check runtime types/i);
+ assert.equal(select.children[0].textContent,'value: int');select.listeners.click();assert.deepEqual(f.selected,[[8,18]]);
+ f.setState({sourceRef:{sourceId:'source-a',version:2,sha256:'b'.repeat(64)}});select.listeners.click();assert.equal(f.selected.length,1);
+});

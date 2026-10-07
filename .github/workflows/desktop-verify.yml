@@ -266,6 +266,9 @@ jobs:
         run: node build/renderer.mjs baseline/R78.html generated
       - name: Build fixed native process reader
         run: node scripts/build-process-reader.mjs
+      - name: Actual Help and diagnostics
+        if: matrix.group == 'desktop'
+        run: node tests/native/help-diagnostics.mjs
       - name: Actual development renderer and protected storage
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
       - name: Actual first-session PIN crash recovery
@@ -334,6 +337,9 @@ jobs:
             desktop/evidence/diagram-layout-render/*/result.json
             desktop/evidence/diagram-layout-render/*/driver-result.json
             desktop/evidence/native-verification/*.json
+            desktop/evidence/help-diagnostics/*/result.json
+            desktop/evidence/help-diagnostics/*/electron.log
+            desktop/evidence/help-diagnostics/*/*.png
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json
@@ -537,6 +543,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged first-session PIN crash recovery failed" }
           node tests/native/shell.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged actual shell startup/isolation failed" }
+          node tests/native/help-diagnostics.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Help and diagnostics failed" }
           node tests/native/docs-export.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Docs saved export failed" }
           node tests/native/docs-activity.mjs --package $preview.previewRoot
@@ -627,6 +635,9 @@ jobs:
             desktop/evidence/docs-activity-native/*/result.json
             desktop/evidence/docs-activity-native/*/*.png
             desktop/evidence/presenter-notes-export-native/*/result.json
+            desktop/evidence/help-diagnostics/*/result.json
+            desktop/evidence/help-diagnostics/*/electron.log
+            desktop/evidence/help-diagnostics/*/*.png
             desktop/evidence/diagram-history-typography-native/*/result.json
             desktop/evidence/code-context-commands-native/*/result.json
             desktop/evidence/code-context-commands-native/*/*.png

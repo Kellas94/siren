@@ -24,3 +24,13 @@ Code already retains exact saved versions, Python syntax colouring, source navig
 ## Design and qualification needed next
 
 Review an integrated Code-to-manual teaching flow before implementation. Validate it with a beginner task (explain an input/output, follow a condition, identify an exception) and an experienced-user task (inspect the same source without persistent instructional clutter). Use exact saved-code fixtures, adversarial unknown/error cases and a clear static-versus-observed label. Select any additional manual content or dependency only after checking its current source, redistribution licence and offline update policy.
+
+## First increment recommended after foundation review
+
+The read-only foundation review in `../../desktop/reviews/2026-10-07-python-learning-foundation-review.md` confirms that the current map represents syntax containment, not data flow or an observed execution. It also identified a real parser-node mismatch that omitted assignments. The current repair adds assignment/update nodes and distinguishes annotation-only statements; its implementer and owner qualification are separate from the initial review. A specific annotation hint explains that the statement does not assign a value here or check runtime types.
+
+Reuse the existing collapsible **Structure** panel for an optional **Understand** view. Keep the selected code visible. Show the saved version/range, coverage and “Static · not executed”, then two to four literal syntax facts with exact source links. Expand a concept chip only when requested, with a short explanation and a separate contrasting example. A return expression can be shown as written; it must not be presented as a guaranteed result. A function name alone does not establish the function's purpose.
+
+A separate learning module would disconnect explanations from the code being inspected. A permanent instructional sidebar would reduce editing space and add noise for experienced users. The existing optional panel gives the first increment a smaller, familiar surface, using current themes and keyboard/focus behavior. It requires a reviewed finite fact projection and selection adapter before implementation; no new dependency is justified by the existing editor/parser/manual capabilities.
+
+Start with definitions, parameters, assignments versus annotations, conditions, loops and return sites. Keep general concept explanations visibly separate from facts found in the selected source. The full Python manual, runtime stepping, output prediction, arbitrary exercises, automatic repair and AI explanations remain separate future decisions. The contextual learning view is a design recommendation, not an implemented feature or an approval of a new runtime capability.

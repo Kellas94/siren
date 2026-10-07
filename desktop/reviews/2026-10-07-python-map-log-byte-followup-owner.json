@@ -1,0 +1,96 @@
+{
+  "author": "/root",
+  "beforeHead": "31039306b7634bc41ef8ef173430645858e78442",
+  "earlierAttempt": "First metadata commit recorded eight -text attributes but git add reused unchanged cached blobs. Actual post-commit byte assertion failed. Original commit and tool failure are retained; no log content was altered.",
+  "repair": "Explicit git add --renormalize on the eight named logs with their exact -text attributes. Every staged blob equals unchanged raw local bytes before commit.",
+  "records": [
+    {
+      "path": "desktop/reviews/2026-10-07-help-ci-green-owner.log",
+      "original": {
+        "bytes": 342,
+        "sha256": "bc9f24a309537ed752ff4cb2894b64623d4c5928bb1bf3affa6454d6b8136ac3"
+      },
+      "initialGitLF": {
+        "bytes": 332,
+        "sha256": "30027ac6acd6020de12b2dafbd7c360cf72102c50a5a5ec9d51aee7981e1445a"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-help-ci-red-owner.log",
+      "original": {
+        "bytes": 23907,
+        "sha256": "320b92a32437015abadad83cc470291aa17dfe7d866e3d1e0c6085d5b491b1cf"
+      },
+      "initialGitLF": {
+        "bytes": 23682,
+        "sha256": "65749a526259bcfa750013b3ced63b18ca7978e2c23e4fdc96a225c064eaedbe"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-home-fixture-focused-green.log",
+      "original": {
+        "bytes": 2064,
+        "sha256": "a129ec81cef807b76ad66fc06749750b11c30efc7ef31274ab2cd53b1cca164d"
+      },
+      "initialGitLF": {
+        "bytes": 2038,
+        "sha256": "d2859596c99a4000efe761c421bdbc6f29420d1a7c3e3865c26ed4e52f11f0f6"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-home-fixture-unit-green-attempt-01.log",
+      "original": {
+        "bytes": 2357,
+        "sha256": "1cc44cf120c4bf8bc52613489c17802f59931670a3d789eada852aa6474990cc"
+      },
+      "initialGitLF": {
+        "bytes": 2319,
+        "sha256": "350ae5330d6f1ac0f2c968c14816bf5d9daa5465199c18596c040dba5e3e9989"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-home-fixture-unit-green.log",
+      "original": {
+        "bytes": 872,
+        "sha256": "22031bb74d46229f93bc7f2c357e92eb02e0a071e0a50c09408c030ca5202c32"
+      },
+      "initialGitLF": {
+        "bytes": 857,
+        "sha256": "0ebda7472b66ba4a9aac90f24dac47ca998f00b7319a881f4636f9dc01538610"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-python-annotation-tooltip-red-owner.log",
+      "original": {
+        "bytes": 2069,
+        "sha256": "6b3d08fd4dcf576a31648eb0ebe8b69cf98319a13056bf7546832700a81a4a51"
+      },
+      "initialGitLF": {
+        "bytes": 2033,
+        "sha256": "c26d0efe319be508797386d1f1bccf2de8be302b1268706455840d50c8d40f4b"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-python-map-integrated-adverse-owner.log",
+      "original": {
+        "bytes": 3855,
+        "sha256": "1821ca410fe52282368b7370ac7faa0d000ab2de5f56877e27dfb43b8dec7cda"
+      },
+      "initialGitLF": {
+        "bytes": 3803,
+        "sha256": "486e5ec1609172542611448ae9746ca23ee3d1d0b051dee35c58be9cafb9c5be"
+      }
+    },
+    {
+      "path": "desktop/reviews/2026-10-07-python-map-integrated-final-owner.log",
+      "original": {
+        "bytes": 2800,
+        "sha256": "f0b0f1040d1950231c45ba67bcefd26822d6c64347d2dec0ec5134005714c505"
+      },
+      "initialGitLF": {
+        "bytes": 2768,
+        "sha256": "ffefbec9a8e5408b913e0ce5c44790a9aaa1fd1624d6fc46a4e4f39da5f893cf"
+      }
+    }
+  ]
+}

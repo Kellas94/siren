@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "reviewedUtc": "2026-10-07T15:26:12.279Z",
+  "status": "PURE_PARSER_AND_VM_REVIEW_NO_BLOCKING_FINDINGS",
+  "implementationAuthors": {
+    "worker": "/root/catalogue_view",
+    "annotationTooltip": "ROOT"
+  },
+  "scope": "Only src/sources/map-worker.mjs and src/ui/code/analysis.js delta; independent real admitted parser in memory and VM review, no worker build/GUI/fullsuite/product mutation",
+  "findings": [],
+  "inputsBefore": [
+    {
+      "path": "src/sources/map-worker.mjs",
+      "bytes": 2410,
+      "sha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76"
+    },
+    {
+      "path": "src/ui/code/analysis.js",
+      "bytes": 17210,
+      "sha256": "e8a51e03d1867d69d9b1defe8180aee0a9df62599d6cbc06ceabaccbbdacdc8d"
+    },
+    {
+      "path": "tests/source-map-projection.test.mjs",
+      "bytes": 10798,
+      "sha256": "84a42225e2af39cf1f9f879c6fe422d881194c73986119db0adfe58c57baf196"
+    },
+    {
+      "path": "tests/source-map-service.test.mjs",
+      "bytes": 5058,
+      "sha256": "75a6d01a8f5c4599d0d3a3dbca14e68ae204698b3913ae913d2d13c9e0854210"
+    },
+    {
+      "path": "tests/source-analysis-view.test.mjs",
+      "bytes": 10156,
+      "sha256": "3488a0b168573e08c127e66de7840f06e8aaa3c761c0b2b16ee7728241bbe814"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-first-original.mjs",
+      "bytes": 2200,
+      "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+    },
+    {
+      "path": "baseline/R78.html",
+      "bytes": 13626609,
+      "sha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+    },
+    {
+      "path": "evidence/workspace-surface/python-map-independent/analysis-original-canonical.txt",
+      "bytes": 17096,
+      "sha256": "e3052cd4c131c685a70fa1ceee1ccc8a2c7bc65043d95ff6d1f6da831fe1c4e4"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "src/sources/map-worker.mjs",
+      "bytes": 2410,
+      "sha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76"
+    },
+    {
+      "path": "src/ui/code/analysis.js",
+      "bytes": 17210,
+      "sha256": "e8a51e03d1867d69d9b1defe8180aee0a9df62599d6cbc06ceabaccbbdacdc8d"
+    },
+    {
+      "path": "tests/source-map-projection.test.mjs",
+      "bytes": 10798,
+      "sha256": "84a42225e2af39cf1f9f879c6fe422d881194c73986119db0adfe58c57baf196"
+    },
+    {
+      "path": "tests/source-map-service.test.mjs",
+      "bytes": 5058,
+      "sha256": "75a6d01a8f5c4599d0d3a3dbca14e68ae204698b3913ae913d2d13c9e0854210"
+    },
+    {
+      "path": "tests/source-analysis-view.test.mjs",
+      "bytes": 10156,
+      "sha256": "3488a0b168573e08c127e66de7840f06e8aaa3c761c0b2b16ee7728241bbe814"
+    },
+    {
+      "path": "reviews/2026-10-07-python-map-assignments-first-original.mjs",
+      "bytes": 2200,
+      "sha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2"
+    },
+    {
+      "path": "baseline/R78.html",
+      "bytes": 13626609,
+      "sha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4"
+    },
+    {
+      "path": "evidence/workspace-surface/python-map-independent/analysis-original-canonical.txt",
+      "bytes": 17096,
+      "sha256": "e3052cd4c131c685a70fa1ceee1ccc8a2c7bc65043d95ff6d1f6da831fe1c4e4"
+    }
+  ],
+  "all8InputsUnchanged": true,
+  "delta": {
+    "worker": {
+      "beforeSha256": "7d9008b70283d0e31d7bca083916fab6702084ab8d1da9ef93361a73e4b9a9d2",
+      "afterSha256": "ad81f10864a4dc29e29c6d5d91468f2a7214e7a986df6822aef339c8db995b76",
+      "actualParserKinds": [
+        "AssignStatement",
+        "UpdateStatement"
+      ],
+      "oldNonmatchingKind": "AssignmentStatement",
+      "annotationRule": "Direct TypeDef child and no direct AssignOp child of AssignStatement",
+      "entireOriginalRecoveredAfterRemovingOnlyKindAndAnnotationDelta": true
+    },
+    "ui": {
+      "canonicalOriginalCommit": "e6e31fb7c9032b1dc1c423b96225f7aaa4d21f9d",
+      "canonicalOriginalGitBlob": "7dabeca8494b7e7033897822bd0e5197842fc17c",
+      "originalBytesVerified": true,
+      "afterSha256": "e8a51e03d1867d69d9b1defe8180aee0a9df62599d6cbc06ceabaccbbdacdc8d",
+      "onlyNewExplanation": "Adds a type annotation without assigning a value here. Static analysis does not check runtime types.",
+      "entireOriginalRecoveredAfterRemovingOnlyAnnotationTooltip": true
+    }
+  },
+  "realParser": {
+    "baselineSha256": "5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4",
+    "admittedFactorySha256": "c3b436db7d8d79ae712772ec1ffccb60381f9bfcf5f35646d3e838e2b9a0592b",
+    "onlyModules": [
+      "@lezer/python",
+      "@siren/python/terms",
+      "@siren/python/tokens",
+      "@siren/python/highlight"
+    ],
+    "externalInstalledModules": [
+      "@lezer/common",
+      "@lezer/lr",
+      "@lezer/highlight"
+    ],
+    "pythonExecution": false,
+    "rebuiltWorker": false
+  },
+  "actualVerification": {
+    "tests": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "ownIndependentCases": 5,
+    "projectionExistingCases": 9,
+    "viewExistingCases": 9,
+    "executionReceipt": {
+      "path": "evidence/workspace-surface/python-map-independent/execution.json",
+      "bytes": 6618,
+      "sha256": "bdd68309b1d864aef089b61f7da4d2938a81562ab9b85ad5200b4ca4a197b33d"
+    },
+    "probes": {
+      "path": "evidence/workspace-surface/python-map-independent/probes.test.mjs",
+      "bytes": 5122,
+      "sha256": "3916f68eb93f8add45e0f2655fd87a7755c23d960228dafc9187a68c8217853c"
+    },
+    "cases": [
+      "Direct TypeDef/AssignOp on forward-reference strings with equals, complex annotations, attribute/subscript targets",
+      "All13 actual augmented assignment operators, without false annotation",
+      "Decorators/function annotations/default keyword values do not become spurious assignment blocks",
+      "Absolute UTF16 offsets, CRLF lines beyond300k logical line, parent containment, graph/edge/visit caps",
+      "Specific annotation tooltip and unchanged static/nonexecution disclaimer",
+      "Existing projection cases include malformed syntax absolute diagnostics, surrogate-safe truncated labels, yield/await nesting and literal UI navigation",
+      "Existing view cases retain stale-version/dirty-source refusal, cancellation/Lock, literal maps, collapse and immutable offsets"
+    ]
+  },
+  "readOnlyServiceReview": {
+    "path": "tests/source-map-service.test.mjs",
+    "executed": false,
+    "reason": "test.before invokes buildAnalysisWorker; explicit no workerbuild instruction takes precedence",
+    "casesRead": 4,
+    "limits": "No new isolated-worker/service runtime qualification is claimed; ROOT own service checks remain separately authored"
+  },
+  "bounds": {
+    "unchangedSourceRangeAndLineMath": true,
+    "unchangedGraphAndEdgeLimits": true,
+    "unchangedVisitBudgetAnd128ErrorCap": true,
+    "unchanged160UnitSurrogateSafeLabelBound": true,
+    "moreAssignmentNodesMayReachExistingGraphCapEarlier": true,
+    "limitedRemainsExplicit": true,
+    "semantics": "syntax-containment only"
+  },
+  "limits": [
+    "No worker build, GUI, CPython execution, full suite, package mutation, hosted rerun, Git/push or source/test editing",
+    "Real parser and UI VM results are not installed/generated-worker, native visual or hosted qualification",
+    "Maps describe syntactic containment, not executed branches, actual stored values, runtime target resolution or type checking",
+    "More visible assignment nodes can reach the existing finite graph cap earlier; explicit limited/partial coverage must remain visible",
+    "Implementation original/RED records remain attributed to their authors; this independent review does not overwrite them or adopt ROOT runtime evidence"
+  ]
+}

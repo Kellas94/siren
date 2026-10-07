@@ -1,0 +1,143 @@
+✖ reviews/2026-10-07-home-library-original.mjs accepts actual Settings with all four named actions in order (5.7205ms)
+✖ reviews/2026-10-07-home-library-original.mjs refuses missing, renamed, reordered and unexpected Settings actions (2.3369ms)
+✖ reviews/2026-10-07-home-library-search-original.mjs accepts actual Settings with all four named actions in order (1.4876ms)
+✖ reviews/2026-10-07-home-library-search-original.mjs refuses missing, renamed, reordered and unexpected Settings actions (1.4039ms)
+✖ recovery privacy waits for actual DOM after real locked preload admission (3.3352ms)
+✖ recovery admission still fails if the admitted body exposes the private project label (3.0715ms)
+✖ recovery never treats absent body as privacy success or extends the existing deadline (3.2512ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25.1575
+
+✖ failing tests:
+
+test at [eval1]:34:2
+✖ reviews/2026-10-07-home-library-original.mjs accepts actual Settings with all four named actions in order (5.7205ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  4 !== 3
+  
+      at evalmachine.<anonymous>:1:20
+      at async nativeSettingsOracle (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:30:2)
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:36:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at [eval1]:38:2
+✖ reviews/2026-10-07-home-library-original.mjs refuses missing, renamed, reordered and unexpected Settings actions (2.3369ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection (AssertionError): missing
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:42:4)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [Object],
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at [eval1]:34:2
+✖ reviews/2026-10-07-home-library-search-original.mjs accepts actual Settings with all four named actions in order (1.4876ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  4 !== 3
+  
+      at evalmachine.<anonymous>:1:20
+      at async nativeSettingsOracle (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:30:2)
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:36:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at [eval1]:38:2
+✖ reviews/2026-10-07-home-library-search-original.mjs refuses missing, renamed, reordered and unexpected Settings actions (1.4039ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection (AssertionError): missing
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:42:4)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [Object],
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at [eval1]:55:1
+✖ recovery privacy waits for actual DOM after real locked preload admission (3.3352ms)
+  evalmachine.<anonymous>:1
+  document.body.innerText.includes("OWNED_RECOVERY_PRIVATE_LABEL")
+                ^
+  
+  TypeError: Cannot read properties of null (reading 'innerText')
+      at evalmachine.<anonymous>:1:15
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at runInNewContext (node:vm:310:38)
+      at Object.evaluate (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:50:59)
+      at evalmachine.<anonymous>:3:28
+      at async recoveryStartup (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:52:22)
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:56:17)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    fixtureTime: 0
+  }
+
+test at [eval1]:58:1
+✖ recovery admission still fails if the admitted body exposes the private project label (3.0715ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /true !== false/. Input:
+  
+  "TypeError: Cannot read properties of null (reading 'innerText')"
+  
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:59:2)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [TypeError],
+    expected: /true !== false/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at [eval1]:61:1
+✖ recovery never treats absent body as privacy success or extends the existing deadline (3.2512ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Native PIN startup receipt unavailable/. Input:
+  
+  "Cannot read properties of null (reading 'innerText')"
+  
+      at Object.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:62:72)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///C:/Claude/SIREN_WORK/portable/desktop/[eval1]:62:2)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "Cannot read properties of null (reading 'innerText')",
+    expected: /Native PIN startup receipt unavailable/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+ORIGINAL_REPLAY_EXIT=1

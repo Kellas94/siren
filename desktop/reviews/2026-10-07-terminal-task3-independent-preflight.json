@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "report": "terminal-task3-independent-preflight",
+  "author": {
+    "agent": "/root/hosted_resume_retention",
+    "role": "independent read-only preflight"
+  },
+  "capturedAt": "2026-10-07T15:41:51.097Z",
+  "status": "PURE_TASK3_IMPLEMENTATION_FEASIBLE_NATIVE_EXECUTION_NOT_ADMITTED",
+  "scope": {
+    "productEdited": false,
+    "testsEdited": false,
+    "workflowEdited": false,
+    "modulesExecuted": false,
+    "testRun": false,
+    "guiRun": false,
+    "buildRun": false,
+    "dependenciesChanged": false,
+    "nativeExecutionAdmitted": false
+  },
+  "inspection": {
+    "full": [
+      "approved Terminal plan/specification",
+      "atomic ownership research",
+      "existing cwd/profile preflight",
+      "Terminal policy/contracts/session-state and policy tests",
+      "project path helpers"
+    ],
+    "targeted": [
+      "WindowRegistry capture/isCurrent/captureAdmissionGuard/caller and role set",
+      "main active Data root and registry authorization",
+      "PIN worker environment precedent"
+    ],
+    "unexecutedHistoricalEvidence": [
+      "existing native-readiness report",
+      "existing foundation independent report"
+    ]
+  },
+  "missing": [
+    "src/terminal/cwd.mjs",
+    "src/terminal/profiles.mjs",
+    "tests/terminal-cwd.test.mjs",
+    "tests/terminal-ipc.test.mjs"
+  ],
+  "approvedInterfaces": {
+    "cwd": [
+      "CwdAuthority({pickDirectory,protectedRoots}).pick(grant):Promise<CwdGrant>",
+      "CwdAuthority.resolve(grant,cwdId):Promise<string>"
+    ],
+    "profiles": [
+      "listShellProfiles():Promise<ShellProfile[]>",
+      "resolveShellProfile(profileId):Promise<{executable,args,env}>"
+    ],
+    "policy": "TerminalPolicy.authorize({grant,method,session,lease,epoch}):{ok,code?}",
+    "rendererShapes": {
+      "CwdGrant": [
+        "cwdId",
+        "projectId",
+        "displayPath"
+      ],
+      "ShellProfile": [
+        "profileId",
+        "label",
+        "available"
+      ]
+    }
+  },
+  "currentContracts": {
+    "methodCount": 10,
+    "roles": {
+      "workspace": "pick cwd/list profiles/create/list sessions/stop",
+      "terminal": "same configuration/session rights plus attach/input/resize/ack/detach",
+      "refused": [
+        "docs",
+        "code",
+        "diagram",
+        "presenter",
+        "audience"
+      ]
+    },
+    "policy": "Default refusal; exact true identity/PIN/execution/lease callbacks, normal writable mode for nonpassive methods; passive list/listProfiles only unlocked eligible callers in declared modes.",
+    "nativeRegistryTerminalRole": false,
+    "nativeLedgerAdmission": false
+  },
+  "safePureSlices": [
+    {
+      "files": [
+        "src/terminal/cwd.mjs",
+        "tests/terminal-cwd.test.mjs"
+      ],
+      "contract": "Native-provider selected directory becomes bounded private project/run scoped cwd token. Resolve re-inspects identity/type/canonical path/protected roots and checks live authority around every await. No directory writes or fallback.",
+      "tests": [
+        "cancel/empty/multiple selection no token",
+        "foreign project, copied grant, retired frame, Lock rollback and A-B-A never revive pending request",
+        "literal Unicode/spaces/apostrophe/backtick/$() paths",
+        "protected equality/descendant boundaries and prefix siblings",
+        "missing/file/link/ancestor redirect/replacement/unknown identity refuse",
+        "revocation at each picker/filesystem await and before return; bounded token retention"
+      ]
+    },
+    {
+      "files": [
+        "src/terminal/profiles.mjs",
+        "tests/terminal-profiles.test.mjs (suggested focused test file)"
+      ],
+      "contract": "Private trusted provider discovers initial absolute Windows PowerShell; immutable native args [-NoLogo,-NoProfile], no caller executable/argv/env/command. Public profile list projects only approved fields.",
+      "tests": [
+        "absent/invalid trusted OS root or executable -> unavailable, no PATH/cwd fallback",
+        "replaced/link/unverified executable refuses",
+        "exact immutable args; optional shells absent until explicitly discovered",
+        "case-insensitive injection-variable removal, deterministic duplicate-key policy",
+        "OS snapshot preserved without mutation and application credentials never added",
+        "async scope revocation prevents late disclosure/dispatch"
+      ]
+    },
+    {
+      "files": [
+        "src/terminal/policy.mjs",
+        "tests/terminal-policy.test.mjs",
+        "tests/terminal-ipc.test.mjs (pure boundary tests only)"
+      ],
+      "contract": "Reuse existing role policy and exact ten-method validator. Test shape-only rejection and injected current/admission controls without adding actual IPC/preloads or granting execution.",
+      "tests": [
+        "reject path/argv/env/projectId/command and extra/accessor/nondata payload fields",
+        "workspace create/configure vs terminal-only attachment/input methods",
+        "Docs/Code/Diagram/Presenter/Audience never execute",
+        "live writable permission distinct from normal app mode",
+        "deferred picker/profile completions cannot outlive main-only scope guard",
+        "a native-host dispatch spy stays at zero in every case while ownership is not admitted"
+      ]
+    }
+  ],
+  "integrationDetails": [
+    "WindowRegistry.caller(event) establishes current native identity but returns a fresh projection. Use capture(event), which calls caller and privately records the actual sender/frame, when later passing a grant to isCurrent/captureAdmissionGuard. Never clone/reconstruct it.",
+    "Grant projection has no mode/access fields. Main supplies live getMode/canExecute checks from actual selected project, write permission, PIN and quiescence; do not infer permission from role or cached grant fields.",
+    "captureAdmissionGuard is monotonic across freeze/rollback. Pending selection/profile operations retain originating scope; future project-bound cwd reuse is separately authorized by a current eligible same-project caller.",
+    "Current main can relocate Data. Future protected roots must come from active Data and actual install/runtime/resources/generated roots, not hardcoded portable/Data or renderer/project content.",
+    "ownedDirectory is read-only with create:false but is not a complete cwd grant: no remembered filesystem identity or atomic binding to subsequent process creation. Never call create:true or writableDataRoot for selected cwd.",
+    "PIN worker strips Electron/Node/VSCode prefixed variables; this is precedent, not authorization to silently copy its complete worker spawn policy into an interactive shell."
+  ],
+  "decisionsAndLimits": [
+    "Injected inspection/discovery/current/admission/id providers are main-only implementation seams, not new renderer API. Existing preflight lifecycle/capacity suggestions remain recommendations; choose finite documented bounds and matching refusal receipts explicitly.",
+    "Declare supported path namespaces and link/reparse policy; local drive paths/roots can be first supported slice. Do not silently accept unqualified UNC/device/extended paths. Windows double quote is a refusal fixture, not shell escaping.",
+    "Directory identity/reparse detection and trusted executable discovery require a real Windows adapter and later actual witnesses. Pure fake providers test decision logic only.",
+    "Repeated path revalidation does not eliminate TOCTOU before spawn. Do not claim directory sandbox or atomic handle binding; shell retains OS-user privileges.",
+    "Task1 atomic host/session Job membership, host startup interval, native monitor/cleanup, actual compiler/SDK/Electron ABI and helper/package/license qualification block native create/host/PTY admission, not these pure authorities.",
+    "No terminal role, dock/satellite, preload, main IPC, generic spawn, PTY, emulator, dependencies, package or UI should be added by this pure tranche. Typed IPC tests are boundary-model tests, not real Electron IPC evidence."
+  ],
+  "nextBatch": "Implement cwd authority and private profile catalogue plus finite pure tests; reuse existing policy/contracts. Keep explicit nativeExecutionAdmitted:false and zero actual native dispatch. Review separately, then qualify actual native adapters/ownership before product wiring.",
+  "identitiesBefore": [
+    {
+      "path": "../docs/superpowers/plans/2026-10-03-siren-terminal.md",
+      "bytes": 23094,
+      "sha256": "ac170002abb32c51d4379cd5704f4f0852b92004e9c4e931910f3b84ed23c974"
+    },
+    {
+      "path": "../docs/superpowers/specs/2026-10-03-siren-terminal-design.md",
+      "bytes": 25066,
+      "sha256": "eb7d3ff43defc73026207faf7f1d6f53dce037be8d66ff205ff9106cf0d2f1d5"
+    },
+    {
+      "path": "../docs/research/2026-10-07-terminal-atomic-ownership.md",
+      "bytes": 5705,
+      "sha256": "85e6f21bdfe6c474f68d80e8519d117e4d51d60b63ce13a80abaf4ee94379704"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-preflight.md",
+      "bytes": 11084,
+      "sha256": "6705e759b905b383aae1473d686a4105c433383507b34b2122c5da4d0d3e8b41"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-preflight.json",
+      "bytes": 11610,
+      "sha256": "e052107016305f0a4fe32629a049fbf110d18a0c5101a405837ea92454b45c23"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-native-readiness.md",
+      "bytes": 9387,
+      "sha256": "c85fb5e5378324166096de41b155fafd47f2c1bfe2941c4eafd6ea037cde7a8b"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-foundation-independent.md",
+      "bytes": 8259,
+      "sha256": "2ec00c67f7e33a66c58c46f33b404e4f94a1a3e4aa01154efed249312084860c"
+    },
+    {
+      "path": "src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115"
+    },
+    {
+      "path": "src/terminal/session-state.mjs",
+      "bytes": 7026,
+      "sha256": "bdaccf7b0246d1b8d5429674f615b8bb648b3da03e3cfa9c6020bf823eac61b7"
+    },
+    {
+      "path": "tests/terminal-policy.test.mjs",
+      "bytes": 5108,
+      "sha256": "c8dfbb25cbbea0c35c4394a8fc0945a5e7ae7facb5c126edc1359cdf8dc98778"
+    },
+    {
+      "path": "src/windows/registry.mjs",
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    {
+      "path": "src/projects/paths.mjs",
+      "bytes": 1219,
+      "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 108344,
+      "sha256": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619"
+    },
+    {
+      "path": "src/account/pin-protection.mjs",
+      "bytes": 4765,
+      "sha256": "1e47f90e02e0e17b29c6cc26ee555c85fdeebea289cb6e4bf66b0c2b437d79fb"
+    }
+  ],
+  "identitiesAfter": [
+    {
+      "path": "../docs/superpowers/plans/2026-10-03-siren-terminal.md",
+      "bytes": 23094,
+      "sha256": "ac170002abb32c51d4379cd5704f4f0852b92004e9c4e931910f3b84ed23c974"
+    },
+    {
+      "path": "../docs/superpowers/specs/2026-10-03-siren-terminal-design.md",
+      "bytes": 25066,
+      "sha256": "eb7d3ff43defc73026207faf7f1d6f53dce037be8d66ff205ff9106cf0d2f1d5"
+    },
+    {
+      "path": "../docs/research/2026-10-07-terminal-atomic-ownership.md",
+      "bytes": 5705,
+      "sha256": "85e6f21bdfe6c474f68d80e8519d117e4d51d60b63ce13a80abaf4ee94379704"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-preflight.md",
+      "bytes": 11084,
+      "sha256": "6705e759b905b383aae1473d686a4105c433383507b34b2122c5da4d0d3e8b41"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-cwd-profiles-preflight.json",
+      "bytes": 11610,
+      "sha256": "e052107016305f0a4fe32629a049fbf110d18a0c5101a405837ea92454b45c23"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-native-readiness.md",
+      "bytes": 9387,
+      "sha256": "c85fb5e5378324166096de41b155fafd47f2c1bfe2941c4eafd6ea037cde7a8b"
+    },
+    {
+      "path": "reviews/2026-10-07-terminal-foundation-independent.md",
+      "bytes": 8259,
+      "sha256": "2ec00c67f7e33a66c58c46f33b404e4f94a1a3e4aa01154efed249312084860c"
+    },
+    {
+      "path": "src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115"
+    },
+    {
+      "path": "src/terminal/session-state.mjs",
+      "bytes": 7026,
+      "sha256": "bdaccf7b0246d1b8d5429674f615b8bb648b3da03e3cfa9c6020bf823eac61b7"
+    },
+    {
+      "path": "tests/terminal-policy.test.mjs",
+      "bytes": 5108,
+      "sha256": "c8dfbb25cbbea0c35c4394a8fc0945a5e7ae7facb5c126edc1359cdf8dc98778"
+    },
+    {
+      "path": "src/windows/registry.mjs",
+      "bytes": 36262,
+      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+    },
+    {
+      "path": "src/projects/paths.mjs",
+      "bytes": 1219,
+      "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+    },
+    {
+      "path": "src/main.mjs",
+      "bytes": 108344,
+      "sha256": "b594955b0bb63385785979a89b8a9a5c0e71611309b988fbe93a15f6215f8619"
+    },
+    {
+      "path": "src/account/pin-protection.mjs",
+      "bytes": 4765,
+      "sha256": "1e47f90e02e0e17b29c6cc26ee555c85fdeebea289cb6e4bf66b0c2b437d79fb"
+    }
+  ],
+  "changedInputs": []
+}

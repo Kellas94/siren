@@ -1,0 +1,325 @@
+{
+  "schema": 1,
+  "author": "/root/hosted_resume_retention",
+  "reviewedUtc": "2026-10-07T15:21:23.697Z",
+  "status": "STATIC_AND_FINITE_NODE_REVIEW_NO_BLOCKING_FINDINGS",
+  "scope": "Read-only review of root Help CI wiring and observation-only Diagram harness instrumentation; not GUI/build/hosted success/release approval",
+  "implementationAuthor": "ROOT; independent retention/review author did not edit workflow/product/native harnesses",
+  "findings": [],
+  "execution": {
+    "author": "/root/hosted_resume_retention",
+    "kind": "Actual finite Node execution recorded from tool response, not GUI",
+    "toolChunkId": "ece58f",
+    "command": "node --test --test-reporter=tap evidence/workspace-surface/help-ci-observation-independent/probes.test.mjs tests/help-diagnostics-ci.test.mjs tests/diagram-annotations-ci.test.mjs",
+    "exitCode": 0,
+    "tests": 15,
+    "passed": 15,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "ownIndependentProbes": 11,
+    "existingCiTests": 4,
+    "durationMs": 166.6284
+  },
+  "inputsBefore": [
+    {
+      "path": "../.github/workflows/desktop-verify.yml",
+      "bytes": 47083,
+      "sha256": "f73d12627308984246b5971435a964c916a126c0da9864d93813b61064ce525f"
+    },
+    {
+      "path": "tests/help-diagnostics-ci.test.mjs",
+      "bytes": 2441,
+      "sha256": "5517f94e6663a26319303a75bc9433435d9fc9e7d99676910480d873dcde9ec5"
+    },
+    {
+      "path": "tests/native/diagram-annotations.mjs",
+      "bytes": 24212,
+      "sha256": "887cd9f5ab955f66120170a4f7f6156f9ae62db77eb2e8769b83552fd911e42b"
+    },
+    {
+      "path": "tests/native/diagram-preview.mjs",
+      "bytes": 14852,
+      "sha256": "e7b07e984000fb1bef85619026a39a39bd74940b7d4b3626ef2b61451e1c5088"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-annotations-hosted-first-original.mjs",
+      "bytes": 22542,
+      "sha256": "9901ae39f6785f2f754e8854db09d84ad1f8697da73348387c292700abd937dc"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-preview-hosted-first-original.mjs",
+      "bytes": 13963,
+      "sha256": "c0945ed15b6c9a07e7bd27cbcfb502b9cea4946f4a57d6e8f9b9a4d6c27355ee"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/desktop-verify-canonical-exact.yml.txt",
+      "bytes": 46437,
+      "sha256": "2270f65d2cd4a393e7d2b2de87c5ff34b49b7ff222ef93b2da30bf2a9a531e67"
+    },
+    {
+      "path": "tests/native/help-diagnostics.mjs",
+      "bytes": 15870,
+      "sha256": "5ce2a290aaccd150c74182f4c0b2e18a9e47b69fe86a0b3b70323f0d1b1ab8b6"
+    },
+    {
+      "path": "tests/native/package-context.mjs",
+      "bytes": 1699,
+      "sha256": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+    },
+    {
+      "path": "tests/native/condition.mjs",
+      "bytes": 648,
+      "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+    },
+    {
+      "path": "tests/diagram-annotations-ci.test.mjs",
+      "bytes": 2011,
+      "sha256": "ba63da5777e296053aa68ada289ced35ffe40faff4754e065e4943509ef6bd96"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/tree-api-original.json",
+      "bytes": 675202,
+      "sha256": "58eaba13ae357fc0531effe5083e979a459e0785f2ccbccec3b694ff993d0407"
+    }
+  ],
+  "inputsAfter": [
+    {
+      "path": "../.github/workflows/desktop-verify.yml",
+      "bytes": 47083,
+      "sha256": "f73d12627308984246b5971435a964c916a126c0da9864d93813b61064ce525f"
+    },
+    {
+      "path": "tests/help-diagnostics-ci.test.mjs",
+      "bytes": 2441,
+      "sha256": "5517f94e6663a26319303a75bc9433435d9fc9e7d99676910480d873dcde9ec5"
+    },
+    {
+      "path": "tests/native/diagram-annotations.mjs",
+      "bytes": 24212,
+      "sha256": "887cd9f5ab955f66120170a4f7f6156f9ae62db77eb2e8769b83552fd911e42b"
+    },
+    {
+      "path": "tests/native/diagram-preview.mjs",
+      "bytes": 14852,
+      "sha256": "e7b07e984000fb1bef85619026a39a39bd74940b7d4b3626ef2b61451e1c5088"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-annotations-hosted-first-original.mjs",
+      "bytes": 22542,
+      "sha256": "9901ae39f6785f2f754e8854db09d84ad1f8697da73348387c292700abd937dc"
+    },
+    {
+      "path": "reviews/2026-10-07-diagram-preview-hosted-first-original.mjs",
+      "bytes": 13963,
+      "sha256": "c0945ed15b6c9a07e7bd27cbcfb502b9cea4946f4a57d6e8f9b9a4d6c27355ee"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/desktop-verify-canonical-exact.yml.txt",
+      "bytes": 46437,
+      "sha256": "2270f65d2cd4a393e7d2b2de87c5ff34b49b7ff222ef93b2da30bf2a9a531e67"
+    },
+    {
+      "path": "tests/native/help-diagnostics.mjs",
+      "bytes": 15870,
+      "sha256": "5ce2a290aaccd150c74182f4c0b2e18a9e47b69fe86a0b3b70323f0d1b1ab8b6"
+    },
+    {
+      "path": "tests/native/package-context.mjs",
+      "bytes": 1699,
+      "sha256": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+    },
+    {
+      "path": "tests/native/condition.mjs",
+      "bytes": 648,
+      "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+    },
+    {
+      "path": "tests/diagram-annotations-ci.test.mjs",
+      "bytes": 2011,
+      "sha256": "ba63da5777e296053aa68ada289ced35ffe40faff4754e065e4943509ef6bd96"
+    },
+    {
+      "path": "evidence/workspace-surface/ci37640219262/tree-api-original.json",
+      "bytes": 675202,
+      "sha256": "58eaba13ae357fc0531effe5083e979a459e0785f2ccbccec3b694ff993d0407"
+    }
+  ],
+  "all12ReviewInputsUnchanged": true,
+  "originals": {
+    "canonical": "e6e31fb7c9032b1dc1c423b96225f7aaa4d21f9d",
+    "snapshotsMatchCanonicalGitBlobSha1": true,
+    "normalization": "For textual restoration comparison only, CRLF normalized to LF; original bytes separately hash/Gitblob verified",
+    "entirePreviewOriginalRestoredAfterRemovingOnlyNewObservation": true,
+    "entireAnnotationsOriginalRestoredAfterRemovingOnlyNewObservation": true
+  },
+  "workflow": {
+    "actualDiff": {
+      "name": "workflow",
+      "changes": [
+        {
+          "type": "+",
+          "oldLine": 269,
+          "newLine": 269,
+          "text": "      - name: Actual Help and diagnostics"
+        },
+        {
+          "type": "+",
+          "oldLine": 269,
+          "newLine": 270,
+          "text": "        if: matrix.group == 'desktop'"
+        },
+        {
+          "type": "+",
+          "oldLine": 269,
+          "newLine": 271,
+          "text": "        run: node tests/native/help-diagnostics.mjs"
+        },
+        {
+          "type": "+",
+          "oldLine": 337,
+          "newLine": 340,
+          "text": "            desktop/evidence/help-diagnostics/*/result.json"
+        },
+        {
+          "type": "+",
+          "oldLine": 337,
+          "newLine": 341,
+          "text": "            desktop/evidence/help-diagnostics/*/electron.log"
+        },
+        {
+          "type": "+",
+          "oldLine": 337,
+          "newLine": 342,
+          "text": "            desktop/evidence/help-diagnostics/*/*.png"
+        },
+        {
+          "type": "+",
+          "oldLine": 540,
+          "newLine": 546,
+          "text": "          node tests/native/help-diagnostics.mjs --package $preview.previewRoot"
+        },
+        {
+          "type": "+",
+          "oldLine": 540,
+          "newLine": 547,
+          "text": "          if ($LASTEXITCODE -ne 0) { throw \"Packaged Help and diagnostics failed\" }"
+        },
+        {
+          "type": "+",
+          "oldLine": 630,
+          "newLine": 638,
+          "text": "            desktop/evidence/help-diagnostics/*/result.json"
+        },
+        {
+          "type": "+",
+          "oldLine": 630,
+          "newLine": 639,
+          "text": "            desktop/evidence/help-diagnostics/*/electron.log"
+        },
+        {
+          "type": "+",
+          "oldLine": 630,
+          "newLine": 640,
+          "text": "            desktop/evidence/help-diagnostics/*/*.png"
+        }
+      ]
+    },
+    "development": {
+      "step": "Actual Help and diagnostics",
+      "matrixGroup": "desktop",
+      "beforeGenericNativeGroup": true,
+      "command": "node tests/native/help-diagnostics.mjs"
+    },
+    "copied": {
+      "command": "node tests/native/help-diagnostics.mjs --package $preview.previewRoot",
+      "beforeDiagramAnnotations": true,
+      "immediateNonzeroExitThrows": true,
+      "verifiedCopy": "copiedPackageContext verifies app.asar, executable, fixed process-reader binary and receipt before launch and again after Help run"
+    },
+    "uploads": {
+      "always": true,
+      "exactNewPaths": [
+        "desktop/evidence/help-diagnostics/*/result.json",
+        "desktop/evidence/help-diagnostics/*/electron.log",
+        "desktop/evidence/help-diagnostics/*/*.png"
+      ],
+      "newPrivateDataOrProfileWildcard": false
+    },
+    "aggregation": {
+      "unchanged": true,
+      "needs": [
+        "windows",
+        "native_windows",
+        "packaged_windows"
+      ],
+      "requiresAllSuccess": true,
+      "skippedFailureCancelledNotSuccess": true,
+      "continueOnErrorAbsent": true
+    }
+  },
+  "instrumentation": {
+    "annotations": {
+      "bound": 64,
+      "capture": true,
+      "eventTypes": [
+        "pointerdown",
+        "pointerup",
+        "click"
+      ],
+      "targetFilter": "#homeLock",
+      "droppedCount": true,
+      "negativeUnrelatedTargetsProbed": 10,
+      "finite128MatchingEventsRetained64Dropped64": true,
+      "afterFailureHomeAnd4KnownViews": true
+    },
+    "preview": {
+      "bound": 64,
+      "capture": true,
+      "eventTypes": [
+        "pointerdown",
+        "pointermove",
+        "pointerup",
+        "pointercancel",
+        "lostpointercapture"
+      ],
+      "droppedCount": true,
+      "finite128MixedEventsRetained64Dropped64": true,
+      "geometryReadInEventHandler": false,
+      "recordsTransformFocusButtonIdAndCoordinates": true
+    },
+    "eventActionsChanged": false,
+    "assertionsChanged": false,
+    "deadlinesChanged": false,
+    "retriesOrSleepAdded": false,
+    "preventDefaultOrCaptureMutationAdded": false,
+    "originalAdverseFailureExitPreserved": true,
+    "parseChecks": "node --check both complete native harnesses; recorder strings also compiled/exercised in finite VM without GUI"
+  },
+  "evidence": {
+    "differences": {
+      "path": "evidence/workspace-surface/help-ci-observation-independent/original-current-line-differences.json",
+      "bytes": 8952,
+      "sha256": "585db34007aaede327f5ef1ef10b5fdb994784feaf265697a569772847006ce6"
+    },
+    "probes": {
+      "path": "evidence/workspace-surface/help-ci-observation-independent/probes.test.mjs",
+      "bytes": 9680,
+      "sha256": "03bfad488d33074210887b5d64b206211179dd9168ad81ee101fc66d18de996f"
+    },
+    "execution": {
+      "path": "evidence/workspace-surface/help-ci-observation-independent/execution-receipt.json",
+      "bytes": 526,
+      "sha256": "9268d17787e9861855e0926721d4cf0ee2b72d07aa6c677148513fd05d57990d"
+    }
+  },
+  "limits": [
+    "No new workflow or native GUI execution occurred in this review; 15 Node/static/VM tests are not hosted or visual qualification",
+    "An earlier failed prerequisite still legitimately skips dependent Help execution; unchanged aggregate qualification refuses anything other than success, and missing/skipped receipts are not passing",
+    "Finite regex CI guards inspect declared wiring rather than implementing a complete YAML/GitHub Actions interpreter",
+    "Observation setup and failure readback add work and may perturb timing even though original action/assertion/deadline sequence is preserved",
+    "Event arrays retain at most64 total matching events; dropped counters disclose saturation and do not prove a complete unbounded event history",
+    "Original 37640219262 FINAL FAILURE and preceding adverse results remain preserved; local COMPLETE8/4 observations are ROOT execution, not independent reproduction or closure of Lock/pan causes",
+    "Only evidence/review files were written; no product/workflow/harness mutation, full suite, build, GUI, Git, push, rerun or downloaded-code execution"
+  ]
+}
