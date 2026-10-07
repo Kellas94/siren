@@ -11,7 +11,7 @@
   const status=()=>Object.freeze({diagramId:diagram.id,version,sha256,projectRevision,dirty,paused,fenced,disposed,pending:pending!==null,readonly:context.readonly});
   const changed=()=>{try{onChange(status());}catch{/* Observers do not grant save authority. */}};
   const reconcile=()=>{dirty=source!==diagram.source||Object.keys(stylePatch).length>0||styleRemovals.length>0||presentationEdits.length>0;};
-  const historyFields=['fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched','nodeStyles','nodeMetadata'],limitStates=60,limitBytes=8*1024*1024;
+  const historyFields=['sirenNativeLayoutEngine','fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched','nodeStyles','nodeMetadata'],limitStates=60,limitBytes=8*1024*1024;
   let history=[],historyIndex=-1,historyBytes=0,historySequence=0,coalescing=null;
   const editable=()=>!disposed&&!paused&&!pending&&!fenced&&!context.readonly;
   const snapshot=()=>{const value=actualDiagram(),style={};for(const key of historyFields)if(Object.hasOwn(value,key))style[key]=structuredClone(value[key]);return{source,style};};
@@ -44,8 +44,9 @@
   function styleCopy(input){
    if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid style');
    const descriptors=Object.getOwnPropertyDescriptors(input),keys=Reflect.ownKeys(descriptors),result={};
-   if(!keys.length||keys.length>6)throw Error('Invalid style');
+   if(!keys.length||keys.length>7)throw Error('Invalid style');
    for(const key of keys){const descriptor=descriptors[key];if(typeof key!=='string'||!descriptor.enumerable||!('value'in descriptor))throw Error('Invalid style');const value=descriptor.value;
+    if(key==='sirenNativeLayoutEngine'&&(!['auto','dagre','elk'].includes(value)||Object.hasOwn(actualDiagram(),key)&&!['auto','dagre','elk'].includes(actualDiagram()[key])))throw Error('Invalid style');
     if(key==='fontFamily'&&!fonts.includes(value)||key==='fontSize'&&(!Number.isInteger(value)||value<10||value>28)||key==='fontWeight'&&!weights.includes(value)||key==='diagramTitle'&&(typeof value!=='string'||!value.isWellFormed()||value.length>160)||key==='diagramTitleTouched'&&typeof value!=='boolean')throw Error('Invalid style');
     if(key==='nodeStyles'){
      if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid style');const nodes=Object.getOwnPropertyDescriptors(value);if(Reflect.ownKeys(nodes).length>250)throw Error('Invalid style');result[key]={};
@@ -59,7 +60,7 @@
       }Object.defineProperty(result[key],id,{value:node,enumerable:true,writable:true,configurable:true});
      }
      for(const [id,prior]of Object.entries(actualDiagram().nodeStyles||{}))for(const field of Object.keys(prior||{}))if(!['fill','border','text','fontFamily','fontSize','fontWeight'].includes(field)&&!Object.hasOwn(result[key][id]||{},field))throw Error('Invalid style');
-    }else{if(!['fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched'].includes(key))throw Error('Invalid style');result[key]=value;}
+    }else{if(!['sirenNativeLayoutEngine','fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched'].includes(key))throw Error('Invalid style');result[key]=value;}
    }return result;
   }
   async function accepted(receipt,request,applying,expected){

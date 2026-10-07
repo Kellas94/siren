@@ -52,6 +52,12 @@ async function fixture({wrapped=false,recovery,opaqueStyles=false,opaqueMetadata
  const docs=(id='doc-a',operationId='docs-edit',title='Edited')=>({operationId,documentId:id,expectedVersion:documentVersion(snapshot,id),action:'rename',payload:{title}});
  return {root,projects,sources,ref,snapshot,projectId,scope,repo,diagram,docs,setCurrent:v=>current=v,setFault:v=>fault=v,setValidate:v=>validate=v};
 }
+
+check('finite layout saves and removes once against real manifest ancestry while preserving source/context and refusing stale replay',async()=>{
+ const f=await fixture({wrapped:true}),before=workspaceMetadata(f.snapshot),request={...f.diagram(),action:'replace-content',payload:{source:before.diagrams[0].source,sirenNativeLayoutEngine:'dagre'}};
+ const result=await f.repo.apply('diagram',request,f.scope);assert.equal(result.ok,true);const saved=await f.projects.readProject(f.projectId),expected=structuredClone(before);expected.diagrams[0]={...expected.diagrams[0],sirenNativeLayoutEngine:'dagre',sirenNativeVersion:2};assert.deepEqual(workspaceMetadata(saved),expected);assert.deepEqual(saved.sourceRefs,f.snapshot.sourceRefs);assert.deepEqual(await f.repo.apply('diagram',request,f.scope),result);
+ assert.equal((await f.repo.apply('diagram',{...request,operationId:'stale-layout'},f.scope)).code,'REVISION_CONFLICT');const removed=await f.repo.apply('diagram',{...request,expectedVersion:2,operationId:'remove-layout',payload:{source:before.diagrams[0].source,resetStyleFields:['sirenNativeLayoutEngine']}},f.scope);assert.equal(removed.ok,true);delete expected.diagrams[0].sirenNativeLayoutEngine;expected.diagrams[0].sirenNativeVersion=3;assert.deepEqual(workspaceMetadata(await f.projects.readProject(f.projectId)),expected);
+});
 check('different diagrams and Docs from one original revision preserve every unrelated field and source ref',async()=>{
  const f=await fixture({wrapped:true}),before=workspaceMetadata(f.snapshot);
  const a=await f.repo.apply('diagram',f.diagram(),f.scope),b=await f.repo.apply('diagram',f.diagram('diagram-b','edit-b','sequenceDiagram\nA->>B: hello'),f.scope),doc=await f.repo.apply('docs',f.docs(),f.scope);

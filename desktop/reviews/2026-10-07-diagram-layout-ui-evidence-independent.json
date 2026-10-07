@@ -1,0 +1,456 @@
+{
+  "schema": 1,
+  "date": "2026-10-07",
+  "authorAgent": "/root/catalogue_view",
+  "type": "Independent frozen Diagram layout UI/controller/evidence review",
+  "status": "NO_BLOCKER_OBSERVED_WITH_ONE_NONBLOCKING_CI_COVERAGE_GAP",
+  "releaseApproval": false,
+  "independentGUIExecution": false,
+  "scope": [
+    "Static review of actual StyleView and controller event ordering",
+    "VM execution of real StyleView/Draft and exact onPrepare callback extracted from frozen controller",
+    "Focused existing style/session/focus/CI tests",
+    "Read-only review of root-authored development native/utility results and original adverse",
+    "Input identity matching and static package provenance branch"
+  ],
+  "identities": {
+    "identities": [
+      {
+        "path": "src/ui/diagram/style-view.js",
+        "bytes": 12128,
+        "sha256": "56ee0ee5a6b04a4f4ed26f209be3aac22c6a5ab002d326e6b35f891c0be618cc"
+      },
+      {
+        "path": "src/ui/windows/diagram.js",
+        "bytes": 28652,
+        "sha256": "23545502489281fcad58daf4fce8f3b40d4269ebb1b9a704cafe4c036b178e17"
+      },
+      {
+        "path": "src/ui/diagram/draft.js",
+        "bytes": 15603,
+        "sha256": "a467f9c4871ce9538b71816fc7af76124ba07d153d644d3f11e78f4e27e9f74d"
+      },
+      {
+        "path": "src/ui/diagram/style.js",
+        "bytes": 5327,
+        "sha256": "d211adf0c97f6f6fd8717598fe8dd15760f0b2aff1b21c4eb2e817286203fe0c"
+      },
+      {
+        "path": "src/ui/diagram/vector.js",
+        "bytes": 4934,
+        "sha256": "d18ae5098c189f8eaee1299e27d60b4bbcb3ba24c51cd13996e1dca8962cda28"
+      },
+      {
+        "path": "src/ui/presentation/render.js",
+        "bytes": 4611,
+        "sha256": "5cde6591c915160d7180975c4e2989209cb20424bd47f057e45e22f0bbe82b3a"
+      },
+      {
+        "path": "src/windows/diagram-vector-render.mjs",
+        "bytes": 4219,
+        "sha256": "555ddf090bc84594c8e591348b6957d6b642044da1254e129378cd494cea99de"
+      },
+      {
+        "path": "src/windows/presentation-deck.mjs",
+        "bytes": 6133,
+        "sha256": "4734521a0e1398a1762b01daf8d8e6e1712aadd5c87eb71ad008e349668e01a1"
+      },
+      {
+        "path": "src/documents/diagram-layout.mjs",
+        "bytes": 1209,
+        "sha256": "2d217c1a7f64b3ad3d01600bde41d376ac7e63f86840804b130612214a94a728"
+      },
+      {
+        "path": "tests/native/diagram-layout.mjs",
+        "bytes": 12524,
+        "sha256": "228e5c3d73e26d8a722389b778890d80e54c2335bcd287a6e2a544319ff1a05e"
+      },
+      {
+        "path": "tests/native/diagram-layout-render.mjs",
+        "bytes": 1464,
+        "sha256": "6ad1e98f843065ba4efbf97987ee499862fd3c94277caa61e0eaa75150dd0a90"
+      },
+      {
+        "path": "tests/native/diagram-layout-render-app.mjs",
+        "bytes": 5112,
+        "sha256": "963252177222963873484a8847ee9c20150c6b5e1f84ea8d85ba123cd0e5eee8"
+      },
+      {
+        "path": "tests/native/package-context.mjs",
+        "bytes": 1699,
+        "sha256": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c"
+      },
+      {
+        "path": "tests/diagram-style-view.test.mjs",
+        "bytes": 11436,
+        "sha256": "e51faa75d465b2cf369f975220a5229e2ef89c14ad6e3322d09b2e5ca18e758f"
+      },
+      {
+        "path": "tests/diagram-layout-ci.test.mjs",
+        "bytes": 1886,
+        "sha256": "b22571b32e7f6c8ca7db762ce3192097c6af47a6dc06b3d4468b36d7b84287a1"
+      },
+      {
+        "path": "tests/diagram-catalogue-ci.test.mjs",
+        "bytes": 1896,
+        "sha256": "93c84dc383051e1a8c9a70620790da1cf6257cdf9462795d85cc05f20d894dec"
+      },
+      {
+        "path": "tests/diagram-session.test.mjs",
+        "bytes": 5568,
+        "sha256": "a95b591bf7848f634f9440dc6a3f8870d61ad2fb48ecfa15cf90511ac7a176fd"
+      },
+      {
+        "path": "tests/diagram-catalogue-focus.test.mjs",
+        "bytes": 3663,
+        "sha256": "99f6d1d00654f76f6fba8dc69a98549de277f9b4e6ce342e099c4dccc3607275"
+      },
+      {
+        "path": "scripts/package.mjs",
+        "bytes": 11396,
+        "sha256": "0f38ea9f38cda26bc6c70bcc0ad7f75dc1ff7f7b91a8dff43e688e45e6c66a34"
+      },
+      {
+        "path": "../.github/workflows/desktop-verify.yml",
+        "bytes": 46437,
+        "sha256": "2270f65d2cd4a393e7d2b2de87c5ff34b49b7ff222ef93b2da30bf2a9a531e67"
+      },
+      {
+        "path": "generated/diagram-vector.html",
+        "bytes": 7235607,
+        "sha256": "7cb5cf2b3634009261ef6da8c743a4eae98e11356dfae3cf14d7ca7ddd2491a4"
+      },
+      {
+        "path": "generated/presentation-render.html",
+        "bytes": 7246804,
+        "sha256": "35bad8ec21545b702fdd114257870e4435bcfcbdfd39b01908dcae8a2c51b423"
+      },
+      {
+        "path": "generated/build.json",
+        "bytes": 1530,
+        "sha256": "f74a4426faf23b79a30471e7b871c32ba19e2a1213c4c509388cec4ee2309717"
+      },
+      {
+        "path": "evidence/workspace-surface/layout-renderer-0b79dd4f-5a87-4ca1-a52b-425957f28962/result.json",
+        "bytes": 2834,
+        "sha256": "fb5def7befa8b5700e35a11217f1f1fe6f528b41b170ec98b4202bedf5b48402"
+      },
+      {
+        "path": "evidence/workspace-surface/diagram-layout-ci-first-original.mjs",
+        "bytes": 1892,
+        "sha256": "782c881535bd0fa9aec32b111aa159eebd8ec74f086d6b99b074f5b69b3c5968"
+      },
+      {
+        "path": "evidence/workspace-surface/diagram-layout-ci-green.txt",
+        "bytes": 24104,
+        "sha256": "3b9203293aa71e555d3ee5e5b68dc589a7e257c5a7877b60a1b4f037d5a2182d"
+      },
+      {
+        "path": "evidence/workspace-surface/diagram-layout-ci-corrected-green.txt",
+        "bytes": 553,
+        "sha256": "377bb1de66aaa90dc82a5a3352303d8352b7e22718bf1add6aa88b3f4190bbcd"
+      },
+      {
+        "path": "reviews/2026-10-07-diagram-layout-ui-independent.test.mjs",
+        "bytes": 7155,
+        "sha256": "6f8fc4e5256bc874b710b48f8346e460dd8fcf6821db043769c4c4ad3645ac6e"
+      }
+    ],
+    "nativeComparison": [
+      {
+        "path": "src/ui/diagram/style-view.js",
+        "current": "56ee0ee5a6b04a4f4ed26f209be3aac22c6a5ab002d326e6b35f891c0be618cc",
+        "captured": "56ee0ee5a6b04a4f4ed26f209be3aac22c6a5ab002d326e6b35f891c0be618cc",
+        "same": true
+      },
+      {
+        "path": "src/ui/windows/diagram.js",
+        "current": "23545502489281fcad58daf4fce8f3b40d4269ebb1b9a704cafe4c036b178e17",
+        "captured": "23545502489281fcad58daf4fce8f3b40d4269ebb1b9a704cafe4c036b178e17",
+        "same": true
+      },
+      {
+        "path": "src/ui/diagram/draft.js",
+        "current": "a467f9c4871ce9538b71816fc7af76124ba07d153d644d3f11e78f4e27e9f74d",
+        "captured": "a467f9c4871ce9538b71816fc7af76124ba07d153d644d3f11e78f4e27e9f74d",
+        "same": true
+      },
+      {
+        "path": "src/ui/diagram/style.js",
+        "current": "d211adf0c97f6f6fd8717598fe8dd15760f0b2aff1b21c4eb2e817286203fe0c",
+        "captured": "d211adf0c97f6f6fd8717598fe8dd15760f0b2aff1b21c4eb2e817286203fe0c",
+        "same": true
+      },
+      {
+        "path": "src/ui/diagram/vector.js",
+        "current": "d18ae5098c189f8eaee1299e27d60b4bbcb3ba24c51cd13996e1dca8962cda28",
+        "captured": "d18ae5098c189f8eaee1299e27d60b4bbcb3ba24c51cd13996e1dca8962cda28",
+        "same": true
+      },
+      {
+        "path": "src/ui/presentation/render.js",
+        "current": "5cde6591c915160d7180975c4e2989209cb20424bd47f057e45e22f0bbe82b3a",
+        "captured": "5cde6591c915160d7180975c4e2989209cb20424bd47f057e45e22f0bbe82b3a",
+        "same": true
+      },
+      {
+        "path": "src/windows/diagram-vector-render.mjs",
+        "current": "555ddf090bc84594c8e591348b6957d6b642044da1254e129378cd494cea99de",
+        "captured": "555ddf090bc84594c8e591348b6957d6b642044da1254e129378cd494cea99de",
+        "same": true
+      },
+      {
+        "path": "src/windows/presentation-deck.mjs",
+        "current": "4734521a0e1398a1762b01daf8d8e6e1712aadd5c87eb71ad008e349668e01a1",
+        "captured": "4734521a0e1398a1762b01daf8d8e6e1712aadd5c87eb71ad008e349668e01a1",
+        "same": true
+      },
+      {
+        "path": "src/documents/diagram-layout.mjs",
+        "current": "2d217c1a7f64b3ad3d01600bde41d376ac7e63f86840804b130612214a94a728",
+        "captured": "2d217c1a7f64b3ad3d01600bde41d376ac7e63f86840804b130612214a94a728",
+        "same": true
+      },
+      {
+        "path": "tests/native/diagram-layout.mjs",
+        "current": "228e5c3d73e26d8a722389b778890d80e54c2335bcd287a6e2a544319ff1a05e",
+        "captured": "228e5c3d73e26d8a722389b778890d80e54c2335bcd287a6e2a544319ff1a05e",
+        "same": true
+      },
+      {
+        "path": "tests/native/package-context.mjs",
+        "current": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c",
+        "captured": "67ed04e8a33da97364098b388d622ccd3c17e83b4c49fb8775665cdc5bd31c5c",
+        "same": true
+      },
+      {
+        "path": "tests/diagram-style-view.test.mjs",
+        "current": "e51faa75d465b2cf369f975220a5229e2ef89c14ad6e3322d09b2e5ca18e758f",
+        "captured": "e51faa75d465b2cf369f975220a5229e2ef89c14ad6e3322d09b2e5ca18e758f",
+        "same": true
+      },
+      {
+        "path": "tests/diagram-catalogue-ci.test.mjs",
+        "current": "93c84dc383051e1a8c9a70620790da1cf6257cdf9462795d85cc05f20d894dec",
+        "captured": "93c84dc383051e1a8c9a70620790da1cf6257cdf9462795d85cc05f20d894dec",
+        "same": true
+      },
+      {
+        "path": "tests/diagram-session.test.mjs",
+        "current": "a95b591bf7848f634f9440dc6a3f8870d61ad2fb48ecfa15cf90511ac7a176fd",
+        "captured": "a95b591bf7848f634f9440dc6a3f8870d61ad2fb48ecfa15cf90511ac7a176fd",
+        "same": true
+      },
+      {
+        "path": "tests/diagram-catalogue-focus.test.mjs",
+        "current": "99f6d1d00654f76f6fba8dc69a98549de277f9b4e6ce342e099c4dccc3607275",
+        "captured": "99f6d1d00654f76f6fba8dc69a98549de277f9b4e6ce342e099c4dccc3607275",
+        "same": true
+      },
+      {
+        "path": "generated/diagram-vector.html",
+        "current": "7cb5cf2b3634009261ef6da8c743a4eae98e11356dfae3cf14d7ca7ddd2491a4",
+        "captured": "7cb5cf2b3634009261ef6da8c743a4eae98e11356dfae3cf14d7ca7ddd2491a4",
+        "same": true
+      },
+      {
+        "path": "generated/presentation-render.html",
+        "current": "35bad8ec21545b702fdd114257870e4435bcfcbdfd39b01908dcae8a2c51b423",
+        "captured": "35bad8ec21545b702fdd114257870e4435bcfcbdfd39b01908dcae8a2c51b423",
+        "same": true
+      },
+      {
+        "path": "generated/build.json",
+        "current": "f74a4426faf23b79a30471e7b871c32ba19e2a1213c4c509388cec4ee2309717",
+        "captured": "f74a4426faf23b79a30471e7b871c32ba19e2a1213c4c509388cec4ee2309717",
+        "same": true
+      }
+    ],
+    "utilityComparison": [
+      {
+        "path": "src/ui/diagram/style.js",
+        "current": "d211adf0c97f6f6fd8717598fe8dd15760f0b2aff1b21c4eb2e817286203fe0c",
+        "captured": "d211adf0c97f6f6fd8717598fe8dd15760f0b2aff1b21c4eb2e817286203fe0c",
+        "same": true
+      },
+      {
+        "path": "src/ui/diagram/vector.js",
+        "current": "d18ae5098c189f8eaee1299e27d60b4bbcb3ba24c51cd13996e1dca8962cda28",
+        "captured": "d18ae5098c189f8eaee1299e27d60b4bbcb3ba24c51cd13996e1dca8962cda28",
+        "same": true
+      },
+      {
+        "path": "src/ui/presentation/render.js",
+        "current": "5cde6591c915160d7180975c4e2989209cb20424bd47f057e45e22f0bbe82b3a",
+        "captured": "5cde6591c915160d7180975c4e2989209cb20424bd47f057e45e22f0bbe82b3a",
+        "same": true
+      },
+      {
+        "path": "src/windows/diagram-vector-render.mjs",
+        "current": "555ddf090bc84594c8e591348b6957d6b642044da1254e129378cd494cea99de",
+        "captured": "555ddf090bc84594c8e591348b6957d6b642044da1254e129378cd494cea99de",
+        "same": true
+      },
+      {
+        "path": "src/documents/diagram-layout.mjs",
+        "current": "2d217c1a7f64b3ad3d01600bde41d376ac7e63f86840804b130612214a94a728",
+        "captured": "2d217c1a7f64b3ad3d01600bde41d376ac7e63f86840804b130612214a94a728",
+        "same": true
+      },
+      {
+        "path": "tests/native/diagram-layout-render.mjs",
+        "current": "6ad1e98f843065ba4efbf97987ee499862fd3c94277caa61e0eaa75150dd0a90",
+        "captured": "6ad1e98f843065ba4efbf97987ee499862fd3c94277caa61e0eaa75150dd0a90",
+        "same": true
+      },
+      {
+        "path": "tests/native/diagram-layout-render-app.mjs",
+        "current": "963252177222963873484a8847ee9c20150c6b5e1f84ea8d85ba123cd0e5eee8",
+        "captured": "963252177222963873484a8847ee9c20150c6b5e1f84ea8d85ba123cd0e5eee8",
+        "same": true
+      },
+      {
+        "path": "generated/diagram-vector.html",
+        "current": "7cb5cf2b3634009261ef6da8c743a4eae98e11356dfae3cf14d7ca7ddd2491a4",
+        "captured": "7cb5cf2b3634009261ef6da8c743a4eae98e11356dfae3cf14d7ca7ddd2491a4",
+        "same": true
+      },
+      {
+        "path": "generated/presentation-render.html",
+        "current": "35bad8ec21545b702fdd114257870e4435bcfcbdfd39b01908dcae8a2c51b423",
+        "captured": "35bad8ec21545b702fdd114257870e4435bcfcbdfd39b01908dcae8a2c51b423",
+        "same": true
+      }
+    ]
+  },
+  "executions": [
+    {
+      "phase": "Initial focused VM review",
+      "result": {
+        "chunk_id": "5371bf",
+        "wall_time_seconds": 0.2964307,
+        "exit_code": 0,
+        "original_token_count": 886,
+        "output": "✔ independent exact controller prepare callback refuses invalid co-pending layout/font without save or flush API calls (3.6916ms)\n✔ independent exact controller prepare callback commits finite local choice once and flushes before admission (3.9629ms)\n✔ independent composition precedence refuses layout change and prepare without discarding pending input (1.1891ms)\n✔ independent source ownership and imported opaque preference disable choice without inventing a saved fallback (4.0707ms)\n✔ independent stale view context blocks a pending layout commit into replacement draft (1.3234ms)\n✔ CI runs real catalogue controls in development and isolated copied preview, retaining only scoped evidence (1.2039ms)\n✔ CI rejects omitted copied execution, swallowed failure and profile-wide upload (2.1479ms)\n✔ focus capture is idempotent, restores selection before releasing and preserves mounted pending fields (1.9037ms)\n✔ successful separate opening does not steal focus; lease retires on genuine window return (1.2886ms)\n✔ context change, pause, disposal and hidden Lock cannot restore private content (1.7814ms)\n✔ composition prevents acquisition before focus moves and disabled contexts cannot acquire (0.531ms)\n✔ genuine origin focus returning before the create response restores its field when success closes the catalogue (0.4704ms)\n✔ CI runs real layout controls in development and isolated copied preview, retaining only scoped evidence (1.0173ms)\n✔ CI rejects omitted copied execution, swallowed failure and profile-wide upload (1.8479ms)\n✔ edit-intent invalidation fences an old in-flight render before a debounced replacement starts (2.058ms)\n✔ fresh/local preview receives exact corresponding metadata without changing the saved context (0.5359ms)\n✔ working Diagram previews local source without rereading or changing its saved context, and Lock fences late local SVG (0.5967ms)\n✔ native Diagram retains exact imported source and preserves it when Mermaid rejects syntax (0.5191ms)\n✔ Lock fences pending SVG and reads; rollback permits a fresh render without publishing private late results (3.2093ms)\n✔ competing refreshes publish only the newest read and disposal refuses all further access (0.6025ms)\n✔ layout control uses explicit finite local choices and leaves pending invalid style fields intact (3.6884ms)\n✔ layout picker explains source ownership and unsupported types without overriding saved data (1.2974ms)\n✔ pending style fields survive source repaint; invalid font size cannot be lost, saved or flushed; Escape cancels it (0.7745ms)\n✔ readonly and source-owned colours cannot be changed through the actual optional controller; stable B targets remain editable (1.429ms)\n✔ global and block typography edit without implicit Save; inheritance removes fields and retains colours/siblings (1.6674ms)\n✔ invalid block size survives refused target switch; source-owned typography and readonly controls remain disabled (1.5888ms)\n✔ changing an admitted font preserves existing opaque block metadata and refuses new or changed opaque fields (1.208ms)\n✔ absent global typography shows Theme default and stays absent until explicitly edited (1.2088ms)\n✔ source global font ownership disables controls even when no stable block targets exist (0.7514ms)\n✔ an inherited block size without metadata stays blank until the user explicitly enables a size (1.4929ms)\nℹ tests 30\nℹ suites 0\nℹ pass 30\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 173.2568\n"
+      },
+      "interpretation": "30 passed; final lifecycle case initially checked disposal, despite overbroad replacement-draft wording. Fixture strengthened to switch actual draft identity and callback closures; no product changes."
+    },
+    {
+      "phase": "Strengthened actual replacement draft identity",
+      "result": {
+        "chunk_id": "59da9b",
+        "wall_time_seconds": 0.2830011,
+        "exit_code": 0,
+        "original_token_count": 890,
+        "output": "✔ independent exact controller prepare callback refuses invalid co-pending layout/font without save or flush API calls (3.8755ms)\n✔ independent exact controller prepare callback commits finite local choice once and flushes before admission (4.1243ms)\n✔ independent composition precedence refuses layout change and prepare without discarding pending input (0.8862ms)\n✔ independent source ownership and imported opaque preference disable choice without inventing a saved fallback (3.2843ms)\n✔ independent changed draft identity blocks a pending layout commit into an actual replacement draft (1.8944ms)\n✔ CI runs real catalogue controls in development and isolated copied preview, retaining only scoped evidence (1.1594ms)\n✔ CI rejects omitted copied execution, swallowed failure and profile-wide upload (2.4859ms)\n✔ focus capture is idempotent, restores selection before releasing and preserves mounted pending fields (1.9179ms)\n✔ successful separate opening does not steal focus; lease retires on genuine window return (1.0086ms)\n✔ context change, pause, disposal and hidden Lock cannot restore private content (1.5139ms)\n✔ composition prevents acquisition before focus moves and disabled contexts cannot acquire (0.4126ms)\n✔ genuine origin focus returning before the create response restores its field when success closes the catalogue (0.4409ms)\n✔ CI runs real layout controls in development and isolated copied preview, retaining only scoped evidence (0.9859ms)\n✔ CI rejects omitted copied execution, swallowed failure and profile-wide upload (1.8194ms)\n✔ edit-intent invalidation fences an old in-flight render before a debounced replacement starts (1.8561ms)\n✔ fresh/local preview receives exact corresponding metadata without changing the saved context (0.5087ms)\n✔ working Diagram previews local source without rereading or changing its saved context, and Lock fences late local SVG (0.6632ms)\n✔ native Diagram retains exact imported source and preserves it when Mermaid rejects syntax (0.587ms)\n✔ Lock fences pending SVG and reads; rollback permits a fresh render without publishing private late results (3.3647ms)\n✔ competing refreshes publish only the newest read and disposal refuses all further access (0.6068ms)\n✔ layout control uses explicit finite local choices and leaves pending invalid style fields intact (3.6463ms)\n✔ layout picker explains source ownership and unsupported types without overriding saved data (1.3878ms)\n✔ pending style fields survive source repaint; invalid font size cannot be lost, saved or flushed; Escape cancels it (0.7688ms)\n✔ readonly and source-owned colours cannot be changed through the actual optional controller; stable B targets remain editable (1.4305ms)\n✔ global and block typography edit without implicit Save; inheritance removes fields and retains colours/siblings (1.6471ms)\n✔ invalid block size survives refused target switch; source-owned typography and readonly controls remain disabled (1.6773ms)\n✔ changing an admitted font preserves existing opaque block metadata and refuses new or changed opaque fields (1.4407ms)\n✔ absent global typography shows Theme default and stays absent until explicitly edited (1.1302ms)\n✔ source global font ownership disables controls even when no stable block targets exist (0.8272ms)\n✔ an inherited block size without metadata stays blank until the user explicitly enables a size (1.5376ms)\nℹ tests 30\nℹ suites 0\nℹ pass 30\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 172.9234\n"
+      },
+      "interpretation": "30 passed: 5 independent checks plus 25 existing. No GUI, build, full-suite or package execution."
+    },
+    {
+      "phase": "Read-only CI coverage witness",
+      "result": {
+        "chunk_id": "192706",
+        "wall_time_seconds": 0.1171614,
+        "exit_code": 0,
+        "original_token_count": 54,
+        "output": "{\"witness\":\"Current CI contract checker accepts omission of the new utility step and its result uploads\",\"actualWorkflowModified\":false,\"mutantAccepted\":true,\"scope\":\"coverage gap, not workflow currently absent\"}\n"
+      },
+      "interpretation": "Actual current CI verify helper accepts in-memory omission of utility step plus result uploads. Workflow unchanged."
+    }
+  ],
+  "rootAuthoredEvidence": {
+    "summary": "{\"path\":\"evidence/diagram-layout-native/2026-10-07T11-01-15.468Z/result.json\",\"sha256\":\"898d5da18d549f89fd5775d6dba407c94adad46e4a4434f781408aa57e59ee1b\",\"author\":\"/root\",\"executor\":\"/root\",\"status\":\"ADVERSE\",\"cases\":0,\"error\":{\"phase\":\"engine-select\",\"message\":\"{\\\"exceptionId\\\":1,\\\"text\\\":\\\"Uncaught\\\",\\\"lineNumber\\\":0,\\\"columnNumber\\\":176,\\\"scriptId\\\":\\\"25\\\",\\\"exception\\\":{\\\"type\\\":\\\"object\\\",\\\"subtype\\\":\\\"error\\\",\\\"className\\\":\\\"TypeError\\\",\\\"description\\\":\\\"TypeError: n.getBBox(...).toJSON is not a function\\\\n    at <anonymous>:1:177\\\\n    at Array.from (<anonymous>)\\\\n    at <anonymous>:1:22\\\",\\\"objectId\\\":\\\"-6241379571428815552.1.2\\\"}}\",\"stack\":\"Error: {\\\"exceptionId\\\":1,\\\"text\\\":\\\"Uncaught\\\",\\\"lineNumber\\\":0,\\\"columnNumber\\\":176,\\\"scriptId\\\":\\\"25\\\",\\\"exception\\\":{\\\"type\\\":\\\"object\\\",\\\"subtype\\\":\\\"error\\\",\\\"className\\\":\\\"TypeError\\\",\\\"description\\\":\\\"TypeError: n.getBBox(...).toJSON is not a function\\\\n    at <anonymous>:1:177\\\\n    at Array.from (<anonymous>)\\\\n    at <anonymous>:1:22\\\",\\\"objectId\\\":\\\"-6241379571428815552.1.2\\\"}}\\n    at Object.evaluate (file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/attach-page.mjs:15:153)\\n    at async file:///C:/Claude/SIREN_WORK/portable/desktop/tests/native/diagram-layout.mjs:50:101\"},\"changedInputs\":[],\"endedAt\":\"2026-10-07T11:01:20.717Z\"}\n{\"path\":\"evidence/diagram-layout-native/2026-10-07T11-01-58.616Z/result.json\",\"sha256\":\"1b96a50c3868e8f27cb4c239c374e3c3079d1325aee8192d465247b849407989\",\"author\":\"/root\",\"executor\":\"/root\",\"status\":\"COMPLETE\",\"cases\":4,\"changedInputs\":[],\"endedAt\":\"2026-10-07T11:02:12.963Z\",\"geometry\":5}\n{\"path\":\"evidence/diagram-layout-render/2026-10-07T11-04-03.959Z/result.json\",\"sha256\":\"53e70bf31113551edf236077fe05992ea1443d191e072b2958ee653ae1b533c0\",\"author\":\"/root\",\"status\":\"COMPLETE\",\"cases\":3,\"inputsUnchanged\":true,\"endedAt\":\"2026-10-07T11:04:06.272Z\"}\n{\"path\":\"evidence/diagram-layout-render/2026-10-07T11-04-03.959Z/driver-result.json\",\"sha256\":\"1c08c7b13aaf077b2aaf93154e076107df9cc77623f4383a42283fcba0af9a9c\",\"status\":\"COMPLETE\",\"exit\":{\"code\":0,\"signal\":null}}\n{\"nativeBeforeAfterExact\":true,\"captured\":628}\n",
+    "nativeComplete": {
+      "path": "evidence/diagram-layout-native/2026-10-07T11-01-58.616Z/result.json",
+      "sha256": "1b96a50c3868e8f27cb4c239c374e3c3079d1325aee8192d465247b849407989",
+      "author": "/root",
+      "status": "COMPLETE",
+      "cases": 4,
+      "capturedFiles": 628,
+      "inputsMatchAfter": true,
+      "packageExecution": false
+    },
+    "nativeOriginal": {
+      "path": "evidence/diagram-layout-native/2026-10-07T11-01-15.468Z/result.json",
+      "sha256": "898d5da18d549f89fd5775d6dba407c94adad46e4a4434f781408aa57e59ee1b",
+      "status": "ADVERSE",
+      "cases": 0,
+      "reason": "Harness used nonexistent SVGRect.toJSON; retained original, explicit x/y/width/height serialization correction only; root execution, not reviewer GUI."
+    },
+    "utilityComplete": {
+      "path": "evidence/diagram-layout-render/2026-10-07T11-04-03.959Z/result.json",
+      "sha256": "53e70bf31113551edf236077fe05992ea1443d191e072b2958ee653ae1b533c0",
+      "author": "/root",
+      "status": "COMPLETE",
+      "cases": 3,
+      "inputsUnchanged": true,
+      "packageExecution": false,
+      "diagramFamily": "flowchart only",
+      "geometry": "Five actual nodes; dagre vs elk distinction and exact SVG/public-slide DOM node geometry equality asserted; not PNG pixel comparison."
+    },
+    "utilityDriver": {
+      "path": "evidence/diagram-layout-render/2026-10-07T11-04-03.959Z/driver-result.json",
+      "sha256": "1c08c7b13aaf077b2aaf93154e076107df9cc77623f4383a42283fcba0af9a9c",
+      "status": "COMPLETE",
+      "exitCode": 0
+    },
+    "freshBuild": {
+      "path": "evidence/workspace-surface/layout-renderer-0b79dd4f-5a87-4ca1-a52b-425957f28962/result.json",
+      "status": "COMPLETE",
+      "files": 26,
+      "changed": [
+        "build.json",
+        "diagram-vector.html",
+        "import-validation.html",
+        "presentation-render.html"
+      ],
+      "scope": "Root-produced fresh generated build; generated utility hashes equal native captures; no reviewer build/package approval"
+    },
+    "ciOriginal": {
+      "path": "evidence/workspace-surface/diagram-layout-ci-green.txt",
+      "status": "ADVERSE",
+      "pass": 3,
+      "fail": 1,
+      "reason": "Copied CI fixture regex still referenced diagram-catalogue in expected layout step; original preserved at diagram-layout-ci-first-original.mjs"
+    },
+    "ciCorrected": {
+      "path": "evidence/workspace-surface/diagram-layout-ci-corrected-green.txt",
+      "pass": 4,
+      "fail": 0,
+      "scope": "Local Node CI contract tests, not hosted workflow execution"
+    }
+  },
+  "findings": [
+    {
+      "id": "LAYOUT-CI-COVERAGE-01",
+      "severity": "P3",
+      "blocking": false,
+      "file": "tests/diagram-layout-ci.test.mjs",
+      "line": 5,
+      "title": "New utility CI step and result uploads are not guarded by the CI contract checker",
+      "evidence": "Read-only in-memory witness removed run: node tests/native/diagram-layout-render.mjs plus both scoped result uploads; actual verify helper accepted the mutated workflow.",
+      "impact": "A later accidental omission of only the utility geometry job/evidence would pass current layout CI tests; the present workflow contains the correct step and scoped uploads.",
+      "recommendation": "Extend CI contract assertions and negative fixtures to require utility step under diagrams and its result.json/driver-result.json uploads. Keep development-only utility scope explicit."
+    }
+  ],
+  "verifiedObservations": [
+    "Disabled/readonly/source-owned/opaque imported layout controls do not silently set a saved default in exercised VM flows.",
+    "Invalid font plus selected engine stays pending; exact onPrepare callback returns GUIDED_EDIT_PENDING before any save/flush, while privacy hide and session pause occur.",
+    "Finite valid change remains local; exact prepare callback saves once then flushes before readiness. Paused controls cannot apply further changes.",
+    "Composition blocks change/commit and prepare; draft identity replacement blocks applying old pending choice to new entity.",
+    "Controller passes provenance.layout from shared prepare through current preview into setTargets. Session tests fence delayed renders after Lock/invalidation.",
+    "Actual geometry assertions compare full node transform and bounding box, not only select value; source fill is checked through computed style, undo/redo geometry exact, source references and sibling opaque content read back.",
+    "Utility instrumentation runs real utility before observing returned SVG or public slide DOM; instruments output observation, not product handler substitution; input immutable and window/webContents destruction asserted."
+  ],
+  "limits": [
+    "No independent GUI/browser/Electron execution by this reviewer",
+    "Exact controller onPrepare callback executed with mocked neighboring controllers/session/window APIs; entire controller not run in VM",
+    "Root native scripts use actual development renderer; no package field or packageUnchanged in those retained results",
+    "Package branch verifies copied archive/runtime/process-reader against receipt and sets ADVERSE on mismatch; this is static review, not executed package evidence and not independent source-to-package binding",
+    "Actual native/utility geometry currently flowchart only; class/state/ER/requirement require separate real geometry measurements",
+    "PNG image utility executes actual canvas pipeline but assertions compare pre-raster DOM geometry and imported fill, not decoded PNG pixels",
+    "No physical monitor, real IME, hosted CI, production release or approval",
+    "Fresh-build receipt has honest limited scope; reviewer did not rerun build and did not independently compare all 26 generated files",
+    "Future root utility extension does not inherit this report; identities qualify only the recorded frozen bytes"
+  ]
+}

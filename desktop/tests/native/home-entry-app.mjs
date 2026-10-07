@@ -13,6 +13,7 @@ import {ProjectCatalog} from '../../src/navigation/catalog.mjs';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {LocalPinAccess} from '../../src/account/local-pin.mjs';
 import {resolveLocalResource} from '../../src/protocol.mjs';
+import {expectedHomeResources,hasOnlyHomeResources} from './home-entry-resources.mjs';
 const desktop=fileURLToPath(new URL('../../',import.meta.url)),root=resolve(process.argv.find(v=>v.startsWith('--siren-home-fixture='))?.slice('--siren-home-fixture='.length)||'');
 const rel=relative(join(desktop,'evidence/home-entry'),root);if(!rel||rel.startsWith('..')||isAbsolute(rel))throw Error('OWNED_HOME_FIXTURE_REQUIRED');
 app.setPath('userData',join(root,'owned-profile'));app.on('window-all-closed',()=>{});
@@ -88,8 +89,8 @@ app.whenReady().then(async()=>{
     assert.deepEqual(result.observedPhases,['intro','pin','home']);assert.equal(pin.state().unlocked,true);
     const dirs=await readdir(join(data,'Projects')).catch(error=>error.code==='ENOENT'?[]:Promise.reject(error));assert.equal(dirs.length,0);
     assert.equal(await evaluate('document.getElementById("homeContinue")===null'),true);await screenshot('home-empty');
-    assert.equal(result.requests.every(url=>['siren://app/home.html','siren://app/assets/shell.js','siren://app/assets/shell.css'].includes(url)),true);
-    assert.ok(result.requests.includes('siren://app/assets/shell.js'));assert.ok(result.requests.includes('siren://app/assets/shell.css'));
+    assert.equal(hasOnlyHomeResources(result.requests),true);
+    for(const url of expectedHomeResources)assert.ok(result.requests.includes(url),'Genuine Home resource must load: '+url);
     result.cases.push({name:'real intro, protected PIN setup and empty Home without scratch project or diagram request',status:'COMPLETE'});await progress();
     const privateText='PLANTED_PRIVATE_SOURCE_NEVER_HOME';const label='Owned <img src=x onerror="alert(1)"> workspace';
     const selected=await projects.createProject({label,json:JSON.stringify({docs:privateText,privateDraft:privateText})});projectId=selected.project.id;generation++;authority.invalidate();
@@ -148,7 +149,7 @@ app.whenReady().then(async()=>{
     window.webContents.debugger.detach();
     result.cases.push({name:'native keyboard focus and activation; actual reduced-motion startup skips intro animation without exposing Home metadata',status:'COMPLETE'});
     result.requestsOnlyHome=result.requests.every(url=>url==='siren://app/home.html');
-    result.requestsOnlyHomeResources=result.requests.every(url=>['siren://app/home.html','siren://app/assets/shell.js','siren://app/assets/shell.css'].includes(url));assert.equal(result.requestsOnlyHomeResources,true);
+    result.requestsOnlyHomeResources=hasOnlyHomeResources(result.requests);assert.equal(result.requestsOnlyHomeResources,true);
     result.status='COMPLETE';result.finished=new Date().toISOString();
   }catch(error){result.error={message:error.message,stack:error.stack};try{if(window&&!window.isDestroyed())await writeFile(join(root,'failure.png'),(await window.webContents.capturePage()).toPNG());}catch{}}
   finally{authority?.invalidate();if(window&&!window.isDestroyed())window.destroy();result.remainingWindows=BrowserWindow.getAllWindows().length;await writeFile(join(root,'native-result.json'),JSON.stringify(result,null,2));app.exit(result.status==='COMPLETE'?0:1);}

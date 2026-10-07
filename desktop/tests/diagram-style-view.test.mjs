@@ -12,6 +12,17 @@ function fixture(readonly=false){
  const view=window.SirenNativeDiagramStyleView.create({host,diagramFor:draft.getDiagram,editable:()=>!readonly,onStyle:draft.setStyle,onStatus:value=>messages.push(value)});view.setTargets([{id:'A',protected:{fill:true,text:true}},{id:'B',protected:{}}]);
  const field=id=>{const all=[];const walk=node=>{all.push(node);for(const child of node.children||[])walk(child);};walk(host);return all.find(node=>node.id===id);};return{draft,view,field,messages,saves:()=>saves};
 }
+
+test('layout control uses explicit finite local choices and leaves pending invalid style fields intact',()=>{
+ const f=fixture(),layout=f.field('diagramStyleLayout');assert.ok(layout);f.view.setTargets([],{layout:{supported:true,sourceOwned:false}});assert.equal(layout.value,'auto');assert.equal(layout.disabled,false);assert.equal(Object.hasOwn(f.draft.getDiagram(),'sirenNativeLayoutEngine'),false);
+ layout.value='dagre';layout.listeners.change();assert.equal(f.draft.getDiagram().sirenNativeLayoutEngine,'dagre');assert.equal(f.saves(),0);f.draft.undo();f.view.paint();assert.equal(layout.value,'auto');
+ const size=f.field('diagramStyleSize');size.value='200';size.listeners.input();layout.value='elk';layout.listeners.change();assert.equal(size.value,'200');assert.equal(f.view.commit(),false);assert.equal(Object.hasOwn(f.draft.getDiagram(),'sirenNativeLayoutEngine'),false);
+});
+test('layout picker explains source ownership and unsupported types without overriding saved data',()=>{
+ const f=fixture(),layout=f.field('diagramStyleLayout');assert.ok(layout);f.view.setTargets([],{layout:{supported:true,sourceOwned:true}});assert.equal(layout.disabled,true);assert.match(layout.title,/Mermaid/);layout.value='dagre';layout.listeners.change();assert.equal(f.draft.getStatus().dirty,false);
+ f.view.setTargets([],{layout:{supported:false,sourceOwned:false}});assert.equal(layout.disabled,true);assert.match(layout.title,/diagram type/);
+ const ro=fixture(true);ro.view.setTargets([],{layout:{supported:true,sourceOwned:false}});assert.equal(ro.field('diagramStyleLayout').disabled,true);
+});
 test('pending style fields survive source repaint; invalid font size cannot be lost, saved or flushed; Escape cancels it',()=>{
  const f=fixture(),size=f.field('diagramStyleSize');size.value='200';size.listeners.input();f.draft.setSource('exact local source');f.view.paint();assert.equal(size.value,'200');assert.equal(f.view.isEditing(),true);assert.equal(f.view.commit(),false);assert.equal(size.value,'200');assert.equal(size.attrs['aria-invalid'],'true');assert.equal(f.draft.getDiagram().fontSize,18);assert.equal(f.saves(),0);
  size.listeners.keydown({key:'Escape',preventDefault(){}});assert.equal(size.value,'18');assert.equal(f.view.isEditing(),false);size.value='20';size.listeners.input();assert.equal(f.view.commit(),true);assert.equal(f.draft.getDiagram().fontSize,20);assert.equal(f.saves(),0);

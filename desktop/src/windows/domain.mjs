@@ -9,13 +9,15 @@ import {normalizeDocumentContext,applyDocumentContext} from '../documents/contex
 import {normalizePresentationEdits,applyPresentationEdits} from '../documents/presentation-edits.mjs';
 import {createDiagramMetadataContract} from '../documents/diagram-metadata.mjs';
 import {randomUUID} from 'node:crypto';
+import {createDiagramLayoutContract} from '../documents/diagram-layout.mjs';
 import {appendCatalogueDiagram} from './diagram-create.mjs';
 const error=code=>Object.assign(new Error(code),{code});
 const fail=code=>Object.freeze({ok:false,code});
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 export const DOMAIN_BYTES=2*1024*1024;
-const styleFields=['diagramTitle','diagramTitleTouched','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','nodeMetadata','comments','layout','view','links','icons','rules','numbering','legend','gitBranchColours','presentation'];
-const resettableStyleFields=new Set(['diagramTitle','diagramTitleTouched','fontFamily','fontSize','fontWeight','nodeStyles','nodeMetadata']);
+const nativeLayout=createDiagramLayoutContract();
+const styleFields=['sirenNativeLayoutEngine','diagramTitle','diagramTitleTouched','direction','curve','fontFamily','fontSize','fontWeight','nodeStyles','styleClasses','nodeClasses','edgeStyles','edgeRoutes','nodeMetadata','comments','layout','view','links','icons','rules','numbering','legend','gitBranchColours','presentation'];
+const resettableStyleFields=new Set(['sirenNativeLayoutEngine','diagramTitle','diagramTitleTouched','fontFamily','fontSize','fontWeight','nodeStyles','nodeMetadata']);
 const diagramMetadata=createDiagramMetadataContract();
 const managedNodeStyleFields=new Set(['fill','border','text','fontFamily','fontSize','fontWeight']);
 // Copy only plain bounded JSON data, never execute getters/toJSON or retain a
@@ -47,7 +49,7 @@ function domainIntent(domain,input) {
  else if(domain==='diagram'&&request.action==='replace-deck-content'){payload=navigationFields(request.payload,['source','presentationEdits','resetStyleFields',...styleFields.filter(k=>k!=='presentation')],['source','presentationEdits']);if(typeof payload.source!=='string')throw error('REQUEST_REFUSED');payload.presentationEdits=normalizePresentationEdits(payload.presentationEdits);}
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');
- const copied=dataCopy(payload);if(Object.hasOwn(copied,'resetStyleFields')){const fields=copied.resetStyleFields;if(!Array.isArray(fields)||!fields.length||fields.length>7||new Set(fields).size!==fields.length||fields.some(key=>!resettableStyleFields.has(key)||Object.hasOwn(copied,key)))throw error('REQUEST_REFUSED');}if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
+ const copied=dataCopy(payload);if(Object.hasOwn(copied,'sirenNativeLayoutEngine')&&!nativeLayout.valid(copied.sirenNativeLayoutEngine))throw error('REQUEST_REFUSED');if(Object.hasOwn(copied,'resetStyleFields')){const fields=copied.resetStyleFields;if(!Array.isArray(fields)||!fields.length||fields.length>8||new Set(fields).size!==fields.length||fields.some(key=>!resettableStyleFields.has(key)||Object.hasOwn(copied,key)))throw error('REQUEST_REFUSED');}if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
  return Object.freeze({...request,payload:copied});
 }
 export function normalizeDomainIntent(domain,input) {try{return domainIntent(domain,input);}catch{throw error('REQUEST_REFUSED');}}
@@ -119,6 +121,7 @@ export class DomainRepository {
    }
    if(version(current,domain,id)!==request.expectedVersion)throw error(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT');
    const before=selectedEntity(current,domain,id);
+   if(domain==='diagram'&&(Object.hasOwn(request.payload,'sirenNativeLayoutEngine')||request.payload.resetStyleFields?.includes('sirenNativeLayoutEngine'))&&!nativeLayout.validate(request.payload.sirenNativeLayoutEngine,before.sirenNativeLayoutEngine))throw error('DOMAIN_VALIDATION_FAILED');
    if(domain==='diagram'&&(Object.hasOwn(request.payload,'nodeMetadata')||request.payload.resetStyleFields?.includes('nodeMetadata'))&&!diagramMetadata.validate(request.payload.nodeMetadata,before.nodeMetadata))throw error('DOMAIN_VALIDATION_FAILED');
    if(domain==='diagram'&&request.payload.resetStyleFields?.includes('nodeStyles')&&Object.hasOwn(before,'nodeStyles')){const styles=before.nodeStyles;if(!styles||typeof styles!=='object'||Array.isArray(styles)||Object.values(styles).some(node=>!node||typeof node!=='object'||Array.isArray(node)||Object.keys(node).some(key=>!managedNodeStyleFields.has(key))))throw error('DOMAIN_VALIDATION_FAILED');}
    if(await this.#validate({domain,action:request.action,payload:dataCopy(request.payload),before:JSON.parse(JSON.stringify(before))},scope)!==true)throw error('DOMAIN_VALIDATION_FAILED');guard(scope);

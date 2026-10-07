@@ -20,6 +20,13 @@ async function fixture(){
  const decks=new module.NativePresentationDecks({registry,snapshotFor:async()=>current});
  return {root,projects,snapshot,diagram,metadata,registry,windows,grants,decks,setSnapshot:value=>current=value};
 }
+
+test('public render context carries only a finite saved layout preference and never opaque layout payloads',async()=>{
+ for(const value of ['auto','dagre','elk',{private:'PRIVATE_LAYOUT'},'future',null]){
+  const f=await fixture(),diagram={...f.diagram,sirenNativeLayoutEngine:value};assert.equal((await f.projects.saveProject({projectId:f.snapshot.project.id,baseRevision:f.snapshot.revision,json:JSON.stringify({...f.metadata,diagrams:[diagram]}),purpose:'workspace'})).ok,true);const saved=await f.projects.readProject(f.snapshot.project.id);f.setSnapshot(saved);
+  const deck=await f.decks.read(f.grants[0],{isCurrent:()=>true});assert.equal(Object.hasOwn(deck.render,'sirenNativeLayoutEngine'),typeof value==='string'&&['auto','dagre','elk'].includes(value));if(['auto','dagre','elk'].includes(value))assert.equal(deck.render.sirenNativeLayoutEngine,value);assert.equal(JSON.stringify(deck.render).includes('PRIVATE_'),false);assert.deepEqual(await f.projects.readProject(f.snapshot.project.id),saved);
+ }
+});
 test('native deck reads the exact selected diagram and genuine notes while excluding other project/private node metadata',async()=>{
  const f=await fixture(),deck=await f.decks.read(f.grants[0],{isCurrent:()=>true});assert.equal(deck.projectId,f.snapshot.project.id);assert.equal(deck.deckId,'diagram-a');assert.equal(deck.version,createHash('sha256').update(JSON.stringify(f.diagram)).digest('hex'));
  assert.deepEqual(deck.slides.map(s=>[s.id,s.title,s.notes]),[['step-a','A','PRIVATE_NOTES_A'],['section-b','Context','PRIVATE_NOTES_B']]);assert.equal(deck.render.source,f.diagram.source);assert.deepEqual(deck.render.nodeStyles,f.diagram.nodeStyles);assert.equal('source' in deck.slides[0].render,false);

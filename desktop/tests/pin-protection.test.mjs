@@ -49,12 +49,16 @@ test('protection requires encrypt close then a different decrypt close with exac
  for(const call of f.calls){assert.equal(call.options.shell,false);assert.equal(call.options.windowsHide,true);assert.equal(call.args.some(a=>a.includes('synthetic verifier')),false);assert.equal(call.options.env.ELECTRON_RUN_AS_NODE,undefined);assert.equal(call.options.env.NODE_OPTIONS,undefined);}
 });
 
-test('output arriving before actual process close cannot authorize persistence',async()=>{
+test('output arriving before actual process close cannot authorize persistence',async(t)=>{
+ // Process close is the event under test. Keep its deadline deterministic so
+ // concurrent filesystem work cannot turn this assertion into a timeout test.
+ // The separate timeout-refusal case below still exercises the real timer.
+ t.mock.timers.enable({apis:['setTimeout']});
  const f=await fixture('hold');let finished=false;const response=once(f.hold,'response'),pending=f.protector.decryptString(Buffer.from('cipher')).then(()=>{finished=true;});
  // Existing protected-record decrypt must have an existing admitted profile/key.
  await assert.rejects(pending);assert.equal(finished,false);assert.equal(f.calls.length,0);
  const profile=join(f.root,'Access','PinProtection');await mkdir(join(f.root,'Access'));await mkdir(profile);await writeFile(join(profile,'Local State'),'{}');
- const actual=f.protector.decryptString(Buffer.from('cipher')).then(()=>{finished=true;});await response;assert.equal(finished,false);f.hold.emit('release');await actual;assert.equal(finished,true);
+ const actual=f.protector.decryptString(Buffer.from('cipher')).then(()=>{finished=true;});await response;assert.equal(finished,false);t.mock.timers.tick(99);assert.equal(finished,false);f.hold.emit('release');await actual;assert.equal(finished,true);t.mock.timers.tick(1);assert.equal(finished,true);
 });
 
 for(const mode of ['timeout','exit','mismatch','oversized'])test('refuses '+mode+' without returning protected bytes',async()=>{

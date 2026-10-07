@@ -7,7 +7,7 @@ import {buildWorkspaceEntrypoint} from '../../build/workspace.mjs';
 const desktop=fileURLToPath(new URL('../../',import.meta.url)),root=resolve(desktop,'evidence/home-entry',new Date().toISOString().replaceAll(':','-'));
 await mkdir(join(root,'owned-data'),{recursive:true});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-const names=['package.json','package-lock.json','tests/native/home-entry.mjs','tests/native/home-entry-app.mjs'];
+const names=['package.json','package-lock.json','tests/native/home-entry.mjs','tests/native/home-entry-app.mjs','tests/native/home-entry-resources.mjs'];
 async function walk(dir){for(const entry of await readdir(join(desktop,dir),{withFileTypes:true})){const name=dir+'/'+entry.name;if(entry.isDirectory())await walk(name);else if(entry.isFile())names.push(name);}}
 await walk('src');await walk('build');
 const capture=async()=>Object.fromEntries(await Promise.all(names.sort().map(async name=>[name,hash(await readFile(join(desktop,name)))])));

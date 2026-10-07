@@ -39,7 +39,7 @@ function projection(snapshot,diagramId){
  });
  // One shared native render context, not 600 copies of a potentially large
  // diagram. Private node/agent metadata and other project entities stay out.
- const render={source:diagram.source};for(const key of styleKeys)if(Object.hasOwn(diagram,key))render[key]=structuredClone(diagram[key]);
+ const render={source:diagram.source};if(['auto','dagre','elk'].includes(diagram.sirenNativeLayoutEngine))render.sirenNativeLayoutEngine=diagram.sirenNativeLayoutEngine;for(const key of styleKeys)if(Object.hasOwn(diagram,key))render[key]=structuredClone(diagram[key]);
  const deck={projectId:snapshot.project.id,deckId:diagramId,version:digest(Buffer.from(JSON.stringify(diagram))),title,slides,render};if(Buffer.byteLength(JSON.stringify(deck))>8*1024*1024)refuse();return deck;
 }
 /** Read-only native loader. A deck is immutable until explicit refresh; its

@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-03-siren-terminal-design.md`. Prepared under the user's explicit implementation-with-agents instruction and selected real-shell/Lock behavior. Do not repeat the superseded generic authorization handoff; implement the authorized dependency work and report qualification failures honestly.
 
+**New requirements recorded 7 October (proposals, not completed tasks or changes to this approved scope):** a Python-first debugger inside Code is researched in [Code debugger](../../research/2026-10-07-siren-code-debugger.md); ready-made local playbooks with optional later AI assistance are proposed in [SIREN Flows](../../research/2026-10-07-siren-flows.md). Both depend on qualified process/source authority where execution is involved. Their written specifications/plans and runtime qualification remain separate work; do not claim either feature is installed or shipped.
+
 ## Global Constraints
 
 - A shell has the user's OS rights. PIN/host isolation is not an execution sandbox. Local PIN remains active; no account backend or AI work is added.
