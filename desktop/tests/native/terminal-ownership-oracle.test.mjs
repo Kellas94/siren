@@ -5,9 +5,10 @@ import {readFile} from 'node:fs/promises';
 import {EventEmitter} from 'node:events';
 import {setImmediate as turn} from 'node:timers/promises';
 import vm from 'node:vm';
-const runner=await readFile(new URL('./terminal-ownership-addon.mjs',import.meta.url),'utf8');
+for(const name of ['terminal-ownership-addon.mjs','terminal-job-lifetime.mjs']){
+const runner=await readFile(new URL('./'+name,import.meta.url),'utf8');
 const predicate=runner.match(/receipt.status=(.*);/)[1];
-const passed={native:{main:{status:'PRIMITIVE_PASSED'},host:{status:'PRIMITIVE_PASSED'},hostExitCode:0},exitObserved:true,addonUnchanged:true};
+const passed={native:{main:{status:'PRIMITIVE_PASSED'},host:{status:'PRIMITIVE_PASSED'},hostExitCode:0},exitObserved:true,addonUnchanged:true,metricsUnchanged:true};
 const verdict=receipt=>vm.runInNewContext(predicate,{receipt,code:0});
 test('receipt refuses either expired deadline and unobserved exit',()=>{
   assert.equal(verdict(passed),'PREREQUISITE_PASSED');
@@ -55,3 +56,4 @@ test('outer kill throw does not lose deadline writeback',async()=>{
   const h=await outerHarness(()=>{throw Error('OWNED_KILL_FAILED');});assert.doesNotThrow(()=>h.timer.timers[0].fn());
   const grace=h.timer.timers.find(t=>t.ms===3000);assert.ok(grace);grace.fn();await turn();assert.equal(h.settled(),true);assert.equal(h.value(),null);
 });
+}
