@@ -119,7 +119,15 @@ internal static partial class TerminalJobListProbe {
             foreach(uint pid in fixedB)Require(seen.Contains(pid)&&!ConptyMembership[pid][0]&&ConptyMembership[pid][1],"CONPTY_B_SET");
             var stop=Stopwatch.StartNew();Require(TerminateJobObject(a,77),"CONPTY_STOP_A");
             if(negative){while(stop.ElapsedMilliseconds<2000)Thread.Sleep(5);}
-            else {WaitEmpty(a);foreach(IntPtr handle in held)if(ConptyMembership[GetProcessId(handle)][0]){Require(WaitForSingleObject(handle,0)==0,"CONPTY_A_SURVIVED");uint exit;Require(GetExitCodeProcess(handle,out exit)&&exit==77,"CONPTY_A_WRONG_EXIT");}}
+            else {WaitEmpty(a);result["sessionActiveAfterStop"]=Active(a);var waits=new List<object>();result["stopWaits"]=waits;
+                foreach(IntPtr handle in held)if(ConptyMembership[GetProcessId(handle)][0]){
+                    // Empty Job accounting alone is not a process-handle signal.
+                    // Use the ORIGINAL global Stop budget, never a new per-handle
+                    // deadline, then retain exact77 and identity/cleanup gates.
+                    long remaining=3000-stop.ElapsedMilliseconds;Require(remaining>0,"CONPTY_STOP_GLOBAL_DEADLINE");
+                    uint beforeWait=WaitForSingleObject(handle,0),waited=WaitForSingleObject(handle,(uint)remaining);
+                    waits.Add(new Dictionary<string,object>{{"pid",GetProcessId(handle)},{"initialWait",beforeWait},{"finalWait",waited},{"elapsedMs",stop.ElapsedMilliseconds}});
+                    Require(waited==0,"CONPTY_A_SURVIVED");uint exit;Require(GetExitCodeProcess(handle,out exit)&&exit==77,"CONPTY_A_WRONG_EXIT");}}
             foreach(IntPtr handle in held){uint pid=GetProcessId(handle);if(ConptyMembership[pid][1]||negative&&Array.IndexOf(fixedA,pid)>=0)Require(WaitForSingleObject(handle,0)==258,"CONPTY_ISOLATION_FAILED");}
             result["after"]=ConptyStates(held,a,b,false);result["stopMs"]=stop.ElapsedMilliseconds;result["fixtureAgeMs"]=age.ElapsedMilliseconds;Require(age.ElapsedMilliseconds<6000&&stop.ElapsedMilliseconds<3000,"CONPTY_NATURAL_DEADLINE");
             result["status"]=negative?"EXPECTED_SESSION_ASSIGNMENT_REFUSED":"CONPTY_MEMBERSHIP_OBSERVED_TERMINAL_NOT_ADMITTED";code=negative?1:0;
