@@ -5,6 +5,10 @@ on:
       - '.github/workflows/terminal-prerequisite.yml'
       - 'desktop/tests/native/terminal-job-list.mjs'
       - 'desktop/tests/fixtures/terminal-job-list.cs'
+      - 'desktop/tests/native/terminal-ownership-addon.mjs'
+      - 'desktop/tests/native/build-terminal-ownership.mjs'
+      - 'desktop/tests/native/terminal-ownership-oracle.test.mjs'
+      - 'desktop/tests/fixtures/terminal-ownership/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,7 +16,7 @@ jobs:
   win32-job-list:
     name: Win32 Job-list prerequisite (not Terminal admission)
     runs-on: windows-latest
-    timeout-minutes: 8
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,11 +57,33 @@ jobs:
             }
           }
           $discovery | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath desktop/evidence/terminal-build-tool-discovery.json -Encoding utf8
+      - name: Check prerequisite deadline and failure oracles
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs
+          exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
         timeout-minutes: 2
         run: |
           node desktop/tests/native/terminal-job-list.mjs
+          exit $LASTEXITCODE
+      - name: Install existing locked build dependencies without lifecycle scripts
+        shell: pwsh
+        working-directory: desktop
+        timeout-minutes: 2
+        run: npm ci --ignore-scripts --no-fund --no-update-notifier
+      - name: Install exact existing Electron runtime explicitly
+        shell: pwsh
+        working-directory: desktop
+        timeout-minutes: 2
+        run: npm run runtime:install
+      - name: Build isolated native primitive and test actual Electron ABI
+        shell: pwsh
+        timeout-minutes: 6
+        run: |
+          node desktop/tests/native/build-terminal-ownership.mjs desktop/evidence/terminal-build-tool-discovery.json
           exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         if: always()
@@ -68,4 +94,10 @@ jobs:
             desktop/evidence/terminal-job-list/*/*.json
             desktop/evidence/terminal-job-list/*/*.txt
             desktop/evidence/terminal-build-tool-discovery.json
+            desktop/evidence/terminal-ownership-build/*/receipt.json
+            desktop/evidence/terminal-ownership-build/*/*.txt
+            desktop/evidence/terminal-ownership-build/*/candidate/build/Release/terminal_ownership_probe.node
+            desktop/evidence/terminal-ownership-addon/*/receipt.json
+            desktop/evidence/terminal-ownership-addon/*/native-result.json
+            desktop/evidence/terminal-ownership-addon/*/electron.log
           if-no-files-found: error
