@@ -295,6 +295,9 @@ jobs:
       - name: Actual Diagram Inspector and filters
         if: matrix.group == 'diagrams'
         run: node tests/native/diagram-annotations.mjs
+      - name: Actual Diagram pan release
+        if: matrix.group == 'diagrams'
+        run: node tests/native/diagram-pan-release.mjs
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -313,6 +316,8 @@ jobs:
             desktop/evidence/diagram-walkthrough-native/*/*.png
             desktop/evidence/diagram-annotations-native/*/result.json
             desktop/evidence/diagram-annotations-native/*/*.png
+            desktop/evidence/diagram-pan-release/*/result.json
+            desktop/evidence/diagram-pan-release/*/*.png
             desktop/evidence/native-verification/*.json
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
@@ -531,6 +536,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram walkthrough failed" }
           node tests/native/diagram-annotations.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram Inspector and filters failed" }
+          node tests/native/diagram-pan-release.mjs --package $preview.previewRoot
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Diagram pan release failed" }
           node tests/native/packaged.mjs $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-bundle-import.mjs --package $preview.previewRoot --300k --code-only
@@ -608,6 +615,8 @@ jobs:
             desktop/evidence/diagram-walkthrough-native/*/*.png
             desktop/evidence/diagram-annotations-native/*/result.json
             desktop/evidence/diagram-annotations-native/*/*.png
+            desktop/evidence/diagram-pan-release/*/result.json
+            desktop/evidence/diagram-pan-release/*/*.png
             desktop/evidence/ci-units.log
             desktop/evidence/ci-native-identity.log
             desktop/evidence/*/result.json

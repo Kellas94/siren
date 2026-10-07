@@ -1,0 +1,9 @@
+# Docs Activity guarded canonical sync
+
+Author: /root. Local product5cca4ab195028d64f09061be6dc5a3536f59bc4e, qualifiede7799d7b30890cd1a36af2bb289e646f58775b52. Canonicale6795b1f00c279fb2b93434f1e90fc0e4f094f24, treed9bbed1e141291360c3476410053b8c38481e55d,1888blobs. Guarded42local/43remote entries,38new files; all1845 untouched old blobs match. Exact33053-byte remote ignore prefix retained; only exact committed new paths appended. Every transported UTF8 source/report blob matches its committed GitSHA. Branch updated nonforce with expected previous03c76b877173c466de06de89c757609cd8adda1a.
+
+GitHub integrationf45a68064772a5fc07a073963edd8679ce3bcd00 has the identical tree and ordered parents main1e5472dde446657e2dbb155868e28e033c6c9c92 then canonicale6795. PR2 remains open/draft/unmerged; main is unchanged. Actual hosted37579922872 was observed IN_PROGRESS with canonicalhead e6795. This is a dispatch observation, not a passing verdict. Original FINAL retention delegated to disk_inventory; no push/cancel/rerun while active.
+
+Local evidence is separate: final1458/1458, new development Activity8, six original Docs regressions, exact297-member separate preview, nine actual isolated copied native programs and27 exact postexecution archive/runtime/helper hashes. Original native ADVERSE3, ABORTED with no invented final receipt, and first fullsuiteADVERSE1457/1458 remain retained. Real independent report authors and scopes are unchanged.
+
+Previous hosted375651 FINAL FAILURE was freshly read back before this sync; all83 original owner records verified. Its pan cause and historical Save-to-Attach remain OPEN. No release, main merge, installed replacement or complete desktop parity is claimed. Next local sync BASE must be qualifiede7799d7, against canonicale6795/tree d9bb/1888; it must not be the later metadata receipt commit.
