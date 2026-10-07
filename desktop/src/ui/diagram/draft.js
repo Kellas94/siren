@@ -11,7 +11,7 @@
   const status=()=>Object.freeze({diagramId:diagram.id,version,sha256,projectRevision,dirty,paused,fenced,disposed,pending:pending!==null,readonly:context.readonly});
   const changed=()=>{try{onChange(status());}catch{/* Observers do not grant save authority. */}};
   const reconcile=()=>{dirty=source!==diagram.source||Object.keys(stylePatch).length>0||styleRemovals.length>0||presentationEdits.length>0;};
-  const historyFields=['fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched','nodeStyles'],limitStates=60,limitBytes=8*1024*1024;
+  const historyFields=['fontFamily','fontSize','fontWeight','diagramTitle','diagramTitleTouched','nodeStyles','nodeMetadata'],limitStates=60,limitBytes=8*1024*1024;
   let history=[],historyIndex=-1,historyBytes=0,historySequence=0,coalescing=null;
   const editable=()=>!disposed&&!paused&&!pending&&!fenced&&!context.readonly;
   const snapshot=()=>{const value=actualDiagram(),style={};for(const key of historyFields)if(Object.hasOwn(value,key))style[key]=structuredClone(value[key]);return{source,style};};
@@ -86,6 +86,14 @@
    editPresentation(input){if(disposed||paused||pending||fenced||context.readonly)return fail('DIAGRAM_NOT_EDITABLE');let next;try{const op=window.SirenPresentationEdits.normalizePresentationEdits([input])[0];next=structuredClone(presentationEdits);const last=next.at(-1);if(last?.action==='update'&&op.action==='update'&&last.id===op.id)last.changes={...last.changes,...op.changes};else next.push(op);const result=window.SirenPresentationEdits.applyPresentationEdits(diagram.presentation,next);if(JSON.stringify(result)===JSON.stringify(diagram.presentation))next=[];}catch{return fail('PRESENTATION_EDIT_REFUSED');}presentationEdits=next;reconcile();changed();return Object.freeze({ok:true});},
    setSource(value,{label='Edit Mermaid',coalesce=false}={}){if(!editable())return fail('DIAGRAM_NOT_EDITABLE');if(typeof value!=='string'||!value.isWellFormed())return fail('INVALID_SOURCE');source=value;recordHistory(label,coalesce);reconcile();changed();return Object.freeze({ok:true});},
    setStyle(input,{label='Change style'}={}){if(!editable())return fail('DIAGRAM_NOT_EDITABLE');let patch;try{patch=styleCopy(input);}catch{return fail('INVALID_STYLE');}for(const [key,value]of Object.entries(patch)){styleRemovals=styleRemovals.filter(k=>k!==key);if(JSON.stringify(value)===JSON.stringify(diagram[key]))delete stylePatch[key];else stylePatch[key]=value;}recordHistory(label);reconcile();changed();return Object.freeze({ok:true});},
+   editMetadata(input){
+    if(!editable())return fail('DIAGRAM_NOT_EDITABLE');let next;
+    try{next=window.SirenDiagramMetadata.update(actualDiagram().nodeMetadata,input);if(next!==undefined&&!Object.keys(next).length&&!Object.hasOwn(diagram,'nodeMetadata'))next=undefined;}catch{return fail('DIAGRAM_METADATA_REFUSED');}
+    styleRemovals=styleRemovals.filter(k=>k!=='nodeMetadata');
+    if(next===undefined){delete stylePatch.nodeMetadata;if(Object.hasOwn(diagram,'nodeMetadata'))styleRemovals.push('nodeMetadata');}
+    else if(JSON.stringify(next)===JSON.stringify(diagram.nodeMetadata))delete stylePatch.nodeMetadata;else stylePatch.nodeMetadata=structuredClone(next);
+    recordHistory('Annotate block');reconcile();changed();return Object.freeze({ok:true});
+   },
    save:()=>save(),
    async flushView(){
     if(disposed||context.readonly)return fail('ACCESS_REFUSED');paused=true;changed();if(pending)await pending;

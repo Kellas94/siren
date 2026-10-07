@@ -9,12 +9,13 @@ import {buildDiagramStyle} from './diagram-style.mjs';
 import {readDesktopChrome} from './chrome.mjs';
 import {addDesktopShell} from './appearance.mjs';
 import {buildPresentationEdits} from './document-context.mjs';
+import {buildDiagramMetadata} from './diagram-metadata.mjs';
 export async function buildDiagramWindow({outputDir}){
  const engine=await buildDiagramEngine({baselinePath:fileURLToPath(new URL('../baseline/R78.html',import.meta.url)),outputDirectory:join(outputDir,'.diagram-build')});
  const guided=await buildDiagramGuided({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
  const styling=await buildDiagramStyle({baselinePath:new URL('../baseline/R78.html',import.meta.url)});
  const presentationScript=await buildPresentationEdits()+'\n'+await readFile(new URL('../src/ui/diagram/presentation-view.js',import.meta.url),'utf8');
- const historyScript=await readFile(new URL('../src/ui/diagram/history-view.js',import.meta.url),'utf8');
+ const historyScript=buildDiagramMetadata()+'\n'+await readFile(new URL('../src/ui/diagram/annotations.js',import.meta.url),'utf8')+'\n'+await readFile(new URL('../src/ui/diagram/history-view.js',import.meta.url),'utf8');
  const scripts=[await readFile(engine.bundlePath,'utf8'),(await readFile(new URL('../src/ui/windows/identity.js',import.meta.url),'utf8'))+'\n'+guided.script+'\n'+styling.script+'\n'+(await readFile(new URL('../src/ui/diagram/guided-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/session.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/draft.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/style-view.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/diagram/build-view.js',import.meta.url),'utf8'))+'\n'+presentationScript+'\n'+(await readFile(new URL('../src/ui/diagram/walkthrough.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/ui/windows/diagram.js',import.meta.url),'utf8'))];
  // Own placement must be available before the controller starts its source read.
  scripts.splice(1,0,await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8'));scripts[scripts.length-1]=historyScript+'\n'+scripts.at(-1);

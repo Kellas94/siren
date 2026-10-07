@@ -1,0 +1,7 @@
+# Native Diagram Inspector and local Filters - separate portable-copy qualification
+
+Author and executor: /root. Source a60300ea3d36f711ae99f1991824c5304cd6a1ae. Preview C:\Claude\SIREN_WORK\portable\desktop\dist\development-ecc5ce34-f474-4667-b4e9-5a287d4cd9b8. Every297 packed regular member matches current generated/dependency bytes and committed native source, with unchanged original Electron and fixed external helper. New required metadata module is included.
+
+All10 isolated copied native programs completed: Inspector/Filters8, original Edit4/Guided4/Style6/Build7/Walk8/History8/Dock5, shell isolation and core Save/Lock/recovery. Before/after capture sets are unchanged. Owner additionally hashed 30 copied ASAR/runtime/helper files after execution; all equal the build receipt, including older harnesses without complete post-copy fields. Development vector probe remains separate because its original harness does not support copied execution.
+
+Final fullsuite1417 and original development native8 plus eight original regression programs are recorded in separate precommit proof. Genuine original Task3 review and narrow recheck retain actual authors; no independent GUI execution is inferred. First startupADVERSE0, passive diagnostic, export rawXML-oracleADVERSE4 and initial fullsuite packagingADVERSE remain retained. Previous hosted375616SUCCESS qualifies only oldHTML358; fresh canonical CI is next. No production release, installed-app replacement, main merge or complete desktop parity.
