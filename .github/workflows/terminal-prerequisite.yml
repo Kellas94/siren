@@ -17,6 +17,9 @@ on:
       - 'desktop/tests/native/terminal-host-guard*.mjs'
       - 'desktop/tests/native/build-terminal-host-guard.mjs'
       - 'desktop/tests/fixtures/terminal-host-guard/**'
+      - 'desktop/tests/native/terminal-main-owner-loss*.mjs'
+      - 'desktop/tests/native/build-terminal-main-owner-loss.mjs'
+      - 'desktop/tests/fixtures/terminal-main-owner-observer.cs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -69,7 +72,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs
           exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
@@ -99,6 +102,12 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-host-guard.mjs desktop/evidence/terminal-build-tool-discovery.json
           exit $LASTEXITCODE
+      - name: Verify abrupt Electron main loss with external held-handle observer
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          node desktop/tests/native/build-terminal-main-owner-loss.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -125,4 +134,9 @@ jobs:
             desktop/evidence/terminal-host-guard/*/native-result.json
             desktop/evidence/terminal-host-guard/*/electron.log
             desktop/evidence/terminal-host-guard/*/compiler.txt
+            desktop/evidence/terminal-main-owner-loss-build/*/receipt.json
+            desktop/evidence/terminal-main-owner-loss-build/*/*.txt
+            desktop/evidence/terminal-main-owner-loss/*/*.json
+            desktop/evidence/terminal-main-owner-loss/*/*.txt
+            desktop/evidence/terminal-main-owner-loss/*/observer.log
           if-no-files-found: error
