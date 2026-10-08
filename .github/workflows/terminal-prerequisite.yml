@@ -37,6 +37,7 @@ on:
       - 'desktop/tests/native/*terminal-session-composition*.mjs'
       - 'desktop/tests/fixtures/terminal-session-composition*'
       - 'desktop/tests/native/*terminal-composed-main-loss*.mjs'
+      - 'desktop/tests/native/*terminal-composition-eight*.mjs'
       - 'desktop/tests/fixtures/terminal-composed-main-loss*'
       - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
@@ -183,6 +184,18 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-composed-main-loss.mjs
           exit $LASTEXITCODE
+      - name: Check eight-session orchestration and adverse readback
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-composition-eight-derive.test.mjs desktop/tests/native/terminal-composition-eight-verdict.test.mjs desktop/tests/native/terminal-composition-eight-startup.test.mjs
+          exit $LASTEXITCODE
+      - name: Observe eight simultaneous composed Sessions and ninth refusal
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          node desktop/tests/native/build-terminal-composition-eight.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         # All native outcomes, including a failed candidate, retain originals.
         # The new workers are a separate experiment; earlier results stay intact.
@@ -274,4 +287,17 @@ jobs:
             desktop/evidence/terminal-composed-main-loss/*/*.mjs
             desktop/evidence/terminal-composed-main-loss/*/fixed-composition-child.exe
             desktop/evidence/terminal-composed-main-loss/*/composition-observer.exe
+            desktop/evidence/terminal-composition-eight-build/*/*.json
+            desktop/evidence/terminal-composition-eight-build/*/*.txt
+            desktop/evidence/terminal-composition-eight-build/*/candidate/host.cc
+            desktop/evidence/terminal-composition-eight-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-composition-eight-build/*/candidate/build/Release/terminal_composition_eight*.node
+            desktop/evidence/terminal-composition-eight/*/*.json
+            desktop/evidence/terminal-composition-eight/*/*/*.json
+            desktop/evidence/terminal-composition-eight/*/*.txt
+            desktop/evidence/terminal-composition-eight/*/*.log
+            desktop/evidence/terminal-composition-eight/*/*.cs
+            desktop/evidence/terminal-composition-eight/*/*.mjs
+            desktop/evidence/terminal-composition-eight/*/fixed-composition-child.exe
+            desktop/evidence/terminal-composition-eight/*/composition-observer.exe
           if-no-files-found: error

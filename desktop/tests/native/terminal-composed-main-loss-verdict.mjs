@@ -19,7 +19,7 @@ export function isComposedMainLossObserved(r,negative=false){
   if(!uint(r.activeBeforeSafetyCleanup)||r.activeBeforeSafetyCleanup!==r.after.filter(p=>p.alive).length||(!negative&&r.activeBeforeSafetyCleanup!==0))return false;
   const ready=r.ready,h=ready?.hostSnapshot;
   if(ready?.negative!==negative||ready.mainPid!==r.main.pid||!runtime(ready.runtime)||!uint(ready.fixtureAgeMs)||ready.fixtureAgeMs>=6000||ready.fixtureAgeMs+r.observeMs>r.mainAgeMs)return false;
-  if(!Array.isArray(ready.groups)||ready.groups.length!==2||!guards(h,negative)||!rows(h.held)||h.active!==h.held.length||!h.held.every(p=>p.alive)||!observed(h.root,h.held)||h.root.pid===r.main.pid||h.root.image!==r.main.image||!sameSet(ready.held,h.held))return false;
+  if(!Array.isArray(ready.groups)||ready.groups.length!==2||!guards(h,negative)||!rows(h.held)||h.active!==h.held.length||!h.held.every(p=>p.alive)||!observed(h.root,h.held)||h.root.pid===r.main.pid||h.root.image!==r.main.image||!sameSet(ready.held,h.held)||!ready.held.every(p=>observed(p,h.held)))return false;
   const expected=[h.root],canaries=[];
   for(const [i,g] of ready.groups.entries()) {
    const s=g.before,w=g.ready,f=g.fixturePids;

@@ -16,6 +16,7 @@ const changes=[
  ['wrong main termination',r=>r.mainExit.exitCode=0],['unheld main',r=>r.before.shift()],
  ['wrong creation time',r=>r.after[3].createdFileTime='133000000000000001'],['missing later identity',r=>r.after.pop()],
  ['duplicate identity',r=>r.before.push(r.before[1])],['omitted native member',r=>r.ready.held.pop()],
+ ['ready duplicate state disagrees',r=>{r.ready.held[1].alive=false;r.ready.held[1].exitCode=98;}],
  ['missing fixture',r=>r.ready.groups[0].fixturePids.detached=999],['creator duplicate disagrees',r=>r.ready.groups[0].before.root.exitCode=0],
  ['host duplicate disagrees',r=>r.ready.hostSnapshot.root.image='C:\\wrong.exe'],['wrong runtime',r=>r.ready.runtime.electron='1'],
  ['unobserved OS ConPTY',r=>r.ready.groups[0].ready.osConpty=false],['writes present',r=>r.ready.groups[0].ready.inputWrites=1],
