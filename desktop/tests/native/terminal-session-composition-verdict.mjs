@@ -8,6 +8,11 @@ const runtime=r=>r?.electron==='44.5.1'&&r.node==='24.21.0'&&r.modules==='149'&&
 const guards=s=>s?.killOnClose===true&&s.breakaway===false&&s.inheritable===false;
 const rows=s=>Array.isArray(s?.held)&&s.held.length>=5&&s.held.length<=64&&s.held.every(identity)&&new Set(s.held.map(p=>p.pid)).size===s.held.length;
 const sessionRows=s=>rows(s)&&observed(s,s.root)&&observed(s,s.shell);
+// A held process that has already exited cannot acquire a different exit cause later.
+const terminalAgreement=(final,prior)=>final.held.every(p=>{
+ const before=prior.held.find(q=>same(p,q));
+ return before&&(before.alive||(!p.alive&&p.exitCode===before.exitCode));
+});
 const causal=(s,g,code,shellCode=code)=>{
  if(!sessionRows(s)||s.active!==0||s.held.some(p=>p.alive)||!guards(s)||s.atomicBeforeResume!==true||s.hostPid!==g.before.hostPid||s.held.length!==g.before.held.length)return false;
  if(!s.held.every(p=>g.before.held.some(q=>same(p,q)))||!same(s.root,g.before.root)||!same(s.shell,g.before.shell))return false;
@@ -43,7 +48,7 @@ export function isSessionCompositionObserved(r){
   if(h.held.length!==expected.length||!h.held.every(p=>expected.some(q=>same(p,q))))return false;
   for(const g of [c,d])for(const pid of [g.ready.workerPid,...Object.values(g.fixturePids)])if(!h.held.some(p=>p.pid===pid&&p.exitCode===79))return false;
   if(!Array.isArray(r.cleanup)||r.cleanup.length!==4||r.hostClosed!==true)return false;
-  for(const [i,entry] of r.cleanup.entries())if(entry.label!=='ABCD'[i]||entry.closed!==true||!causal(entry.snapshot,r.groups[i],[77,r.negative?98:80,79,79][i],i===1?51:[77,80,79,79][i]))return false;
+  for(const [i,entry] of r.cleanup.entries())if(entry.label!=='ABCD'[i]||entry.closed!==true||!causal(entry.snapshot,r.groups[i],[77,r.negative?98:80,79,79][i],i===1?51:[77,80,79,79][i])||!terminalAgreement(entry.snapshot,[r.stoppedA,r.rootB,h,h][i]))return false;
   return true;
  }catch{return false;}
 }

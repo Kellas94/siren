@@ -36,6 +36,8 @@ on:
       - 'desktop/tests/fixtures/terminal-electron-capacity.cs'
       - 'desktop/tests/native/*terminal-session-composition*.mjs'
       - 'desktop/tests/fixtures/terminal-session-composition*'
+      - 'desktop/tests/native/*terminal-composed-main-loss*.mjs'
+      - 'desktop/tests/fixtures/terminal-composed-main-loss*'
       - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
 permissions:
@@ -103,6 +105,11 @@ jobs:
         run: |
           node --test desktop/tests/native/terminal-session-composition-derive.test.mjs desktop/tests/native/terminal-session-composition-verdict.test.mjs desktop/tests/native/terminal-session-composition-consistency.test.mjs desktop/tests/native/terminal-session-composition-startup.test.mjs
           exit $LASTEXITCODE
+      - name: Verify composed abrupt-main-loss readback and exact source derivation
+        shell: pwsh
+        run: |
+          node --test desktop/tests/native/terminal-composed-main-loss-derive.test.mjs desktop/tests/native/terminal-composed-main-loss-verdict.test.mjs
+          exit $LASTEXITCODE
       - name: Install existing locked build dependencies without lifecycle scripts
         shell: pwsh
         working-directory: desktop
@@ -167,6 +174,14 @@ jobs:
         timeout-minutes: 3
         run: |
           node desktop/tests/native/build-terminal-session-composition.mjs
+          exit $LASTEXITCODE
+      # The separate control kills only the held main process before first-go.
+      # It never relies on main to publish a successful native result.
+      - name: Observe composed abrupt main loss with external held identities
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          node desktop/tests/native/build-terminal-composed-main-loss.mjs
           exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         # All native outcomes, including a failed candidate, retain originals.
@@ -244,4 +259,18 @@ jobs:
             desktop/evidence/terminal-session-composition/*/*.mjs
             desktop/evidence/terminal-session-composition/*/fixed-composition-child.exe
             desktop/evidence/terminal-session-composition/*/composition-observer.exe
+            desktop/evidence/terminal-composed-main-loss-build/*/*.json
+            desktop/evidence/terminal-composed-main-loss-build/*/*.txt
+            desktop/evidence/terminal-composed-main-loss-build/*/candidate/host.cc
+            desktop/evidence/terminal-composed-main-loss-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-composed-main-loss-build/*/candidate/build/Release/terminal_composed_main_loss*.node
+            desktop/evidence/terminal-composed-main-loss-derived/*/*.mjs
+            desktop/evidence/terminal-composed-main-loss/*/*.json
+            desktop/evidence/terminal-composed-main-loss/*/*/*.json
+            desktop/evidence/terminal-composed-main-loss/*/*.txt
+            desktop/evidence/terminal-composed-main-loss/*/*.log
+            desktop/evidence/terminal-composed-main-loss/*/*.cs
+            desktop/evidence/terminal-composed-main-loss/*/*.mjs
+            desktop/evidence/terminal-composed-main-loss/*/fixed-composition-child.exe
+            desktop/evidence/terminal-composed-main-loss/*/composition-observer.exe
           if-no-files-found: error
