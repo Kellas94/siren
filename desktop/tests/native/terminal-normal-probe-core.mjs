@@ -4,7 +4,9 @@ export const NORMAL_BEGIN='SIREN_NORMAL_BEGIN_Ω_😀';
 export const NORMAL_DONE='SIREN_NORMAL_DONE_Ω_😀';
 const chars=s=>Array.from({length:s.length},(_,i)=>s.charCodeAt(i)).join(',');
 const marker=s=>'[Console]::WriteLine((-join [char[]]('+chars(s)+')))';
-const command='[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'+marker(NORMAL_BEGIN)+';Start-Sleep -Milliseconds 1200;'+marker(NORMAL_DONE)+'\r';
+export const NORMAL_COMMAND_KIND='FIXED_INSTRUMENTED_DIAGNOSTIC_NOT_ORIGINAL_COMMAND';
+const milestone=stage=>"[System.IO.File]::WriteAllText('normal-script-"+stage+".json','1');";
+const command='[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'+milestone('before-begin')+marker(NORMAL_BEGIN)+';'+milestone('after-begin')+'Start-Sleep -Milliseconds 1200;'+milestone('after-sleep')+marker(NORMAL_DONE)+';'+milestone('after-done')+'\r';
 const fail=()=>Object.freeze({ok:false});
 export class NormalShellProbe {
  #gate=new HostInputGate();#write;#append;#clock;#tail='';#attempted=false;#known=false;#refused=0;#bytes=0;#begin=null;#done=null;#lock=null;

@@ -75,7 +75,7 @@ async function main(config){
   result.asyncRetirement={elapsedMs:performance.now()-start,ticks,maxGapMs:Math.max(maxGapMs,performance.now()-last)};assert.ok(sessionClosed&&dead(result.stopped.snapshot));output.retire('normal-shell');
   native.stop(hostOwner,77);result.hostAfter=await wait(()=>{const s=native.snapshot(hostOwner);return dead(s)?s:null;});hostClosed=native.close(hostOwner)===true;result.hostClosed=hostClosed;assert.equal(hostClosed,true);
   result.status='NORMAL_POWERSHELL_OBSERVED_NOT_ADMITTED';
- }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};try{if(owner&&!sessionClosed)result.failureSession=native.snapshotSession(owner);}catch{}try{if(hostOwner&&!hostClosed)result.failureHost=native.snapshot(hostOwner);}catch{}}
+ }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};try{result.diagnosticMilestones={};for(const stage of ['before-begin','after-begin','after-sleep','after-done'])result.diagnosticMilestones[stage]=(await json('normal-script-'+stage))===1;}catch(error){result.diagnosticReadError=String(error);}try{if(owner&&!sessionClosed)result.failureSession=native.snapshotSession(owner);}catch{}try{if(hostOwner&&!hostClosed)result.failureHost=native.snapshot(hostOwner);}catch{}}
  finally{
   packet?.dispose();for(const dispose of listeners)dispose();control?.dispose();historyChannel?.dispose();
   if(owner&&!sessionClosed)try{const r=await native.stopAndCloseSessionAsync(owner,98,3000);assert.ok(r.closed&&dead(r.snapshot));sessionClosed=true;}catch(e){result.cleanupError=String(e.stack??e);result.status='FAILED';}
