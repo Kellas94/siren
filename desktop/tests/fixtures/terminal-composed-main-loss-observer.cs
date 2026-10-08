@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading;
 // External Safety observer. No inner Job handles are duplicated or held here.
 internal static partial class TerminalMainOwnerObserver {
+    static bool PendingExit(uint active,bool allHeldExited) { return active!=0||!allHeldExited; }
+    static bool AllHeldExited(List<Held> held) { foreach(var p in held)if(WaitForSingleObject(p.handle,0)!=0)return false;return true; }
     static void SafetyLimits(IntPtr safety) {
         int size=Marshal.SizeOf(typeof(Limits));IntPtr bytes=Marshal.AllocHGlobal(size);
         try {uint returned;Require(QueryInformationJobObject(safety,9,bytes,(uint)size,out returned),"MAIN_LOSS_SAFETY_LIMITS_UNKNOWN");
@@ -74,14 +76,14 @@ internal static partial class TerminalMainOwnerObserver {
             result["abortCheck"]=new Dictionary<string,object>{{"checkedAfterMainExit",true},{"present",aborted},{"pending",pending},{"firstGoPresent",acknowledged}};
             Require(!aborted&&!pending&&!acknowledged,"MAIN_LOSS_ABORT_MARKED");
             if(negative){while(observation.ElapsedMilliseconds<2000)Thread.Sleep(5);foreach(uint pid in canaries)Require(WaitForSingleObject(Find(held,pid).handle,0)==258,"MAIN_LOSS_NEGATIVE_CANARY_GONE");}
-            else {while(Active(safety)!=0&&observation.ElapsedMilliseconds<3000)Thread.Sleep(5);Require(Active(safety)==0,"MAIN_LOSS_POSITIVE_NOT_EMPTY");foreach(var p in held)Require(WaitForSingleObject(p.handle,0)==0,"MAIN_LOSS_POSITIVE_HELD_LIVE");}
+            else {while(PendingExit(Active(safety),AllHeldExited(held))&&observation.ElapsedMilliseconds<3000)Thread.Sleep(5);Require(Active(safety)==0,"MAIN_LOSS_POSITIVE_NOT_EMPTY");foreach(var p in held)Require(WaitForSingleObject(p.handle,0)==0,"MAIN_LOSS_POSITIVE_HELD_LIVE");}
             Require(observation.ElapsedMilliseconds<3000,"MAIN_LOSS_OBSERVATION_DEADLINE");result["after"]=Observe(held);result["observeMs"]=observation.ElapsedMilliseconds;
             result["safetyOpenAtObservation"]=true;result["activeBeforeSafetyCleanup"]=Active(safety);
             result["mainAgeMs"]=age.ElapsedMilliseconds;Require(age.ElapsedMilliseconds<11000,"MAIN_LOSS_TOTAL_AGE_EXCEEDED");
             result["status"]="COMPOSED_MAIN_LOSS_OBSERVED_NOT_ADMITTED";code=0;
         }catch(Exception e){result["error"]=e.Message;}
         finally {
-            try {if(safety!=IntPtr.Zero){Require(TerminateJobObject(safety,98),"MAIN_LOSS_SAFETY_CLEANUP_FAILED");var cleanup=Stopwatch.StartNew();while(Active(safety)!=0&&cleanup.ElapsedMilliseconds<3000)Thread.Sleep(5);Require(Active(safety)==0,"MAIN_LOSS_SAFETY_CLEANUP_NOT_EMPTY");foreach(var p in held)Require(WaitForSingleObject(p.handle,0)==0,"MAIN_LOSS_SAFETY_HELD_LIVE");result["cleanup"]=new Dictionary<string,object>{{"verified",true},{"active",0},{"held",Observe(held)}};}}
+            try {if(safety!=IntPtr.Zero){Require(TerminateJobObject(safety,98),"MAIN_LOSS_SAFETY_CLEANUP_FAILED");var cleanup=Stopwatch.StartNew();uint activeAtStart=Active(safety);bool heldExitedAtStart=AllHeldExited(held);while(PendingExit(Active(safety),AllHeldExited(held))&&cleanup.ElapsedMilliseconds<3000)Thread.Sleep(5);Require(cleanup.ElapsedMilliseconds<3000,"MAIN_LOSS_SAFETY_CLEANUP_DEADLINE");Require(Active(safety)==0,"MAIN_LOSS_SAFETY_CLEANUP_NOT_EMPTY");foreach(var p in held)Require(WaitForSingleObject(p.handle,0)==0,"MAIN_LOSS_SAFETY_HELD_LIVE");result["cleanup"]=new Dictionary<string,object>{{"verified",true},{"active",0},{"held",Observe(held)},{"waitMs",cleanup.ElapsedMilliseconds},{"activeAtStart",activeAtStart},{"heldExitedAtStart",heldExitedAtStart}};}}
             catch(Exception e){result["cleanupError"]=e.Message;result["status"]="FAILED";code=1;}
             foreach(var p in held)CloseHandle(p.handle);if(main.thread!=IntPtr.Zero)CloseHandle(main.thread);if(main.process!=IntPtr.Zero)CloseHandle(main.process);if(safety!=IntPtr.Zero)CloseHandle(safety);
             File.WriteAllText(Path.Combine(directory,"observer-result.json"),Json.Serialize(result),new UTF8Encoding(false));Console.WriteLine(Json.Serialize(result));

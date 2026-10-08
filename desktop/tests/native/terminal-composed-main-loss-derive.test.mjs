@@ -96,3 +96,13 @@ test('observer binds abort absence after main101 and bounds total age around obs
  assert.ok(s.indexOf('MAIN_LOSS_TOTAL_AGE_EXCEEDED')<s.indexOf('TerminateProcess(main.process,101)'));
  assert.ok(s.lastIndexOf('MAIN_LOSS_TOTAL_AGE_EXCEEDED')>s.indexOf('result["after"]=Observe(held)'));
 });
+test('actual observer pending-exit rule waits for held handles after Job accounting reaches zero',async()=>{
+ const s=await read('tests/fixtures/terminal-composed-main-loss-observer.cs');
+ const body=s.match(/static bool PendingExit\(uint active,bool allHeldExited\)\s*\{\s*return ([^;]+);\s*\}/);
+ assert.ok(body,'shared native exit condition must include accounting and held handles');
+ const pending=vm.runInNewContext('(active,allHeldExited)=>('+body[1]+')');
+ assert.equal(pending(0,false),true,'actual CI failure: accounting empty while at least one held handle remains live');
+ assert.equal(pending(1,true),true);assert.equal(pending(1,false),true);assert.equal(pending(0,true),false);
+ assert.match(s,/while\(PendingExit\(Active\(safety\),AllHeldExited\(held\)\)&&observation.ElapsedMilliseconds<3000\)/);
+ assert.match(s,/while\(PendingExit\(Active\(safety\),AllHeldExited\(held\)\)&&cleanup.ElapsedMilliseconds<3000\)/);
+});
