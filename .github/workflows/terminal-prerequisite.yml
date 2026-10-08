@@ -217,6 +217,7 @@ jobs:
             desktop/evidence/terminal-main-owner-loss/*/*.json
             desktop/evidence/terminal-main-owner-loss/*/*.txt
             desktop/evidence/terminal-main-owner-loss/*/observer.log
+            desktop/evidence/terminal-main-owner-loss/*/observer-derived.cs
             desktop/evidence/terminal-conpty-membership-build/*/receipt.json
             desktop/evidence/terminal-conpty-membership-build/*/*.txt
             desktop/evidence/terminal-conpty-membership/*/*.json

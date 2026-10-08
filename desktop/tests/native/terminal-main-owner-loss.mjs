@@ -8,6 +8,7 @@ import {createHash} from 'node:crypto';
 import {join,resolve,dirname,parse} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {isMainOwnerLossComplete,isExpectedMainOwnerLossRefusal} from './terminal-main-owner-loss-verdict.mjs';
+import {deriveClassicMainLossObserver} from './terminal-main-owner-loss-observer-derive.mjs';
 const desktop=fileURLToPath(new URL('../../',import.meta.url)),hash=b=>createHash('sha256').update(b).digest('hex');
 const output=join(desktop,'evidence/terminal-main-owner-loss',new Date().toISOString().replaceAll(':','-'));
 const addon=resolve(process.argv[2]??join(desktop,'evidence/terminal-host-guard-build/not-built/terminal_host_guard.node')),negative=process.argv.includes('--negative');
@@ -15,13 +16,15 @@ for(let p=dirname(output);p!==parse(p).root;p=dirname(p)){try{assert.equal((awai
 await mkdir(output,{recursive:true});
 const executable=join(desktop,'node_modules/electron/dist/electron.exe'),compiler=join(process.env.SystemRoot,'Microsoft.NET/Framework64/v4.0.30319/csc.exe');
 const receipt={schema:1,author:'coordinator native runner',admitted:false,scope:'External held-identity observer of abrupt actual Electron main-owner loss; no PTY/session/product admission',output,negative,inputs:[]};
-const inputs=[fileURLToPath(import.meta.url),join(desktop,'tests/native/terminal-main-owner-loss-verdict.mjs'),join(desktop,'tests/native/terminal-host-guard.mjs'),join(desktop,'tests/fixtures/terminal-main-owner-observer.cs'),join(desktop,'tests/fixtures/terminal-job-list.cs'),executable,compiler];
+const inputs=[fileURLToPath(import.meta.url),join(desktop,'tests/native/terminal-main-owner-loss-observer-derive.mjs'),join(desktop,'tests/native/terminal-main-owner-loss-verdict.mjs'),join(desktop,'tests/native/terminal-host-guard.mjs'),join(desktop,'tests/fixtures/terminal-main-owner-observer.cs'),join(desktop,'tests/fixtures/terminal-job-list.cs'),executable,compiler];
 for(const path of inputs){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
 try{const b=await readFile(addon);receipt.inputs.push({path:addon,bytes:b.length,sha256:hash(b)});receipt.addonSha256=hash(b);}
 catch(error){receipt.addonReadError=error.message;if(!negative){receipt.status='FAILED';await writeFile(join(output,'receipt.json'),JSON.stringify(receipt,null,2),{flag:'wx'});console.log(JSON.stringify(receipt));throw error;}}
 const observer=join(output,'observer.exe'),fixture=join(output,'fixed-job-child.exe');
-for(const [source,exe,extra] of [['tests/fixtures/terminal-main-owner-observer.cs',observer,['/reference:System.Web.Extensions.dll']],['tests/fixtures/terminal-job-list.cs',fixture,[]]]){
- const result=await promisify(execFile)(compiler,['/nologo','/optimize+','/platform:x64','/target:exe','/out:'+exe,...extra,join(desktop,source)],{windowsHide:true,timeout:30000,maxBuffer:65536});
+const observerSource=join(output,'observer-derived.cs'),observerBytes=Buffer.from(deriveClassicMainLossObserver(await readFile(join(desktop,'tests/fixtures/terminal-main-owner-observer.cs'),'utf8')));
+await writeFile(observerSource,observerBytes,{flag:'wx'});receipt.inputs.push({path:observerSource,bytes:observerBytes.length,sha256:hash(observerBytes)});
+for(const [source,exe,extra] of [[observerSource,observer,['/reference:System.Web.Extensions.dll']],[join(desktop,'tests/fixtures/terminal-job-list.cs'),fixture,[]]]){
+ const result=await promisify(execFile)(compiler,['/nologo','/optimize+','/platform:x64','/target:exe','/out:'+exe,...extra,source],{windowsHide:true,timeout:30000,maxBuffer:65536});
  await writeFile(join(output,exe===observer?'observer-compiler.txt':'fixture-compiler.txt'),result.stdout+result.stderr,{flag:'wx'});const b=await readFile(exe);receipt.inputs.push({path:exe,bytes:b.length,sha256:hash(b)});
 }
 async function main(config){

@@ -18,7 +18,7 @@ for(const input of host.sources)assert.equal(hash(await readFile(input.path)),in
 const binary=host.binaries.find(b=>b.name==='terminal_host_guard');assert.ok(binary);assert.equal(binary.path,join(parent,'candidate/build/Release/terminal_host_guard.node'));assert.equal(hash(await readFile(binary.path)),binary.sha256,'HOST_BINARY_CHANGED');
 await mkdir(output,{recursive:true});
 const receipt={schema:1,admitted:false,scope:'Actual externally observed Electron main-owner loss; no session/ConPTY/product admission',output,hostReceiptPath,hostReceiptSha256:hash(hostReceiptBytes),binary,inputs:[],phases:[]};
-for(const path of [fileURLToPath(import.meta.url),join(desktop,'tests/native/terminal-main-owner-loss.mjs'),join(desktop,'tests/native/terminal-main-owner-loss-verdict.mjs'),join(desktop,'tests/fixtures/terminal-main-owner-observer.cs')]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
+for(const path of [fileURLToPath(import.meta.url),join(desktop,'tests/native/terminal-main-owner-loss.mjs'),join(desktop,'tests/native/terminal-main-owner-loss-observer-derive.mjs'),join(desktop,'tests/native/terminal-main-owner-loss-verdict.mjs'),join(desktop,'tests/fixtures/terminal-main-owner-observer.cs')]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
 const save=()=>writeFile(join(output,'receipt.json'),JSON.stringify(receipt,null,2));
 async function phase(name,args){
  const row={name,args};receipt.phases.push(row);await save();
