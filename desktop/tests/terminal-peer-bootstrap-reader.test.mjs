@@ -2,6 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PassThrough,Readable} from 'node:stream';
+import {EventEmitter} from 'node:events';
+import net from 'node:net';
+import {randomUUID} from 'node:crypto';
 import {performance} from 'node:perf_hooks';
 import {createTerminalBootstrap} from '../src/terminal/bootstrap-codec.mjs';
 const api=await import('../src/terminal/peer-bootstrap-reader.mjs').catch(error=>{
@@ -50,6 +53,31 @@ test('peer reader publishes frozen bootstrap and opaque witness only after EOF a
  assert.ok(zero(n.consumed[0])&&zero(n.payloads[0]));
  assert.equal(result.dispose(),true);assert.equal(result.dispose(),true);assert.equal(n.closed.length,1);
  assert.ok(zero(result.bootstrap.controlSecret)&&zero(result.bootstrap.dataSecret));f.dispose();
+});
+test('peer reader restarts real named-pipe stdin after pause-nextTick readStop', {skip:process.platform!=='win32',timeout:3000},async t=>{
+ const f=fixture();let input,writer,result,pauseStops=0,readableListeningAfterPause=null,accept;
+ const n=inertNative(value=>{assert.equal(input.closed,true);return value;});
+ const accepted=new Promise(resolve=>accept=resolve),server=net.createServer(socket=>{input=socket;accept();});
+ try{
+  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen('\\\\.\\pipe\\siren-peer-reader-test-'+randomUUID(),resolve);});
+  writer=net.createConnection(server.address());writer.on('error',()=>{});
+  await Promise.all([accepted,new Promise(resolve=>writer.once('connect',resolve))]);
+  // Node24 getStdin() starts a PIPE Socket stopped, then schedules readStop
+  // on pause. Readable.on('readable') must schedule the subsequent restart.
+  input._handle.reading=false;input._readableState.reading=false;input._handle.readStop();
+  EventEmitter.prototype.on.call(input,'pause',()=>process.nextTick(()=>{
+   if(input._handle?.reading&&!input.readableFlowing){input._readableState.reading=false;input._handle.reading=false;input._handle.readStop();pauseStops++;}
+  }));
+  const pending=read(input,{native:n.native,timeoutMs:1000});
+  await tick();readableListeningAfterPause=input._readableState.readableListening;assert.equal(n.consumed.length,0);
+  writer.end(Buffer.from(f.bytes));result=await pending;
+  assert.equal(pauseStops,1);assert.equal(result.bootstrap.sessionId,'peer-session');assert.deepEqual(result.bootstrap.controlSecret,f.bootstrap.controlSecret);
+  assert.equal(input.closed,true);assert.equal(n.consumed.length,1);assert.ok(n.consumed.every(zero)&&n.payloads.every(zero));
+  result.dispose();assert.equal(n.closed.length,1);
+ }finally{
+  result?.dispose();input?.destroy();writer?.destroy();await new Promise(resolve=>server.close(resolve));f.dispose();
+  t.diagnostic(JSON.stringify({transport:'Windows named pipe',timeoutMs:1000,pauseStops,readableListeningAfterPause,consumeCalls:n.consumed.length,closed:input?.closed??null,nativeAddon:false,childProcess:false}));
+ }
 });
 test('successful EOF cannot consume or publish while actual close is delayed',async()=>{
  const f=fixture(),n=inertNative(),input=new DelayedClose();let settled=false;

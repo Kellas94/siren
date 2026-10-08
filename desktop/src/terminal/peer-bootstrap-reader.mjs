@@ -2,7 +2,6 @@
 // execution admission. Only native.consumePeerBootstrap interprets SIRENTP2.
 import {performance} from 'node:perf_hooks';
 import {Readable} from 'node:stream';
-import {EventEmitter} from 'node:events';
 import {types} from 'node:util';
 import {decodeTerminalBootstrap} from './bootstrap-codec.mjs';
 
@@ -10,8 +9,9 @@ const LIMIT=2064,PAYLOAD_LIMIT=2048;
 const streamRefused=()=>Error('TERMINAL_PEER_BOOTSTRAP_STREAM_REFUSED');
 const refused=()=>Error('TERMINAL_PEER_BOOTSTRAP_REFUSED');
 const timeout=()=>Error('TERMINAL_PEER_BOOTSTRAP_TIMEOUT');
-const on=(input,name,callback)=>EventEmitter.prototype.on.call(input,name,callback);
-const off=(input,name,callback)=>EventEmitter.prototype.removeListener.call(input,name,callback);
+// Readable hooks schedule stdin's restart after pause and maintain listener state.
+const on=(input,name,callback)=>Readable.prototype.on.call(input,name,callback);
+const off=(input,name,callback)=>Readable.prototype.removeListener.call(input,name,callback);
 const destroy=input=>Readable.prototype.destroy.call(input);
 const read=(input,size)=>Readable.prototype.read.call(input,size);
 const state=(input,name)=>Reflect.apply(Object.getOwnPropertyDescriptor(Readable.prototype,name).get,input,[]);
