@@ -38,6 +38,10 @@ on:
       - 'desktop/tests/fixtures/terminal-session-composition*'
       - 'desktop/tests/native/*terminal-composed-main-loss*.mjs'
       - 'desktop/tests/native/*terminal-composition-eight*.mjs'
+      - 'desktop/tests/native/*terminal-eight-main-loss*.mjs'
+      - 'desktop/tests/native/*terminal-shell-flow*.mjs'
+      - 'desktop/tests/fixtures/terminal-shell-flow-observer.cs'
+      - 'desktop/src/terminal/**'
       - 'desktop/tests/fixtures/terminal-composed-main-loss*'
       - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
@@ -200,13 +204,27 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-eight-main-loss-derive.test.mjs desktop/tests/native/terminal-eight-main-loss-verdict.test.mjs desktop/tests/native/terminal-eight-main-loss-startup.test.mjs
+          node --test desktop/tests/native/terminal-eight-main-loss-derive.test.mjs desktop/tests/native/terminal-eight-main-loss-verdict.test.mjs desktop/tests/native/terminal-eight-main-loss-startup.test.mjs desktop/tests/native/terminal-eight-main-loss-workflow.test.mjs
           exit $LASTEXITCODE
       - name: Observe eight composed Sessions under abrupt main loss
         shell: pwsh
         timeout-minutes: 3
         run: |
           node desktop/tests/native/build-terminal-eight-main-loss.mjs
+          exit $LASTEXITCODE
+      # A separate actual-shell experiment; earlier twelve-second controls
+      # remain unchanged. Product Terminal admission is still withheld.
+      - name: Check fixed shell-flow control and adverse readback
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-shell-flow-core.test.mjs desktop/tests/native/terminal-shell-flow-controller.test.mjs desktop/tests/native/terminal-shell-flow-mailbox.test.mjs desktop/tests/native/terminal-shell-flow-probe.test.mjs desktop/tests/native/terminal-shell-flow-startup.test.mjs desktop/tests/native/terminal-shell-flow-derive.test.mjs desktop/tests/native/terminal-shell-flow-verdict.test.mjs desktop/tests/native/terminal-shell-flow-workflow.test.mjs desktop/tests/native/terminal-shell-flow-review-regression.test.mjs
+          exit $LASTEXITCODE
+      - name: Observe fixed PowerShell input Lock and bounded flood
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          node desktop/tests/native/build-terminal-shell-flow.mjs
           exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         # Eight main-loss controls have a distinct evidence namespace.
@@ -328,4 +346,20 @@ jobs:
             desktop/evidence/terminal-eight-main-loss/*/*.mjs
             desktop/evidence/terminal-eight-main-loss/*/fixed-composition-child.exe
             desktop/evidence/terminal-eight-main-loss/*/composition-observer.exe
+            desktop/evidence/terminal-shell-flow-build/*/*.json
+            desktop/evidence/terminal-shell-flow-build/*/*.txt
+            desktop/evidence/terminal-shell-flow-build/*/candidate/host.cc
+            desktop/evidence/terminal-shell-flow-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-shell-flow-build/*/candidate/build/Release/terminal_shell_flow.node
+            desktop/evidence/terminal-shell-flow-derived/*/*.mjs
+            desktop/evidence/terminal-shell-flow/*/*.json
+            desktop/evidence/terminal-shell-flow/*/*/*.json
+            desktop/evidence/terminal-shell-flow/*/*/*.ps1
+            desktop/evidence/terminal-shell-flow/*/*.txt
+            desktop/evidence/terminal-shell-flow/*/*.log
+            desktop/evidence/terminal-shell-flow/*/*.cs
+            desktop/evidence/terminal-shell-flow/*/*.mjs
+            desktop/evidence/terminal-shell-flow/*/fixed-shell-flow-child.exe
+            desktop/evidence/terminal-shell-flow/*/shell-flow-observer.exe
+            desktop/evidence/terminal-shell-flow/*/*/fixed-shell-flow-child.exe
           if-no-files-found: error
