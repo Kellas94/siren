@@ -60,3 +60,19 @@ test('Windows OS directory casing preserves fixed PATH and ComSpec identity',()=
   const c=structuredClone(r);c.groups[0].creatorEnvironment.values.ComSpec=value;assert.throws(()=>contract.validateCreatorEnvironments(c,observedOutput),/ENVIRONMENT/);
  }
 });
+
+test('Safety observer captures both stage snapshots before releasing Stop and exit controls',async()=>{
+ assert.equal(typeof derive.deriveMinimalEnvironmentObserver,'function');
+ const original=await read('desktop/tests/fixtures/terminal-session-composition-observer.cs');
+ const observer=derive.deriveMinimalEnvironmentObserver(original);
+ assert.equal(observer,await read('desktop/tests/fixtures/terminal-minimal-env-observer.cs'));
+ assert.throws(()=>derive.deriveMinimalEnvironmentObserver(original+'\n'),/OBSERVER_INPUT_DRIFT/);
+ const stage=observer.slice(observer.indexOf('static object Stage('),observer.indexOf('static int Main('));
+ assert.ok(stage.indexOf('var observed=Observe(all);')>=0);
+ assert.ok(stage.indexOf('var observed=Observe(all);')<stage.indexOf('File.WriteAllText('));
+ assert.ok(stage.indexOf('return observed;')>stage.indexOf('File.WriteAllText('));
+ for(const [field,label] of [['firstHeld','first'],['allHeldBeforeFinal','second']])assert.ok(observer.includes(`result["${field}"]=Stage(directory,"${label}"`));
+ assert.doesNotMatch(observer,/result\["(?:firstHeld|allHeldBeforeFinal)"\]=Observe\(held\)/);
+ assert.ok(contract.PUBLICATION_INPUTS.includes('desktop/tests/fixtures/terminal-minimal-env-observer.cs'));
+ assert.match(await read('desktop/tests/native/terminal-minimal-env.mjs'),/tests\/fixtures\/terminal-minimal-env-observer\.cs/);
+});

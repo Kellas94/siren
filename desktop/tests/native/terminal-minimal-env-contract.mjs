@@ -14,6 +14,7 @@ export const PUBLICATION_INPUTS=Object.freeze([...historicalInputs,
  'desktop/tests/native/terminal-minimal-env-derive.mjs',
  'desktop/tests/native/terminal-minimal-env.test.mjs',
  'desktop/tests/native/terminal-minimal-env.mjs',
+ 'desktop/tests/fixtures/terminal-minimal-env-observer.cs',
 ]);
 export function validatePublicationInputs(rows){assert.ok(Array.isArray(rows)&&new Set(rows).size===rows.length,'ENV_PUBLICATION_CLOSURE');assert.deepEqual([...rows].sort(),[...PUBLICATION_INPUTS].sort(),'ENV_PUBLICATION_CLOSURE');}
 export function requireCandidateCi({platform,arch,node,env}){assert.ok(platform==='win32'&&arch==='x64'&&node==='v24.16.0'&&env?.GITHUB_ACTIONS==='true'&&env.RUNNER_OS==='Windows'&&env.GITHUB_REF==='refs/heads/'+CANDIDATE_BRANCH,'MINIMAL_ENV_CI_ONLY');}
