@@ -35,7 +35,7 @@ async function main(config){
  app.setPath('userData',join(config.output,'profile'));await app.whenReady();
  const age=Date.now(),result={admitted:false,negative:config.negative,status:'FAILED',runtime:{...process.versions,arch:process.arch,platform:process.platform},groups:[],cleanup:[]};
  const native=createRequire(import.meta.url)(config.addon),states=[],strong=globalThis.__composition={states};let hostOwner,host,hostClosed=false;
- const wait=async fn=>{const deadline=Date.now()+3000;for(;;){const r=await fn();if(r)return r;if(Date.now()>deadline)throw Error('COMPOSITION_WAIT_DEADLINE');await delay(5);}};
+ const wait=async(fn,deadline=Date.now()+3000)=>{for(;;){if(Date.now()>deadline)throw Error('COMPOSITION_WAIT_DEADLINE');const r=await fn();if(Date.now()>deadline)throw Error('COMPOSITION_WAIT_DEADLINE');if(r)return r;await delay(5);}};
  const exited=s=>s.active===0&&s.root.alive===false&&(!s.shell||s.shell.alive===false)&&s.held.every(p=>!p.alive);
  const persist=async(path,value)=>{await writeFile(path+'.pending',JSON.stringify(value),{flag:'wx'});await rename(path+'.pending',path);};
  async function stage(label,hostSnapshot){
@@ -47,15 +47,17 @@ async function main(config){
   await wait(async()=>{try{return (await readFile(join(config.output,'composition-'+label+'-go.request'),'utf8'))==='go';}catch(e){if(e.code!=='ENOENT')throw e;}});
  }
  async function start(label){
+  const readyDeadline=Date.now()+3000;
   const directory=join(config.output,label);await mkdir(directory);await writeFile(join(directory,'electron-config.json'),JSON.stringify({fixture:config.fixture,packagePath:config.packagePath}),{flag:'wx'});
   result.phase='create-'+label;
   const mark=native.mark(),owner=native.createSession(hostOwner,config.electron,config.creator,directory),state={label,owner,directory,closed:false};states.push(state);
   result.startup??=[];result.startup.push({label,phase:'created',snapshot:native.snapshotSession(owner),host:native.snapshot(hostOwner)});result.phase='ready-'+label;
-  let ready;await wait(async()=>{try{ready=JSON.parse(await readFile(join(directory,'electron-ready.json'),'utf8'));return ready;}catch(e){if(e.code!=='ENOENT')throw e;}});
+  let ready;await wait(async()=>{try{ready=JSON.parse(await readFile(join(directory,'electron-ready.json'),'utf8'));return ready;}catch(e){if(e.code!=='ENOENT')throw e;}},readyDeadline);
   assert.throws(()=>native.watchRoot(owner,ready.rootPid,config.fixture+'.wrong',mark),{code:'SESSION_ROOT_IDENTITY_REFUSED'});
   native.watchRoot(owner,ready.rootPid,config.fixture,mark);
-  const before=native.captureSession(owner),fixturePids={};
-  for(const key of ['root','branch','grandchild','detached'])fixturePids[key]=Number(await readFile(join(directory,key+'.ready'),'utf8'));
+  const fixturePids={};result.phase='fixtures-'+label;
+  await wait(async()=>{try{for(const key of ['root','branch','grandchild','detached']){const value=Number(await readFile(join(directory,key+'.ready'),'utf8'));if(!Number.isSafeInteger(value)||value<=0||value>0xffffffff)return false;fixturePids[key]=value;}return true;}catch(e){if(e.code!=='ENOENT')throw e;}},readyDeadline);
+  const before=native.captureSession(owner);
   assert.equal(before.root.pid,ready.workerPid);assert.equal(before.shell.pid,ready.rootPid);assert.equal(before.hostPid,host.pid);
   result.groups.push({label,before,ready,fixturePids});return state;
  }

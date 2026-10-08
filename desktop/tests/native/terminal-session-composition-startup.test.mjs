@@ -36,3 +36,18 @@ test('creator preserves static-import or top-level worker errors before its own 
  const failure=Object.assign(Error('INERT_STATIC_IMPORT_REFUSED'),{code:'ERR_INERT'});
  const {writes,error}=await bootstrap(failure);assert.equal(error,failure);assert.equal(writes.length,2);assert.equal(writes[1].value.status,'FAILED');assert.equal(writes[1].value.code,'ERR_INERT');assert.equal(writes[1].value.message,failure.message);
 });
+test('start waits for every descendant confirmation before capture within one startup deadline',async()=>{
+ const first=source.indexOf('async function start(label){'),last=source.indexOf('async function close(',first);assert.ok(first>=0&&last>first);
+ const events=[],deadlines=[],pids={root:43,branch:44,grandchild:45,detached:46};let grandchildReads=0,allConfirmed=false;
+ const native={mark:()=>1n,createSession:()=>({}),snapshotSession:()=>({}),snapshot:()=>({}),watchRoot(_owner,_pid,image){if(image.endsWith('.wrong'))throw Object.assign(Error('wrong'),{code:'SESSION_ROOT_IDENTITY_REFUSED'});},captureSession(){events.push('capture');assert.equal(allConfirmed,true,'CAPTURE_BEFORE_FIXTURE_CONFIRMATION');return {root:{pid:42},shell:{pid:43},hostPid:99};}};
+ const result={groups:[]},states=[];
+ const readFile=async path=>{if(path.endsWith('electron-ready.json'))return JSON.stringify({workerPid:42,rootPid:43});const key=path.split('/').at(-1).replace('.ready','');if(key==='grandchild'&&grandchildReads++===0)throw Object.assign(Error('pending'),{code:'ENOENT'});if(key==='detached')allConfirmed=true;return String(pids[key]);};
+ const wait=async(fn,deadline)=>{deadlines.push(deadline);for(let i=0;i<4;i++){const value=await fn();if(value)return value;}throw Error('INERT_FIXED_DEADLINE');};
+ await vm.runInNewContext(source.slice(first,last)+'\nstart("A");',{native,hostOwner:{},host:{pid:99},config:{output:'out',electron:'electron',creator:'creator',fixture:'fixture',packagePath:'package'},join:(...p)=>p.join('/'),mkdir:async()=>{},writeFile:async()=>{},readFile,states,result,assert,wait,Date:{now:()=>100}});
+ assert.equal(result.groups.length,1);assert.deepEqual(events,['capture']);assert.ok(grandchildReads>=2);assert.ok(deadlines.length>=2);assert.ok(deadlines.every(d=>d===3100),'STARTUP_BUDGET_MUST_NOT_RESET');
+});
+test('a readiness result arriving after the actual shared deadline is refused',async()=>{
+ let now=100;const wait=vm.runInNewContext(source.match(/const wait=(.*);/)[1],{Date:{now:()=>now},delay:async()=>{now+=5;}});
+ await assert.rejects(wait(async()=>{now=3101;return true;},3100),/COMPOSITION_WAIT_DEADLINE/);
+ now=100;assert.equal(await wait(async()=>true,3100),true);
+});
