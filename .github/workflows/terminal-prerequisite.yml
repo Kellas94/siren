@@ -26,6 +26,10 @@ on:
       - 'desktop/tests/native/terminal-conpty-broker-*.mjs'
       - 'desktop/tests/native/build-terminal-conpty-broker-membership.mjs'
       - 'desktop/tests/fixtures/terminal-conpty-broker-membership.cs'
+      - 'desktop/tests/native/terminal-electron-broker*.mjs'
+      - 'desktop/tests/native/build-terminal-electron-broker.mjs'
+      - 'desktop/tests/fixtures/terminal-electron-broker.cs'
+      - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -78,7 +82,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs desktop/tests/native/terminal-electron-broker-verdict.test.mjs
           exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
@@ -126,7 +130,21 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-conpty-broker-membership.mjs
           exit $LASTEXITCODE
+      - name: Install isolated exact existing PTY candidate without lifecycle scripts
+        shell: pwsh
+        working-directory: desktop/tests/fixtures/terminal-node-pty
+        timeout-minutes: 2
+        run: |
+          npm ci --ignore-scripts --no-fund --no-update-notifier
+          exit $LASTEXITCODE
+      - name: Observe actual pre-contained Electron and OS ConPTY workers
+        shell: pwsh
+        timeout-minutes: 2
+        run: |
+          node desktop/tests/native/build-terminal-electron-broker.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
+        # All native outcomes, including a failed candidate, retain originals.
         # The new workers are a separate experiment; earlier results stay intact.
         # Generated EXEs are evidence only, retained opaquely and never rerun.
         if: always()
@@ -172,4 +190,12 @@ jobs:
             desktop/evidence/terminal-conpty-broker-membership/*/*-partial.cs
             desktop/evidence/terminal-conpty-broker-membership/*/broker-study.exe
             desktop/evidence/terminal-conpty-broker-membership/*/study.log
+            desktop/evidence/terminal-electron-broker-build/*/*.json
+            desktop/evidence/terminal-electron-broker-build/*/*.txt
+            desktop/evidence/terminal-electron-broker/*/*.json
+            desktop/evidence/terminal-electron-broker/*/*/*.json
+            desktop/evidence/terminal-electron-broker/*/*.txt
+            desktop/evidence/terminal-electron-broker/*/*-partial.cs
+            desktop/evidence/terminal-electron-broker/*/electron-broker-study.exe
+            desktop/evidence/terminal-electron-broker/*/study.log
           if-no-files-found: error
