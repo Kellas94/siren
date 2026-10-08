@@ -1,4 +1,5 @@
 // Startup/ownership at eight sessions only. No throughput, peak-memory or admission claim.
+import {isQualifiedOsConptyObservation} from './terminal-conpty-platform.mjs';
 const labels=[...'ABCDEFGH'],pid=n=>Number.isSafeInteger(n)&&n>0,time=n=>Number.isFinite(n)&&n>=0;
 const unique=a=>Array.isArray(a)&&a.length>0&&a.every(pid)&&new Set(a).size===a.length;
 const row=p=>pid(p?.pid)&&typeof p.image==='string'&&p.image.length>0&&/^[1-9][0-9]*$/.test(p.createdFileTime)&&typeof p.alive==='boolean'&&Number.isInteger(p.exitCode)&&(p.session===null||labels.includes(p.session))&&p.inA===(p.session==='A')&&p.inB===(p.session==='B');
@@ -15,7 +16,7 @@ function common(r,negative){
   fixed.push(g.workerPid,...g.fixturePids);
   if(!before.some(p=>p.pid===g.workerPid&&p.session===expected&&p.image.toLowerCase()===r.electronImage.toLowerCase())||!g.fixturePids.every(n=>before.some(p=>p.pid===n&&p.session===expected&&p.image.toLowerCase()===r.fixtureImage.toLowerCase())))return false;
   if(!before.some(p=>p.session===expected&&p.image.toLowerCase()===r.systemConhostImage.toLowerCase()))return false;
-  if(w?.workerPid!==g.workerPid||w.rootPid!==g.rootPid||v?.electron!=='44.5.1'||v.node!=='24.21.0'||v.modules!=='149'||v.napi!=='10'||v.arch!=='x64'||v.platform!=='win32'||w.nodePty!=='1.1.0'||w.osConpty!==true||w.inputWrites!==0||!pid(w.receivedBytes)||!pid(w.retainedBytes)||w.retainedBytes>4194304||w.retainedBytes>w.receivedBytes||!pid(w.rssBytes)||w.helperListObserved!==true||w.helperExitCode!==0||!pid(w.helperPid)||!unique(w.consolePids)||!w.consolePids.includes(w.rootPid))return false;
+  if(w?.workerPid!==g.workerPid||w.rootPid!==g.rootPid||v?.electron!=='44.5.1'||v.node!=='24.21.0'||v.modules!=='149'||v.napi!=='10'||v.arch!=='x64'||v.platform!=='win32'||w.nodePty!=='1.1.0'||!isQualifiedOsConptyObservation(w)||w.windowsRelease!==r.os||w.inputWrites!==0||!pid(w.receivedBytes)||!pid(w.retainedBytes)||w.retainedBytes>4194304||w.retainedBytes>w.receivedBytes||!pid(w.rssBytes)||w.helperListObserved!==true||w.helperExitCode!==0||!pid(w.helperPid)||!unique(w.consolePids)||!w.consolePids.includes(w.rootPid))return false;
   rss+=w.rssBytes;
  }
  if(!unique(fixed)||!Number.isSafeInteger(rss)||r.workersRssTotalBytes!==rss)return false;

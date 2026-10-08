@@ -1,4 +1,5 @@
 // Test-only predicate. Raw native held-handle observations remain authoritative.
+import {isQualifiedOsConptyObservation} from './terminal-conpty-platform.mjs';
 const pid=n=>Number.isSafeInteger(n)&&n>0;
 const time=n=>Number.isFinite(n)&&n>=0;
 const unique=a=>Array.isArray(a)&&a.length>0&&a.every(pid)&&new Set(a).size===a.length;
@@ -10,7 +11,7 @@ function common(r,negative){
  const a=r.fixturePids?.A,b=r.fixturePids?.B,wa=r.workerPids?.A,wb=r.workerPids?.B;
  if(!unique(a)||a.length!==4||!unique(b)||b.length!==4||!unique([wa,wb,...a,...b])||r.rootPids?.A!==a[0]||r.rootPids?.B!==b[0])return false;
  for(const label of ['A','B']){const w=r.workers?.[label],v=w?.runtime;
-  if(!w||w.workerPid!==r.workerPids[label]||w.rootPid!==r.rootPids[label]||v?.electron!=='44.5.1'||v.node!=='24.21.0'||v.modules!=='149'||v.napi!=='10'||v.arch!=='x64'||v.platform!=='win32'||w.nodePty!=='1.1.0'||w.osConpty!==true||w.inputWrites!==0||!pid(w.receivedBytes)||!pid(w.retainedBytes)||w.retainedBytes>4194304||w.retainedBytes>w.receivedBytes||!pid(w.rssBytes)||w.helperListObserved!==true||w.helperExitCode!==0||!pid(w.helperPid)||!unique(w.consolePids)||!w.consolePids.includes(w.rootPid))return false;
+  if(!w||w.workerPid!==r.workerPids[label]||w.rootPid!==r.rootPids[label]||v?.electron!=='44.5.1'||v.node!=='24.21.0'||v.modules!=='149'||v.napi!=='10'||v.arch!=='x64'||v.platform!=='win32'||w.nodePty!=='1.1.0'||!isQualifiedOsConptyObservation(w)||w.inputWrites!==0||!pid(w.receivedBytes)||!pid(w.retainedBytes)||w.retainedBytes>4194304||w.retainedBytes>w.receivedBytes||!pid(w.rssBytes)||w.helperListObserved!==true||w.helperExitCode!==0||!pid(w.helperPid)||!unique(w.consolePids)||!w.consolePids.includes(w.rootPid))return false;
  }
  const before=r.before,after=r.after,c=r.cleanup;
  if(!Array.isArray(before)||before.length<12||before.length>32||!unique(before.map(p=>p?.pid))||r.hostActiveBefore!==before.length||!before.every(p=>row(p)&&p.alive&&p.exitCode===259&&images.some(i=>i.toLowerCase()===p.image.toLowerCase()))||!same(before,after)||!same(before,c?.held)||c.verified!==true||c.active!==0)return false;

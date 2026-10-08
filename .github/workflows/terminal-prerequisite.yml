@@ -26,6 +26,8 @@ on:
       - 'desktop/tests/native/terminal-conpty-broker-*.mjs'
       - 'desktop/tests/native/build-terminal-conpty-broker-membership.mjs'
       - 'desktop/tests/fixtures/terminal-conpty-broker-membership.cs'
+      - 'desktop/tests/native/terminal-conpty-platform*.mjs'
+      - 'desktop/tests/native/terminal-candidate-graph*.mjs'
       - 'desktop/tests/native/terminal-electron-broker*.mjs'
       - 'desktop/tests/native/build-terminal-electron-broker.mjs'
       - 'desktop/tests/fixtures/terminal-electron-broker.cs'
@@ -85,7 +87,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs desktop/tests/native/terminal-electron-broker-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-coverage.test.mjs desktop/tests/native/terminal-electron-capacity-verdict.test.mjs desktop/tests/native/terminal-electron-capacity-derive.test.mjs
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs desktop/tests/native/terminal-electron-broker-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-coverage.test.mjs desktop/tests/native/terminal-electron-capacity-verdict.test.mjs desktop/tests/native/terminal-electron-capacity-derive.test.mjs desktop/tests/native/terminal-conpty-platform.test.mjs desktop/tests/native/terminal-conpty-platform-worker.test.mjs desktop/tests/native/terminal-candidate-graph.test.mjs desktop/tests/native/terminal-candidate-graph-builders.test.mjs desktop/tests/native/terminal-candidate-graph-resolution.test.mjs
           exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
