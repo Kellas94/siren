@@ -26,12 +26,12 @@ export async function runNormalWorker(bootstrap,directory){
  const pty=require('node-pty'),env=Object.fromEntries(Object.entries(process.env).filter(([k])=>!['NODE_OPTIONS','NODE_PATH','ELECTRON_RUN_AS_NODE','ELECTRON_NO_ASAR','ELECTRON_EXTRA_LAUNCH_ARGS'].includes(k.toUpperCase())));
  const term=pty.spawn(config.shell,['-NoLogo','-NoProfile'],{cwd:directory,env,cols:100,rows:30,useConpty:true,useConptyDll:false,handleFlowControl:false});requireSelectedOsConpty({useConpty:term._agent?._useConpty,useConptyDll:term._agent?._useConptyDll});
  const probe=new NormalShellProbe({writeInput:s=>term.write(s),appendOutput:s=>{assert.equal(history.append(s).ok,true);}});assert.equal(probe.requestCommand(0).ok,false);
- let completion=false,failed=false;const fail=async error=>{if(failed)return;failed=true;await persist('worker-error',{message:error.message,pid:process.pid});process.exitCode=1;};
+ let completion=false,failed=false,lockObservation=false;const fail=async error=>{if(failed)return;failed=true;await persist('worker-error',{message:error.message,pid:process.pid});process.exitCode=1;};
  term.onExit(e=>{void fail(Error('UNEXPECTED_SHELL_EXIT_'+e.exitCode));});
  term.onData(data=>{try{probe.ingest(data);if(!completion&&probe.snapshot().doneMs!==null){completion=true;void persist('worker-completion',{...probe.snapshot(),history:history.stats()}).catch(fail);}}catch(e){void fail(e);}});
  const responder=createGateResponder({channelId,gate:{apply:p=>probe.applyGate(p)},send:r=>control.send(r)});
  const lost=()=>probe.applyGate({generation:Number.MAX_SAFE_INTEGER,open:false});
- control.subscribe({closed:lost,message:p=>{const ok=responder(p);if(ok){probe.requestCommand(p.generation);if(!p.open)void persist('worker-lock',probe.snapshot()).catch(fail);}}});
+ control.subscribe({closed:lost,message:p=>{const ok=responder(p);if(ok){probe.requestCommand(p.generation);if(!p.open){void persist('worker-lock',probe.snapshot()).catch(fail);if(!lockObservation){lockObservation=true;setTimeout(()=>{void persist('worker-lock-observation',{scope:'Bounded fixed-CI diagnostic, not an approval',probe:probe.snapshot(),history:history.read({sessionId,fromSequence:0,maxBytes:32768}),stats:history.stats(),control:control.stats(),historyChannel:historyChannel.stats()}).catch(fail);},2000);}}}}});
  for(const event of ['end','close','error','timeout'])historySocket.on(event,lost);
  createHistoryResponder({channel:historyChannel,history});assert.equal(await control.ready,true);assert.equal(await historyChannel.ready,true);
  await persist('worker-ready',{workerPid:process.pid,rootPid:term.pid,shell:config.shell,runtime:{...process.versions,arch:process.arch,platform:process.platform},nodePty:manifest.version,osConpty:term._agent._useConpty,useConptyDll:term._agent._useConptyDll,environmentKeys:Object.keys(process.env).sort((a,b)=>a.toUpperCase().localeCompare(b.toUpperCase())),initial:probe.snapshot()});
