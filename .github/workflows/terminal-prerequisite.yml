@@ -196,7 +196,21 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-composition-eight.mjs
           exit $LASTEXITCODE
+      - name: Check eight-session abrupt-main-loss adverse readback
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-eight-main-loss-derive.test.mjs desktop/tests/native/terminal-eight-main-loss-verdict.test.mjs desktop/tests/native/terminal-eight-main-loss-startup.test.mjs
+          exit $LASTEXITCODE
+      - name: Observe eight composed Sessions under abrupt main loss
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          node desktop/tests/native/build-terminal-eight-main-loss.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
+        # Eight main-loss controls have a distinct evidence namespace.
+        # Their actual outcome is retained even if qualification refuses.
         # All native outcomes, including a failed candidate, retain originals.
         # The new workers are a separate experiment; earlier results stay intact.
         # Generated EXEs are evidence only, retained opaquely and never rerun.
@@ -300,4 +314,18 @@ jobs:
             desktop/evidence/terminal-composition-eight/*/*.mjs
             desktop/evidence/terminal-composition-eight/*/fixed-composition-child.exe
             desktop/evidence/terminal-composition-eight/*/composition-observer.exe
+            desktop/evidence/terminal-eight-main-loss-build/*/*.json
+            desktop/evidence/terminal-eight-main-loss-build/*/*.txt
+            desktop/evidence/terminal-eight-main-loss-build/*/candidate/host.cc
+            desktop/evidence/terminal-eight-main-loss-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-eight-main-loss-build/*/candidate/build/Release/terminal_eight_main_loss*.node
+            desktop/evidence/terminal-eight-main-loss-derived/*/*.mjs
+            desktop/evidence/terminal-eight-main-loss/*/*.json
+            desktop/evidence/terminal-eight-main-loss/*/*/*.json
+            desktop/evidence/terminal-eight-main-loss/*/*.txt
+            desktop/evidence/terminal-eight-main-loss/*/*.log
+            desktop/evidence/terminal-eight-main-loss/*/*.cs
+            desktop/evidence/terminal-eight-main-loss/*/*.mjs
+            desktop/evidence/terminal-eight-main-loss/*/fixed-composition-child.exe
+            desktop/evidence/terminal-eight-main-loss/*/composition-observer.exe
           if-no-files-found: error
