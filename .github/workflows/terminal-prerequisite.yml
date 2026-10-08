@@ -34,6 +34,8 @@ on:
       - 'desktop/tests/native/terminal-electron-capacity*.mjs'
       - 'desktop/tests/native/build-terminal-electron-capacity.mjs'
       - 'desktop/tests/fixtures/terminal-electron-capacity.cs'
+      - 'desktop/tests/native/*terminal-session-composition*.mjs'
+      - 'desktop/tests/fixtures/terminal-session-composition*'
       - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
 permissions:
@@ -95,6 +97,12 @@ jobs:
         run: |
           node desktop/tests/native/terminal-job-list.mjs
           exit $LASTEXITCODE
+      - name: Check composed-session derivation and adverse readback rules
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-session-composition-derive.test.mjs desktop/tests/native/terminal-session-composition-verdict.test.mjs desktop/tests/native/terminal-session-composition-consistency.test.mjs
+          exit $LASTEXITCODE
       - name: Install existing locked build dependencies without lifecycle scripts
         shell: pwsh
         working-directory: desktop
@@ -153,6 +161,12 @@ jobs:
         timeout-minutes: 2
         run: |
           node desktop/tests/native/build-terminal-electron-capacity.mjs
+          exit $LASTEXITCODE
+      - name: Observe actual composed native Session and Host/root lifetimes
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          node desktop/tests/native/build-terminal-session-composition.mjs
           exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         # All native outcomes, including a failed candidate, retain originals.
@@ -217,4 +231,17 @@ jobs:
             desktop/evidence/terminal-electron-capacity/*/*-partial.cs
             desktop/evidence/terminal-electron-capacity/*/electron-capacity-study.exe
             desktop/evidence/terminal-electron-capacity/*/study.log
+            desktop/evidence/terminal-session-composition-build/*/*.json
+            desktop/evidence/terminal-session-composition-build/*/*.txt
+            desktop/evidence/terminal-session-composition-build/*/candidate/host.cc
+            desktop/evidence/terminal-session-composition-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-session-composition-build/*/candidate/build/Release/terminal_session_composition*.node
+            desktop/evidence/terminal-session-composition/*/*.json
+            desktop/evidence/terminal-session-composition/*/*/*.json
+            desktop/evidence/terminal-session-composition/*/*.txt
+            desktop/evidence/terminal-session-composition/*/*.log
+            desktop/evidence/terminal-session-composition/*/*.cs
+            desktop/evidence/terminal-session-composition/*/*.mjs
+            desktop/evidence/terminal-session-composition/*/fixed-composition-child.exe
+            desktop/evidence/terminal-session-composition/*/composition-observer.exe
           if-no-files-found: error
