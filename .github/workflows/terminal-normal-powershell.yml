@@ -76,6 +76,8 @@ on:
       - 'desktop/tests/terminal-normal-probe.test.mjs'
       - 'desktop/tests/terminal-normal-contract.test.mjs'
       - 'desktop/tests/terminal-normal-builder.test.mjs'
+      - 'desktop/src/terminal/shell-environment.mjs'
+      - 'desktop/tests/terminal-shell-environment.test.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -98,7 +100,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/terminal-normal-contract.test.mjs desktop/tests/terminal-normal-builder.test.mjs desktop/tests/terminal-normal-probe.test.mjs
+          node --test desktop/tests/terminal-normal-contract.test.mjs desktop/tests/terminal-normal-builder.test.mjs desktop/tests/terminal-normal-probe.test.mjs desktop/tests/terminal-shell-environment.test.mjs
           exit $LASTEXITCODE
       - name: Preserve tool discovery before dependency installation
         shell: pwsh

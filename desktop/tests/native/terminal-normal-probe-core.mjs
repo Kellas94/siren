@@ -18,9 +18,11 @@ export class NormalShellProbe {
  }
  ingest(data){
   if(typeof data!=='string'||data.length>32768||!data.isWellFormed()||Buffer.byteLength(data)>32768)throw TypeError('Bounded valid output required');
-  this.#append(data);this.#bytes+=Buffer.byteLength(data);this.#tail=(this.#tail+data).slice(-1024);
-  if(this.#begin===null&&this.#tail.includes(NORMAL_BEGIN))this.#begin=this.#clock();
-  if(this.#done===null&&this.#tail.includes(NORMAL_DONE))this.#done=this.#clock();
+  this.#append(data);this.#bytes+=Buffer.byteLength(data);const window=this.#tail+data;
+  // Search the bounded incoming window before retaining only the final tail.
+  if(this.#begin===null&&window.includes(NORMAL_BEGIN))this.#begin=this.#clock();
+  if(this.#done===null&&window.includes(NORMAL_DONE))this.#done=this.#clock();
+  this.#tail=window.slice(-1024);
  }
  snapshot(){return Object.freeze({inputWrites:this.#attempted?1:0,writeKnown:this.#known,refusedInput:this.#refused,receivedBytes:this.#bytes,beginMs:this.#begin,lockMs:this.#lock,doneMs:this.#done,parserCharacters:this.#tail.length});}
 }

@@ -16,5 +16,7 @@ export function syntheticNormalObservation(){
   observer:{admitted:false,status:'NORMAL_SAFETY_OBSERVED_NOT_ADMITTED',main:{...main},before,after,safetyHeldBeforeGo:true,safetyOpenAtObservation:true,activeBeforeSafetyCleanup:0,cleanupVerified:true,ageMs:4000},
  };
  result.native.openAck={ok:true,generation:1,localInputFenced:false,hostAcknowledged:true};result.native.replayInputFence={generation:2,closed:true,hostAcknowledged:true};
+ result.native.ready.shellArguments=['-NoLogo','-NoProfile','-NoExit','-Command',"$env:PSModulePath = $PSHOME + '\\Modules'"];
+ result.native.ready.shellEnvironment={COMSPEC:'C:\\Windows\\System32\\cmd.exe',PATH:'C:\\Windows\\System32;C:\\Windows',SYSTEMROOT:'C:\\Windows',TEMP:result.output+'\\session',TMP:result.output+'\\session',WINDIR:'C:\\Windows',PSModulePath:'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules'};
  return {result,addon,electron};
 }

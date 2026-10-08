@@ -18,7 +18,7 @@ export function deriveNormalPowerShellCi({builder,workflow}){
  assert.equal([...workflow.matchAll(paths)].length,1,'NORMAL_CI_WORKFLOW_DRIFT');
  workflow=workflow.replace(paths,()=>"    branches: ['"+CANDIDATE_BRANCH+"']\n    paths:\n"+PUBLICATION_INPUTS.map(p=>"      - '"+p+"'\n").join(''));
  workflow=workflow.replaceAll('desktop/tests/native/terminal-normal-powershell.test.mjs','desktop/tests/terminal-normal-contract.test.mjs');
- workflow=once(workflow,'node --test desktop/tests/terminal-normal-contract.test.mjs','node --test desktop/tests/terminal-normal-contract.test.mjs desktop/tests/terminal-normal-builder.test.mjs desktop/tests/terminal-normal-probe.test.mjs');
+ workflow=once(workflow,'node --test desktop/tests/terminal-normal-contract.test.mjs','node --test desktop/tests/terminal-normal-contract.test.mjs desktop/tests/terminal-normal-builder.test.mjs desktop/tests/terminal-normal-probe.test.mjs desktop/tests/terminal-shell-environment.test.mjs');
  workflow=once(workflow,'name: Build one exact candidate and run the positive compatibility control','name: Build one exact candidate and observe finite normal PowerShell');
  workflow=once(workflow,'            desktop/evidence/terminal-normal-powershell-observation/*/fixed-composition-child.exe\n','');
  workflow=once(workflow,'            desktop/evidence/terminal-normal-powershell-observation/*/composition-observer.exe','            desktop/evidence/terminal-normal-powershell-observation/*/normal-observer.exe');

@@ -12,6 +12,7 @@ export const PUBLICATION_INPUTS=Object.freeze([...previousInputs,
  'desktop/tests/fixtures/terminal-normal-observer.cs',
  'desktop/tests/native/terminal-normal-probe-core.mjs','desktop/tests/native/terminal-normal-worker.mjs','desktop/tests/native/terminal-normal-powershell.mjs','desktop/tests/native/terminal-normal-powershell-contract.mjs','desktop/tests/native/terminal-normal-powershell-derive.mjs','desktop/tests/native/build-terminal-normal-powershell.mjs','desktop/tests/native/terminal-normal-contract-fixture.mjs',
  'desktop/tests/terminal-normal-probe.test.mjs','desktop/tests/terminal-normal-contract.test.mjs','desktop/tests/terminal-normal-builder.test.mjs',
+ 'desktop/src/terminal/shell-environment.mjs','desktop/tests/terminal-shell-environment.test.mjs',
 ]);
 export function validatePublicationInputs(rows){assert.ok(Array.isArray(rows)&&new Set(rows).size===rows.length,'NORMAL_PUBLICATION_DUPLICATE');assert.deepEqual([...rows].sort(),[...PUBLICATION_INPUTS].sort(),'NORMAL_PUBLICATION_CLOSURE');}
 export function requireCandidateCi({platform,arch,node,env}){assert.ok(platform==='win32'&&arch==='x64'&&node==='v24.16.0'&&env?.GITHUB_ACTIONS==='true'&&env.RUNNER_OS==='Windows'&&env.GITHUB_REF==='refs/heads/'+CANDIDATE_BRANCH,'NORMAL_POWERSHELL_CI_ONLY');}
@@ -70,6 +71,9 @@ export function validateCandidateObservation({result,addon,electron}){
  const creator=n.before.root,shell=n.before.shell,host=n.hostBefore.root;require(creator.pid!==host.pid&&shell.pid!==host.pid&&n.before.hostPid===host.pid,'HOST_CREATOR_DISTINCT');
  require(n.ready.workerPid===creator.pid&&n.ready.rootPid===shell.pid,'READY_NATIVE_BINDING');require(absolute(n.ready.shell)&&/\\System32\\WindowsPowerShell\\v1\.0\\powershell\.exe$/i.test(n.ready.shell),'POWERSHELL_ABSOLUTE');
  assert.equal(shell.image.toLowerCase(),n.ready.shell.toLowerCase(),'NORMAL_SHELL_IMAGE');assert.equal(creator.image.toLowerCase(),electron.path.toLowerCase(),'NORMAL_CREATOR_IMAGE');assert.equal(host.image.toLowerCase(),electron.path.toLowerCase(),'NORMAL_HOST_IMAGE');
+ const system=path.dirname(path.dirname(path.dirname(n.ready.shell))),root=path.dirname(system),directory=path.join(result.output,'session');
+ assert.deepEqual(n.ready.shellArguments,['-NoLogo','-NoProfile','-NoExit','-Command',"$env:PSModulePath = $PSHOME + '\\Modules'"],'NORMAL_FIXED_SYSTEM_PROFILE_ARGUMENTS');
+ assert.deepEqual(n.ready.shellEnvironment,{COMSPEC:path.join(system,'cmd.exe'),PATH:system+';'+root,SYSTEMROOT:root,TEMP:directory,TMP:directory,WINDIR:root,PSModulePath:path.join(path.dirname(n.ready.shell),'Modules')},'NORMAL_FIXED_SYSTEM_PROFILE_ENVIRONMENT');
  const conhost=path.join(path.dirname(path.dirname(path.dirname(n.ready.shell))),'conhost.exe').toLowerCase(),images=new Set([electron.path.toLowerCase(),conhost,n.ready.shell.toLowerCase()]);
  for(const p of hostBefore.values()){require(images.has(p.image.toLowerCase()),'NATIVE_IMAGE_ALLOWLIST');require(p.image.toLowerCase()!==n.ready.shell.toLowerCase()||p.pid===shell.pid,'EXTRA_SHELL');}
  assert.deepEqual(n.openAck,{ok:true,generation:1,localInputFenced:false,hostAcknowledged:true},'NORMAL_OPEN_ACK');

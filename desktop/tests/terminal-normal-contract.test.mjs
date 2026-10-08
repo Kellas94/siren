@@ -5,6 +5,7 @@ import {readFile} from 'node:fs/promises';
 import * as contract from './native/terminal-normal-powershell-contract.mjs';
 import {syntheticNormalObservation,fixtureKind} from './native/terminal-normal-contract-fixture.mjs';
 const validate=input=>{assert.equal(typeof contract.validateCandidateObservation,'function');return contract.validateCandidateObservation(input);};
+test('synthetic receipt refuses module search or startup command outside the fixed system profile',()=>{for(const mutate of [r=>r.native.ready.shellEnvironment.PSModulePath='C:\\foreign',r=>r.native.ready.shellEnvironment.OPENAI_API_KEY='injected',r=>r.native.ready.shellEnvironment.ELECTRON_RUN_AS_NODE='1',r=>r.native.ready.shellEnvironment.PATH+=';C:\\foreign',r=>r.native.ready.shellArguments.push('Invoke-WebRequest'),r=>r.native.ready.shellArguments[4]='arbitrary command']){const input=syntheticNormalObservation();mutate(input.result);assert.throws(()=>validate(input));}});
 test('synthetic owner receipt validates only the bounded normal-shell claim',()=>{
  assert.equal(fixtureKind,'SYNTHETIC_NORMAL_CONTRACT_NOT_NATIVE_EVIDENCE');const input=syntheticNormalObservation(),r=validate(input);assert.equal(r.loadedAddon.path,input.addon.path);assert.deepEqual(r.loadedRuntime,input.result.native.runtime);assert.equal(r.normalShell.admitted,false);assert.equal(r.normalShell.logicalRequiredMembers,2);assert.equal(r.normalShell.sessionHeldMembers,3);assert.equal(r.normalShell.safetyHeldMembers,6);
 });
