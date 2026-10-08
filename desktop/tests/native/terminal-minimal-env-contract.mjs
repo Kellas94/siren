@@ -42,7 +42,9 @@ export function validateCreatorEnvironments(native,output){
   check(Object.keys(values).length===7&&typeof values.SYSTEMROOT==='string'&&/^[a-z]:\\/i.test(values.SYSTEMROOT),'WINDOWS');
   const system=path.join(values.SYSTEMROOT,'System32');
   check(values.ELECTRON_RUN_AS_NODE==='1'&&values.WINDIR===values.SYSTEMROOT,'RUNTIME');
-  check(values.PATH===system+';'+values.SYSTEMROOT&&values.COMSPEC===path.join(system,'cmd.exe'),'FIXED_PATH');
+  // Windows API path casing is not fixed (observed system32 versus System32).
+  // Compare only casing; no normalization, expansion or extra PATH entries.
+  check(values.PATH.toLowerCase()===(system+';'+values.SYSTEMROOT).toLowerCase()&&values.COMSPEC.toLowerCase()===path.join(system,'cmd.exe').toLowerCase(),'FIXED_PATH');
   check(values.TEMP===g.directory&&values.TMP===g.directory,'PRIVATE_TEMP');
  }
  return {creators:4,keys:expected.length,privateSeedKeys:seeds.length};

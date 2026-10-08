@@ -48,3 +48,15 @@ test('private creator directories must match the canonical Unicode/spaces run ro
   assert.throws(()=>contract.validateCreatorEnvironments(c,observedOutput),/ENVIRONMENT/);
  }
 });
+
+test('Windows OS directory casing preserves fixed PATH and ComSpec identity',()=>{
+ const r={parentEnvironmentSeeded:['SIREN_PRIVATE_ENV_CANARY','OPENAI_API_KEY','PRIVATE_APPLICATION_SECRET'],groups:['A','B','C','D'].map((n,i)=>proof(n,i+1))};
+ for(const g of r.groups){g.creatorEnvironment.values.PATH='C:\\Windows\\system32;C:\\Windows';g.creatorEnvironment.values.ComSpec='C:\\Windows\\system32\\cmd.exe';}
+ assert.doesNotThrow(()=>contract.validateCreatorEnvironments(r,observedOutput));
+ for(const value of ['C:\\Windows\\system32evil;C:\\Windows','C:\\Windows\\system32;C:\\Windows;C:\\private','C:\\Windows\\system32\\..\\private;C:\\Windows']){
+  const c=structuredClone(r);c.groups[0].creatorEnvironment.values.PATH=value;assert.throws(()=>contract.validateCreatorEnvironments(c,observedOutput),/ENVIRONMENT/);
+ }
+ for(const value of ['C:\\private\\cmd.exe','C:\\Windows\\system32\\cmd.exe /c injected']){
+  const c=structuredClone(r);c.groups[0].creatorEnvironment.values.ComSpec=value;assert.throws(()=>contract.validateCreatorEnvironments(c,observedOutput),/ENVIRONMENT/);
+ }
+});
