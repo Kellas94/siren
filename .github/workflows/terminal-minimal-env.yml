@@ -1,0 +1,157 @@
+name: Terminal ownership candidate compatibility (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-minimal-env-2026-10-08']
+    paths:
+      - '.github/workflows/terminal-ownership-candidate.yml'
+      - '.github/workflows/terminal-prerequisite.yml'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'desktop/native/terminal-ownership/ownership.cc'
+      - 'desktop/native/terminal-ownership/binding.gyp'
+      - 'desktop/tests/native/build-terminal-ownership-candidate.mjs'
+      - 'desktop/tests/native/terminal-ownership-candidate-contract.mjs'
+      - 'desktop/tests/native/terminal-ownership-candidate.test.mjs'
+      - 'desktop/tests/native/terminal-session-composition.mjs'
+      - 'desktop/tests/native/terminal-session-composition-derive.mjs'
+      - 'desktop/tests/native/terminal-session-composition-verdict.mjs'
+      - 'desktop/tests/native/terminal-session-composition-test-fixture.mjs'
+      - 'desktop/tests/native/terminal-conpty-platform.mjs'
+      - 'desktop/tests/native/terminal-electron-broker-worker.mjs'
+      - 'desktop/tests/native/terminal-candidate-graph.mjs'
+      - 'desktop/tests/fixtures/terminal-host-guard/host.cc'
+      - 'desktop/tests/fixtures/terminal-session-composition.inc'
+      - 'desktop/tests/fixtures/terminal-job-list.cs'
+      - 'desktop/tests/fixtures/terminal-main-owner-observer.cs'
+      - 'desktop/tests/fixtures/terminal-session-composition-observer.cs'
+      - 'desktop/tests/fixtures/terminal-node-pty/package.json'
+      - 'desktop/tests/fixtures/terminal-node-pty/package-lock.json'
+      - '.github/workflows/terminal-minimal-env.yml'
+      - 'desktop/native/terminal-ownership-minimal-env/ownership.cc'
+      - 'desktop/native/terminal-ownership-minimal-env/binding.gyp'
+      - 'desktop/tests/native/build-terminal-minimal-env.mjs'
+      - 'desktop/tests/native/terminal-minimal-env-contract.mjs'
+      - 'desktop/tests/native/terminal-minimal-env-derive.mjs'
+      - 'desktop/tests/native/terminal-minimal-env.test.mjs'
+      - 'desktop/tests/native/terminal-minimal-env.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: terminal-minimal-env-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  ownership-candidate:
+    if: github.ref == 'refs/heads/probe/terminal-minimal-env-2026-10-08'
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+      - name: Check pure candidate source and publication closure
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-minimal-env.test.mjs
+          exit $LASTEXITCODE
+      - name: Preserve tool discovery before dependency installation
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Path desktop/evidence -Force | Out-Null
+          $discovery = [ordered]@{ schema = 1; purpose = 'Exact ownership candidate CI only; no product admission'; image = $env:ImageVersion; visualStudio = @(); compilers = @(); sdks = @(); python = $null }
+          $locator = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          if (Test-Path -LiteralPath $locator -PathType Leaf) {
+            $locations = @(& $locator -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+            if ($LASTEXITCODE -ne 0) { throw 'Compiler discovery failed' }
+            foreach ($location in $locations) {
+              $discovery.visualStudio += $location
+              $toolsRoot = Join-Path $location 'VC/Tools/MSVC'
+              if (Test-Path -LiteralPath $toolsRoot -PathType Container) {
+                foreach ($version in Get-ChildItem -LiteralPath $toolsRoot -Directory) {
+                  foreach ($name in @('cl.exe', 'link.exe')) {
+                    $tool = Join-Path $version.FullName "bin/Hostx64/x64/$name"
+                    if (Test-Path -LiteralPath $tool -PathType Leaf) {
+                      $discovery.compilers += @{ path = $tool; sha256 = (Get-FileHash -LiteralPath $tool -Algorithm SHA256).Hash.ToLowerInvariant() }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          $kits = Get-ItemProperty -LiteralPath 'HKLM:/SOFTWARE/Microsoft/Windows Kits/Installed Roots' -ErrorAction SilentlyContinue
+          if ($kits -and $kits.KitsRoot10) {
+            $sdkRoot = Join-Path $kits.KitsRoot10 'Include'
+            if (Test-Path -LiteralPath $sdkRoot -PathType Container) {
+              $discovery.sdks = @(Get-ChildItem -LiteralPath $sdkRoot -Directory | Select-Object -ExpandProperty FullName)
+            }
+          }
+          $python = (Get-Command python.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+          $discovery.python = @{ path = $python; sha256 = (Get-FileHash -LiteralPath $python -Algorithm SHA256).Hash.ToLowerInvariant() }
+          $discovery | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath desktop/evidence/terminal-minimal-env-tool-discovery.json -Encoding utf8
+      - name: Install existing locked desktop dependencies without lifecycle scripts
+        shell: pwsh
+        working-directory: desktop
+        timeout-minutes: 2
+        run: |
+          npm ci --ignore-scripts --no-fund --no-update-notifier
+          exit $LASTEXITCODE
+      - name: Install exact existing Electron runtime explicitly
+        shell: pwsh
+        working-directory: desktop
+        timeout-minutes: 2
+        run: |
+          npm run runtime:install
+          exit $LASTEXITCODE
+      - name: Install isolated exact PTY candidate without lifecycle scripts
+        shell: pwsh
+        working-directory: desktop/tests/fixtures/terminal-node-pty
+        timeout-minutes: 2
+        run: |
+          npm ci --ignore-scripts --no-fund --no-update-notifier
+          exit $LASTEXITCODE
+      - name: Build one exact candidate and run the positive compatibility control
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          node desktop/tests/native/build-terminal-minimal-env.mjs desktop/evidence/terminal-minimal-env-tool-discovery.json
+          exit $LASTEXITCODE
+      - name: Retain original sources logs receipts graph and inert build artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: terminal-minimal-env-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          compression-level: 9
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-minimal-env-tool-discovery.json
+            desktop/evidence/terminal-minimal-env-build/*/*.json
+            desktop/evidence/terminal-minimal-env-build/*/*.txt
+            desktop/evidence/terminal-minimal-env-build/*/originals/**
+            desktop/evidence/terminal-minimal-env-build/*/candidate/ownership.cc
+            desktop/evidence/terminal-minimal-env-build/*/candidate/binding.gyp
+            desktop/evidence/terminal-minimal-env-build/*/candidate/build/*.vcxproj
+            desktop/evidence/terminal-minimal-env-build/*/candidate/build/*.sln
+            desktop/evidence/terminal-minimal-env-build/*/candidate/build/Release/siren_terminal_ownership_minimal_env.node
+            desktop/evidence/terminal-minimal-env-observation/*/*.json
+            desktop/evidence/terminal-minimal-env-observation/*/*/*.json
+            desktop/evidence/terminal-minimal-env-observation/*/*.txt
+            desktop/evidence/terminal-minimal-env-observation/*/*.log
+            desktop/evidence/terminal-minimal-env-observation/*/*.cs
+            desktop/evidence/terminal-minimal-env-observation/*/*.mjs
+            desktop/evidence/terminal-minimal-env-observation/*/package.json
+            desktop/evidence/terminal-minimal-env-observation/*/fixed-composition-child.exe
+            desktop/evidence/terminal-minimal-env-observation/*/composition-observer.exe
+            desktop/native/terminal-ownership/ownership.cc
+            desktop/native/terminal-ownership/binding.gyp
+            desktop/tests/native/build-terminal-minimal-env.mjs
+            desktop/tests/native/terminal-minimal-env-contract.mjs
+            desktop/tests/native/terminal-minimal-env.test.mjs
+            .github/workflows/terminal-minimal-env.yml
