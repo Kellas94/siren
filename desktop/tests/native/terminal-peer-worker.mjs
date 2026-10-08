@@ -13,13 +13,15 @@ import {createSystemPowerShellEnvironment} from '../../src/terminal/shell-enviro
 import {NormalShellProbe,NORMAL_COMMAND_KIND} from './terminal-normal-probe-core.mjs';
 import {requireQualifiedConptyPlatform,requireSelectedOsConpty} from './terminal-conpty-platform.mjs';
 export async function runPeerWorker(bootstrap,directory,peer){
+ await peer.diagnostic('worker-entered');
  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.env.ELECTRON_RUN_AS_NODE,'1');assert.equal(isAbsolute(directory),true);assert.equal(bootstrap.sessionId,'normal-shell');
  const configBytes=await readFile(join(directory,'worker-config.json'));assert.ok(configBytes.length<4096);const config=JSON.parse(configBytes);assert.deepEqual(Object.keys(config).sort(),['packagePath','shell']);assert.ok(isAbsolute(config.packagePath)&&isAbsolute(config.shell));
  requireQualifiedConptyPlatform({platform:process.platform,arch:process.arch,windowsVersion:release()});
  const persist=async(name,value)=>{const p=join(directory,name+'.json');await writeFile(p+'.pending',JSON.stringify(value),{flag:'wx'});await rename(p+'.pending',p);};
  const milestones=async()=>{const result={};for(const stage of ['before-begin','after-begin','after-sleep','after-done']){try{const b=await readFile(join(directory,'normal-script-'+stage+'.json'));assert.ok(b.length<=8&&b.toString('utf8')==='1');result[stage]=true;}catch(e){if(e.code!=='ENOENT')throw e;result[stage]=false;}}return result;};
  const native=peer.native;
- const controlEndpoint=await native.connectPeerLane(peer.witness,bootstrap.controlPipe,'control',2500),historyEndpoint=await native.connectPeerLane(peer.witness,bootstrap.dataPipe,'history',2500);
+ const controlEndpoint=await native.connectPeerLane(peer.witness,bootstrap.controlPipe,'control',2500);await peer.diagnostic('control-connected');
+ const historyEndpoint=await native.connectPeerLane(peer.witness,bootstrap.dataPipe,'history',2500);await peer.diagnostic('history-connected');
  const controlSocket=createNativePeerStream({native,endpoint:controlEndpoint,lane:'control',deadlineMs:2500}),historySocket=createNativePeerStream({native,endpoint:historyEndpoint,lane:'history',deadlineMs:2500});
  const control=new TerminalControlChannel({stream:controlSocket,role:'creator',channelId:bootstrap.channelId,secret:bootstrap.controlSecret,deadlineMs:2500});
  const historyChannel=new TerminalHistoryChannel({stream:historySocket,role:'creator',channelId:bootstrap.channelId,sessionId:bootstrap.sessionId,secret:bootstrap.dataSecret,deadlineMs:2500});

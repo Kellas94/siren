@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {types} from 'node:util';
 const read=path=>readFile(new URL(path,import.meta.url),'utf8');
 const source={runner:await read('./native/terminal-normal-powershell.mjs'),worker:await read('./native/terminal-normal-worker.mjs')};
 const api=await import('./native/terminal-peer-probe-derive.mjs').catch(error=>{if(error.code!=='ERR_MODULE_NOT_FOUND')throw error;return {};});
@@ -43,8 +44,8 @@ test('both lane outcome handlers attach before invoking potentially throwing nat
 test('creator wrapper loads literal addon separately from argv bootstrap and always disposes the opaque witness',()=>{
  const {runner,worker}=derive();
  assert.ok(runner.includes('async function creator(worker,reader,addon)'));assert.ok(runner.includes("const {createRequire}=await import('node:module'),native=createRequire(import.meta.url)(addon)"));
- assert.ok(runner.includes('readPeerTerminalBootstrap(process.stdin,{native,timeoutMs:1000})'));
- assert.ok(runner.includes('runPeerWorker(packet.bootstrap,process.argv[2],{native,witness:packet.witness})'));assert.ok(runner.includes('finally{packet.dispose();}'));
+ assert.ok(runner.includes('readPeerTerminalBootstrap(process.stdin,{native:bootstrapNative,timeoutMs:1000})'));
+ assert.ok(runner.includes('runPeerWorker(packet.bootstrap,process.argv[2],{native,witness:packet.witness,diagnostic:mark})'));assert.ok(runner.includes('finally{packet?.dispose();}'));
  assert.ok(runner.includes("JSON.stringify(pathToFileURL(join(desktop,'src/terminal/peer-bootstrap-reader.mjs')).href)},${JSON.stringify(addon)}"));
  assert.ok(worker.includes('export async function runPeerWorker(bootstrap,directory,peer)'));
  assert.doesNotMatch(runner+worker,/readBigUInt64|writeBigUInt64|\.handle\b|process\.argv\[[3-9]\]/);
@@ -63,4 +64,63 @@ test('successful native close receipts settle both streams and listeners before 
  assert.ok(runner.includes('assert.deepEqual(result.nativePeer.close,{control:true,history:true,listeners:true})'));
  assert.ok(runner.includes('result.nativePeerCleanup=close'));assert.ok(runner.includes('result.nativePeerCleanupError='));
  const lock=runner.indexOf("result.lockAck=await fence.closeInput('lock')");assert.ok(lock<close);
+});
+test('diagnostic error classification emits only fixed whitelisted code and name',()=>{
+ assert.equal(typeof api.classifyPeerDiagnosticError,'function');
+ const classify=value=>api.classifyPeerDiagnosticError(value,types.isProxy);
+ assert.deepEqual(classify(Object.assign(Error('PRIVATE_SECRET'),{code:'PEER_IDENTITY_REFUSED'})),{code:'PEER_IDENTITY_REFUSED',name:'Error'});
+ assert.deepEqual(classify(Error('TERMINAL_PEER_BOOTSTRAP_REFUSED')),{code:'TERMINAL_PEER_BOOTSTRAP_REFUSED',name:'Error'});
+ assert.deepEqual(classify(Object.assign(TypeError('PRIVATE_SECRET'),{code:'ERR_DLOPEN_FAILED'})),{code:'ERR_DLOPEN_FAILED',name:'TypeError'});
+ assert.deepEqual(classify({code:'PRIVATE_SECRET',name:'PRIVATE_SECRET',message:'PRIVATE_SECRET',stack:'PRIVATE_SECRET'}),{code:'UNKNOWN',name:'Error'});
+ assert.deepEqual(classify(null),{code:'UNKNOWN',name:'Error'});
+});
+test('diagnostic classification never executes error getters or Proxy traps',()=>{
+ assert.equal(typeof api.classifyPeerDiagnosticError,'function');let touched=0;
+ const getter={};for(const key of ['code','name','message'])Object.defineProperty(getter,key,{get(){touched++;throw Error('PRIVATE_SECRET');}});
+ const proxy=new Proxy({}, {get(){touched++;throw Error('PRIVATE_SECRET');},getPrototypeOf(){touched++;throw Error('PRIVATE_SECRET');},getOwnPropertyDescriptor(){touched++;throw Error('PRIVATE_SECRET');}});
+ const inherited=Object.create(proxy);
+ for(const value of [getter,proxy,inherited])assert.deepEqual(api.classifyPeerDiagnosticError(value,types.isProxy),{code:'UNKNOWN',name:'Error'});
+ assert.equal(touched,0);
+});
+test('creator diagnostics cover addon and bootstrap failures with fixed bounded JSON and optional packet disposal',()=>{
+ const {runner}=derive(),creator=runner.slice(runner.indexOf('async function creator('),runner.indexOf('async function main('));
+ assert.ok(creator.includes("const stages=['addon-loaded','bootstrap-read','worker-imported','worker-entered','control-connected','history-connected']"));
+ assert.ok(creator.includes("join(process.argv[2],'peer-creator-diagnostic.json')"));
+ assert.ok(creator.includes('diagnostic={schema:1,diagnosticOnly:true,admitted:false,stages:[],failure:null,consumeFailure:null}'));
+ assert.ok(creator.includes("if(Buffer.byteLength(body,'utf8')>=4096)throw Error('PEER_DIAGNOSTIC_BOUND')"));
+ assert.ok(creator.includes('stage!==stages[diagnostic.stages.length]'));assert.ok(creator.includes('diagnostic.stages.push(stage);await persist()'));
+ assert.ok(creator.includes('diagnostic.failure=classifyError(error,types.isProxy)'));assert.ok(creator.includes('try{await persist();}catch{}throw error;'));
+ assert.ok(creator.indexOf(' try{')<creator.indexOf('native=createRequire(import.meta.url)(addon)'));
+ assert.ok(creator.includes("await mark('addon-loaded')"));assert.ok(creator.includes("await mark('bootstrap-read')"));assert.ok(creator.includes("await mark('worker-imported')"));
+ assert.doesNotMatch(creator,/error\.message|error\.stack|JSON\.stringify\(error\)|String\(error\)/);
+ const worst={schema:1,diagnosticOnly:true,admitted:false,stages:['addon-loaded','bootstrap-read','worker-imported','worker-entered','control-connected','history-connected'],failure:{code:'TERMINAL_PEER_BOOTSTRAP_STREAM_REFUSED',name:'AssertionError'}};
+ assert.ok(Buffer.byteLength(JSON.stringify(worst),'utf8')<4096);
+});
+test('diagnostic bootstrap wrapper preserves captured native receiver, return and thrown identity',()=>{
+ assert.equal(typeof api.wrapPeerBootstrapDiagnostics,'function');const record={consumeFailure:null},bytes=Buffer.from('inert'),witness=Object.freeze({}),result=Object.freeze({}),failure=Object.assign(Error('PRIVATE_SECRET'),{code:'PEER_WITNESS_REFUSED'});let fail=false,closes=0;
+ const native={consumePeerBootstrap(value){assert.equal(this,native);assert.equal(value,bytes);if(fail)throw failure;return result;},closePeerWitness(value){assert.equal(this,native);assert.equal(value,witness);closes++;return true;}};
+ const wrapper=api.wrapPeerBootstrapDiagnostics(native,record,api.classifyPeerDiagnosticError,types.isProxy);
+ assert.equal(wrapper.consumePeerBootstrap(bytes),result);assert.equal(record.consumeFailure,null);
+ native.consumePeerBootstrap=()=>{throw Error('WRONG_REPLACEMENT');};native.closePeerWitness=()=>{throw Error('WRONG_REPLACEMENT');};fail=true;
+ assert.throws(()=>wrapper.consumePeerBootstrap(bytes),error=>error===failure);assert.deepEqual(record.consumeFailure,{code:'PEER_WITNESS_REFUSED',name:'Error'});
+ assert.equal(wrapper.closePeerWitness(witness),true);assert.equal(closes,1);assert.equal(JSON.stringify(record).includes('PRIVATE_SECRET'),false);assert.deepEqual(Reflect.ownKeys(wrapper).sort(),['closePeerWitness','consumePeerBootstrap']);
+});
+test('diagnostic bootstrap wrapper refuses callback getters and Proxies without invoking them',()=>{
+ assert.equal(typeof api.wrapPeerBootstrapDiagnostics,'function');let touched=0;const noop=()=>true;
+ const getter={closePeerWitness:noop};Object.defineProperty(getter,'consumePeerBootstrap',{get(){touched++;return noop;}});
+ const proxy=new Proxy({},{getOwnPropertyDescriptor(){touched++;throw Error('PRIVATE_SECRET');},getPrototypeOf(){touched++;throw Error('PRIVATE_SECRET');}});
+ const callable=new Proxy(noop,{apply(){touched++;throw Error('PRIVATE_SECRET');}});
+ for(const native of [getter,proxy,{consumePeerBootstrap:callable,closePeerWitness:noop},{consumePeerBootstrap:noop}])assert.throws(()=>api.wrapPeerBootstrapDiagnostics(native,{consumeFailure:null},api.classifyPeerDiagnosticError,types.isProxy),/PEER_DIAGNOSTIC_CALLBACK_REFUSED/);
+ assert.equal(touched,0);
+});
+test('worker reports fixed entry and connection milestones without modifying native or HMAC order',()=>{
+ const {worker}=derive();
+ const entered=worker.indexOf("await peer.diagnostic('worker-entered')"),runtime=worker.indexOf("assert.equal(process.versions.electron,'44.5.1')"),control=worker.indexOf("native.connectPeerLane(peer.witness,bootstrap.controlPipe,'control',2500)"),controlMark=worker.indexOf("await peer.diagnostic('control-connected')"),history=worker.indexOf("native.connectPeerLane(peer.witness,bootstrap.dataPipe,'history',2500)"),historyMark=worker.indexOf("await peer.diagnostic('history-connected')"),stream=worker.indexOf('const controlSocket=createNativePeerStream');
+ assert.ok(entered>=0&&entered<runtime&&runtime<control&&control<controlMark&&controlMark<history&&history<historyMark&&historyMark<stream);
+});
+test('main records only fixed allSettled accept diagnostics before the unchanged refusal assertion',()=>{
+ const {runner}=derive(),outcomes=runner.indexOf('result.nativePeerAccept=accepted.map('),gate=runner.indexOf("assert.ok(accepted.every(value=>value.status==='fulfilled'),'NORMAL_CHANNEL_CONNECTION')");
+ assert.ok(outcomes>=0&&outcomes<gate);assert.ok(runner.includes("error:outcome.status==='rejected'?classifyError(outcome.reason,types.isProxy):null"));
+ assert.ok(runner.includes("lane:['control','history'][index],status:outcome.status"));
+ const record=runner.slice(outcomes,gate);assert.doesNotMatch(record,/outcome\.value|reason\.message|reason\.stack|JSON\.stringify\(outcome\)/);
 });
