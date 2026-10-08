@@ -226,7 +226,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-shell-flow-core.test.mjs desktop/tests/native/terminal-shell-flow-controller.test.mjs desktop/tests/native/terminal-shell-flow-mailbox.test.mjs desktop/tests/native/terminal-shell-flow-probe.test.mjs desktop/tests/native/terminal-shell-flow-startup.test.mjs desktop/tests/native/terminal-shell-flow-derive.test.mjs desktop/tests/native/terminal-shell-flow-verdict.test.mjs desktop/tests/native/terminal-shell-flow-workflow.test.mjs desktop/tests/native/terminal-shell-flow-review-regression.test.mjs
+          node --test desktop/tests/native/terminal-shell-flow-core.test.mjs desktop/tests/native/terminal-shell-flow-controller.test.mjs desktop/tests/native/terminal-shell-flow-mailbox.test.mjs desktop/tests/native/terminal-shell-flow-probe.test.mjs desktop/tests/native/terminal-shell-flow-startup.test.mjs desktop/tests/native/terminal-shell-flow-derive.test.mjs desktop/tests/native/terminal-shell-flow-verdict.test.mjs desktop/tests/native/terminal-shell-flow-workflow.test.mjs desktop/tests/native/terminal-shell-flow-review-regression.test.mjs desktop/tests/native/terminal-shell-flow-conservation.test.mjs
           exit $LASTEXITCODE
       - name: Observe fixed PowerShell input Lock and bounded flood
         shell: pwsh

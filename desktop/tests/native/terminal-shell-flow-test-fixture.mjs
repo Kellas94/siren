@@ -15,5 +15,11 @@ export function inertShellFlowObservation(){
  const dead=p=>({...p,alive:false,exitCode:77}),held=[main,utility,...members];
  const native={admitted:false,status:'SHELL_FLOW_OBSERVED_NOT_ADMITTED',runtime:{electron:'44.5.1',modules:'149',arch:'x64',platform:'win32'},worker,before,hostBefore:host,fixturePids,ageMs:65000,sessionClosed:true,hostClosed:true,stopMs:30,stopped:{...before,active:0,root:dead(members[0]),shell:dead(members[1]),held:members.map(dead)},flood,completedWhileLocked:c,finalStats:final,commands:{first:{bytes:100,sha256:h},fresh:{bytes:100,sha256:h}},locked:{result:{ok:false},stats:{inputWrites:1,open:false}},samples:[{ageMs:2000,stats:c,chunks:[{sequence:4194304,utf8Bytes:32768,sha256:h}]},{ageMs:64000,stats:final,chunks:[]}],history:{maxRetained:4194304,maxAllocated:4194304,gaps:5,scanner:{seen:['start','done']}},historyReplay:{stats:c,gap:{fromSequence:0,resumeSequence:4194304,droppedUtf8Bytes:4194304,resetParser:true},chunks:[]},finalScanner:{seen:['start','done','fresh']},controller};
  const observer={admitted:false,status:'SHELL_FLOW_SAFETY_OBSERVED_NOT_ADMITTED',ready:structuredClone(ready),finish:structuredClone(finish),main,ageMs:65100,cleanupVerified:true,safetyOpenAtObservation:true,activeBeforeSafetyCleanup:0,before:held,after:held.map(dead),measurementMs:61000,peakSafetyJobMemoryBytes:1000000000,samples:[{ageMs:1000,intervalMs:0,peakSafetyJobMemoryBytes:900000000,heldCount:8,active:8},{ageMs:61000,intervalMs:60000,peakSafetyJobMemoryBytes:1000000000,heldCount:8,active:8}]};
+ // Explicitly conserve the inert transport, including the intentionally
+ // selected tail omission and final drain. These are classifier data only.
+ native.samples[0].gap={fromSequence:0,resumeSequence:4194304,droppedUtf8Bytes:4194304,resetParser:true};
+ native.samples[0].tailGap={fromSequence:4227072,toSequence:8355840,droppedUtf8Bytes:4128768,resetParser:true,reason:'fixed-probe-tail-selection'};
+ native.samples[1].chunks=[{sequence:8355840,utf8Bytes:32768,sha256:h}];
+ native.history.gaps=2;native.history.scanner.gaps=2;
  return {native,observer,ready,finish};
 }
