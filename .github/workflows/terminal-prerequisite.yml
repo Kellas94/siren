@@ -40,6 +40,8 @@ on:
       - 'desktop/tests/native/*terminal-composition-eight*.mjs'
       - 'desktop/tests/native/*terminal-eight-main-loss*.mjs'
       - 'desktop/tests/native/*terminal-shell-flow*.mjs'
+      - 'desktop/tests/native/terminal-publication-closure*.mjs'
+      - 'desktop/tests/fixtures/terminal-shell-flow-publication-before.json'
       - 'desktop/tests/fixtures/terminal-shell-flow-observer.cs'
       - 'desktop/src/terminal/**'
       - 'desktop/tests/fixtures/terminal-composed-main-loss*'
@@ -59,6 +61,12 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.16.0'
+      - name: Check shell-flow publication closure before native work
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/native/terminal-publication-closure.test.mjs
+          exit $LASTEXITCODE
       - name: Record available build tools without installing dependencies
         shell: pwsh
         run: |
