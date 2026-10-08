@@ -5,7 +5,7 @@ import {spawn,execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {createHash,randomUUID} from 'node:crypto';
 import {join,dirname,parse,resolve} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {deriveSessionComposition} from './terminal-session-composition-derive.mjs';
 import {isSessionCompositionObserved} from './terminal-session-composition-verdict.mjs';
 const desktop=fileURLToPath(new URL('../../',import.meta.url)),hash=b=>createHash('sha256').update(b).digest('hex');
@@ -22,6 +22,13 @@ async function controlHost(){
  parentPort.postMessage({kind:'hello',pid:process.pid,versions:process.versions,arch:process.arch,platform:process.platform});
  setTimeout(()=>process.exit(95),25000);setInterval(()=>{},1000);
 }
+async function creator(worker,directory){
+ const {writeFile}=await import('node:fs/promises'),{join}=await import('node:path');
+ await writeFile(join(directory,'creator-bootstrap.json'),JSON.stringify({status:'CREATOR_JS_ENTERED_NOT_QUALIFIED',pid:process.pid,argv:process.argv,versions:process.versions,runAsNode:process.env.ELECTRON_RUN_AS_NODE}),{flag:'wx'});
+ try{await import(worker);}catch(error){
+  await writeFile(join(directory,'creator-import-error.json'),JSON.stringify({status:'FAILED',pid:process.pid,code:error.code,message:error.message,stack:error.stack}),{flag:'wx'});throw error;
+ }
+}
 async function main(config){
  const {app,utilityProcess}=await import('electron'),assert=(await import('node:assert/strict')).default;
  const {createRequire}=await import('node:module'),{readFile,writeFile,rename,mkdir}=await import('node:fs/promises'),{join}=await import('node:path'),{setTimeout:delay}=await import('node:timers/promises');
@@ -29,7 +36,7 @@ async function main(config){
  const age=Date.now(),result={admitted:false,negative:config.negative,status:'FAILED',runtime:{...process.versions,arch:process.arch,platform:process.platform},groups:[],cleanup:[]};
  const native=createRequire(import.meta.url)(config.addon),states=[],strong=globalThis.__composition={states};let hostOwner,host,hostClosed=false;
  const wait=async fn=>{const deadline=Date.now()+3000;for(;;){const r=await fn();if(r)return r;if(Date.now()>deadline)throw Error('COMPOSITION_WAIT_DEADLINE');await delay(5);}};
- const exited=s=>s.active===0&&s.held.every(p=>!p.alive);
+ const exited=s=>s.active===0&&s.root.alive===false&&(!s.shell||s.shell.alive===false)&&s.held.every(p=>!p.alive);
  const persist=async(path,value)=>{await writeFile(path+'.pending',JSON.stringify(value),{flag:'wx'});await rename(path+'.pending',path);};
  async function stage(label,hostSnapshot){
   const owned=result.groups.filter(g=>label==='first'?['A','B'].includes(g.label):['C','D'].includes(g.label));
@@ -41,7 +48,9 @@ async function main(config){
  }
  async function start(label){
   const directory=join(config.output,label);await mkdir(directory);await writeFile(join(directory,'electron-config.json'),JSON.stringify({fixture:config.fixture,packagePath:config.packagePath}),{flag:'wx'});
-  const mark=native.mark(),owner=native.createSession(hostOwner,config.electron,config.worker,directory),state={label,owner,directory,closed:false};states.push(state);
+  result.phase='create-'+label;
+  const mark=native.mark(),owner=native.createSession(hostOwner,config.electron,config.creator,directory),state={label,owner,directory,closed:false};states.push(state);
+  result.startup??=[];result.startup.push({label,phase:'created',snapshot:native.snapshotSession(owner),host:native.snapshot(hostOwner)});result.phase='ready-'+label;
   let ready;await wait(async()=>{try{ready=JSON.parse(await readFile(join(directory,'electron-ready.json'),'utf8'));return ready;}catch(e){if(e.code!=='ENOENT')throw e;}});
   assert.throws(()=>native.watchRoot(owner,ready.rootPid,config.fixture+'.wrong',mark),{code:'SESSION_ROOT_IDENTITY_REFUSED'});
   native.watchRoot(owner,ready.rootPid,config.fixture,mark);
@@ -72,7 +81,7 @@ async function main(config){
   const hostStart=Date.now();host.postMessage({kind:'exit'});while(Date.now()-hostStart<2000){}result.blockedHostMs=Date.now()-hostStart;result.hostLoss=native.snapshot(hostOwner);
   await close(c,98);await close(d,98);result.fixtureAgeMs=Date.now()-age;
   hostClosed=native.close(hostOwner)===true;result.hostClosed=hostClosed;result.status='SESSION_COMPOSITION_OBSERVED_NOT_ADMITTED';
- }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};}
+ }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};result.failureSnapshots=[];for(const state of states){if(state.closed)continue;try{result.failureSnapshots.push({label:state.label,snapshot:native.snapshotSession(state.owner)});}catch(error){result.failureSnapshots.push({label:state.label,error:String(error)});}}}
  finally{
   for(const state of states)if(!state.closed){try{await close(state,98);}catch(e){result.cleanupError=String(e.stack??e);result.status='FAILED';}}
   if(hostOwner&&!hostClosed){try{native.stop(hostOwner,98);await wait(()=>exited(native.snapshot(hostOwner)));native.close(hostOwner);}catch(e){result.hostCleanupError=String(e.stack??e);result.status='FAILED';}}
@@ -94,10 +103,11 @@ try{
  for(const path of [compiler,fixtureSource,observerBase,fixture,observer]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
  if(compileOnly)receipt.status='COMPILE_ONLY_NATIVE_NOT_EXECUTED';
  else{
-  const electron=join(desktop,'node_modules/electron/dist/electron.exe'),hostEntry=join(output,'host.mjs');
-  const config={output,addon,fixture,electron,hostEntry,worker:join(desktop,'tests/native/terminal-electron-broker-worker.mjs'),packagePath:join(desktop,'tests/fixtures/terminal-node-pty/package.json'),negative};
+  const electron=join(desktop,'node_modules/electron/dist/electron.exe'),hostEntry=join(output,'host.mjs'),creatorEntry=join(output,'creator.mjs');
+  const config={output,addon,fixture,electron,hostEntry,creator:creatorEntry,worker:join(desktop,'tests/native/terminal-electron-broker-worker.mjs'),packagePath:join(desktop,'tests/fixtures/terminal-node-pty/package.json'),negative};
+  await writeFile(creatorEntry,`void (${creator.toString()})(${JSON.stringify(pathToFileURL(config.worker).href)},process.argv[2]);`,{flag:'wx'});
   await writeFile(join(output,'package.json'),JSON.stringify({type:'module',main:'main.mjs'}),{flag:'wx'});await writeFile(hostEntry,`void (${controlHost.toString()})();`,{flag:'wx'});await writeFile(join(output,'main.mjs'),`void (${main.toString()})(${JSON.stringify(config)});`,{flag:'wx'});
-  for(const path of [electron,addon,hostEntry,join(output,'main.mjs'),join(output,'package.json')]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
+  for(const path of [electron,addon,hostEntry,creatorEntry,join(output,'main.mjs'),join(output,'package.json')]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
   const child=spawn(observer,[electron,output,output,fixture],{windowsHide:true,stdio:['ignore','pipe','pipe'],env:Object.fromEntries(Object.entries(process.env).filter(([k])=>!k.toUpperCase().startsWith('NODE_')&&!k.toUpperCase().startsWith('ELECTRON_')))});
   let stdout='',stderr='';child.once('spawn',()=>{receipt.processStarted=true;});child.stdout.on('data',b=>{stdout+=b;if(Buffer.byteLength(stdout)>262144){receipt.outputTruncated=true;stdout=stdout.slice(-131072);}});child.stderr.on('data',b=>{stderr=(stderr+b).slice(-32768);});
   receipt.outerExitCode=await new Promise(resolve=>{let done=false,grace;const finish=(code,observed)=>{if(done)return;done=true;clearTimeout(timer);clearTimeout(grace);receipt.outerExitObserved=observed;resolve(code);};const timer=setTimeout(()=>{receipt.deadlineExceeded=true;grace=setTimeout(()=>finish(null,false),3000);try{child.kill();}catch{}},40000);child.once('error',e=>{receipt.processError={code:e.code,message:e.message};finish(null,false);});child.once('exit',code=>finish(code,true));});

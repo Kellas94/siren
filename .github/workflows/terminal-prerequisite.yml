@@ -101,7 +101,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-session-composition-derive.test.mjs desktop/tests/native/terminal-session-composition-verdict.test.mjs desktop/tests/native/terminal-session-composition-consistency.test.mjs
+          node --test desktop/tests/native/terminal-session-composition-derive.test.mjs desktop/tests/native/terminal-session-composition-verdict.test.mjs desktop/tests/native/terminal-session-composition-consistency.test.mjs desktop/tests/native/terminal-session-composition-startup.test.mjs
           exit $LASTEXITCODE
       - name: Install existing locked build dependencies without lifecycle scripts
         shell: pwsh
