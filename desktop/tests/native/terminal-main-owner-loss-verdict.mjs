@@ -10,6 +10,12 @@ function common(r,negative){
  for(const g of r.groups){
   const fixture=['root','branch','grandchild','detached'].map(k=>g?.fixturePids?.[k]),keys=[g?.hostPid,...fixture];
   if(!unique(keys)||keys.length!==5||!unique(g.requiredPids)||!keys.every(pid=>g.requiredPids.includes(pid))||!g.requiredPids.every(pid=>r.held.some(p=>p.pid===pid))||g.requiredPids.includes(r.main.pid))return false;
+  // Match the native observer's positive guard capture, not the broader Safety
+  // universe: main-side helpers may legitimately be outside the two groups.
+  if(g.requiredPids.length>9)return false;
+  if(!negative){const c=g.captured,expected=r.held.filter(p=>g.requiredPids.includes(p.pid));
+   if(c?.killOnClose!==true||c.breakaway!==false||c.inheritable!==false||c.active!==g.requiredPids.length||!same(expected,c.held)||!c.held.every(p=>p.alive&&p.exitCode===259))return false;
+  }
   required.push(...g.requiredPids);canaries.push(...fixture.slice(1));
  }
  if(!equalSet(required,r.requiredPids)||!equalSet(canaries,r.canaryPids)||canaries.length!==6)return false;

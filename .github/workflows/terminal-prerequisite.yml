@@ -29,6 +29,9 @@ on:
       - 'desktop/tests/native/terminal-electron-broker*.mjs'
       - 'desktop/tests/native/build-terminal-electron-broker.mjs'
       - 'desktop/tests/fixtures/terminal-electron-broker.cs'
+      - 'desktop/tests/native/terminal-electron-capacity*.mjs'
+      - 'desktop/tests/native/build-terminal-electron-capacity.mjs'
+      - 'desktop/tests/fixtures/terminal-electron-capacity.cs'
       - 'desktop/tests/fixtures/terminal-node-pty/package*.json'
   workflow_dispatch:
 permissions:
@@ -82,7 +85,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 1
         run: |
-          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs desktop/tests/native/terminal-electron-broker-verdict.test.mjs
+          node --test desktop/tests/native/terminal-ownership-oracle.test.mjs desktop/tests/native/terminal-job-lifetime-verdict.test.mjs desktop/tests/native/terminal-host-guard-verdict.test.mjs desktop/tests/native/terminal-host-guard-oracle.test.mjs desktop/tests/native/terminal-main-owner-loss-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-oracle.test.mjs desktop/tests/native/terminal-conpty-membership-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-verdict.test.mjs desktop/tests/native/terminal-conpty-broker-derive.test.mjs desktop/tests/native/terminal-electron-broker-verdict.test.mjs desktop/tests/native/terminal-main-owner-loss-coverage.test.mjs desktop/tests/native/terminal-electron-capacity-verdict.test.mjs desktop/tests/native/terminal-electron-capacity-derive.test.mjs
           exit $LASTEXITCODE
       - name: Compile fixed fixtures and test actual Windows ownership
         shell: pwsh
@@ -143,6 +146,12 @@ jobs:
         run: |
           node desktop/tests/native/build-terminal-electron-broker.mjs
           exit $LASTEXITCODE
+      - name: Observe eight actual Electron creators and isolated session Stop
+        shell: pwsh
+        timeout-minutes: 2
+        run: |
+          node desktop/tests/native/build-terminal-electron-capacity.mjs
+          exit $LASTEXITCODE
       - name: Retain original prerequisite receipts
         # All native outcomes, including a failed candidate, retain originals.
         # The new workers are a separate experiment; earlier results stay intact.
@@ -198,4 +207,12 @@ jobs:
             desktop/evidence/terminal-electron-broker/*/*-partial.cs
             desktop/evidence/terminal-electron-broker/*/electron-broker-study.exe
             desktop/evidence/terminal-electron-broker/*/study.log
+            desktop/evidence/terminal-electron-capacity-build/*/*.json
+            desktop/evidence/terminal-electron-capacity-build/*/*.txt
+            desktop/evidence/terminal-electron-capacity/*/*.json
+            desktop/evidence/terminal-electron-capacity/*/*/*.json
+            desktop/evidence/terminal-electron-capacity/*/*.txt
+            desktop/evidence/terminal-electron-capacity/*/*-partial.cs
+            desktop/evidence/terminal-electron-capacity/*/electron-capacity-study.exe
+            desktop/evidence/terminal-electron-capacity/*/study.log
           if-no-files-found: error
