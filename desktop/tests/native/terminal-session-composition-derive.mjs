@@ -12,5 +12,6 @@ export function deriveSessionComposition({host,fixture,extension}){
  host=once(host,'const napi_property_descriptor methods[]={\n','const napi_property_descriptor methods[]={\n'+methods);
  fixture=once(fixture,'Thread.Sleep(12000);return 0;\n    }\n    static bool Member',
   'var natural=Stopwatch.StartNew();while(natural.ElapsedMilliseconds<12000){if(mode=="root"&&File.Exists(Path.Combine(directory,"root-exit.request")))return 51;Thread.Sleep(5);}return 0;\n    }\n    static bool Member');
+ fixture=once(fixture,'return Fixture(args[0],args[1]);','Console.WriteLine("SIREN_NATIVE_FIXED_READY");return Fixture(args[0],args[1]);');
  return {host,fixture};
 }

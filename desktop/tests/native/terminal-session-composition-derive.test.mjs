@@ -19,3 +19,11 @@ test('composition refuses changed base source or absent extension',()=>{
  assert.equal(typeof deriveSessionComposition,'function','MISSING_NATIVE_SESSION_DERIVATION');
  for(const changed of [{host:host+' ',fixture},{host,fixture:fixture+' '},{host,fixture,extension:''}])assert.throws(()=>deriveSessionComposition({extension:'// extension\n',...changed}));
 });
+test('derived fixture emits the exact readiness sentinel required by the unchanged PTY worker',async()=>{
+ const worker=await read('./terminal-electron-broker-worker.mjs');
+ const sentinel=worker.match(/ring\.includes\(Buffer\.from\('([^']+)'\)\)/)?.[1];assert.equal(sentinel,'SIREN_NATIVE_FIXED_READY');
+ const out=deriveSessionComposition({host,fixture,extension:'// inert extension\n'});
+ assert.equal(out.fixture.split('Console.WriteLine("'+sentinel+'");').length,2,'MISSING_FIXED_PTY_READINESS_SENTINEL');
+ assert.ok(out.fixture.includes('Console.WriteLine("'+sentinel+'");return Fixture(args[0],args[1]);'));
+ assert.equal(fixture.includes(sentinel),false,'ORIGINAL_FIXTURE_MUST_REMAIN_UNCHANGED');
+});
