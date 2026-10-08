@@ -90,7 +90,7 @@ async function main(config){
   const a=await start('A'),b=await start('B');await stage('first',native.capture(hostOwner));
   const stopping=performance.now();let ticks=0,last=stopping,maxGapMs=0;const heartbeat=setInterval(()=>{const now=performance.now();maxGapMs=Math.max(maxGapMs,now-last);last=now;ticks++;},1);
   let retired;try{retired=await native.stopAndCloseSessionAsync(a.owner,77,3000);}finally{clearInterval(heartbeat);}
-  assert.equal(retired.closed,true);a.closed=true;result.stoppedA=retired.snapshot;assert.ok(exited(result.stoppedA));result.stopMs=performance.now()-stopping;maxGapMs=Math.max(maxGapMs,performance.now()-last);result.asyncRetirement={closed:true,elapsedMs:result.stopMs,ticks,maxGapMs};result.cleanup.push({label:'A',snapshot:retired.snapshot,closed:true});result.otherAlive=native.snapshotSession(b.owner);
+  assert.equal(retired.closed,true);a.closed=true;result.stoppedA=retired.snapshot;assert.ok(exited(result.stoppedA));const elapsedMs=performance.now()-stopping;result.stopMs=Math.ceil(elapsedMs);maxGapMs=Math.max(maxGapMs,performance.now()-last);result.asyncRetirement={closed:true,elapsedMs,ticks,maxGapMs};result.cleanup.push({label:'A',snapshot:retired.snapshot,closed:true});result.otherAlive=native.snapshotSession(b.owner);
   const rootStart=Date.now();await writeFile(join(b.directory,'root-exit.request'),'fixed-natural-exit-51',{flag:'wx'});
   while(Date.now()-rootStart<2000){}result.blockedRootMs=Date.now()-rootStart;result.rootB=native.snapshotSession(b.owner);result.rootWaitMs=Date.now()-rootStart;
   await close(a,98);await close(b,98);
