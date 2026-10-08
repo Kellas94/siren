@@ -68,5 +68,9 @@ export class TerminalSessionLedger {
     }).catch(()=>{if(e.done)return;s.inputUnverified=true;this.#revoke(s);this.#finish(s,e,fail('HOST_UNAVAILABLE',e.payload.operationId));}).finally(()=>{if(s.active===e)s.active=null;this.#pump(s);});
   }
   hostFailed(){for(const s of this.#sessions.values()){s.state='host-failed';s.inputUnverified=true;this.#revoke(s);const active=s.active;s.active=null;if(active)this.#finish(s,active,fail('HOST_UNAVAILABLE',active.payload.operationId));}}
+  // Main-only metadata transitions. Manager calls retire only after held-owner
+  // close verification; these methods neither terminate nor qualify processes.
+  fenceSession(sessionId){const s=this.#sessions.get(sessionId);if(!s)return fail('SESSION_REFUSED');s.state='stopping';this.#revoke(s);return pass(this.#info(s));}
+  retire(sessionId){const s=this.#sessions.get(sessionId);if(!s)return fail('SESSION_REFUSED');s.state='exited';this.#revoke(s);if(s.active){const e=s.active;s.active=null;this.#finish(s,e,fail('HOST_UNAVAILABLE',e.payload.operationId));}this.#sessions.delete(sessionId);return pass({sessionId});}
   stats(sessionId){const s=this.#sessions.get(sessionId);if(!s)return null;return Object.freeze({queuedInputUtf8Bytes:s.queuedBytes,pendingInputs:(s.active&&!s.active.done?1:0)+s.queue.length,retainedInputReceipts:s.lease?.receipts.size??0,inputUnverified:s.inputUnverified});}
 }

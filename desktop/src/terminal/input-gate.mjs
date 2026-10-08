@@ -58,6 +58,8 @@ export class TerminalInputFence {
   #finish(token,ok,code){
     if(token.done)return;
     if(ok&&!this.#available())return;
+    // Enforce this outer deadline independently of the link's own timeout.
+    if(ok&&performance.now()>=token.expires){ok=false;code='HOST_UNAVAILABLE';}
     token.done=true;
     if(token.timer!==null)this.#clearTimer(token.timer);
     if(this.#pending===token){
@@ -80,7 +82,7 @@ export class TerminalInputFence {
   }
   #request(open){
     if(!integer(this.#generation+1))return Promise.resolve(refusal('HOST_UNAVAILABLE'));
-    const generation=++this.#generation,token={generation,open,done:false,timer:null};
+    const generation=++this.#generation,token={generation,open,done:false,timer:null,expires:performance.now()+this.#deadline};
     token.promise=new Promise(resolve=>{token.resolve=resolve;});this.#pending=token;
     token.timer=this.#setTimer(()=>this.#finish(token,false,'HOST_UNAVAILABLE'),this.#deadline);
     let result;

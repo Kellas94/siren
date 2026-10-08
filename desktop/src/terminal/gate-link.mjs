@@ -37,7 +37,7 @@ export class TerminalGateLink {
   // Reserve the second slot exclusively for closing behind an in-flight open.
   // While a close is pending, no new open/close can grow the transport queue.
   if(this.#pending.size&&(p.open||[...this.#pending.values()].some(t=>!t.open)))return refused();
-  const requestId=++this.#request,token={requestId,generation:p.generation,open:p.open,timer:null};this.#generation=p.generation;
+  const requestId=++this.#request,token={requestId,generation:p.generation,open:p.open,timer:null,expires:performance.now()+this.#deadline};this.#generation=p.generation;
   token.promise=new Promise(resolve=>token.resolve=resolve);this.#pending.set(requestId,token);
   try{
    token.timer=this.#setTimer(()=>this.dispose(),this.#deadline);
@@ -46,6 +46,8 @@ export class TerminalGateLink {
   return token.promise;
  }
  #finish(token,ok){
+  // A delayed event-loop turn may deliver ACK before an overdue timer runs.
+  if(ok&&performance.now()>=token.expires){this.dispose();return;}
   if(!this.#pending.delete(token.requestId))return;
   if(token.timer!==null)this.#clearTimer(token.timer);
   token.resolve(Object.freeze({ok,generation:token.generation,open:token.open}));
