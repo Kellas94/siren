@@ -1,0 +1,74 @@
+name: Terminal corrected Electron ABI prerequisite (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-roster-20261010']
+    paths:
+      - '.github/workflows/terminal-electron-roster.yml'
+      - 'desktop/tests/native/*terminal-electron-roster*'
+      - 'desktop/tests/terminal-electron-roster-contract.test.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: terminal-electron-roster-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  electron-abi:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-roster-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Pure negative ABI gates
+        shell: pwsh
+        run: |
+          node --test desktop/tests/terminal-electron-roster-contract.test.mjs
+          exit $LASTEXITCODE
+      - name: Compile corrected sources against exact Electron target
+        shell: pwsh
+        timeout-minutes: 7
+        run: ./desktop/tests/native/build-terminal-electron-roster-ci.ps1
+      - name: Actual main and utilityProcess ABI controls
+        shell: pwsh
+        timeout-minutes: 2
+        run: |
+          $taskRoot="desktop/evidence/terminal-electron-roster/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          node desktop/tests/native/terminal-electron-roster-abi.mjs "$taskRoot/abi" "$taskRoot/build-result.json"
+          exit $LASTEXITCODE
+      - name: Retain actual records and exact sources even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-electron-roster-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          compression-level: 9
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-electron-roster/*/*.json
+            desktop/evidence/terminal-electron-roster/*/*.txt
+            desktop/evidence/terminal-electron-roster/*/abi/*.json
+            desktop/evidence/terminal-electron-roster/*/abi/*.mjs
+            desktop/evidence/terminal-electron-roster/*/abi/*.log
+            desktop/evidence/terminal-electron-roster/*/candidate/ownership.cc
+            desktop/evidence/terminal-electron-roster/*/candidate/peer-endpoints.inc
+            desktop/evidence/terminal-electron-roster/*/candidate/binding.gyp
+            desktop/evidence/terminal-electron-roster/*/candidate/build/*.vcxproj
+            desktop/evidence/terminal-electron-roster/*/candidate/build/config.gypi
+            desktop/evidence/terminal-electron-roster/*/candidate/build/Release/*.node
+            desktop/evidence/terminal-electron-roster/*/candidate/build/Release/obj/**/*.tlog
+            desktop/evidence/terminal-electron-roster/*/deps/package*.json
+            .github/workflows/terminal-electron-roster.yml
+            desktop/tests/native/*terminal-electron-roster*
+            desktop/tests/terminal-electron-roster-contract.test.mjs
+            desktop/native/terminal-host-roster-candidate/ownership.cc
+            desktop/native/terminal-host-roster-candidate/peer-endpoints.inc
+            desktop/native/terminal-host-roster-candidate/binding.gyp
+            desktop/package.json
+            desktop/package-lock.json
+            docs/research/2026-10-10-terminal-electron-corrected-target.md
