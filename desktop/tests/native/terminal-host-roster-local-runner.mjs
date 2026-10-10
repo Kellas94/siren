@@ -9,7 +9,8 @@ import {fileURLToPath} from 'node:url';
 import {localNativeCasePassed,localNativeBatchPassed} from './terminal-local-case-verdict.mjs';
 const root=fileURLToPath(new URL('../../../',import.meta.url)),run=promisify(execFile);
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert([3,4].includes(process.argv.length));
-const prepareOnly=process.argv.length===4;assert(!prepareOnly||process.argv[3]==='--prepare-only');
+const prepareOnly=process.argv[3]==='--prepare-only',diagnosticOnly=process.argv[3]==='--diagnostic-only';
+assert(process.argv.length===3||prepareOnly||diagnosticOnly);
 const output=resolve(process.argv[2]),build=join(output,'build');
 const digest=b=>createHash('sha256').update(b).digest('hex');
 const input=async path=>{path=resolve(root,path);const b=await readFile(path);return {path,bytes:b.length,sha256:digest(b)};};
@@ -39,10 +40,10 @@ const inputs=await Promise.all([
 const byPath=p=>inputs.find(row=>row.path===resolve(p));
 const worker=join(root,'desktop/tests/native/terminal-host-roster-local-worker.mjs');
 const addon=join(build,'siren_terminal_host_roster_candidate.node');
-const manifest={schema:1,scope:'LOCAL_WINDOWS_NODE_ROSTER_QUALIFICATION',nativeExecutionAdmitted:false,node:process.versions,inputs,cases:[],boundaries:{electron:false,pty:false,connectedPeers:false,fullFaultMatrix:false,productActivation:false}};
+const manifest={schema:1,scope:'LOCAL_WINDOWS_NODE_ROSTER_QUALIFICATION',nativeExecutionAdmitted:false,diagnosticOnly,node:process.versions,inputs,cases:[],boundaries:{electron:false,pty:false,connectedPeers:false,fullFaultMatrix:false,productActivation:false}};
 await writeFile(join(output,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
 if(prepareOnly){await writeFile(join(output,'prepared.json'),JSON.stringify({status:'PREPARED_NOT_EXECUTED',nativeExecutionAdmitted:false,manifest},null,2)+'\n',{flag:'wx'});console.log('PREPARED_NOT_EXECUTED');process.exit(0);}
-for(const mode of ['zero','eight','listeners','accepts','captured','gc','session-async','host-loss','negative-no-stop','negative-js-hang']){
+for(const mode of (diagnosticOnly?['zero','host-loss']:['zero','eight','listeners','accepts','captured','gc','session-async','host-loss','negative-no-stop','negative-js-hang'])){
  const dir=join(output,'case-'+mode);await mkdir(dir);
  const config={mode,addon,addonHash:byPath(addon).sha256,nodeHash:byPath(process.execPath).sha256,inputs,payload:join(root,'desktop/tests/fixtures/terminal-host-roster-local-payload.mjs'),creator:join(root,'desktop/tests/fixtures/terminal-host-roster-local-creator.mjs')};
  await writeFile(join(dir,'config.json'),JSON.stringify(config,null,2)+'\n',{flag:'wx'});
@@ -62,5 +63,6 @@ for(const mode of ['zero','eight','listeners','accepts','captured','gc','session
 for(const row of inputs)assert.equal((await input(row.path)).sha256,row.sha256,'INPUT_DRIFT:'+row.path);
 manifest.status='BOUNDED_LOCAL_NATIVE_CASES_PASSED';
 if(!localNativeBatchPassed(manifest))manifest.status='LOCAL_NATIVE_FAILURES';
+if(diagnosticOnly)manifest.status='DIAGNOSTIC_ONLY_NOT_QUALIFIED';
 await writeFile(join(output,'result.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
 process.exitCode=localNativeBatchPassed(manifest)?0:1;

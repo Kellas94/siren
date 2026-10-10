@@ -23,7 +23,11 @@
     static Held LocalFind(List<Held> held,uint pid){var rows=held.FindAll(p=>p.pid==pid);Require(rows.Count==1,"SAFETY_MEMBER_MISSING");return rows[0];}
     static Dictionary<string,object> ReadLocal(string path){Require(new FileInfo(path).Length<=262144,"PROTOCOL_BUDGET");return Map(Json.DeserializeObject(File.ReadAllText(path,new UTF8Encoding(false,true))));}
     static void WaitFile(string path,Stopwatch age,IntPtr worker,Dictionary<string,object> result){
-        while(!File.Exists(path)&&age.ElapsedMilliseconds<20000){Require(WaitForSingleObject(worker,0)==258,"WORKER_EXITED_BEFORE_PROTOCOL:"+Path.GetFileName(path));Thread.Sleep(5);}
+        while(!File.Exists(path)&&age.ElapsedMilliseconds<20000){
+            string errorPath=Path.Combine(Path.GetDirectoryName(path),"worker-error.json");
+            if(File.Exists(errorPath)){result["nativeWorkerError"]=ReadLocal(errorPath);Require(false,"WORKER_REPORTED_ERROR:"+Path.GetFileName(path));}
+            Require(WaitForSingleObject(worker,0)==258,"WORKER_EXITED_BEFORE_PROTOCOL:"+Path.GetFileName(path));Thread.Sleep(5);
+        }
         if(!File.Exists(path)||age.ElapsedMilliseconds>=20000){
             result["watchdogElapsedMs"]=age.ElapsedMilliseconds;result["watchdogWorkerAlive"]=WaitForSingleObject(worker,0)==258;result["watchdogProtocol"]=Path.GetFileName(path);
             Require((bool)result["watchdogWorkerAlive"],"WORKER_EXITED_BEFORE_PROTOCOL:"+Path.GetFileName(path));
@@ -86,8 +90,14 @@
             try{
                 if(safety!=IntPtr.Zero){
                     result["cleanupEntryActive"]=Active(safety);result["cleanupEntryHeld"]=ObserveLocal(held);
-                    Require(TerminateJobObject(safety,98),"SAFETY_CLEANUP_FAILED");var clean=Stopwatch.StartNew();while(Active(safety)!=0&&clean.ElapsedMilliseconds<3000)Thread.Sleep(5);
+                    Require(TerminateJobObject(safety,98),"SAFETY_CLEANUP_FAILED");var clean=Stopwatch.StartNew();
+                    for(;;){
+                        bool allDead=true;foreach(var p in held){uint state=WaitForSingleObject(p.handle,0);Require(state==0||state==258,"SAFETY_CLEANUP_WAIT_UNKNOWN");allDead=allDead&&state==0;}
+                        if((Active(safety)==0&&allDead)||clean.ElapsedMilliseconds>=3000)break;Thread.Sleep(5);
+                    }
+                    result["cleanupElapsedMs"]=clean.ElapsedMilliseconds;result["cleanupFinalActive"]=Active(safety);result["cleanupFinalHeld"]=ObserveLocal(held);
                     Require(Active(safety)==0,"SAFETY_CLEANUP_NOT_EMPTY");foreach(var p in held)Require(WaitForSingleObject(p.handle,0)==0,"SAFETY_CLEANUP_HELD_LIVE");
+                    Require(clean.ElapsedMilliseconds<3000,"SAFETY_CLEANUP_DEADLINE");
                     result["cleanupVerified"]=true;
                 }
             }catch(Exception error){result["status"]="FAILED";result["cleanupError"]=error.Message;code=1;}
