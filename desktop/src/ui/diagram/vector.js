@@ -30,13 +30,17 @@
   root.setAttribute('viewBox',[x,y,width,height].join(' '));root.setAttribute('width',String(Math.ceil(width)));root.setAttribute('height',String(Math.ceil(height)));root.setAttribute('preserveAspectRatio','xMidYMid meet');root.removeAttribute('style');root.setAttribute('role','img');
  }
  if(window.__SIREN_ELK)window.mermaid.registerLayoutLoaders(window.__SIREN_ELK);
- window.sirenRenderDiagramVector=async input=>{
+ async function render(input,embed){
   if(busy)fail();busy=true;try{
    const diagram=input?.diagram,source=diagram?.source,contract=window.SirenNativeDiagramStyle.appearance;if(!diagram||typeof source!=='string'||source.length>50000||input.renderAppearance===undefined&&!['light','dark'].includes(input.appearance))fail();const capsule=input.renderAppearance===undefined?contract.resolve(input.appearance,false):contract.read(input.renderAppearance),palette=contract.palette(capsule);host.replaceChildren();
    const provenance=await window.SirenNativeDiagramStyle.prepare({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,maxTextSize:50000,maxEdges:500,htmlLabels:false,flowchart:{htmlLabels:false},secure:['secure','securityLevel','startOnLoad','maxTextSize','maxEdges','htmlLabels','suppressErrorRendering']},source,diagram,capsule);
-   const result=await window.mermaid.render('diagramVector',source,host),root=sanitize(result.svg);host.replaceChildren(root);window.SirenNativeDiagramStyle.apply(root,diagram,provenance);layout(root,diagram,{...palette,canvasBg:provenance.surfaceBackground??palette.canvasBg});
-   const svg=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(svg).length>2*1024*1024)fail();return svg;
+   const result=await window.mermaid.render('diagramVector',source,host),root=embed?document.importNode(new DOMParser().parseFromString(window.SirenDiagramEmbedSvg.sanitizeDiagramEmbedSvg(result.svg),'image/svg+xml').documentElement,true):sanitize(result.svg);host.replaceChildren(root);window.SirenNativeDiagramStyle.apply(root,diagram,provenance);layout(root,diagram,{...palette,canvasBg:provenance.surfaceBackground??palette.canvasBg});
+   let svg=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(svg).length>2*1024*1024)fail();if(!embed)return svg;
+   svg=window.SirenDiagramEmbedSvg.sanitizeDiagramEmbedSvg(svg);
+   const rendererVersion='mermaid@12.0.0/R78',bytes=new TextEncoder().encode(JSON.stringify({rendererVersion,capsule,svg})),styleHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');return {svg,rendererVersion,styleHash};
   }finally{host.replaceChildren();busy=false;}
- };
+ }
+ window.sirenRenderDiagramVector=input=>render(input,false);
+ window.sirenRenderDiagramEmbed=input=>render(input,true);
  window.sirenDiagramVectorReady=true;
 })();

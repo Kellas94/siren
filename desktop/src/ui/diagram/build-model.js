@@ -25,4 +25,4 @@ function editBuild(source,request){
  const rows=new Map();for(const site of node.sites){if(!rows.has(site.index))rows.set(site.index,{...read.rows[site.index]});const row=rows.get(site.index);if(site.side==='block'){row.label=request.label;row.shape=request.shape;}else row[site.side+'Token']=makeShapeToken(request.shape,structureEncodeLabel(request.label));}
  let result=source;for(const row of [...rows.values()].sort((a,b)=>b.index-a.index)){const text=row.kind==='block'?structureBlockLine(row):structureLinkLine(row);result=result.slice(0,row.start)+text+result.slice(row.end);}return finish(result);
 }
-window.SirenNativeDiagramBuild=Object.freeze({inspect:inspectBuild,edit:editBuild,shapes:Object.freeze([...guidedShapes])});
+window.SirenNativeDiagramBuild=Object.freeze({inspect:inspectBuild,inspectSelection:inspectDiagramSelection,edit:editBuild,shapes:Object.freeze([...guidedShapes])});

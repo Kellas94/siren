@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  if(!window.sirenWindowDock||!window.sirenWindow||window.sirenNativeShelf)return;
- let bar,tabs,active,notice,rows=[],pending=false,signature='',timer,disposed=false;
+ let bar,tabs,active,notice,rows=[],pending=false,signature='',timer,disposed=false,refreshSerial=0;
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const button=(parent,text,action)=>{const node=make('button',parent,text);node.type='button';node.addEventListener('click',()=>void act(action));return node;};
  async function act(action){
@@ -38,10 +38,11 @@
  }
  async function refresh(){
   if(disposed)return;
-  try{const result=await window.sirenWindowDock.getShelf();if(disposed)return;
+  const request=++refreshSerial;
+  try{const result=await window.sirenWindowDock.getShelf();if(disposed||request!==refreshSerial)return;
     const items=result?.ok&&Array.isArray(result.items)?result.items:[],next=JSON.stringify(items);
     if(next!==signature){signature=next;paint(items);}
-  }catch{if(bar){bar.hidden=true;document.body.classList.remove('native-shelf-open');}}
+  }catch{if(!disposed&&request===refreshSerial){signature='';if(bar){bar.hidden=true;document.body.classList.remove('native-shelf-open');}}}
  }
  window.sirenNativeShelf=Object.freeze({refresh});
  const start=()=>{void refresh();timer=setInterval(()=>void refresh(),1200);};

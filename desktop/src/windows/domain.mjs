@@ -6,6 +6,8 @@ import {commitManifest,selectedManifestHistory} from '../sources/manifest.mjs';
 import {workspaceMetadata,validEntityId} from './entities.mjs';
 import {documentVersion} from './docs.mjs';
 import {normalizeDocumentContext,applyDocumentContext} from '../documents/context.mjs';
+import {validateDiagramEmbedDocument,normalizeDiagramEmbedSuspensions} from '../documents/diagram-embeds.mjs';
+import {readDiagramEmbedPublication} from '../documents/diagram-embed-publication.mjs';
 import {normalizePresentationEdits,applyPresentationEdits} from '../documents/presentation-edits.mjs';
 import {createDiagramMetadataContract} from '../documents/diagram-metadata.mjs';
 import {randomUUID} from 'node:crypto';
@@ -50,6 +52,7 @@ function domainIntent(domain,input) {
  else if(domain==='diagram'&&request.action==='update-style'){payload=navigationFields(request.payload,styleFields,[]);if(!Object.keys(payload).length)throw error('REQUEST_REFUSED');}
  else throw error('REQUEST_REFUSED');
  const copied=dataCopy(payload);if(Object.hasOwn(copied,'sirenNativeLayoutEngine')&&!nativeLayout.valid(copied.sirenNativeLayoutEngine))throw error('REQUEST_REFUSED');if(Object.hasOwn(copied,'resetStyleFields')){const fields=copied.resetStyleFields;if(!Array.isArray(fields)||!fields.length||fields.length>8||new Set(fields).size!==fields.length||fields.some(key=>!resettableStyleFields.has(key)||Object.hasOwn(copied,key)))throw error('REQUEST_REFUSED');}if(Buffer.byteLength(JSON.stringify(copied))>DOMAIN_BYTES)throw error('REQUEST_REFUSED');
+ if(domain==='docs'&&copied.blocks)validateDiagramEmbedDocument({blocks:copied.blocks});
  return Object.freeze({...request,payload:copied});
 }
 export function normalizeDomainIntent(domain,input) {try{return domainIntent(domain,input);}catch{throw error('REQUEST_REFUSED');}}
@@ -80,7 +83,7 @@ function envelope(snapshot,workspace) {
  return metadata;
 }
 const receipt=(snapshot,domain,id,durability,operationId)=>Object.freeze({ok:true,domain,entityId:id,version:version(snapshot,domain,id),sha256:fingerprint(selectedEntity(snapshot,domain,id)),projectRevision:snapshot.revision,durability,...(operationId?{operationId}:{})});
-const publicCodes=new Set(['REQUEST_REFUSED','ACCESS_REFUSED','ENTITY_REFUSED','ENTITY_BUDGET','DOMAIN_VALIDATION_FAILED','REFERENCE_TARGET_REFUSED','REFERENCE_BUDGET','CONTEXT_REFUSED','REVISION_CONFLICT','DOCUMENT_CONFLICT','OPERATION_CONFLICT','DOMAIN_READBACK_FAILED','DOMAIN_VERSION_CHANGED','MANIFEST_WRITE_FAILED','MANIFEST_READBACK_FAILED','WRITER_BUSY','OWNED_PATH_REFUSED','INLINE_SOURCE_REFUSED','UNKNOWN_SOURCE_REFERENCE']);
+const publicCodes=new Set(['DIAGRAM_EMBED_REFUSED','DIAGRAM_EMBED_SOURCE_CHANGED','DIAGRAM_EMBED_ASSET_CORRUPT','DIAGRAM_EMBED_BUDGET','REQUEST_REFUSED','ACCESS_REFUSED','ENTITY_REFUSED','ENTITY_BUDGET','DOMAIN_VALIDATION_FAILED','REFERENCE_TARGET_REFUSED','REFERENCE_BUDGET','CONTEXT_REFUSED','REVISION_CONFLICT','DOCUMENT_CONFLICT','OPERATION_CONFLICT','DOMAIN_READBACK_FAILED','DOMAIN_VERSION_CHANGED','MANIFEST_WRITE_FAILED','MANIFEST_READBACK_FAILED','WRITER_BUSY','OWNED_PATH_REFUSED','INLINE_SOURCE_REFUSED','UNKNOWN_SOURCE_REFERENCE']);
 export function projectDomainResult(domain,method,result,request) {
  try {
   if(result?.ok!==true)return fail(publicCodes.has(result?.code)?result.code:'DOMAIN_OPERATION_FAILED');
@@ -96,10 +99,11 @@ export function projectDomainResult(domain,method,result,request) {
  * adapter, not a renderer answer. It may refuse a patch but may not silently
  * normalize it. Sources, historic releases and unrelated entities are retained. */
 export class DomainRepository {
- #projects;#sources;#recovery;#validate;#allocateDiagramId;
- constructor({projects,sources,recovery,validatePatch,allocateDiagramId=randomUUID}) {
+ #projects;#sources;#recovery;#validate;#allocateDiagramId;#diagramAssets;
+ constructor({projects,sources,recovery,validatePatch,allocateDiagramId=randomUUID,diagramAssets}) {
   if(typeof projects!=='function'||typeof sources!=='function'||typeof validatePatch!=='function')throw TypeError('Native domain adapters required');
   this.#projects=projects;this.#sources=sources;this.#recovery=recovery;this.#validate=validatePatch;
+  this.#diagramAssets=diagramAssets;
   if(typeof allocateDiagramId!=='function')throw TypeError('Native diagram identity allocator required');this.#allocateDiagramId=allocateDiagramId;
  }
  #adapters(scope){guard(scope);const canWrite=()=>scope.isCurrent()===true;return {projects:this.#projects({scope,canWrite}),repository:this.#sources({scope,canWrite})};}
@@ -111,6 +115,51 @@ export class DomainRepository {
   try{if(!['docs','diagram'].includes(domain))throw error('REQUEST_REFUSED');const {entityId}=navigationFields(input,['entityId']);if(!validEntityId(entityId))throw error('REQUEST_REFUSED');const {projects}=this.#adapters(scope),snapshot=await projects.readProject(scope.projectId);guard(scope);verifySnapshot(snapshot);const entity=selectedEntity(snapshot,domain,entityId);if(Buffer.byteLength(JSON.stringify(entity))>8*1024*1024)throw error('ENTITY_BUDGET');return Object.freeze({...receipt(snapshot,domain,entityId,'committed'),entity:JSON.parse(JSON.stringify(entity))});}
   catch(cause){return fail(cause.code??'DOMAIN_READ_FAILED');}
  }
+ // Private publication tokens never cross IPC. The caller still requires the
+ // coordinator's actual document grant and FIFO; this method grants neither.
+ async commitDiagramEmbed(token,scope){
+  try{
+   const request=readDiagramEmbedPublication(token);if(!request||typeof this.#diagramAssets?.read!=='function')throw error('REQUEST_REFUSED');
+   const {projects,repository}=this.#adapters(scope),history=await selectedManifestHistory(projects,scope.projectId);guard(scope);
+   const current=history[0],id=request.documentId,requestHash=fingerprint(request),prior=history.find(s=>s.schema===2&&s.operationId===request.operationId);
+   if(prior){const marker=JSON.parse(prior.json).sirenNativeEntityOperation;if(marker?.schema!==1||marker.projectId!==scope.projectId||marker.domain!=='docs'||marker.entityId!==id||marker.requestHash!==requestHash||marker.sha256!==fingerprint(selectedEntity(prior,'docs',id)))throw error('OPERATION_CONFLICT');return receipt(prior,'docs',id,'committed',request.operationId);}
+   if(version(current,'docs',id)!==request.expectedVersion)throw error('DOCUMENT_CONFLICT');
+   const workspace=workspaceMetadata(current),target=selectedEntity(current,'docs',id),blocks=target.blocks??[];
+   if(!Array.isArray(blocks)||blocks.length>=300&&request.action==='insert')throw error('ENTITY_BUDGET');
+   const matches=blocks.filter(b=>b?.id===request.block.id);
+   if(request.action==='insert'&&matches.length||request.action!=='insert'&&(matches.length!==1||matches[0].kind!=='diagram-embed'))throw error('DIAGRAM_EMBED_REFUSED');
+   if(['refresh','status'].includes(request.action)){
+    if(scope.purpose!=='diagram-refresh'||matches[0].mode!=='live')throw error('DIAGRAM_EMBED_REFUSED');
+    if(normalizeDiagramEmbedSuspensions(workspace.diagramEmbedRefreshSuspensions??{schema:1,refs:[]}).some(r=>r.documentId===id&&r.blockId===request.block.id&&r.snapshotHash===fingerprint(matches[0].snapshot)))throw error('DIAGRAM_EMBED_REFUSED');
+    const stable=block=>({...block,snapshot:null,status:null,missingNodeIds:null});
+    if(fingerprint(stable(matches[0]))!==fingerprint(stable(request.block)))throw error('DIAGRAM_EMBED_REFUSED');
+    if(request.action==='refresh'&&request.block.status!=='current'||request.action==='status'&&(fingerprint(matches[0].snapshot)!==fingerprint(request.block.snapshot)||request.block.status==='current'))throw error('DIAGRAM_EMBED_REFUSED');
+   }
+   if(request.action==='mode'){
+    if(fingerprint({...matches[0],mode:request.block.mode})!==fingerprint(request.block))throw error('DIAGRAM_EMBED_REFUSED');
+   }else if(request.action!=='status'){
+    const diagrams=(workspace.diagrams??[]).filter(d=>d?.id===request.block.diagramId),s=request.block.snapshot;
+    if(diagrams.length!==1||fingerprint(diagrams[0])!==s.sourceHash||(diagrams[0].sirenNativeVersion??1)!==s.sourceVersion||s.sourceAsset.sha256!==s.sourceHash)throw error('DIAGRAM_EMBED_SOURCE_CHANGED');
+   }
+   for(const ref of [request.block.snapshot.sourceAsset,request.block.snapshot.visualAsset]){await this.#diagramAssets.read({projectId:scope.projectId,ref,isCurrent:scope.isCurrent});guard(scope);}
+   const nextBlocks=JSON.parse(JSON.stringify(blocks));
+   if(request.action==='insert'){
+    let index=nextBlocks.length;if(request.afterBlockId!==null){const positions=nextBlocks.flatMap((b,i)=>b?.id===request.afterBlockId?[i]:[]);if(positions.length!==1)throw error('DIAGRAM_EMBED_REFUSED');index=positions[0]+1;}
+    nextBlocks.splice(index,0,request.block);
+   }else nextBlocks[nextBlocks.findIndex(b=>b?.id===request.block.id)]=request.block;
+   validateDiagramEmbedDocument({...target,blocks:nextBlocks});
+   if(await this.#validate({domain:'docs',action:'replace-blocks',payload:{blocks:nextBlocks},before:JSON.parse(JSON.stringify(target))},scope)!==true)throw error('DOMAIN_VALIDATION_FAILED');guard(scope);
+   workspace.workpapers.find(d=>d.id===id).blocks=nextBlocks;
+   if(['mode','replace'].includes(request.action)&&workspace.diagramEmbedRefreshSuspensions)workspace.diagramEmbedRefreshSuspensions={schema:1,refs:normalizeDiagramEmbedSuspensions(workspace.diagramEmbedRefreshSuspensions).filter(r=>r.documentId!==id||r.blockId!==request.block.id)};
+   const metadata=envelope(current,workspace),refs=new Map();
+   for(const ref of metadata.diagramEmbedAssets?.refs??[])refs.set(ref.kind+':'+ref.sha256,ref);
+   for(const ref of [request.block.snapshot.sourceAsset,request.block.snapshot.visualAsset])refs.set(ref.kind+':'+ref.sha256,ref);
+   metadata.diagramEmbedAssets={schema:1,refs:[...refs.values()]};metadata.sirenNativeEntityOperation={schema:1,projectId:scope.projectId,domain:'docs',entityId:id,requestHash,sha256:fingerprint(workspace.workpapers.find(d=>d.id===id))};
+   const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:current.revision,sourceRefs:current.sourceRefs??[],metadata,operationId:request.operationId});guard(scope);if(!saved.ok)return fail(saved.code);
+   const reopened=await projects.readProject(scope.projectId);guard(scope);if(reopened.revision!==saved.revision||fingerprint(selectedEntity(reopened,'docs',id))!==metadata.sirenNativeEntityOperation.sha256)throw error('DOMAIN_READBACK_FAILED');
+   return receipt(reopened,'docs',id,saved.durability,request.operationId);
+  }catch(cause){return fail(cause.code??'DOMAIN_WRITE_FAILED');}
+ }
  async apply(domain,input,scope) {
   try {
    const request=normalizeDomainIntent(domain,input),id=request[domain==='docs'?'documentId':'diagramId'],requestHash=fingerprint(request),{projects,repository}=this.#adapters(scope);
@@ -120,7 +169,20 @@ export class DomainRepository {
     const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:prior.revision-1,sourceRefs:prior.sourceRefs,metadata:JSON.parse(prior.json),operationId:prior.operationId});guard(scope);if(!saved.ok)return fail(saved.code);return receipt(prior,domain,id,saved.durability,request.operationId);
    }
    if(version(current,domain,id)!==request.expectedVersion)throw error(domain==='docs'?'DOCUMENT_CONFLICT':'REVISION_CONFLICT');
-   const before=selectedEntity(current,domain,id);
+   const before=selectedEntity(current,domain,id),restored=[];
+   if(domain==='docs'&&request.payload.blocks){
+    // Text edits may reorder/remove a known embed or edit its presentation.
+    // Source/snapshot/mode authority is issued only by the private publisher.
+    for(const block of request.payload.blocks.filter(b=>b?.kind==='diagram-embed')){
+     const previous=(before.blocks??[]).filter(b=>b?.id===block.id);
+     if(previous.length===1&&previous[0].kind==='diagram-embed'&&fingerprint({...previous[0],caption:block.caption,display:block.display})===fingerprint(block))continue;
+     // Restoration is limited to an exact block from this document's genuine
+     // selected manifest history. No renderer-supplied historical bytes qualify.
+     const known=history.some(snapshot=>{try{return selectedEntity(snapshot,'docs',id).blocks?.some(b=>b?.kind==='diagram-embed'&&b.id===block.id&&fingerprint(b)===fingerprint(block));}catch{return false;}});
+     if(!known||typeof this.#diagramAssets?.read!=='function')throw error('DIAGRAM_EMBED_REFUSED');
+     for(const ref of [block.snapshot.sourceAsset,block.snapshot.visualAsset]){await this.#diagramAssets.read({projectId:scope.projectId,ref,isCurrent:scope.isCurrent});guard(scope);}restored.push({documentId:id,blockId:block.id,snapshotHash:fingerprint(block.snapshot)});
+    }
+   }
    if(domain==='diagram'&&(Object.hasOwn(request.payload,'sirenNativeLayoutEngine')||request.payload.resetStyleFields?.includes('sirenNativeLayoutEngine'))&&!nativeLayout.validate(request.payload.sirenNativeLayoutEngine,before.sirenNativeLayoutEngine))throw error('DOMAIN_VALIDATION_FAILED');
    if(domain==='diagram'&&(Object.hasOwn(request.payload,'nodeMetadata')||request.payload.resetStyleFields?.includes('nodeMetadata'))&&!diagramMetadata.validate(request.payload.nodeMetadata,before.nodeMetadata))throw error('DOMAIN_VALIDATION_FAILED');
    if(domain==='diagram'&&request.payload.resetStyleFields?.includes('nodeStyles')&&Object.hasOwn(before,'nodeStyles')){const styles=before.nodeStyles;if(!styles||typeof styles!=='object'||Array.isArray(styles)||Object.values(styles).some(node=>!node||typeof node!=='object'||Array.isArray(node)||Object.keys(node).some(key=>!managedNodeStyleFields.has(key))))throw error('DOMAIN_VALIDATION_FAILED');}
@@ -131,6 +193,7 @@ export class DomainRepository {
    if(domain==='docs'&&request.action==='replace-context-content')Object.assign(target,applyDocumentContext(target,request.payload.context,{targets:workspace}),{title:request.payload.title,blocks:request.payload.blocks});
    else if(domain==='diagram'&&request.action==='replace-deck-content')Object.assign(target,Object.fromEntries(Object.entries(content).filter(([k])=>k!=='presentationEdits')),{presentation:applyPresentationEdits(target.presentation,request.payload.presentationEdits)});
    else Object.assign(target,content);if(domain==='diagram')target.sirenNativeVersion=request.expectedVersion+1;
+   if(domain==='docs'&&request.payload.blocks){const refs=normalizeDiagramEmbedSuspensions(workspace.diagramEmbedRefreshSuspensions??{schema:1,refs:[]}).filter(r=>r.documentId!==id||request.payload.blocks.some(b=>b?.kind==='diagram-embed'&&b.id===r.blockId&&fingerprint(b.snapshot)===r.snapshotHash));const merged=new Map(refs.map(r=>[r.documentId+':'+r.blockId,r]));for(const ref of restored)merged.set(ref.documentId+':'+ref.blockId,ref);if(merged.size||workspace.diagramEmbedRefreshSuspensions)workspace.diagramEmbedRefreshSuspensions={schema:1,refs:[...merged.values()]};}
    const metadata=envelope(current,workspace);metadata.sirenNativeEntityOperation={schema:1,projectId:scope.projectId,domain,entityId:id,requestHash,sha256:fingerprint(target)};
    const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:current.revision,sourceRefs:current.sourceRefs??[],metadata,operationId:request.operationId});guard(scope);if(!saved.ok)return fail(saved.code);
    const reopened=await projects.readProject(scope.projectId);guard(scope);if(reopened.revision!==saved.revision||fingerprint(selectedEntity(reopened,domain,id))!==fingerprint(target))throw error('DOMAIN_READBACK_FAILED');return receipt(reopened,domain,id,saved.durability,request.operationId);

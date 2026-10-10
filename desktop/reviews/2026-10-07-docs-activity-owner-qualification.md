@@ -1,9 +1,0 @@
-# Native Docs Activity - separate portable-copy qualification
-
-Author and actual executor: /root. Source 5cca4ab195028d64f09061be6dc5a3536f59bc4e. Separate preview C:\Claude\SIREN_WORK\portable\desktop\dist\development-fbeeda06-e049-4820-a305-154208c847fe. Every297 packed regular member matches current generated/dependency bytes and committed runtime source (only Git CRLF/LF normalization for source comparison). Original Electron and fixed external helper remain exact.
-
-All9 isolated copied native programs completed: Activity8, original Docs Edit4/Format6/Context6/Structured4/Sources5/Export7, shell and core lifecycle/Save/Lock/recovery. Captured inputs remain unchanged. Owner additionally verified 27 copied ASAR/runtime/helper hashes after execution, all matching the build receipt. Compared with previous297-member Inspector preview, only generated/build.json, generated/windows/docs.html differ; 295 remain exact.
-
-Final local fullsuite1458 and development Activity8/six original regression programs are separate precommit evidence. Actual copied Activity retains exact project/source/unknown values and saved JSON, independent draft/conflict/rollback state, real confirmed reload, Activity lifecycle and native target retirement. Recorded approvals remain claims. Genuine independent reviews retain real authors and narrow evidence scopes; no independent GUI execution is inferred.
-
-Original native ADVERSE3, second ABORTED without finalreceipt, and first fullsuiteADVERSE1457/1458 remain retained. Later scoped success never rewrites them. TEMP fixture scheduling preserves its15-second limit and all235 outer files exactly once. No production release, main merge, installed-app replacement, complete desktop parity, physical monitor/DPI/IME or maxima qualification. Fresh guarded canonical sync/hosted evaluation remains next; pan and historical Save-to-Attach causes are OPEN.

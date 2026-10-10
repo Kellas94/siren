@@ -1,4 +1,0 @@
-{"name":"home-backup","code":0,"signal":null,"evidence":"C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\home-backup-neutral-cancel\\runs\\2026-10-07T16-26-07.944Z","cases":4}
-{"name":"help-diagnostics","code":0,"signal":null,"evidence":"C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\help-diagnostics\\2026-10-07T16-26-17.292Z","cases":12}
-{"name":"home-library-search","code":0,"signal":null,"evidence":"C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\home-library-search\\2026-10-07T16-26-38.698Z","cases":7}
-{"root":"C:\\Claude\\SIREN_WORK\\portable\\desktop\\evidence\\workspace-surface\\terminal-home-copied-2026-10-07T16-26-07.811Z","status":"COMPLETE","cases":23,"capturedInputs":668,"changedInputs":[]}

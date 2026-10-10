@@ -10,7 +10,7 @@
   const close=()=>{if(picker?.open)picker.close();};
   const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
   const say=text=>{if(!paused&&!disposed)onStatus(text);};
-  const valid=(value,own,selected)=>value?.ok===true&&uuid(value.exportId)&&value.filename==='document-'+value.exportId+'.'+extensions[selected]&&value.format===selected&&value.entityId===own.documentId&&value.version===own.version&&value.entitySha256===own.sha256&&hash(value.sha256)&&Number.isSafeInteger(value.bytes)&&value.bytes>0&&value.bytes<=16*1024*1024&&Number.isSafeInteger(value.projectRevision)&&value.projectRevision>=own.projectRevision;
+  const valid=(value,own,selected)=>value?.ok===true&&uuid(value.exportId)&&(value.filename==='document-'+value.exportId+'.'+extensions[selected]||selected==='markdown'&&value.filename==='document-'+value.exportId+'.zip')&&value.format===selected&&value.entityId===own.documentId&&value.version===own.version&&value.entitySha256===own.sha256&&hash(value.sha256)&&Number.isSafeInteger(value.bytes)&&value.bytes>0&&value.bytes<=16*1024*1024&&Number.isSafeInteger(value.projectRevision)&&value.projectRevision>=own.projectRevision;
   const submit=()=>{
    if(!available()||!picker?.open||!Object.hasOwn(extensions,format.value))return;
    const own=context(),selected=format.value,token=generation;close();receipt=null;say('Exporting the saved document · Unsaved changes stay in this window.');
@@ -18,7 +18,7 @@
     const result=await bridge.exportSaved({format:selected,expectedVersion:own.version,expectedSha256:own.sha256});
     if(disposed||paused||generation!==token)return;
     if(!valid(result,own,selected)){say(result?.code==='DOCUMENT_VERSION_CHANGED'?'The saved document changed. Refresh or save explicitly before exporting. Your local changes are retained.':result?.code==='EXPORT_BUDGET'||result?.code==='DOCUMENT_BUDGET'?'This document exceeds the export limit. Your data and local changes are retained.':'Export could not be confirmed. Your document and local changes are retained.');return;}
-    receipt={exportId:result.exportId};say('Saved document exported · '+selected.toUpperCase()+' · Linked assets remain references.'+(own.dirty?' Unsaved changes remain here; save explicitly to include them.':''));
+    receipt={exportId:result.exportId};say('Saved document exported · '+selected.toUpperCase()+' · Saved diagram snapshots included when present; other links remain references.'+(own.dirty?' Unsaved changes remain here; save explicitly to include them.':''));
    }catch{if(!disposed&&!paused&&generation===token)say('Export could not be confirmed. Your document and local changes are retained.');}
    finally{if(pending===task)pending=null;update();}});pending=task;update();
   };
@@ -28,11 +28,11 @@
     picker=make('dialog',document.body);picker.id='documentExportPicker';picker.className='code-docs-dialog';picker.setAttribute('aria-labelledby','documentExportTitle');
     make('h2',picker,'Export saved document').id='documentExportTitle';disclosure=make('p',picker);disclosure.id='documentExportDisclosure';
     const label=make('label',picker,'Format');format=make('select',label);format.id='documentExportFormat';format.setAttribute('aria-label','Document export format');
-    for(const [value,title]of [['html','HTML · Standalone reading page'],['markdown','Markdown · Text and code'],['json','JSON · Exact document data']]){const option=make('option',format,title);option.value=value;}format.value='html';
+    for(const [value,title]of [['html','HTML · Standalone reading page'],['markdown','Markdown · ZIP with diagram assets when present'],['json','JSON · Exact document data']]){const option=make('option',format,title);option.value=value;}format.value='html';
     make('p',picker,'All formats preserve the exact saved fields in an archive. Images are described and retained as data. PDF, Office and single-document reimport are not available in this export.');
     const actions=make('div',picker);actions.className='code-docs-actions';cancel=make('button',actions,'Cancel');cancel.id='documentExportCancel';cancel.type='button';cancel.addEventListener('click',close);confirm=make('button',actions,'Export saved');confirm.id='documentExportConfirm';confirm.type='button';confirm.addEventListener('click',submit);
    }
-   disclosure.textContent=(context().dirty?'Unsaved changes are open. This exports the saved version; save explicitly first to include your edits. ':'This exports the saved version. ')+'Linked code, diagrams and documents remain references only. Use a project backup to include linked assets.';
+   disclosure.textContent=(context().dirty?'Unsaved changes are open. This exports the saved version; save explicitly first to include your edits. ':'This exports the saved version. ')+'Inserted diagram snapshots are included. Other linked code, diagrams and documents remain references only. Use a project backup to include linked assets.';
    picker.showModal();return true;
   };
   const reveal=()=>{

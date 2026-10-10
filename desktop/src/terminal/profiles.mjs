@@ -1,3 +1,5 @@
+import {types} from 'node:util';
+import {createProviderLifetime,providerMethod} from './provider-lifetime.mjs';
 import {win32 as path} from 'node:path';
 
 // Pure catalogue only. No OS discovery, process.env, fs, shell/PTY or Electron
@@ -15,11 +17,11 @@ class Refusal extends Error{constructor(code){super(code);this.code=code;}}
 const refuse=code=>{throw new Refusal(code);};
 function data(value){
  try{
- if(!value||typeof value!=='object'||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return null;
+ if(!value||types.isProxy(value)||typeof value!=='object'||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return null;
  const result=Object.create(null);for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(typeof key!=='string'||!d?.enumerable||!Object.hasOwn(d,'value'))return null;result[key]=d.value;}return result;
  }catch{return null;}
 }
-function array(value,max){try{if(!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||value.length>max||Reflect.ownKeys(value).length!==value.length+1)return null;const result=[];for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;result.push(d.value);}return result;}catch{return null;}}
+function array(value,max){try{if(types.isProxy(value)||!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||value.length>max||Reflect.ownKeys(value).length!==value.length+1)return null;const result=[];for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;result.push(d.value);}return result;}catch{return null;}}
 function localPath(value){
  if(typeof value!=='string'||!value.isWellFormed()||value.length>32768||! /^[A-Za-z]:[\\/]/.test(value)||/[\x00-\x1f\x7f<>"|?*]/.test(value)||value.slice(2).includes(':'))return null;
  if(value.slice(3).split(/[\\/]/).filter(Boolean).some(p=>p!=='.'&&p!=='..'&&(/[ .]$/.test(p)||/^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³]|conin\$|conout\$)(?:\.|$)/i.test(p))))return null;
@@ -49,32 +51,39 @@ function environment(value,privateKeys){
  return Object.freeze(result);
 }
 const profile=available=>Object.freeze([Object.freeze({profileId:'powershell',label:'Windows PowerShell',available})]);
+const lifetimes=new WeakMap();
+export function captureShellProfileSettlement(catalogue,...extra){return extra.length?null:lifetimes.get(catalogue)?.handle??null;}
+export function retireShellProfileCatalogue(catalogue,...extra){return extra.length?null:lifetimes.get(catalogue)?.retire()??null;}
 export function createShellProfileCatalogue({getSystemDirectory,inspectExecutable,readEnvironment,authorize,captureAdmission,privateEnvironmentKeys=[],maxPending=8}={}){
  if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>8)throw TypeError('Bounded profile limits required');
+ getSystemDirectory=typeof getSystemDirectory==='function'&&!types.isProxy(getSystemDirectory)?getSystemDirectory:null;
+ inspectExecutable=typeof inspectExecutable==='function'&&!types.isProxy(inspectExecutable)?inspectExecutable:null;
+ readEnvironment=typeof readEnvironment==='function'&&!types.isProxy(readEnvironment)?readEnvironment:null;
  const keys=array(privateEnvironmentKeys,128),privateKeys=keys&&keys.every(k=>typeof k==='string'&&keySyntax.test(k))?new Set(keys.map(k=>k.toUpperCase())):null;
- let generation=Symbol(),disposed=false,pending=0,pinned=null;
- function current(scope){try{if(!disposed&&scope.generation===generation&&authorize?.(scope.method)===true&&scope.guard?.isCurrent?.()===true&&!disposed&&scope.generation===generation)return;}catch{/* Refuse unknown authority. */}refuse('SENDER_REFUSED');}
- function begin(method){let scope;try{if(disposed||authorize?.(method)!==true)refuse('SENDER_REFUSED');scope={method,generation,guard:captureAdmission?.(method)};}catch{refuse('SENDER_REFUSED');}current(scope);if(pending>=maxPending)refuse('CAPACITY_EXCEEDED');pending++;return scope;}
- async function step(scope,fn){current(scope);let value;try{value=await fn();}catch{current(scope);refuse('PROFILE_UNAVAILABLE');}current(scope);return value;}
- async function inspect(scope,executable){return evidence(await step(scope,()=>{if(typeof inspectExecutable!=='function')refuse('PROFILE_UNAVAILABLE');return inspectExecutable(executable);}),executable);}
+ let generation=Symbol(),disposed=false,pinned=null;
+ const life=createProviderLifetime({scope:'SHELL_PROFILE_CATALOGUE',maxPending,refuse,onComplete:()=>{getSystemDirectory=inspectExecutable=readEnvironment=authorize=captureAdmission=null;pinned=null;}});
+ function current(scope){try{if(!disposed&&!scope.cell.unknown&&scope.generation===generation&&life.sync(scope.cell,authorize,scope.method)===true&&!disposed&&scope.generation===generation&&life.sync(scope.cell,scope.isCurrent)===true&&!disposed&&!scope.cell.unknown&&scope.generation===generation)return;}catch{/* Refuse failed authority. */}refuse('SENDER_REFUSED');}
+ function begin(cell,method){let scope;try{const captured=generation;if(disposed||life.sync(cell,authorize,method)!==true||disposed||captured!==generation)refuse('SENDER_REFUSED');scope={cell,method,generation:captured,isCurrent:providerMethod(life.sync(cell,captureAdmission,method),'isCurrent')};}catch{refuse('SENDER_REFUSED');}current(scope);return scope;}
+ function step(scope,fn){return life.step(scope.cell,()=>current(scope),fn,'PROFILE_UNAVAILABLE');}
+ async function inspect(scope,executable){return evidence((await step(scope,()=>{if(typeof inspectExecutable!=='function')refuse('PROFILE_UNAVAILABLE');return inspectExecutable(executable);})).value,executable);}
  async function discover(scope){
-  const directory=localPath(await step(scope,()=>{if(typeof getSystemDirectory!=='function')refuse('PROFILE_UNAVAILABLE');return getSystemDirectory();}));
+  const directory=localPath((await step(scope,()=>{if(typeof getSystemDirectory!=='function')refuse('PROFILE_UNAVAILABLE');return getSystemDirectory();})).value);
   if(!directory)refuse('PROFILE_UNAVAILABLE');
   const resolved=await inspect(scope,path.join(directory,'WindowsPowerShell','v1.0','powershell.exe'));
   if(pinned&&pinned.signature!==resolved.signature)refuse('PROFILE_UNAVAILABLE');current(scope);pinned??=resolved;return resolved;
  }
  const catalogue={
-  async listShellProfiles(...args){if(args.length)refuse('REQUEST_REFUSED');const scope=begin('terminalListProfiles');try{try{await discover(scope);current(scope);return profile(true);}catch(e){current(scope);if(e instanceof Refusal&&e.code==='PROFILE_UNAVAILABLE')return profile(false);throw e;}}finally{pending--; }},
-  async resolveShellProfile(profileId,...args){if(args.length)refuse('REQUEST_REFUSED');const scope=begin('terminalCreate');try{
+  listShellProfiles(...args){return life.run(async cell=>{if(args.length)refuse('REQUEST_REFUSED');const scope=begin(cell,'terminalListProfiles');try{await discover(scope);current(scope);return profile(true);}catch(e){if(!cell.unknown)current(scope);if(e instanceof Refusal&&e.code==='PROFILE_UNAVAILABLE')return profile(false);throw e;}});},
+  resolveShellProfile(profileId,...args){return life.run(async cell=>{if(args.length)refuse('REQUEST_REFUSED');const scope=begin(cell,'terminalCreate');
    if(profileId!=='powershell')refuse('PROFILE_UNAVAILABLE');const resolved=await discover(scope);
-   const env=environment(await step(scope,()=>{if(typeof readEnvironment!=='function')refuse('PROFILE_UNAVAILABLE');return readEnvironment();}),privateKeys);
+   const env=environment((await step(scope,()=>{if(typeof readEnvironment!=='function')refuse('PROFILE_UNAVAILABLE');return readEnvironment();})).value,privateKeys);
    const final=await inspect(scope,resolved.executable);if(final.signature!==resolved.signature)refuse('PROFILE_UNAVAILABLE');current(scope);
    return Object.freeze({executable:resolved.executable,args:Object.freeze(['-NoLogo','-NoProfile']),env});
-  }finally{pending--; }},
+  });},
   revoke(){generation=Symbol();pinned=null;},
-  dispose(){disposed=true;catalogue.revoke();},
+  dispose(){disposed=true;catalogue.revoke();life.retire();},
  };
- return Object.freeze(catalogue);
+ lifetimes.set(catalogue,{handle:life.handle,retire:()=>{catalogue.dispose();return life.handle;}});return Object.freeze(catalogue);
 }
 // Approved zero-argument list and profile-id resolver remain safe unconfigured.
 // Main creates a private catalogue with request-bound providers for integration.

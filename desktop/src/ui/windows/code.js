@@ -17,8 +17,7 @@
     try{
       const context=await window.sirenSourceRead.getReference();if(token!==generation||disposed)return false;
       if(!context?.ok||typeof context.readonly!=='boolean')throw Error('Source reference unavailable');
-      nativeSourceId=context.sourceRef.sourceId;
-      const readonly=context.readonly;working.hidden=!readonly||context.canEdit!==true;
+      const readonly=context.readonly;
       const bridge=Object.freeze(Object.fromEntries([
         ...['getMetrics','readRange',...(!readonly?['applyEdit','commitSource']:[])].map(name=>[name,payload=>window.sirenSource[name](payload)]),
         ...['openRead','readChunk','closeRead'].map(name=>[name,payload=>window.sirenSourceRead[name](payload)])
@@ -28,16 +27,19 @@
       if(!metrics.ok)throw Error('Source metrics refused');
       if(preserve){staging=document.createElement('div');staging.style.cssText=`position:fixed;left:-100000px;top:0;width:${surface.clientWidth}px;height:${surface.clientHeight}px;visibility:hidden`;document.body.append(staging);}
       candidateEditor=SirenCodeEditor.createCodeEditor({container:staging??surface,client:candidateClient,theme:appearance(),readonly,language:context.language??'unknown',committedOperationId:context.committedOperationId});
-      const ownEditor=candidateEditor,receipt=await ownEditor.open(context.sourceRef);
+      const ownEditor=candidateEditor,ownClient=candidateClient,receipt=await ownEditor.open(context.sourceRef);
       if(token!==generation||disposed||paused)return false;
       if(!receipt.ok)throw Error('Source load refused');
       if(preserve){
         const current=await window.sirenSourceRead.getReference();
         if(token!==generation||disposed||paused)return false;
         if(!current?.ok||current.readonly!==readonly||['sourceId','version','sha256'].some(key=>current.sourceRef[key]!==context.sourceRef[key]))throw Error('Source changed during refresh');
+        const retained=previousEditor.getStatus();
+        if(editor!==previousEditor||client!==previousClient||!retained.ready||!retained.paused||retained.disposed||retained.opening||retained.dirty||retained.pending||retained.saving||retained.fenced)throw Error('Retained editor changed during refresh');
         links.pause();unsubscribeEditor?.();previousEditor.dispose();previousClient.dispose();surface.replaceChildren(...staging.childNodes);
       }
       editor=candidateEditor;client=candidateClient;candidateEditor=null;candidateClient=null;
+      nativeSourceId=context.sourceRef.sourceId;working.hidden=!readonly||context.canEdit!==true;
       nativeSourceName=context.displayName||'Source '+context.sourceRef.sourceId.slice(0,8);
       window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:context.sourceRef.version,readonly});
       const state=ownEditor.getState();
@@ -47,10 +49,10 @@
       document.body.dataset.sourceReadonly=String(readonly);
       document.body.dataset.sourceLanguage=context.language??'unknown';
       linkButton.hidden=readonly;
-      client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
+      ownClient.subscribeSource(event=>{if(disposed||client!==ownClient||editor!==ownEditor)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
       let sourceSummary=null;
       unsubscribeEditor=ownEditor.subscribe(value=>{
-        if(token!==generation||disposed||paused||editor!==ownEditor||!value.ready||!value.sourceRef)return;
+        if(disposed||paused||client!==ownClient||editor!==ownEditor||!value.ready||!value.sourceRef)return;
         const draft=value.dirty||value.pending;
         window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:value.sourceRef.version,readonly,dirty:draft});
         const summary=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
@@ -63,12 +65,12 @@
       ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){
-        if(preserve){if(!paused)previousEditor.resumeView();status.textContent=previousStatus;}
+        if(preserve){const retained=previousEditor.getStatus();if(editor===previousEditor&&client===previousClient&&!retained.dirty&&!retained.pending&&!retained.saving&&!retained.fenced)status.textContent=previousStatus;}
         else{clear();status.textContent='Source could not be opened. Existing project data was retained.';}
         retry.hidden=false;
       }
       return false;
-    }finally{candidateEditor?.dispose();candidateClient?.dispose();staging?.remove();if(preserve&&editor===previousEditor&&!paused&&!disposed)previousEditor.resumeView();}
+    }finally{candidateEditor?.dispose();candidateClient?.dispose();staging?.remove();if(preserve&&token===generation&&editor===previousEditor&&client===previousClient&&!paused&&!disposed)previousEditor.resumeRefresh();}
   }
   links=window.SirenNativeDocsLinks.create({button:linkButton,editorFor:()=>editor,isCurrent:()=>!disposed&&!paused&&document.body.dataset.sourceReady==='true'&&document.body.dataset.sourceReadonly==='false',onStatus:text=>{status.textContent=text;}});
   sourceChanges=window.SirenNativeSourceChanges.create({subscribe:callback=>window.sirenSourceEdit.onReferenceChanged(callback),sourceIdFor:()=>nativeSourceId,stateFor:()=>editor?.getStatus(),isCurrent:()=>!disposed&&!paused&&nativeSourceId!==null&&document.body.dataset.sourceReadonly!=='true',onReload:async()=>{

@@ -1,4 +1,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('sirenDocsDiagramEvents',Object.freeze({onPending(callback){
+ if(typeof callback!=='function')throw TypeError('Expected callback');const listener=(_event,value)=>{try{
+  if(!value||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return;const fields=Object.getOwnPropertyDescriptors(value),keys=Reflect.ownKeys(fields);if(keys.length!==3||keys.some(k=>!['documentId','diagramId','reason'].includes(k)||!Object.hasOwn(fields[k],'value')))return;const documentId=fields.documentId.value,diagramId=fields.diagramId.value,reason=fields.reason.value;
+  if(![documentId,diagramId].every(v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(v))||typeof reason!=='string'||!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(reason))return;Promise.resolve(callback(Object.freeze({documentId,diagramId,reason}))).catch(()=>{});
+ }catch{/* A pending notice grants no source or document write. */}};ipcRenderer.on('siren:docs-diagram-pending',listener);return()=>ipcRenderer.removeListener('siren:docs-diagram-pending',listener);
+}}));
 contextBridge.exposeInMainWorld('sirenDiagramCatalogue',Object.freeze(Object.fromEntries(['getPage','createDiagram'].map(method=>[method,payload=>ipcRenderer.invoke('siren:diagram-catalogue',method,payload)]))));
 let deckAuthoring=false;const deckListeners=new Set();ipcRenderer.on('siren:deck-authoring',()=>{deckAuthoring=true;for(const callback of deckListeners)callback();});
 contextBridge.exposeInMainWorld('sirenDeckNavigation',Object.freeze({play:payload=>ipcRenderer.invoke('siren:deck-navigation','play',payload),edit:payload=>ipcRenderer.invoke('siren:deck-navigation','edit',payload),onAuthoring:callback=>{if(typeof callback!=='function')throw TypeError('Expected callback');deckListeners.add(callback);if(deckAuthoring)callback();return()=>deckListeners.delete(callback);}}));
@@ -8,6 +14,7 @@ contextBridge.exposeInMainWorld('sirenDiagramRead',Object.freeze({getDiagram:()=
 contextBridge.exposeInMainWorld('sirenDocsRead',Object.freeze({getDocument:()=>sourceFlushNonce===null?ipcRenderer.invoke('siren:docs-read','getDocument'):ipcRenderer.invoke('siren:docs-read','getDocument',undefined,sourceFlushNonce)}));
 contextBridge.exposeInMainWorld('sirenDocsSources',Object.freeze(Object.fromEntries(['openLinkedSource','previewLinkedSource'].map(method=>[method,payload=>ipcRenderer.invoke('siren:docs-sources',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenDocsReferences',Object.freeze(Object.fromEntries(['getTargets','openReference'].map(method=>[method,payload=>ipcRenderer.invoke('siren:docs-references',method,payload)]))));
+contextBridge.exposeInMainWorld('sirenDocsDiagrams',Object.freeze(Object.fromEntries(['listDocuments','sendToDocs','getProposal','listDiagrams','inspectSelection','preview','insert','readEmbed','openSource','setMode','update'].map(method=>[method,payload=>ipcRenderer.invoke('siren:docs-diagrams',method,payload)]))));
 contextBridge.exposeInMainWorld('sirenSourceRead', Object.freeze(Object.fromEntries(['getReference', 'openRead', 'readChunk', 'closeRead'].map(method => [method, payload => ipcRenderer.invoke('siren:source-readers', method, payload)]))));
 let sourceFlushNonce=null;
 contextBridge.exposeInMainWorld('sirenDiagramEdit',Object.freeze({

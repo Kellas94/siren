@@ -18,8 +18,9 @@
   };copy(template.content,parent,0);
   if(truncated)make('p',parent,'Complex rich block · Display limited; saved content is unchanged.').className='document-caption';
  }
- function renderBlock(parent,block){
+ function renderBlock(parent,block,diagramView){
   const card=make('section',parent);card.className='document-reader-block';card.dataset.blockId=typeof block?.id==='string'?block.id:'';
+  if(block?.kind==='diagram-embed'&&diagramView){card.append(diagramView.render(block));return true;}
   if(block?.kind==='heading'&&typeof block.text==='string'){make('h'+Math.max(2,Math.min(6,Number.isSafeInteger(block.level)?block.level:2)),card,block.text);return true;}
   if(block?.kind==='text'&&typeof block.html==='string'){html(card,block.html);return true;}
   if(block?.kind==='image'){
@@ -42,16 +43,16 @@
   }
   make('h3',card,'Preserved block');make('p',card,'This block is retained exactly. Its original fields are available in Preserved fields.').className='document-caption';return true;
  }
- window.SirenNativeDocsReader=Object.freeze({render({parent,outline,blocks}){
+ window.SirenNativeDocsReader=Object.freeze({render({parent,outline,blocks,diagramView}){
   const cards=new Map();let page,holder,more,at=0;
   function start(){if(page)return;page=make('section',parent);page.className='document-reader';page.setAttribute('aria-label','Document content');
   const nav=make('button',outline,'Contents');nav.type='button';nav.addEventListener('click',()=>page.scrollIntoView({block:'start'}));
   holder=make('div',page);more=make('button',page,'More document blocks');more.type='button';more.addEventListener('click',()=>extend());}
   function extend(target=-1){start();const end=Math.min(Math.max(at+40,target+1),blocks.length);for(let index=at;index<end;index++){
-   const block=blocks[index];if(renderBlock(holder,block)){const section=holder.lastElementChild;cards.set(index,section);if(block?.kind==='heading'){section.id='document-reading-'+index;const link=make('button',outline,block.text||'Untitled section');link.type='button';link.className='document-reader-outline';link.addEventListener('click',()=>section.scrollIntoView({block:'start'}));}}
+   const block=blocks[index];if(renderBlock(holder,block,diagramView)){const section=holder.lastElementChild;cards.set(index,section);if(block?.kind==='heading'){section.id='document-reading-'+index;const link=make('button',outline,block.text||'Untitled section');link.type='button';link.className='document-reader-outline';link.addEventListener('click',()=>section.scrollIntoView({block:'start'}));}}
   }at=end;more.hidden=at===blocks.length;}
   const handle=Object.freeze({reveal(id){const result=window.SirenDocumentActivity?.locate(blocks,id);if(result?.ok!==true)return result??{ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(parent.isConnected===false)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(result.index>=at)extend(result.index);const card=cards.get(result.index);if(!card)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};card.tabIndex=-1;card.scrollIntoView({block:'center'});card.focus({preventScroll:true});return {ok:true,index:result.index};}});
-  if(Array.isArray(blocks)&&blocks.some(block=>['heading','text','table','checklist','prompt','image'].includes(block?.kind)))extend();
+  if(Array.isArray(blocks)&&blocks.some(block=>['heading','text','table','checklist','prompt','image',...(diagramView?['diagram-embed']:[])].includes(block?.kind)))extend();
   return handle;
  }});
 })();

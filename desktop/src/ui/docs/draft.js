@@ -21,7 +21,10 @@
   }
   async function save(prepare=false){
    if(disposed||context.readonly||fenced||paused&&!prepare)return fail(fenced?'DOCUMENT_FENCED':'ACCESS_REFUSED');
-   if(pending)return pending;if(!dirty)return Object.freeze({ok:true,unchanged:true});
+   if(pending)return pending;if(!dirty){
+    if(prepare||typeof bridge.flushDocument!=='function')return Object.freeze({ok:true,unchanged:true});
+    const request={entityId:document.id,expectedVersion:version},expected=structuredClone(document),own=Promise.resolve().then(async()=>{let result;try{result=await bridge.flushDocument(request);if(disposed)return fail('VIEW_DISPOSED');if(!await accepted(result,request,false,expected))return fail(result?.code??'DOCUMENT_RESULT_REFUSED');return result;}catch{return fail('DOCUMENT_FLUSH_FAILED');}});pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
+   }
    group=null;
    const payload=structuredClone(content),request={operationId:operationId(),documentId:document.id,expectedVersion:version,action:content.context?'replace-context-content':'replace-content',payload},expected=actualDocument();
    const own=(async()=>{
@@ -35,6 +38,13 @@
   }
   return Object.freeze({
    getStatus:status,getContent:()=>structuredClone(content),getDocument:()=>structuredClone(actualDocument()),
+   async adoptSaved(next){
+    if(disposed||paused||pending||dirty||fenced)return fail('DOCUMENT_NOT_EDITABLE');const previous=JSON.stringify(content),baseline=version;
+    try{if(next?.readonly!==context.readonly||next.document?.id!==document.id||!hash(next.version)||!hash(next.sha256)||!Number.isSafeInteger(next.projectRevision)||next.projectRevision<projectRevision||next.sha256!==await fingerprint(next.document))return fail('DOCUMENT_REFRESH_REFUSED');}catch{return fail('DOCUMENT_REFRESH_REFUSED');}
+    if(disposed||paused||pending||dirty||fenced||version!==baseline||JSON.stringify(content)!==previous)return fail('DOCUMENT_NOT_EDITABLE');const contentNext={title:next.document.title??'',blocks:structuredClone(next.document.blocks??[])},serialized=JSON.stringify(contentNext);
+    if(serialized!==previous){if(Math.max(serialized.length,previous.length)*2>4*1024*1024){resetHistory();historyLimited=true;}else{undo.push(previous);redo=[];trimHistory();}}
+    document=structuredClone(next.document);content=contentNext;version=next.version;sha256=next.sha256;projectRevision=next.projectRevision;group=null;dirty=false;changed();return Object.freeze({ok:true});
+   },
    setContext(patch){
     if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let delta;try{delta=window.SirenDocumentContext.documentContextDelta(document,window.SirenDocumentContext.applyDocumentContext(actualDocument(),patch));}catch{return fail('INVALID_CONTEXT');}
     const next=structuredClone(content);if(Object.keys(delta).length)next.context=delta;else delete next.context;return this.setContent(next,{historyGroup:'context:'+Object.keys(patch).join(',')});

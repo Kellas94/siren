@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { join, basename } from 'node:path';
 import { readFile, realpath } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import {digest} from './projects/atomic.mjs';
 import { resolveLocalResource } from './protocol.mjs';
 import { invokeDesktop, failure } from './ipc.mjs';
 import { chooseDataRoot, writableDataRoot } from './data-root.mjs';
@@ -38,7 +39,7 @@ import {NativeDiagramCatalogue} from './windows/diagram-catalogue.mjs';
 import {NativeDiagramExports} from './windows/diagram-export.mjs';
 import {NativeDocsExports} from './windows/docs-export.mjs';
 import {NativePresenterExports} from './windows/presenter-export.mjs';
-import {renderDiagramVector} from './windows/diagram-vector-render.mjs';
+import {renderDiagramVector,renderDiagramEmbed} from './windows/diagram-vector-render.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
@@ -47,6 +48,9 @@ import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
 import {PresentationSession} from './windows/presentation.mjs';
 import {NativePresentationDecks} from './windows/presentation-deck.mjs';
 import {NativeDocsReferences} from './windows/docs-references.mjs';
+import {NativeDocsDiagrams} from './windows/docs-diagrams.mjs';
+import {DocsDiagramRefresh} from './windows/docs-diagram-refresh.mjs';
+import {DiagramEmbedAssetStore} from './documents/diagram-embed-assets.mjs';
 import {NativeDeckNavigation} from './windows/deck-navigation.mjs';
 import {NativePresentationIPC} from './windows/presentation-ipc.mjs';
 import {renderPresentationPreview} from './windows/presentation-render.mjs';
@@ -147,7 +151,7 @@ const sources = new SourceRepository(dataRoot, { ...writerOptions, canWrite: asy
   // the existing renderer is quiesced; normal edits retain the native mode gate.
   return (!nativeReadonly && mode === 'normal') || Boolean(writes.selectionQuiesced);
 } });
-const recovery = new RecoveryStore(dataRoot, { ...writerOptions, sources });
+const recovery = new RecoveryStore(dataRoot, { ...writerOptions, sources,assets:new DiagramEmbedAssetStore({projects}),isCurrent:()=>!accountQuiesced&&localPin.state().unlocked });
 const updates = new UpdateService({ root: dataRoot, config: publisherConfig.updates, currentVersion: '1.131.0', onStatus: state => { if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'updates', state }); } });
 let selectedId = devArgument('--siren-test-project=') || null;
 if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
@@ -162,6 +166,7 @@ let bootstrap = { mode, reason, snapshot, recoveryProjectId: selectedId, readonl
 const grants = new Set(selectedId ? [selectedId] : []);
 const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
 const writes = new Set();
+let requestDocsDiagramScan=()=>{};
 const selected = async (next,{isCurrent}={}) => {
   const guarded=typeof isCurrent==='function';let accepted=false;
   const operation=(async()=>{
@@ -201,6 +206,7 @@ const changeSelection = async action => {
   } finally {
     changed=bootstrap.selectionGeneration!==generation;
     writes.selectionQuiesced = false; writes.selectionTransition = false;
+    requestDocsDiagramScan();
     // A successful selection reloads the renderer; keep that old view frozen.
     if (!changed) {
       await rollbackNativePreparation();
@@ -234,7 +240,7 @@ const exportBytes = async (bytes, suggested, isCurrent) => {
 };
 // Unlock never creates or selects a project. First-use Home requires an
 // explicit New/Open action; PIN success is independent of project creation.
-const prepareLocalWorkspace = async result => result;
+const prepareLocalWorkspace = async result => {if(result?.ok===true)requestDocsDiagramScan();return result;};
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 protocol.handle('siren', async request => {
@@ -457,7 +463,7 @@ const windowRegistry = new WindowRegistry({
         if(!prepared.barrier.release(prepared.proof))throw Error('Native close release refused');
         workspaceBarrier=null;closingWorkingViews.add(view);view.close();
         for(const current of [window,...nativeShells.values()])if(!current.isDestroyed())current.webContents.send('siren:view-resume');
-      })().catch(()=>rollbackNativePreparation()).finally(()=>{writes.viewClosing=false;});
+      })().catch(()=>rollbackNativePreparation()).finally(()=>{writes.viewClosing=false;requestDocsDiagramScan();});
     });
   } }),
 });
@@ -483,6 +489,7 @@ const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
+  nativeDiagramRefreshAccess:(projectId,documentId)=>workingEnabled({projectId})&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&workspaceEntities(snapshot).docs.includes(documentId)&&workingDocs?.canRefresh(projectId,documentId)!==false,
   readonlyViews,
   onNativeFailure:info=>console.warn('SIREN_SOURCE_NATIVE_FAILURE',JSON.stringify(info)),
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
@@ -496,6 +503,12 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:{
     read:(...args)=>new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}).read(...args),
+    async commitDiagramEmbed(token,scope){
+      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,diagramAssets:new DiagramEmbedAssetStore({projects}),
+        validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
+      const result=await repository.commitDiagramEmbed(token,scope);
+      if(result.ok&&scope.isCurrent()){const current=await projects.readProject(scope.projectId);if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};snapshot=current;bootstrap={...bootstrap,snapshot:current};}return result;
+    },
     async appendCatalogueDiagram(input,scope){
       const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
         validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
@@ -510,7 +523,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
     async apply(kind,input,scope){
       if(!['docs','diagram'].includes(kind))return {ok:false,code:'ACCESS_REFUSED'};
 
-      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
+      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,diagramAssets:new DiagramEmbedAssetStore({projects}),
         validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
       const result=await repository.apply(kind,input,scope);
       if(!result.ok)console.warn('SIREN_DOMAIN_NATIVE_FAILURE',JSON.stringify({method:kind==='diagram'?'applyDiagram':'applyDocument',code:result.code}));
@@ -567,6 +580,27 @@ const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:wor
  reveal:path=>shell.showItemInFolder(path),
 });
 const docsExports=new NativeDocsExports({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,projects,reveal:path=>shell.showItemInFolder(path)});
+const docsDiagrams=new NativeDocsDiagrams({registry:windowRegistry,owner:workspaceOwner,projects,assets:new DiagramEmbedAssetStore({projects}),snapshotFor:grant=>projects.readProject(grant.projectId),workingState:grant=>workingDocs?.isWorking(grant)===true,
+ show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Diagram source window unavailable');view.webContents.send('siren:view-ready');view.show();},
+ renderIdentityFor:async scope=>{
+  const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(build.diagramVector?.embedSupported!==true)throw Object.assign(Error('DIAGRAM_EMBED_RENDER_UNAVAILABLE'),{code:'DIAGRAM_EMBED_RENDER_UNAVAILABLE'});
+  const renderAppearance=await nativeRenderAppearance(scope);if(!scope.isCurrent())throw Error('Diagram embed retired');
+  return {key:digest(Buffer.from(JSON.stringify({entrySha256:build.diagramVector.entrySha256,renderAppearance}))),build,renderAppearance};
+ },
+ render:async(capture,selection,scope)=>{
+  const {build,renderAppearance}=scope.renderIdentity;
+  const result=await renderDiagramEmbed({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector.entrySha256,input:{diagram:capture,renderAppearance},scope});return {bytes:Buffer.from(result.svg),kind:'svg',rendererVersion:result.rendererVersion,styleHash:result.styleHash};
+ },
+});
+const docsDiagramRefresh=new DocsDiagramRefresh({owner:workspaceOwner,diagrams:docsDiagrams,workingState:{
+ isBlocked:(projectId,documentId)=>workingDocs?.canRefresh(projectId,documentId)===false,
+ onPending:ref=>{for(const record of windowRegistry.listViews()){if(record.role!=='docs'||record.projectId!==ref.projectId||record.entityId!==ref.documentId)continue;const view=nativeShells.get(record.windowId),grant=view&&windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant&&workspaceOwner.canReadDomain(grant,'docs',ref.documentId))windowRegistry.eventFor(grant)?.sender.send('siren:docs-diagram-pending',{documentId:ref.documentId,diagramId:ref.diagramId,reason:ref.reason});}},
+}});
+requestDocsDiagramScan=()=>{if(workingEnabled({projectId:selectedId})&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier)void docsDiagramRefresh.rescanProject(selectedId);};
+workspaceOwner.observeDomainSaves(ref=>{
+ if(ref.domain!=='docs'||ref.receipt?.ok!==true)return;
+ for(const record of windowRegistry.listViews()){if(record.role!=='docs'||record.projectId!==ref.projectId||record.entityId!==ref.entityId)continue;const view=nativeShells.get(record.windowId),grant=view&&windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant&&!workingDocs?.isWorking(grant)&&workspaceOwner.canReadDomain(grant,'docs',ref.entityId))windowRegistry.eventFor(grant)?.sender.send('siren:working-docs-changed',{documentId:ref.entityId,version:ref.receipt.version,projectRevision:ref.receipt.projectRevision});}
+});
 const presenterExports=new NativePresenterExports({registry:windowRegistry,sessionFor:()=>presentationSession,projects,reveal:path=>shell.showItemInFolder(path)});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
@@ -587,8 +621,9 @@ const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:worksp
 let workspaceBarrier=null;
 const rollbackNativePreparation=async()=>{
   if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();docsExports.resume();presenterExports.resume();
+  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();docsExports.resume();docsDiagrams.resume();docsDiagramRefresh.resume();presenterExports.resume();
   for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
+  requestDocsDiagramScan();
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   legacyExportEpoch++;
@@ -604,12 +639,12 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   const capturedPresentation=presentationSession;
   const capturedAnalysis=sourceAnalysis;
   const barrierOwner={
-   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();docsExports.pause();presenterExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();docsExports.resume();presenterExports.resume();},
-   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();await docsExports.drain();await presenterExports.drain();return sourceDrain;},
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();docsExports.pause();docsDiagrams.pause();void docsDiagramRefresh.pause();presenterExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();docsExports.resume();docsDiagrams.resume();docsDiagramRefresh.resume();presenterExports.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();await docsExports.drain();await docsDiagrams.drain();await docsDiagramRefresh.drain();await presenterExports.drain();return sourceDrain;},
    reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
    reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
-   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle()||!docsExports.isIdle()||!presenterExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
-   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&docsExports.isIdle()&&presenterExports.isIdle()&&workspaceOwner.isQuiescent(proof),
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle()||!docsExports.isIdle()||!docsDiagrams.isIdle()||!docsDiagramRefresh.isIdle()||!presenterExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&docsExports.isIdle()&&docsDiagrams.isIdle()&&docsDiagramRefresh.isIdle()&&presenterExports.isIdle()&&workspaceOwner.isQuiescent(proof),
    isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
   };
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
@@ -640,6 +675,8 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
 const retireNativeViews = async () => {
   diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
   docsExports.pause();if(!docsExports.isIdle())throw Object.assign(Error('Docs export not drained'),{code:'DOCS_EXPORT_NOT_IDLE'});docsExports.resume();
+  docsDiagrams.pause();if(!docsDiagrams.isIdle())throw Object.assign(Error('Docs diagram work not drained'),{code:'DOCS_DIAGRAM_NOT_IDLE'});docsDiagrams.resume();
+  await docsDiagramRefresh.pause();if(!docsDiagramRefresh.isIdle())throw Object.assign(Error('Docs refresh not drained'),{code:'DOCS_DIAGRAM_REFRESH_NOT_IDLE'});docsDiagramRefresh.resume();
   presenterExports.pause();if(!presenterExports.isIdle())throw Object.assign(Error('Presenter export not drained'),{code:'PRESENTER_EXPORT_NOT_IDLE'});presenterExports.resume();
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
@@ -1004,7 +1041,7 @@ ipcMain.handle('siren:docs-editors',async(event,method,payload,flushNonce)=>{
         opened=await windowRegistry.openView({role:'docs',entityId:grant.entityIds[0]});if(!canOpenWorkingDocs(grant))throw Error('Document access retired');
         const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
         if(method==='openWorkingCopy'){
-          workingDocs??=new NativeDocsEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onReferenceChanged:(own,ref)=>{if(workingDocs?.isWorking(own)&&workspaceOwner.canReadDomain(own,'docs',ref.documentId))windowRegistry.eventFor(own)?.sender.send('siren:working-docs-changed',ref);}});
+          workingDocs??=new NativeDocsEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onSettled:async ref=>{docsDiagramRefresh.onDocumentSettled(ref);await docsDiagramRefresh.drain();},onReferenceChanged:(own,ref)=>{if(workingDocs?.isWorking(own)&&workspaceOwner.canReadDomain(own,'docs',ref.documentId))windowRegistry.eventFor(own)?.sender.send('siren:working-docs-changed',ref);}});
           const admitted=await workingDocs.admit(fresh);if(!admitted.ok||!canOpenWorkingDocs(grant)||!workingDocs.isWorking(fresh))throw Error('Working document refused');
         }
         view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
@@ -1024,6 +1061,10 @@ ipcMain.handle('siren:docs-sources',async(event,method,payload,flushNonce)=>{
 });
 ipcMain.handle('siren:docs-references',async(event,method,payload,flushNonce)=>{
  const operation=docsReferences.invoke({event,method,payload,flushNonce});writes.add(operation);
+ try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:docs-diagrams',async(event,method,payload,flushNonce)=>{
+ const operation=docsDiagrams.invoke({event,method,payload,flushNonce});writes.add(operation);
  try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
@@ -1114,7 +1155,7 @@ async function nativeRenderAppearance(scope){
  if(!preference.ok&&preference.code!=='INVALID_APPEARANCE')throw Error('Appearance unavailable');
  return nativeAppearanceContract.resolve(preference.ok?preference.theme:'system',nativeTheme.shouldUseDarkColors);
 }
-ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,payload,store:appearanceStore,
+ipcMain.handle('siren:shell',async(event,method,payload)=>{const result=await invokeShell({event,method,payload,store:appearanceStore,
  context:()=>({projectName:snapshot?.project?.label||'Local workspace'}),
  capture:own=>{
   if(!localPin.state().unlocked||pinTransition||accountTransition||writes.selectionTransition||workspaceBarrier||nativeShellFailure)return null;
@@ -1136,7 +1177,8 @@ ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,p
   if(surface!=='home')window.webContents.send('siren:shell-module',surface);
   return {ok:true};
  },
-}));
+});if(method==='setAppearance'&&result?.ok===true)requestDocsDiagramScan();return result;});
+nativeTheme.on('updated',()=>requestDocsDiagramScan());
 window.on('resize',()=>windowRegistry.resizeAttached());
 const presentationIPC=new NativePresentationIPC({registry:windowRegistry,sessionFor:()=>presentationSession,
  displays:()=>screen.getAllDisplays().slice(0,32).map((display,index)=>({id:String(display.id),label:typeof display.label==='string'&&display.label?display.label.slice(0,160):`Display ${index+1} · ${display.size.width} × ${display.size.height}`})),
@@ -1208,5 +1250,6 @@ window.on('close', event => {
     dialog.showErrorBox('SIREN — Close delayed', 'Save/recovery did not complete. Export live work before forcing close.');
   });
 });
+requestDocsDiagramScan();
 app.on('window-all-closed', () => app.quit());
 }).catch(() => { dialog.showErrorBox('SIREN startup failed', 'The prototype could not start. Existing project files were retained.'); app.exit(1); });

@@ -274,7 +274,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   const importValidation=expectedSha256.toLowerCase()===BASELINE_SHA256?await buildImportValidation({baselinePath,outputDir}):null;
   const presentationRender=await buildPresentationRender({outputDir});
   const diagramVector=await buildDiagramVector({outputDir});
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},diagramVector:{entrySha256:diagramVector.entrySha256},sourceAnalysis:{entrySha256:analysisBuild.sha256,bytes:analysisBuild.bytes,pythonModuleSha256:analysisBuild.pythonModuleSha256},...(importValidation?{importValidation}:{}) };
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},diagramVector:{entrySha256:diagramVector.entrySha256,embedSupported:diagramVector.embedSupported},sourceAnalysis:{entrySha256:analysisBuild.sha256,bytes:analysisBuild.bytes,pythonModuleSha256:analysisBuild.pythonModuleSha256},...(importValidation?{importValidation}:{}) };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }

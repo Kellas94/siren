@@ -23,12 +23,29 @@
   const slide=state.deck.slides.find(item=>item.id===state.slideId);document.getElementById('presenterNotes').textContent=slide?.notes||'No presenter notes for this slide.';document.getElementById('position').textContent=(state.deck.slides.indexOf(slide)+1)+' / '+state.deck.slides.length;
   controls();
  };
+ const reconcile=async(turn,owner,deck,code)=>{
+  const current=()=>!covered&&turn===serial&&grant===owner&&state?.deck.deckId===deck.deckId&&state.deck.version===deck.version;
+  const unverified=()=>{if(current())status.textContent='The current slide could not be verified. Audience delivery is uncertain and views may differ.';};
+  try{
+   const actual=await bridge.getPresenter();if(!current())return;
+   if(actual?.ok!==true||actual.deck?.deckId!==deck.deckId||actual.deck.version!==deck.version||!Number.isSafeInteger(actual.sequence)||actual.sequence<last||!actual.deck.slides?.some(slide=>slide.id===actual.slideId)){unverified();return;}
+   sequence=Math.max(sequence,actual.sequence);
+   const preview=await bridge.getPreview();if(!current())return;const value=preview?.frame;
+   // Main commits before sending to Audiences. Adopt only a single matching
+   // authoritative position/frame; a send refusal cannot roll delivery back.
+   if(preview?.ok!==true||!value||value.epoch!==owner.epoch||value.deckVersion!==actual.deck.version||value.slideId!==actual.slideId||value.sequence!==actual.sequence){unverified();return;}
+   const alreadyShown=value.sequence===last&&document.body.dataset.publicReady==='true'&&document.body.dataset.slideId===value.slideId&&document.body.dataset.deckVersion===value.deckVersion;
+   const shown=alreadyShown||await frame(value);if(!current())return;if(!shown){unverified();return;}
+   state=actual;paint();
+   status.textContent=code==='PRESENTATION_SEND_FAILED'?'Presenter follows the current slide. Some Audience views were not updated and may show an earlier slide.':'Presenter follows the current slide. Audience delivery could not be confirmed; views may differ.';
+  }catch{unverified();}
+ };
  const navigate=async id=>{
-  if(covered||busy||!state)return;busy=true;controls();status.textContent='Preparing slide…';const turn=serial;
+  if(covered||busy||!state)return;busy=true;controls();status.textContent='Preparing slide…';const turn=serial,owner=grant,deck=state.deck;let failed=false;
   try{const result=await bridge.navigate({deckVersion:state.deck.version,sequence:++sequence,slideId:id});if(covered||turn!==serial)return;
-   if(!result?.ok){status.textContent='This slide could not be rendered. The last public slide and your saved deck are retained.';return;}
-   state={...state,slideId:result.slideId};paint();const preview=await bridge.getPreview();if(preview?.ok)await frame(preview.frame);if(!covered&&turn===serial)status.textContent='Presenting · Saved deck version';
-  }catch{if(!covered&&turn===serial)status.textContent='Presentation unavailable. Your saved deck is retained.';}finally{if(turn===serial){busy=false;controls();flushAppearance();}}
+   if(!result?.ok){failed=true;await reconcile(turn,owner,deck,result?.code);return;}
+   state={...state,slideId:result.slideId};paint();const preview=await bridge.getPreview();if(covered||turn!==serial)return;if(preview?.ok)await frame(preview.frame);if(!covered&&turn===serial)status.textContent='Presenting · Saved deck version';
+  }catch{failed=true;if(!covered&&turn===serial)await reconcile(turn,owner,deck,'PRESENTATION_DELIVERY_UNCERTAIN');}finally{if(turn===serial){busy=false;controls();if(failed)pendingAppearance=false;else flushAppearance();}}
  };
  const connect=()=>connecting??=(async()=>{
   const turn=serial,view=await window.sirenWindow.getView();if(covered||turn!==serial||!view?.ok||view.view.role!==role)return;grant=view.view;document.body.dataset.connected='true';

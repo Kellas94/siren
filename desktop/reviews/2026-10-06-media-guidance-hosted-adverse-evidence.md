@@ -1,5 +1,0 @@
-# Media/Home correction: original hosted FAILURE
-
-Owner /root. Actual GitHub run 37519020850 completed FAILURE on 6b3b2d7695130e9251726e90393d31d63e6637f5; integration 8dd354d9c6b4efb0325791f5e4b00f65b90f9631, tree b6fee332232e8a2a6b6c3ac5496b56083a57ad22. Original logs show 1138 unit tests and native groups 20/20/20 passed with unchanged captured inputs. The copied-package job failed at its first pending Guided Save, before Build actions: two earlier cases completed, label applied, dirty=true/version=1, no Save error. All five original ZIPs match GitHub SHA256 values; logs, screenshots and exact outcomes are retained. No failure is relabeled.
-
-Three local probes of the unchanged package passed the original Save/CAS path, including 300k lines and controlled 8x CPU slowdown. A separate real event trace proves Guided blur steals focus back from Save; new unit/native focus assertions fail on the old product. That is a justified focused correction, not proof of the hosted timeout mechanism. New candidate qualification must remain distinct. No merge/release/installed replacement. See the companion receipt for original evidence paths and digests.

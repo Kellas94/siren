@@ -1,8 +1,13 @@
 (() => {
  'use strict';
  const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
- let generation=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null,sourceOpening=null,savedContext=null,blockReveal=null;const media=matchMedia('(prefers-color-scheme: dark)');
+ let generation=0,openActionLifetime=0,openAction=null,draftChangeRevision=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,refreshTimer=null,sourceOpening=null,savedContext=null,blockReveal=null;const media=matchMedia('(prefers-color-scheme: dark)');
  const working=document.getElementById('openWorkingDocument'),save=document.getElementById('saveDocument'),notice=document.getElementById('documentChangesNotice'),noticeMessage=document.getElementById('documentChangesMessage');
+ const diagramView=window.createDiagramEmbedView?.({api:window.sirenDocsDiagrams,getContext:()=>({...draft?.getStatus(),readonly,blocks:draft?.getContent().blocks??[]}),onStatus:text=>status.textContent=text,onChanged:result=>{
+  if(paused||disposed||!draft)return;const state=draft.getStatus();if(state.dirty||state.pending||state.fenced){latest={documentId:state.documentId,version:result.version,projectRevision:result.projectRevision};notice.hidden=false;noticeMessage.textContent='The diagram was saved. Your local document edits are retained; review the latest document before saving.';return;}
+  const scroll=content.scrollTop,active=document.activeElement,action=active?.dataset.embedAction,embedId=active?.dataset.embedId;
+  void connect().then(ok=>{if(!ok||paused||disposed)return;content.scrollTop=scroll;if(action&&embedId)Array.from(content.querySelectorAll('[data-embed-action]')).find(n=>n.dataset.embedAction===action&&n.dataset.embedId===embedId)?.focus({preventScroll:true});});
+ }});
  const exportView=window.SirenNativeDocsExportView.create({button:document.getElementById('exportDocument'),revealButton:document.getElementById('revealDocumentExport'),getContext:()=>draft?.getStatus(),isReady:()=>!paused&&!disposed&&!pending&&!draft?.getStatus().pending&&document.body.dataset.documentReady==='true',onStatus:text=>status.textContent=text,bridge:window.sirenDocsExport});
  const activity=window.SirenNativeDocsActivity.create({host:document.getElementById('documentActivityPanel'),button:document.getElementById('documentActivity'),enabled:()=>!paused&&!disposed&&!pending&&!!draft&&!draft.getStatus().pending,onStatus:text=>status.textContent=text,
   onJump:id=>{if(paused||disposed||pending||draft?.getStatus().pending)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};return blockReveal?.reveal(id)??{ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};},
@@ -17,7 +22,7 @@
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
  const appearance=()=>{document.documentElement.style.colorScheme=theme.value==='system'?(media.matches?'dark':'light'):theme.value;};
- const clear=()=>{blockReveal=null;window.SirenNativeViewIdentity.clear('docs');content.replaceChildren();outline.replaceChildren();document.body.dataset.documentReady='false';for(const key of ['documentId','documentVersion','documentSha256'])delete document.body.dataset[key];};
+ const clear=()=>{diagramView?.clear();blockReveal=null;window.SirenNativeViewIdentity.clear('docs');content.replaceChildren();outline.replaceChildren();document.body.dataset.documentReady='false';for(const key of ['documentId','documentVersion','documentSha256'])delete document.body.dataset[key];};
  function text(parent,value){
   const block=make('div',parent);block.className='document-text';let end=0;const span=make('span',block),more=make('button',block,'Show more');more.type='button';
   const extend=()=>{const next=Math.min(end+24576,value.length);span.append(document.createTextNode(value.slice(end,next)));end=next;more.hidden=end===value.length;};
@@ -41,7 +46,7 @@
   clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
   make('p',content,readonly?'Document · Read only':'Working document · Edit sections and linked-code context. Save when ready.').className='document-caption';
   if(!readonly)paintEditor(focusBlock,focusContext);
-  else blockReveal=window.SirenNativeDocsReader.render({parent:content,outline,blocks:value.blocks});
+  else blockReveal=window.SirenNativeDocsReader.render({parent:content,outline,blocks:value.blocks,diagramView});
   paintSources(value);
   const entries=Object.entries(value).filter(([key,item])=>!(readonly?['id','title']:['id','title','blocks']).includes(key)&&
     !(key==='agent'&&item===null||key==='releases'&&Array.isArray(item)&&item.length===0));let end=0,section=0;
@@ -111,7 +116,7 @@
   exportView.update();
   activity.updateState({dirty:state.dirty});
   contextButton.disabled=paused||state.pending||state.paused||state.fenced||state.disposed;if(paused||state.paused||state.disposed)window.SirenDocsContext.close();
-  if(!paused){const name=draft.getDocument().title;window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
+  if(!paused){const name=draft.getDocument().title;heading.textContent=name||'Docs';window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
   if(!paused&&!state.disposed){document.body.dataset.documentReady='true';document.body.dataset.documentId=state.documentId;}
   const historyNotice=content.querySelector('[data-document-history-limit]');if(historyNotice)historyNotice.hidden=!state.historyLimited;
   save.hidden=readonly;save.disabled=state.pending||state.paused||state.fenced||!state.dirty;
@@ -141,6 +146,8 @@
      input.addEventListener('input',()=>{const next=draft.getContent();next.blocks[index]={...next.blocks[index],...(editableHeading?{text:input.value}:{html:'<p>'+escapeText(input.value)+'</p>'})};draft.setContent(next,{historyGroup:'block:'+block.id});});
      const remove=make('button',card,'Remove block…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>{if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=draft.getContent();next.blocks.splice(index,1);draft.setContent(next);paint(draft.getDocument());updateState();});
      if(!editableHeading&&window.SirenNativeDocsRichText.editable(block)){const format=make('button',card,'Format text');format.type='button';format.className='document-edit';format.dataset.openRich=block.id;format.addEventListener('click',()=>{const state=owner.getStatus();if(!format.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;if(!window.SirenNativeDocsRichText.editable(owner.getContent().blocks[index])){status.textContent='This text is too large for inline formatting. It remains editable as plain text.';return;}label.remove();format.remove();window.SirenNativeDocsRichText.render({parent:card,draft:owner,index,canEdit,onRejected:message=>{status.textContent=message||'Text edit refused. Previous content retained.';}}).focus();updateState();});}
+    }else if(block?.kind==='diagram-embed'&&diagramView){
+     card.append(diagramView.render(block));const remove=make('button',card,'Remove diagram…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>removeBlock(index,block.id));
     }else if(block?.kind==='image'&&typeof block.id==='string'){
      window.SirenNativeDocsImages.renderEditor({parent:card,draft:owner,index,canEdit,onRejected:message=>{status.textContent=message;},onRemove:()=>removeBlock(index,block.id)});field(card,'Preserved fields',block,0);
     }else if(window.SirenNativeDocsRichText.editable(block)){
@@ -165,6 +172,7 @@
   };more.addEventListener('click',renderBlocks);renderBlocks();
   blockReveal=Object.freeze({reveal(id){if(draft!==owner||disposed||paused||pending||owner.getStatus().pending||!holder.isConnected)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};const result=window.SirenDocumentActivity.locate(owner.getContent().blocks,id);if(!result.ok)return result;if(result.index>=rendered)renderBlocks(result.index);const card=cards.get(result.index);if(!card)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};card.tabIndex=-1;card.scrollIntoView({block:'center'});card.focus({preventScroll:true});return {ok:true,index:result.index};}});
   const actions=make('div',section);actions.className='document-block-actions';
+  if(diagramView){const insert=make('button',actions,'Insert diagram…');insert.type='button';insert.className='document-edit';insert.addEventListener('click',()=>{if(canEdit())diagramView.insert({afterBlockId:owner.getContent().blocks[Math.min(rendered,owner.getContent().blocks.length)-1]?.id??null});});}
   for(const [kind,title]of [['heading','Add heading'],['text','Add text'],['image','Add image']]){const button=make('button',actions,title);button.type='button';button.className='document-edit';button.addEventListener('click',()=>{const next=draft.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,kind==='heading'?{id:crypto.randomUUID(),kind,level:2,text:''}:kind==='image'?{id:crypto.randomUUID(),kind,dataUri:'',caption:'',fileName:''}:{id:crypto.randomUUID(),kind,html:'<p></p>'});draft.setContent(next);paint(draft.getDocument(),at);updateState();content.querySelector('textarea[data-block-index="'+at+'"]')?.focus();});}
   const add=make('details',actions);add.className='document-add-section';make('summary',add,'Add section…');
   for(const [kind,title]of Object.entries(window.SirenStructuredDocs.names)){const button=make('button',add,title);button.type='button';button.className='document-edit';button.dataset.addStructured=kind;button.addEventListener('click',()=>{const state=owner.getStatus();if(!button.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;const next=owner.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,window.SirenStructuredDocs.createBlock(kind));owner.setContent(next);paint(owner.getDocument(),at);updateState();});}
@@ -180,27 +188,33 @@
   if(next&&textSelection){if(next.tagName==='TEXTAREA')next.setSelectionRange(Math.min(textSelection.start,next.value.length),Math.min(textSelection.end,next.value.length));else{const texts=[],walker=document.createTreeWalker(next,4);for(let node=walker.nextNode();node;node=walker.nextNode())texts.push(node);const point=offset=>{for(const node of texts){if(offset<=node.length)return [node,offset];offset-=node.length;}const last=texts.at(-1);return last?[last,last.length]:[next,0];};const range=document.createRange();range.setStart(...point(textSelection.start));range.setEnd(...point(textSelection.end));selection.removeAllRanges();selection.addRange(range);}}
  }
  async function readDocument(){
-  if(disposed)return false;exportView.reset();activity.invalidate();const token=++generation;retry.hidden=true;status.textContent='Opening selected document…';appearance();
+  if(disposed)return false;openActionLifetime++;exportView.reset();activity.invalidate();const token=++generation,previousDraft=draft,previousChangeRevision=draftChangeRevision;let changedDuringRead=false;retry.hidden=true;status.textContent='Opening selected document…';appearance();
   try{
    const result=await window.sirenDocsRead.getDocument();if(disposed||paused||token!==generation)return false;
    if(result?.ok!==true||typeof result.readonly!=='boolean')throw Error('Document unavailable');
-   const own=window.SirenNativeDocsDraft.create({context:result,bridge:{...window.sirenDocsEdit,getDocument:window.sirenDocsRead.getDocument},onChange:updateState});draft?.dispose();draft=own;readonly=result.readonly;paint(result.document);
+   // Refresh must not discard edits, history or a Save that changed the retained
+   // draft while the read was awaiting its reply, even if its text now matches.
+   if(draft!==previousDraft||draftChangeRevision!==previousChangeRevision||draft?.getStatus().pending){changedDuringRead=true;throw Error('Document changed during Refresh');}
+   if(draft&&!draft.getStatus().dirty&&!draft.getStatus().fenced&&readonly===result.readonly&&typeof draft.adoptSaved==='function'){const adopted=await draft.adoptSaved(result);if(!adopted.ok||disposed||paused||token!==generation){changedDuringRead=true;throw Error('Document changed during Refresh');}}
+   else{const own=window.SirenNativeDocsDraft.create({context:result,bridge:{...window.sirenDocsEdit,getDocument:window.sirenDocsRead.getDocument},onChange:()=>{draftChangeRevision++;updateState();}});draft?.dispose();draft=own;}
+   readonly=result.readonly;paint(result.document);
    status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':'Document saved · Edit this working copy and save explicitly';
    working.hidden=!readonly||result.canEdit!==true;save.hidden=readonly;notice.hidden=true;latest=null;
    document.body.dataset.documentReady='true';document.body.dataset.documentId=result.document.id;document.body.dataset.documentVersion=result.version;document.body.dataset.documentSha256=result.sha256;
    document.body.dataset.documentReadonly=String(readonly);document.body.dataset.documentDirty='false';admitActivity(result.document);updateState();
    retry.hidden=false;retry.textContent='Refresh';return true;
-  }catch{if(!disposed&&token===generation){if(!draft){clear();heading.textContent='Docs';}else if(savedContext)activity.setContext({...savedContext,dirty:draft.getStatus().dirty});status.textContent='Document could not be opened. Existing project data and local changes were retained.';retry.hidden=false;retry.textContent='Retry';}return false;}
+  }catch{if(!disposed&&token===generation){if(!draft){clear();heading.textContent='Docs';}else if(savedContext)activity.setContext({...savedContext,dirty:draft.getStatus().dirty});status.textContent=changedDuringRead?'The document changed while refreshing. Your local work was retained. Refresh again when ready.':'Document could not be opened. Existing project data and local changes were retained.';retry.hidden=false;retry.textContent=changedDuringRead?'Refresh':'Retry';}return false;}
  }
  function connect(){
   if(paused||disposed)return Promise.resolve(false);
-  const own=readDocument();pending=own;own.finally(()=>{if(pending===own)pending=null;exportView.update();if(!disposed)activity.updateState({dirty:draft?.getStatus().dirty===true});});return own;
+  const own=readDocument();pending=own;own.then(ok=>{if(pending===own)pending=null;exportView.update();if(!disposed)activity.updateState({dirty:draft?.getStatus().dirty===true});if(ok&&!paused&&!disposed)void diagramView?.offerProposal();});return own;
  }
  window.sirenViewControl.onPrepare(async()=>{
   window.SirenHelpWorkspace?.cover();
-  paused=true;activity.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
+  paused=true;openActionLifetime++;activity.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
   window.SirenNativeViewIdentity.clear('docs');
   await exportView.pause();
+  await diagramView?.pause();
   if(pending)await pending;
   if(sourceOpening)await sourceOpening;
   if(draft&&!readonly){const result=await draft.flushView();return {ok:result.ok===true,...(result.ok!==true?{code:result.code}:{})};}
@@ -208,16 +222,27 @@
  });
  window.sirenViewControl.onResume(()=>{
   if(disposed||!paused)return;
-  paused=false;draft?.resumeView();if(draft&&!readonly)paint(draft.getDocument());refreshActivitySaved(true);activity.resume();exportView.resume();updateState();document.body.inert=false;document.documentElement.style.visibility='';
+  paused=false;draft?.resumeView();diagramView?.resume();if(draft)paint(draft.getDocument());refreshActivitySaved(true);activity.resume();exportView.resume();updateState();document.body.inert=false;document.documentElement.style.visibility='';
  });
  const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
- const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const context=window.SirenHelpWorkspace?.capture(),owner=draft,result=await owner.save();if(disposed||draft!==owner||context&&!window.SirenHelpWorkspace?.isCurrent(context))return;if(result.ok)refreshActivitySaved();updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';window.SirenHelpWorkspace?.explain(status,{namespace:'docs',operation:'save',code:result.code},context);}else delete document.body.dataset.documentSaveError;};
- const openCopy=async method=>{if(paused||disposed)return;const result=await window.sirenDocsEdit[method]();if(!result?.ok)status.textContent='The document window could not be opened. Existing work was retained.';};
+ const saveCurrent=async()=>{if(paused||disposed||readonly||!draft)return;const context=window.SirenHelpWorkspace?.capture(),owner=draft,result=await owner.save();if(disposed||draft!==owner||context&&!window.SirenHelpWorkspace?.isCurrent(context))return;if(result.ok)refreshActivitySaved();updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';window.SirenHelpWorkspace?.explain(status,{namespace:'docs',operation:'save',code:result.code},context);}else{delete document.body.dataset.documentSaveError;refreshWhenSettled();}};
+ const openCopy=async method=>{
+  if(paused||disposed||pending||openAction||!draft)return;
+  const own={lifetime:openActionLifetime,generation,document:draft};openAction=own;
+  const current=()=>!paused&&!disposed&&own.lifetime===openActionLifetime&&own.generation===generation&&own.document===draft;
+  try{const result=await window.sirenDocsEdit[method]();if(current()&&!result?.ok)status.textContent='The document window could not be opened. Existing work was retained.';}
+  catch{if(current())status.textContent='The document window could not be opened. Existing work was retained.';}
+  // Cover/Refresh retires the result, while this guard still retains the actual
+  // outstanding action. A late finally must never release a newer owner.
+  finally{if(openAction===own)openAction=null;}
+ };
  working.addEventListener('click',()=>{void openCopy('openWorkingCopy');});save.addEventListener('click',()=>{void saveCurrent();});
  document.getElementById('reviewLatestDocument').addEventListener('click',()=>{void openCopy('openLatest');});document.getElementById('replaceLatestDocument').addEventListener('click',replace);
- const off=window.sirenDocsEdit.onReferenceChanged(ref=>{if(disposed||paused||readonly||ref.documentId!==draft?.getStatus().documentId||ref.version===draft.getStatus().version||ref.projectRevision<=(latest?.projectRevision??draft.getStatus().projectRevision))return;latest=ref;notice.hidden=false;noticeMessage.textContent='The document changed in another window. Your local changes are retained.';if(!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=null;if(!paused&&!disposed&&!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced)void connect();},250);}});
+ function refreshWhenSettled(){if(!latest||!draft||latest.version===draft.getStatus().version||draft.getStatus().dirty||draft.getStatus().pending||draft.getStatus().fenced)return;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=null;if(!paused&&!disposed&&!pending&&!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced)void connect();},250);}
+ const offPending=window.sirenDocsDiagramEvents?.onPending(ref=>{if(disposed||paused||ref.documentId!==draft?.getStatus().documentId)return;notice.hidden=false;noticeMessage.textContent='Diagram update pending · Save when ready. Close other working copies if the update remains pending.';})??(()=>{});
+ const off=window.sirenDocsEdit.onReferenceChanged(ref=>{if(disposed||paused||ref.documentId!==draft?.getStatus().documentId||ref.version===draft.getStatus().version||ref.projectRevision<=(latest?.projectRevision??draft.getStatus().projectRevision))return;latest=ref;notice.hidden=false;noticeMessage.textContent='The document changed in another window. Your local changes are retained.';refreshWhenSettled();});
  theme.addEventListener('change',appearance);media.addEventListener('change',appearance);retry.addEventListener('click',replace);
  window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.isComposing&&!readonly){const key=event.key.toLowerCase();if(key==='s'&&!event.shiftKey){event.preventDefault();if(!event.repeat)void saveCurrent();}else if(content.contains(document.activeElement)&&(key==='z'||key==='y'&&!event.shiftKey)){event.preventDefault();if(!event.repeat)historyAction(key==='y'||event.shiftKey?'redo':'undo');}}});
- window.addEventListener('beforeunload',()=>{disposed=true;generation++;activity.dispose();savedContext=null;exportView.dispose();off();clearTimeout(refreshTimer);draft?.dispose();clear();media.removeEventListener('change',appearance);},{once:true});
+ window.addEventListener('beforeunload',()=>{disposed=true;generation++;openActionLifetime++;activity.dispose();savedContext=null;exportView.dispose();diagramView?.dispose();off();offPending();clearTimeout(refreshTimer);draft?.dispose();clear();media.removeEventListener('change',appearance);},{once:true});
  window.sirenNativeDocsView=Object.freeze({connect});
 })();

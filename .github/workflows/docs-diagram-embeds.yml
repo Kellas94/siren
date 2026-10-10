@@ -1,0 +1,64 @@
+name: Docs diagram embeds bounded native probe
+on:
+  push:
+    branches: ['probe/docs-diagram-embeds-20261010']
+    paths:
+      - '.github/workflows/docs-diagram-embeds.yml'
+      - 'desktop/tests/native/docs-diagram-embeds*'
+permissions:
+  contents: read
+concurrency:
+  group: docs-diagram-embeds-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/docs-diagram-embeds-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 12
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Verify exact allowlisted source bytes
+        run: |
+          node tests/native/docs-diagram-embeds-preflight.mjs
+          exit $LASTEXITCODE
+      - name: Locked dependencies without automatic install scripts
+        run: |
+          npm ci --ignore-scripts --no-fund --no-update-notifier
+          exit $LASTEXITCODE
+      - name: Install locked Electron runtime on disposable host
+        run: |
+          npm run runtime:install
+          exit $LASTEXITCODE
+      - name: Build guarded renderer and fixed process reader on disposable host
+        run: |
+          node build/renderer.mjs baseline/R78.html generated
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/build-process-reader.mjs
+          exit $LASTEXITCODE
+      - name: Actual native flow insertion, versions and offline export
+        run: |
+          node tests/native/docs-diagram-embeds.mjs
+          exit $LASTEXITCODE
+      - name: Preserve original adverse results and screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: docs-diagram-embeds-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            desktop/evidence/docs-diagram-embeds-preflight.json
+            desktop/evidence/docs-diagram-embeds-native/**
+            desktop/generated/build.json
+            desktop/native/generated/process-identity.json
+            desktop/tests/native/docs-diagram-embeds-inputs.json
+          if-no-files-found: warn
+          retention-days: 7

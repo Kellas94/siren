@@ -4,6 +4,7 @@ import { validId, childDirectory } from '../projects/paths.mjs';
 import { digest, exclusiveWriter } from '../projects/atomic.mjs';
 import { readOwnedBytes } from '../projects/io.mjs';
 import { MAX_WORKSPACE_BYTES, MAX_SERIALIZED_WORKSPACE_BYTES } from '../projects/budgets.mjs';
+import { validateDiagramEmbedWorkspace } from '../documents/diagram-embeds.mjs';
 
 const hash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -44,6 +45,7 @@ function verifyRef(ref) {
 
 function verifyMetadata(metadata, sourceRefs) {
   if (!record(metadata)) throw error('INVALID_MANIFEST_METADATA');
+  validateDiagramEmbedWorkspace(metadata);
   const references = new Set(sourceRefs.map(sourceReferenceKey));
   let visited = 0;
   const pointer = value => {

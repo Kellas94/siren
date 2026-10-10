@@ -1,6 +1,6 @@
 import { Compartment } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
-import { history, defaultKeymap, historyKeymap, indentWithTab, undo, redo } from '@codemirror/commands';
+import { defaultKeymap, indentWithTab } from '@codemirror/commands';
 import { search, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, languageDataProp, indentUnit, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { pythonLanguage, python } from '@codemirror/lang-python';
@@ -10,6 +10,7 @@ import { createCodeViewLifecycle } from './view-lifecycle.js';
 import { readonlySelectionGuard } from './selection-guard.js';
 import { createCodeCommands } from './commands.js';
 import { preserveMultilineInput } from './multiline-input.js';
+import { sourceUndo, sourceRedo, sourceHistoryKeymap, sourceHistoryInput } from './source-newlines.js';
 
 function pythonSupport(parser) {
   if (!parser || typeof parser.configure !== 'function') throw new TypeError('PATCHED_PYTHON_REQUIRED');
@@ -59,11 +60,11 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     Object.assign(item.style, { font: '13px system-ui', border: '1px solid #78859a55', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: 'inherit', background: 'transparent' });
     handlers[name]=action;item.addEventListener('click', () => { if(view)commands.run(name); }); buttons.set(name, item); toolbar.append(item); return item;
   }
-  const adapter = createEditorAdapter({ client, readonly, committedOperationId, extensions: [lineNumbers(), drawSelection(), history(), search({ top: true }),
-    EditorView.domEventHandlers({beforeinput:preserveMultilineInput}),
+  const adapter = createEditorAdapter({ client, readonly, committedOperationId, extensions: [lineNumbers(), drawSelection(), search({ top: true }),
+    EditorView.domEventHandlers({beforeinput:(event, target)=>sourceHistoryInput(event,target)||preserveMultilineInput(event,target)}),
     readonlySelectionGuard({readonly,isFocused:()=>Boolean(view?.contentDOM.contains(document.activeElement))}),
     indentUnit.of('    '), ...(syntaxLanguage==='python'?[pythonSupport(pythonParser)]:[]), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),EditorView.contentAttributes.of({tabindex:'0'}),
-    keymap.of([{ key: 'Mod-s', run: () => { commands.run('save'); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
+    keymap.of([{ key: 'Mod-s', run: () => { commands.run('save'); return true; } }, ...sourceHistoryKeymap, ...defaultKeymap, ...searchKeymap, indentWithTab])
   ] });
   const commands=createCodeCommands({stateFor:adapter.getStatus,isDisposed:()=>disposed||!view,handlers});
   // Search panels live outside CM's contentDOM. Its editor input handlers do
@@ -73,7 +74,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     if (event.target.closest?.('.cm-search')) event.target.dispatchEvent(new document.defaultView.Event('change', { bubbles: true }));
   };
   root.addEventListener('input', onSearchInput);
-  button('undo', 'Undo', () => undo(view)); button('redo', 'Redo', () => redo(view));
+  button('undo', 'Undo', () => sourceUndo(view)); button('redo', 'Redo', () => sourceRedo(view));
   button('find', 'Find', () => openSearchPanel(view));
   const wrappingButton = button('wrap', 'Wrap', () => {
     wrapping = !wrapping; wrappingButton.setAttribute('aria-pressed', String(wrapping));
@@ -132,8 +133,9 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   }
   async function flush() { const receipt = await adapter.flush(); refresh(); return receipt; }
   const lifecycle = createCodeViewLifecycle({editor: adapter, client});
-  return Object.freeze({ open, flush, pauseView: adapter.pauseView, flushView: lifecycle.flushView, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
-    getState: adapter.getState,subscribe:adapter.subscribe,
+  return Object.freeze({ open, flush, pauseView: adapter.pauseView, resumeRefresh: adapter.resumeView, flushView: lifecycle.flushView, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
+    // Exact immutable raw Text; getState().doc is the display line projection.
+    getSourceText: adapter.getSourceText, getState: adapter.getState,subscribe:adapter.subscribe,
     focus: () => view?.focus(),
     select(from, to = from) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); view.focus(); } },
     setTheme(next) {

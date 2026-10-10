@@ -10,6 +10,8 @@ import {readOwnedBytes} from '../projects/io.mjs';
 import {commitManifest,sourceReferenceKey,selectedManifestHistory} from '../sources/manifest.mjs';
 import {remapSourceReferences} from '../sources/migration.mjs';
 import {verifyParsedSourceBundle,verifyBundleMetadata} from '../sources/bundle-import.mjs';
+import {readAdmittedEmbedAssets,diagramBundleRefs,verifyDiagramSnapshot} from '../documents/diagram-embed-bundle.mjs';
+import {DiagramEmbedAssetStore} from '../documents/diagram-embed-assets.mjs';
 
 const statusFile='source-import-status.json';
 /** Native discovery/open fence. Absent is an ordinary project; unreadable or
@@ -33,18 +35,20 @@ export async function readSourceBundleImportStatus({projects,projectId}){
 
 /** Native-only new-copy transaction. It never writes a session pointer or an
  * existing project; caller owns all-view preparation and final selection. */
-export async function createImportedSourceBundleCopy({root,bundle,metadata,isCurrent,recovery,writerOptions={}}){
+export async function createImportedSourceBundleCopy({root,bundle,metadata,isCurrent,recovery,writerOptions={},diagramAdmission}){
  let allocatedId=null,revoked=false,completionAttempted=false;
  const guard=()=>{let current=false;try{current=isCurrent()===true;}catch{}if(!current)revoked=true;if(revoked)throw Object.assign(Error('Bundle import access changed'),{code:'ACCESS_REFUSED'});};
  try{
   guard();const verified=verifyParsedSourceBundle(bundle),admitted=verifyBundleMetadata(metadata,verified);
+  const diagramRecords=diagramBundleRefs(verified.snapshot).length?readAdmittedEmbedAssets(diagramAdmission,verified.snapshot):[];
   if(!(recovery instanceof RecoveryStore)||resolve(recovery.root)!==resolve(root)||!recovery.sources)throw Object.assign(Error('Owned recovery reader required'),{code:'BUNDLE_RECOVERY_REFUSED'});
   const fault=async phase=>{if(writerOptions.fault)await writerOptions.fault(phase);guard();};
   const projects=new ProjectStore(root,{...writerOptions,fault,canSave:({action,projectId})=>{guard();return action==='create'?allocatedId===null:projectId===allocatedId;}});
   const repository=new SourceRepository(root,{...writerOptions,fault,canWrite:({projectId})=>{guard();return allocatedId!==null&&projectId===allocatedId;}});
+  const diagramAssets=new DiagramEmbedAssetStore({projects});
   // Recovery scans other owned projects. Keep the supplied genuine global read
   // authority; only the newly copied project's writes/checkpoint are initiated.
-  const guardedRecovery=new RecoveryStore(root,{...recovery.writerOptions,...writerOptions,now:recovery.now,sources:recovery.sources,fault:async phase=>{if(recovery.fault)await recovery.fault(phase);await fault(phase);}});
+  const guardedRecovery=new RecoveryStore(root,{...recovery.writerOptions,...writerOptions,now:recovery.now,sources:recovery.sources,assets:recovery.assets,isCurrent:()=>{guard();return true;},fault:async phase=>{if(recovery.fault)await recovery.fault(phase);await fault(phase);}});
   if(!await projects.canSave({action:'create'}))throw Error('Copy creation refused');
   const parent=await projects.projectsRoot();guard();const copyId=randomUUID();
   const directory=await childDirectory(parent,copyId,{create:true});allocatedId=copyId;guard();
@@ -62,12 +66,14 @@ export async function createImportedSourceBundleCopy({root,bundle,metadata,isCur
    sourceRefs.push(copied);mapping.set(sourceReferenceKey(source.ref),copied);
   }
   const remapped=remapSourceReferences(admitted,mapping);
+  for(const record of diagramRecords){guard();const ref=await diagramAssets.put({projectId:copyId,kind:record.ref.kind,bytes:record.bytes,isCurrent:()=>{guard();return true;}});guard();if(!isDeepStrictEqual(ref,record.ref))throw Error('Copied diagram asset differs');}
   const receipt=await commitManifest({projects,repository,recovery:guardedRecovery,projectId:copyId,baseRevision:initial.revision,sourceRefs,metadata:remapped,operationId:randomUUID(),purpose:'restore'});guard();
   if(!receipt.ok||receipt.durability==='recovery-degraded')throw Object.assign(Error('Copy manifest/checkpoint incomplete'),{code:receipt.code??'BUNDLE_CHECKPOINT_INCOMPLETE'});
   const snapshot=await projects.readProject(copyId);guard();verifySnapshot(snapshot);
   if(snapshot.schema!==2||snapshot.project.id!==copyId||snapshot.revision!==receipt.revision||snapshot.sha256!==receipt.sha256||snapshot.json!==JSON.stringify(remapped))throw Error('Copy manifest readback mismatch');
   for(const source of verified.sources){const copied=mapping.get(sourceReferenceKey(source.ref)),actual=await repository.readVerifiedVersion({projectId:copyId,sourceId:copied.sourceId,version:copied.version});guard();if(!isDeepStrictEqual(actual.ref,copied)||!actual.bytes.equals(source.bytes))throw Error('Copy source readback mismatch');}
   if(await guardedRecovery.hasSavedSnapshot(snapshot)!==true)throw Object.assign(Error('Exact saved copy checkpoint missing'),{code:'BUNDLE_CHECKPOINT_INCOMPLETE'});guard();
+  await verifyDiagramSnapshot({snapshot,assets:diagramAssets,isCurrent:()=>{guard();return true;}});guard();
   const complete={schema:1,projectId:copyId,state:'complete',revision:snapshot.revision,sha256:snapshot.sha256};
   // Once publication starts, a later hook/readback/authority failure cannot
   // prove that the owned complete marker was never accepted. Retain the copy

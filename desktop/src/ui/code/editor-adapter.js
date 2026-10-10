@@ -1,4 +1,5 @@
 import { EditorState, Text } from '@codemirror/state';
+import { exactSourceExtensions, getSourceChanges, getSourceText, projectSourceLines, isSourceHistoryTransaction } from './source-newlines.js';
 
 const SOURCE_BYTES = 32 * 1024 * 1024, INSERT_BYTES = 8 * 1024 * 1024;
 const QUEUE_BYTES = 16 * 1024 * 1024, QUEUE_COUNT = 64;
@@ -31,6 +32,8 @@ function removedBytes(doc, from, to) {
 
 /** Isolated CM state/persistence boundary. No DOM, native channel or Docs save.
  * Local text is optimistic; only native receipts establish durable source state.
+ * getState().doc is the equal-offset universal-line display projection;
+ * getSourceText() returns the exact raw immutable Text for serialization.
  * A failed partial multi-range write retains the complete local document and
  * fences further editing instead of rolling back accepted native versions.
  */
@@ -87,7 +90,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [],
       else if (!same(requested, identity(loaded)) || !(loaded.doc instanceof Text) || loaded.doc.length !== loaded.metrics?.utf16Units
         || !Number.isSafeInteger(loaded.metrics?.utf8Bytes) || loaded.metrics.utf8Bytes < 0 || loaded.metrics.utf8Bytes > SOURCE_BYTES) result = failure('INVALID_RECEIPT');
       else {
-        state = EditorState.create({ doc: loaded.doc, extensions: [...configured, EditorState.lineSeparator.of('\n'), EditorState.readOnly.of(readonly)] });
+        state = EditorState.create({ doc: projectSourceLines(loaded.doc), extensions: [...configured, ...exactSourceExtensions(loaded.doc), EditorState.lineSeparator.of('\n'), EditorState.readOnly.of(readonly)] });
         bound = requested; bytes = loaded.metrics.utf8Bytes; error = null;
         initialCommit=committedOperationId?{...requested,operationId:committedOperationId}:null;
         result = Object.freeze({ ok: true, ...bound });
@@ -106,22 +109,25 @@ export function createEditorAdapter({ client, readonly = false, extensions = [],
     if (disposed) return failure('EDITOR_DISPOSED');
     if (!state) return failure('EDITOR_NOT_READY');
     if (!transaction || transaction.startState !== state) return failure('EDITOR_STALE_TRANSACTION');
-    if (!transaction.docChanged) { state = transaction.state; publish(); return Object.freeze({ ok: true }); }
+    if (!transaction.docChanged && !isSourceHistoryTransaction(transaction)) { state = transaction.state; publish(); return Object.freeze({ ok: true }); }
     if (readonly) return failure('EDITOR_READONLY');
     if (fenced) return failure('EDITOR_FENCED');
     if (paused) return failure('EDITOR_PAUSED');
     if (saving) return failure('EDITOR_SAVING');
     const token = generation, stale = live(token); if (stale) return refuse(stale.code);
+    const changes = getSourceChanges(transaction), raw = getSourceText(state);
+    if (!changes) return failure('INVALID_TRANSACTION');
+    if (changes.empty) { state = transaction.state; publish(); return Object.freeze({ ok: true }); }
     const edits = []; let delta = 0, insertionCost = 0, newBytes = bytes, invalid = null;
-    transaction.changes.iterChanges((from, to, _newFrom, _newTo, inserted) => {
+    changes.iterChanges((from, to, _newFrom, _newTo, inserted) => {
       if (invalid) return;
-      if (splitPair(state.doc, from) || splitPair(state.doc, to)) { invalid = 'INVALID_UNICODE'; return; }
+      if (splitPair(raw, from) || splitPair(raw, to)) { invalid = 'INVALID_UNICODE'; return; }
       if (inserted.length > INSERT_BYTES) { invalid = 'INVALID_EDIT'; return; }
       const text = inserted.toString('\n');
       if (!text.isWellFormed()) { invalid = 'INVALID_UNICODE'; return; }
       const retained = byteLength(text);
       if (retained > INSERT_BYTES) { invalid = 'INVALID_EDIT'; return; }
-      insertionCost += retained; newBytes += retained - removedBytes(state.doc, from, to);
+      insertionCost += retained; newBytes += retained - removedBytes(raw, from, to);
       // Each primitive is a separate durable native version. A later deletion
       // cannot justify publishing an earlier version above the source budget.
       if (newBytes > SOURCE_BYTES) { invalid = 'SOURCE_TOO_LARGE'; return; }
@@ -217,7 +223,7 @@ export function createEditorAdapter({ client, readonly = false, extensions = [],
     paused = false; publish();
     return disposed ? failure('EDITOR_DISPOSED') : Object.freeze({ ok: true });
   }
-  return Object.freeze({ open, dispatch, applyTransaction, flush, pauseView, resumeView, getState: () => state, getStatus: status,
+  return Object.freeze({ open, dispatch, applyTransaction, flush, pauseView, resumeView, getState: () => state, getSourceText: () => getSourceText(state), getStatus: status,
     subscribe(callback) {
       if (typeof callback !== 'function') throw new TypeError('INVALID_SUBSCRIBER');
       if (!disposed) observers.add(callback); return () => observers.delete(callback);

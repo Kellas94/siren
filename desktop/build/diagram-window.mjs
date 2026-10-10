@@ -20,6 +20,7 @@ export async function buildDiagramWindow({outputDir}){
  // Own placement must be available before the controller starts its source read.
  scripts.splice(1,0,await readFile(new URL('../src/ui/windows/diagram-transfer.js',import.meta.url),'utf8'));scripts[scripts.length-1]=historyScript+'\n'+scripts.at(-1);
  scripts[scripts.length-1]=await readFile(new URL('../src/ui/diagram/catalogue-focus.js',import.meta.url),'utf8')+'\n'+await readFile(new URL('../src/ui/diagram/catalogue-view.js',import.meta.url),'utf8')+'\n'+scripts.at(-1);
+ scripts[scripts.length-1]=await readFile(new URL('../src/ui/diagram/docs-transfer.js',import.meta.url),'utf8')+'\n'+scripts.at(-1);
  // HTML parsing normalizes CRLF and lone CR before CSP checks. Hash and emit
  // those exact parsed bytes, including boundaries between authored fragments.
  for(let i=0;i<scripts.length;i++)scripts[i]=scripts[i].replace(/\r\n?/g,'\n');
@@ -30,6 +31,7 @@ export async function buildDiagramWindow({outputDir}){
  for(const marker of [label,textarea,style])if(template.split(marker).length!==2)throw Error('GUIDED_WINDOW_MARKER_REFUSED');
  template=template.replace(label,'<div class="diagram-editor-modes" aria-label="Mermaid editor"><button id="diagramTextMode" aria-pressed="true">Text</button><button id="diagramGuidedMode" aria-pressed="false">Guided</button><div id="diagramHistoryControls"></div></div>'+label).replace(textarea,'</textarea><div id="diagramGuided" hidden aria-label="Guided Mermaid lines"></div></section>').replace(style,(await readFile(new URL('../src/ui/diagram/guided.css',import.meta.url),'utf8'))+style);
  template=template.replace('</style>',(await readDesktopChrome())+'</style>');
+ template=template.replace('</style>',(await readFile(new URL('../src/ui/docs/diagram-embeds.css',import.meta.url),'utf8'))+'</style>');
  const catalogueButton='<button id="diagramWorkspaceMode"',cataloguePanel='<div class="diagram-layout" id="diagramLayout"';
  for(const marker of [catalogueButton,cataloguePanel])if(template.split(marker).length!==2)throw Error('CATALOGUE_WINDOW_MARKER_REFUSED');
  template=template.replace(catalogueButton,'<button id="diagramCatalogueToggle" type="button" aria-expanded="false" aria-controls="diagramCataloguePanel" title="Types & templates · Ctrl+Shift+N">Types & templates</button>'+catalogueButton)

@@ -8,6 +8,9 @@ import { readOwnedBytes } from '../projects/io.mjs';
 import { MAX_SERIALIZED_WORKSPACE_BYTES, serializeWorkspaceRecord } from '../projects/budgets.mjs';
 import { verifySourceSnapshot, exportSourceSnapshot, restoreSourceSnapshot } from '../sources/recovery.mjs';
 import {isDeepStrictEqual} from 'node:util';
+import {ProjectStore} from '../projects/store.mjs';
+import {DiagramEmbedAssetStore} from '../documents/diagram-embed-assets.mjs';
+import {diagramBundleRefs,verifyDiagramSnapshot,exportEmbedBundle} from '../documents/diagram-embed-bundle.mjs';
 
 const uuid = value => typeof value === 'string' && /^[a-f0-9-]{36}$/.test(value);
 function verifyPoint(record) {
@@ -18,7 +21,8 @@ function verifyPoint(record) {
 const publicPoint = record => ({ id: record.id, projectId: record.snapshot.project.id, createdAt: record.createdAt, revision: record.snapshot.revision, schema: record.snapshot.schema, sha256: record.snapshot.sha256, kind: record.kind, verified: true });
 
 export class RecoveryStore {
-  constructor(root, { now = () => Date.now(), fault = async () => {}, ownerIdentity, inspectProcess, sources } = {}) { this.root = resolve(root); this.now = now; this.fault = fault; this.sources = sources; this.writerOptions = { ownerIdentity, inspectProcess }; }
+  constructor(root, { now = () => Date.now(), fault = async () => {}, ownerIdentity, inspectProcess, sources, assets, isCurrent = () => true } = {}) { this.root = resolve(root); this.now = now; this.fault = fault; this.sources = sources; this.assets=assets??new DiagramEmbedAssetStore({projects:new ProjectStore(root)});this.isCurrent=isCurrent; this.writerOptions = { ownerIdentity, inspectProcess }; }
+  async verifySources(snapshot){await verifySourceSnapshot({snapshot,repository:this.sources});await verifyDiagramSnapshot({snapshot,assets:this.assets,isCurrent:this.isCurrent});}
   async directory() {
     await ownedDirectory(this.root);
     const path = join(this.root, 'Recovery');
@@ -36,7 +40,7 @@ export class RecoveryStore {
         if (!/^[a-f0-9-]{36}\.json$/.test(name)) continue;
         try {
           const record = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, name), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
-          if (record.snapshot.schema === 2) await verifySourceSnapshot({ snapshot: record.snapshot, repository: this.sources });
+          if (record.snapshot.schema === 2) await this.verifySources(record.snapshot);
           if (record.snapshot.project.id !== id || name !== `${record.id}.json`) throw new Error('Invalid checkpoint identity');
           valid.push(record);
         } catch { damaged = true; invalid.push({ id: name.slice(0, -5), projectId: id }); }
@@ -47,7 +51,7 @@ export class RecoveryStore {
   }
   async checkpointProject({ snapshot, kind }) {
     verifySnapshot(snapshot);
-    if (snapshot.schema === 2) await verifySourceSnapshot({ snapshot, repository: this.sources });
+    if (snapshot.schema === 2) await this.verifySources(snapshot);
     if (!['saved', 'draft', 'emergency'].includes(kind)) throw new Error('Invalid checkpoint kind');
     const root = await this.directory();
     return exclusiveWriter(root, async () => {
@@ -56,14 +60,14 @@ export class RecoveryStore {
       await atomicWrite(join(dir, `${record.id}.json`), serializeWorkspaceRecord(record), { fault: this.fault });
       const verified = verifyPoint(JSON.parse((await readOwnedBytes(join(dir, `${record.id}.json`), MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
       if (verified.snapshot.json !== snapshot.json) throw new Error('Checkpoint readback mismatch');
-      if (snapshot.schema === 2) await verifySourceSnapshot({ snapshot: verified.snapshot, repository: this.sources });
+      if (snapshot.schema === 2) await this.verifySources(verified.snapshot);
       await this.fault('checkpoint-verified');
-      const { valid } = await this.scan(snapshot.project.id);
+      const { valid,damaged,invalid } = await this.scan(snapshot.project.id);
       // New point is verified before pruning. Corrupt and emergency originals are untouched.
       const saved = valid.filter(p => p.kind === 'saved');
       const drafts = valid.filter(p => p.kind === 'draft');
       const remove = [...saved.slice(10), ...drafts.filter(p => kind === 'draft' ? p.id !== record.id : p.id !== drafts[0]?.id)];
-      for (const old of remove) await unlink(await ownedFile(join(dir, `${old.id}.json`)));
+      if(!damaged&&!invalid.length)for (const old of remove) await unlink(await ownedFile(join(dir, `${old.id}.json`)));
       const points = (await this.scan()).valid.map(publicPoint);
       const catalogPath = join(root, 'catalog.json');
       try {
@@ -111,7 +115,7 @@ export class RecoveryStore {
     const directory=await childDirectory(await this.directory(),projectId);
     const record=verifyPoint(JSON.parse((await readOwnedBytes(join(directory,`${pointId}.json`),MAX_SERIALIZED_WORKSPACE_BYTES)).toString('utf8')));
     if(record.id!==pointId||record.snapshot.project.id!==projectId)throw new Error('Recovery point identity refused');
-    if(record.snapshot.schema===2)await verifySourceSnapshot({snapshot:record.snapshot,repository:this.sources});
+    if(record.snapshot.schema===2)await this.verifySources(record.snapshot);
     return record;
   }
   // A durability receipt needs one exact saved checkpoint. Historical source
@@ -144,6 +148,6 @@ export class RecoveryStore {
     if (readback.sha256 !== record.snapshot.sha256 || readback.json !== record.snapshot.json) throw new Error('Recovered copy verification failed');
     return readback;
   }
-  async exportSourceSnapshot(snapshot) { return exportSourceSnapshot({ snapshot, repository: this.sources }); }
-  async restoreSourceSnapshot(snapshot, projects) { return restoreSourceSnapshot({ snapshot, repository: this.sources, projects, recovery: this }); }
+  async exportSourceSnapshot(snapshot,{isCurrent=this.isCurrent}={}) { return diagramBundleRefs(snapshot).length?exportEmbedBundle({snapshot,sources:this.sources,assets:this.assets,isCurrent}):exportSourceSnapshot({ snapshot, repository: this.sources }); }
+  async restoreSourceSnapshot(snapshot, projects) { return restoreSourceSnapshot({ snapshot, repository: this.sources, projects, recovery: this,assets:this.assets,isCurrent:this.isCurrent }); }
 }

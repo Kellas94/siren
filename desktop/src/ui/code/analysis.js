@@ -3,26 +3,35 @@
  const same=(a,b)=>a&&b&&a.sourceId===b.sourceId&&a.version===b.version&&a.sha256===b.sha256;
  const explanations={selection:'The selected stored code range.',class:'Groups related data and behavior.',function:'Defines a reusable block of code.',loop:'Repeats a block of code.',branch:'Selects a branch using a condition.',call:'A call expression; its runtime target and result are not evaluated.',assignment:'Stores a value in a name or attribute.',annotation:'Adds a type annotation without assigning a value here. Static analysis does not check runtime types.',return:'Returns a result from the current function.',yield:'Produces a value from a generator.',try:'Groups error-handling clauses.',match:'Matches a value against patterns.',with:'Uses a managed context.',raise:'Raises an exception.',await:'Waits for an asynchronous result.',lambda:'Creates an anonymous function.',break:'Exits the enclosing loop.',continue:'Moves to the next loop iteration.'};
  window.SirenNativeAnalysis=Object.freeze({create({button,compareButton,panel,editorFor,bridge,languageFor=()=> 'python',nameFor=()=>null}){
-  let disposed=false,paused=false,generation=0,choiceGeneration=0,active=null,cancelling=null,result=null,bound=null,page=0,choices=[],refreshing=false;const collapsed=new Set();
+  let disposed=false,paused=false,generation=0,choiceGeneration=0,active=null,cancelling=null,result=null,bound=null,diagnosticRef=null,page=0,choices=[],refreshing=false;const collapsed=new Set();
   const make=(tag,text,id)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(id)e.id=id;return e;};
   const title=make('h2','Source structure'),description=make('p','Classes and functions from the stored Python source. Static analysis does not run the code.'),controls=make('div'),scope=make('select',null,'analysisScope');
   scope.setAttribute('aria-label','Analysis range');for(const [value,label] of [['source','Source overview'],['selection','Selected code'],['map','Selected code map'],['compare','Compare sources']]){const option=make('option',label);option.value=value;scope.append(option);}
   const compareControls=make('div'),compareWindow=make('select',null,'analysisCompareWindow'),refresh=make('button','Refresh windows','refreshAnalysisWindows'),identity=make('details',null,'analysisIdentity');refresh.type='button';compareWindow.setAttribute('aria-label','Stored source B in another Code window');compareControls.className='analysis-controls';compareControls.append(compareWindow,refresh);compareControls.hidden=true;
   const run=make('button','Analyze','analyzeSource'),cancel=make('button','Cancel','cancelAnalysis'),message=make('p','Choose Analyze to inspect this version.','analysisStatus'),filter=make('input',null,'analysisFilter'),list=make('div',null,'analysisDefinitions'),paging=make('div'),previous=make('button','Previous'),next=make('button','Next');
-  for(const b of [run,cancel,previous,next])b.type='button';cancel.hidden=true;filter.type='search';filter.placeholder='Find a class or function';filter.maxLength=128;filter.setAttribute('aria-label','Filter source definitions');message.setAttribute('role','status');list.setAttribute('aria-label','Source definitions or comparison hunks');controls.className='analysis-controls';paging.className='analysis-paging';controls.append(scope,run,cancel);paging.append(previous,next);panel.append(title,description,controls,compareControls,message,identity,filter,list,paging);panel.hidden=true;
+  const resetLayout=make('button','Reset layout','resetAnalysisLayout');resetLayout.type='button';resetLayout.title='Reset panel width · double-click divider or press Enter';
+  for(const b of [run,cancel,previous,next])b.type='button';cancel.hidden=true;filter.type='search';filter.placeholder='Find a class or function';filter.maxLength=128;filter.setAttribute('aria-label','Filter source definitions');message.setAttribute('role','status');list.setAttribute('aria-label','Source definitions or comparison hunks');controls.className='analysis-controls';paging.className='analysis-paging';controls.append(scope,run,cancel,resetLayout);paging.append(previous,next);panel.append(title,description,controls,compareControls,message,identity,filter,list,paging);panel.hidden=true;
+  const split=window.SirenCodeSplit?.create({layout:document.getElementById('codeLayout'),separator:document.getElementById('codeAnalysisSplitter'),panel,resetButton:resetLayout});
   const state=()=>editorFor()?.getStatus(),ready=value=>value?.ready&&!value.paused&&!value.fenced&&!value.pending&&!value.saving&&!value.dirty&&!disposed&&!paused;
-  const clearResult=()=>{result=null;bound=null;collapsed.clear();identity.textContent='';identity.hidden=true;list.replaceChildren();filter.hidden=true;previous.hidden=next.hidden=true;};
+  const clearHelp=()=>{diagnosticRef=null;window.SirenHelpWorkspace?.explain(message,null);};
+  const clearResult=()=>{clearHelp();result=null;bound=null;collapsed.clear();identity.textContent='';identity.hidden=true;list.replaceChildren();filter.hidden=true;previous.hidden=next.hidden=true;};
+  const budgetMessage=(reason,comparison)=>{
+   if(reason==='WORKER_CAPACITY')return 'Analysis workers are busy. Wait for a current analysis to finish, then try again.';
+   if(comparison){const limit=reason==='DIFF_LINE_BUDGET'?'line limit':reason==='SOURCE_BYTES_BUDGET'?'source size limit':['DIFF_WALL_BUDGET','WALL_BUDGET'].includes(reason)?'time limit':'budget';return `Comparison reached its ${limit}. Compare smaller stored source copies, keeping the originals. Selecting a range does not reduce this saved-source comparison.`;}
+   if(reason==='SOURCE_BYTES_BUDGET')return 'Analysis reached its stored-source size limit. Selecting a range does not reduce loaded source bytes. Keep the original and inspect a smaller stored source copy.';
+   return ['PARSE_BUDGET','WALL_BUDGET'].includes(reason)?'Analysis reached its time limit. Select a smaller range to inspect.':'Analysis reached its budget. Select a smaller range to inspect.';
+  };
   const choice=()=>choices.find(item=>item.windowId===compareWindow.value);
   async function refreshChoices(){
    if(disposed||paused||active||cancelling)return;const token=++choiceGeneration,ref=state()?.sourceRef;refreshing=true;reconcile();
    try{const answer=await bridge.listComparisons({});if(token!==choiceGeneration||disposed||paused||!same(ref,state()?.sourceRef))return;
-    choices=answer?.ok===true&&Array.isArray(answer.items)?answer.items.slice(0,64):[];compareWindow.replaceChildren();
+    const accepted=answer?.ok===true&&Array.isArray(answer.items);choices=accepted?answer.items.slice(0,64):[];compareWindow.replaceChildren();
     for(const item of choices){const option=make('option',`${item.displayName?item.displayName+' · ':''}${item.sourceRef.sourceId.slice(0,8)} · v${item.sourceRef.version} · ${item.sourceRef.sha256.slice(0,8)}`);option.value=item.windowId;compareWindow.append(option);}
-    if(!choices.length)message.textContent='Open another stored source or version in a Code window to compare.';
+    message.textContent=!accepted?answer?.code==='ACCESS_REFUSED'?'Code windows are unavailable for the current workspace. Refresh when ready.':'Code windows are unavailable. Refresh to try again.':choices.length?'Choose stored source B.':'Open another stored source or version in a Code window to compare.';
    }catch{if(token===choiceGeneration){choices=[];compareWindow.replaceChildren();message.textContent='Code windows are unavailable. Refresh to try again.';}}
    finally{if(token===choiceGeneration){refreshing=false;reconcile();}}
   }
-  const cancelActive=()=>{generation++;const job=active;active=null;cancel.hidden=true;if(job){const pending=Promise.resolve().then(()=>bridge.cancel({jobId:job.id})).catch(()=>{}).finally(()=>{if(cancelling===pending)cancelling=null;if(!disposed&&!paused)reconcile();});cancelling=pending;}};
+  const cancelActive=()=>{generation++;const job=active;active=null;cancel.hidden=true;if(panel.dataset.analysisState==='running'){message.textContent='Analysis cancelled.';panel.dataset.analysisState='cancelled';}if(job){const pending=Promise.resolve().then(()=>bridge.cancel({jobId:job.id})).catch(()=>{}).finally(()=>{if(cancelling===pending)cancelling=null;if(!disposed&&!paused)reconcile();});cancelling=pending;}};
   function paint(){
    if(result?.result?.semantics==='syntax-containment'){
     list.replaceChildren();const nodes=result.result.nodes,byId=new Map(nodes.map(node=>[node.id,node]));
@@ -54,7 +63,9 @@
    filter.hidden=!result;previous.hidden=next.hidden=rows.length<=64;previous.disabled=page===0;next.disabled=(page+1)*64>=rows.length;
   }
   function reconcile(){
-   if(disposed)return;const value=state(),busy=Boolean(active)||Boolean(cancelling)||refreshing;run.disabled=!ready(value)||busy||(scope.value==='compare'?!choice():languageFor()!=='python');scope.disabled=busy||paused;refresh.disabled=compareWindow.disabled=busy||paused;if(compareButton)compareButton.disabled=busy||!ready(value);cancel.hidden=false;cancel.textContent=active?'Cancel':'Clear';cancel.disabled=Boolean(cancelling)||paused||(!active&&!result);
+   if(disposed)return;const value=state();
+   if(diagnosticRef&&(!ready(value)||!same(value?.sourceRef,diagnosticRef))){clearHelp();message.textContent='Source changed. Save it, then analyze the current version.';}
+   const busy=Boolean(active)||Boolean(cancelling)||refreshing;run.disabled=!ready(value)||busy||(scope.value==='compare'?!choice():languageFor()!=='python');scope.disabled=busy||paused;refresh.disabled=compareWindow.disabled=busy||paused;if(compareButton)compareButton.disabled=busy||!ready(value);cancel.hidden=false;cancel.textContent=active?'Cancel':'Clear';cancel.disabled=Boolean(cancelling)||paused||(!active&&!result&&!diagnosticRef);
    if((active||result)&&(!ready(value)||!same(value?.sourceRef,active?.ref??bound))){cancelActive();clearResult();message.textContent='Source changed. Save it, then analyze the current version.';}
    if(!active&&!result&&!ready(value))message.textContent=value?.dirty||value?.pending?'Save source before analyzing this version.':'Source is not ready for analysis.';
    else if(!active&&!result&&scope.value!=='compare'&&languageFor()!=='python')message.textContent='Structure and code maps require owner-recorded Python. This source uses plain text; saved-source comparison remains available.';
@@ -64,12 +75,17 @@
    if(scope.value!=='compare'&&languageFor()!=='python'){reconcile();return;}
    if(scope.value==='compare'&&!right){message.textContent='Open another Code window, then refresh the window list.';return;}
    if(['selection','map'].includes(scope.value)&&selection.from===selection.to){message.textContent='Select a code range in the editor first.';return;}
-   const map=scope.value==='map',token=++generation,id=crypto.randomUUID(),range=['selection','map'].includes(scope.value)?{from:selection.from,to:selection.to}:undefined;
+   const map=scope.value==='map',token=++generation,id=crypto.randomUUID(),range=['selection','map'].includes(scope.value)?{from:selection.from,to:selection.to}:undefined,help=window.SirenHelpWorkspace,helpContext=help?.capture();
    clearResult();active={id,ref};reconcile();message.textContent='Analyzing in the background…';panel.dataset.analysisState='running';
    try{
     const answer=await bridge.submit({...ref,kind:right?'diff':map?'map':'index',jobId:id,...(range?{range}:{}),...(right?{rightWindowId:right.windowId,rightRef:right.sourceRef}:{})});
-    if(token!==generation||disposed||paused||!ready(state())||!same(state().sourceRef,ref))return;
-    if(answer?.ok!==true||!['complete','partial'].includes(answer.status)||!answer.result||!answer.coverage){message.textContent=answer?.status==='budget-exceeded'?'Analysis reached its time or memory budget. Select a smaller range to inspect.':answer?.status==='cancelled'?'Analysis cancelled.':'Analysis unavailable. Stored source was retained.';panel.dataset.analysisState=answer?.status??'error';return;}
+    if(token!==generation||disposed||paused||!ready(state())||!same(state().sourceRef,ref)||help&&!help.isCurrent(helpContext))return;
+    if(answer?.ok!==true||!['complete','partial'].includes(answer.status)||!answer.result||!answer.coverage){
+     message.textContent=answer?.status==='budget-exceeded'?budgetMessage(answer.reason,Boolean(right)):answer?.status==='cancelled'?'Analysis cancelled.':'Analysis unavailable. Stored source was retained.';panel.dataset.analysisState=answer?.status??'error';
+     if(answer?.status==='budget-exceeded'){diagnosticRef=ref;help?.article(message,'analysis-coverage',helpContext);}
+     else if(answer?.status!=='cancelled'&&answer?.ok===false&&typeof answer.code==='string'&&/^[A-Z][A-Z0-9_]{0,95}$/.test(answer.code)){diagnosticRef=ref;help?.explain(message,{namespace:'sources',operation:'analyze',code:answer.code},helpContext);}
+     return;
+    }
     if(answer.sourceId!==ref.sourceId||answer.version!==ref.version||answer.jobId!==id){message.textContent='Analysis version changed. Analyze again.';return;}
     if(right&&!same(answer.rightRef,right.sourceRef)){message.textContent='Comparison version changed. Refresh the windows and compare again.';return;}
     result=answer;bound=ref;page=0;filter.value='';paint();panel.dataset.analysisState=answer.status;
@@ -83,12 +99,12 @@
    }catch{if(token===generation&&!disposed&&!paused){message.textContent='Analysis unavailable. Stored source was retained.';panel.dataset.analysisState='error';}}
    finally{if(token===generation&&!disposed){active=null;cancel.hidden=true;reconcile();}}
   }
-  const toggle=()=>{if(paused||disposed)return;panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));document.getElementById('codeLayout')?.classList.toggle('has-analysis',!panel.hidden);if(!panel.hidden){reconcile();run.focus();}};
+  const toggle=()=>{if(paused||disposed)return;panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));document.getElementById('codeLayout')?.classList.toggle('has-analysis',!panel.hidden);split?.setVisible(!panel.hidden);if(!panel.hidden){reconcile();run.focus();}};
   button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls',panel.id);button.addEventListener('click',toggle);run.addEventListener('click',()=>void analyze());cancel.addEventListener('click',()=>{cancelActive();clearResult();message.textContent='Analysis cancelled.';panel.dataset.analysisState='cancelled';reconcile();});filter.addEventListener('input',()=>{page=0;paint();});previous.addEventListener('click',()=>{page--;paint();});next.addEventListener('click',()=>{page++;paint();});
   const changeScope=()=>{cancelActive();clearResult();compareControls.hidden=scope.value!=='compare';title.textContent=scope.value==='map'?'Selected code map':scope.value==='compare'?'Source comparison':'Source structure';description.textContent=scope.value==='map'?'Static Python syntax. Click a block to select code, fold a branch, or hover for its meaning.':scope.value==='compare'?'Compare immutable stored sources in two open Code windows. Limited previews preserve the complete stored sources.':'Classes and functions from the stored Python source. Static analysis does not run the code.';message.textContent=scope.value==='compare'?'Choose stored source B.':'Choose Analyze to inspect this version.';reconcile();if(scope.value==='compare')void refreshChoices();};scope.addEventListener('change',changeScope);
-  const openCompare=()=>{if(disposed||paused||!ready(state())||active||cancelling||refreshing)return;panel.hidden=false;button.setAttribute('aria-expanded','true');document.getElementById('codeLayout')?.classList.toggle('has-analysis',true);scope.value='compare';changeScope();};compareButton?.addEventListener('click',openCompare);
+  const openCompare=()=>{if(disposed||paused||!ready(state())||active||cancelling||refreshing)return;panel.hidden=false;button.setAttribute('aria-expanded','true');document.getElementById('codeLayout')?.classList.toggle('has-analysis',true);split?.setVisible(true);scope.value='compare';changeScope();};compareButton?.addEventListener('click',openCompare);
   refresh.addEventListener('click',()=>{clearResult();void refreshChoices();});compareWindow.addEventListener('change',()=>{clearResult();reconcile();});
   const shortcut=event=>{if((event.ctrlKey||event.metaKey)&&event.shiftKey&&event.key.toLowerCase()==='o'){event.preventDefault();toggle();}};document.addEventListener('keydown',shortcut);clearResult();reconcile();
-  return Object.freeze({reconcile,reset(){choiceGeneration++;refreshing=false;choices=[];compareWindow.replaceChildren();cancelActive();clearResult();panel.dataset.analysisState='idle';reconcile();},pause(){paused=true;choiceGeneration++;refreshing=false;cancelActive();clearResult();},resume(){paused=false;reconcile();},dispose(){disposed=true;choiceGeneration++;cancelActive();clearResult();document.removeEventListener('keydown',shortcut);button.removeEventListener('click',toggle);compareButton?.removeEventListener('click',openCompare);}});
+  return Object.freeze({reconcile,reset(){choiceGeneration++;refreshing=false;choices=[];compareWindow.replaceChildren();cancelActive();clearResult();panel.dataset.analysisState='idle';reconcile();},pause(){paused=true;split?.pause();choiceGeneration++;refreshing=false;cancelActive();clearResult();},resume(){paused=false;split?.resume();reconcile();},dispose(){disposed=true;split?.dispose();choiceGeneration++;cancelActive();clearResult();document.removeEventListener('keydown',shortcut);button.removeEventListener('click',toggle);compareButton?.removeEventListener('click',openCompare);}});
  }});
 })();

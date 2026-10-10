@@ -23,17 +23,21 @@ export async function verifySourceSnapshot({ snapshot, repository }) {
 }
 
 export async function exportSourceSnapshot({ snapshot, repository }) {
+  if ((JSON.parse(snapshot.json).diagramEmbedAssets?.refs?.length ?? 0)>0) throw refused('BUNDLE_DIAGRAM_ASSETS_REQUIRED');
   const sources = await verifySourceSnapshot({ snapshot, repository });
   return Buffer.from(JSON.stringify({ format: 'siren-source-bundle', schema: 2, snapshot,
     sources: sources.map(({ ref, bytes }) => ({ ref, base64: bytes.toString('base64') })) }));
 }
 
-export async function restoreSourceSnapshot({ snapshot, repository, projects, recovery }) {
+export async function restoreSourceSnapshot({ snapshot, repository, projects, recovery, assets, isCurrent=()=>true }) {
   // Verify every original before creating a destination. The original project is
   // read only; imports/manifest writes always target the new owned project.
   const verified = await verifySourceSnapshot({ snapshot, repository });
+  const {verifyDiagramSnapshot}=await import('../documents/diagram-embed-bundle.mjs');
+  const visuals=await verifyDiagramSnapshot({snapshot,assets,isCurrent});
   const initial = await projects.createProject({ label: `${snapshot.project.label.slice(0, 175)} — recovered`, json: '{}', purpose: 'recovery' });
   const mapping = new Map(); const sourceRefs = [];
+  for(const record of visuals){const copied=await assets.put({projectId:initial.project.id,kind:record.ref.kind,bytes:record.bytes,isCurrent});if(!isDeepStrictEqual(copied,record.ref))throw refused('DIAGRAM_EMBED_ASSET_CORRUPT');}
   for (const { ref, bytes } of verified) {
     const copied = await repository.importSource({ projectId: initial.project.id, bytes, provenance: ref.provenance });
     if (copied.sha256 !== ref.sha256 || copied.utf8Bytes !== ref.utf8Bytes) throw refused('SOURCE_COPY_MISMATCH');
@@ -47,6 +51,7 @@ export async function restoreSourceSnapshot({ snapshot, repository, projects, re
   if (!receipt.ok || receipt.durability === 'recovery-degraded') throw refused(receipt.code ?? 'SOURCE_RECOVERY_DEGRADED');
   const restored = await projects.readProject(initial.project.id);
   await verifySourceSnapshot({ snapshot: restored, repository });
+  await verifyDiagramSnapshot({snapshot:restored,assets,isCurrent});
   return restored;
 }
 
@@ -77,7 +82,7 @@ export async function scanSourceRecovery({ projectId, projects, repository, reco
   const state = await recovery.scan(projectId);
   if (state.damaged || state.invalid.length) throw refused('SOURCE_SCAN_INCOMPLETE');
   snapshots.push(...state.valid.map(point => point.snapshot));
-  for (const snapshot of snapshots.filter(snapshot => snapshot.schema === 2)) await verifySourceSnapshot({ snapshot, repository });
+  for (const snapshot of snapshots.filter(snapshot => snapshot.schema === 2)) {await verifySourceSnapshot({ snapshot, repository });const {verifyDiagramSnapshot}=await import('../documents/diagram-embed-bundle.mjs');await verifyDiagramSnapshot({snapshot,assets:recovery.assets,isCurrent:()=>true});}
   const retained = new Set(snapshots.flatMap(snapshot => snapshot.sourceRefs ?? []).map(ref => ref.sourceId));
   const sources = await repository.sourcesDirectory(projectId);
   for (const sourceId of await readdir(sources)) {

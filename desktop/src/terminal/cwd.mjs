@@ -1,3 +1,5 @@
+import {types} from 'node:util';
+import {createProviderLifetime,providerMethod} from './provider-lifetime.mjs';
 import {randomUUID} from 'node:crypto';
 import {win32 as path} from 'node:path';
 
@@ -18,14 +20,14 @@ const refuse=code=>{throw new Refusal(code);};
 const id=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(v);
 function data(value,keys){
  try{
- if(!value||typeof value!=='object'||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return null;
+ if(!value||types.isProxy(value)||typeof value!=='object'||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return null;
  const own=Reflect.ownKeys(value);if(own.length!==keys.length||own.some(k=>typeof k!=='string'||!keys.includes(k)))return null;
  const result=Object.create(null);for(const key of keys){const d=Object.getOwnPropertyDescriptor(value,key);if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;result[key]=d.value;}return result;
  }catch{return null;}
 }
 function array(value,max){
  try{
- if(!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||value.length>max||Reflect.ownKeys(value).length!==value.length+1)return null;
+ if(types.isProxy(value)||!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||value.length>max||Reflect.ownKeys(value).length!==value.length+1)return null;
  const result=[];for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;result.push(d.value);}return result;
  }catch{return null;}
 }
@@ -51,33 +53,37 @@ function evidence(value,requested){
  return Object.freeze({canonical,signature:JSON.stringify([canonical.toLowerCase(),v.identity,entries])});
 }
 function context(grant){
+ if(!grant||types.isProxy(grant))return null;
  const result={};for(const key of ['windowId','projectId','epoch','role']){const d=grant&&Object.getOwnPropertyDescriptor(grant,key);if(!d||!Object.hasOwn(d,'value'))return null;result[key]=d.value;}
  return id(result.windowId)&&id(result.projectId)&&Number.isSafeInteger(result.epoch)&&result.epoch>=1&&['workspace','terminal'].includes(result.role)?Object.freeze(result):null;
 }
 export class CwdAuthority {
- #pick;#inspect;#authorize;#capture;#roots;#maxGrants;#maxPending;#pending=0;#grants=new Map();#generation=Symbol();#disposed=false;
+ #pick;#inspect;#authorize;#capture;#roots;#maxGrants;#maxPending;#life;#grants=new Map();#generation=Symbol();#disposed=false;
  constructor({pickDirectory,protectedRoots,inspectDirectory,authorize,captureAdmission,maxGrants=64,maxPending=8}={}){
   if(!Number.isSafeInteger(maxGrants)||maxGrants<1||maxGrants>64||!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>8)throw TypeError('Bounded cwd limits required');
-  this.#pick=pickDirectory;this.#inspect=inspectDirectory;this.#authorize=authorize;this.#capture=captureAdmission;
+  this.#pick=typeof pickDirectory==='function'&&!types.isProxy(pickDirectory)?pickDirectory:null;this.#inspect=typeof inspectDirectory==='function'&&!types.isProxy(inspectDirectory)?inspectDirectory:null;this.#authorize=authorize;this.#capture=captureAdmission;
   const roots=array(protectedRoots,16);this.#roots=roots?.length?roots.map(localPath):null;if(this.#roots?.some(r=>!r))this.#roots=null;
   this.#maxGrants=maxGrants;this.#maxPending=maxPending;
+  this.#life=createProviderLifetime({scope:'CWD_AUTHORITY',maxPending,refuse,onComplete:()=>{this.#pick=this.#inspect=this.#authorize=this.#capture=this.#roots=null;this.#grants.clear();}});
  }
+ captureCwdSettlement(...extra){return extra.length?null:this.#life.handle;}
+ retireCwd(...extra){if(extra.length)return null;this.#disposed=true;this.revoke();return this.#life.retire();}
  #assert(scope){
-  try{const current=context(scope.grant);if(!this.#disposed&&scope.generation===this.#generation&&current&&Object.keys(current).every(k=>current[k]===scope.context[k])&&this.#authorize?.(scope.grant,scope.method)===true&&scope.guard?.isCurrent?.()===true){const after=context(scope.grant);if(!this.#disposed&&scope.generation===this.#generation&&after&&Object.keys(after).every(k=>after[k]===scope.context[k]))return;}}catch{/* Native authority failure is a refusal, never a fallback. */}
+  try{const current=context(scope.grant);if(!this.#disposed&&!scope.cell.unknown&&scope.generation===this.#generation&&current&&Object.keys(current).every(k=>current[k]===scope.context[k])&&this.#life.sync(scope.cell,this.#authorize,scope.grant,scope.method)===true&&!this.#disposed&&scope.generation===this.#generation&&this.#life.sync(scope.cell,scope.isCurrent)===true){const after=context(scope.grant);if(!this.#disposed&&!scope.cell.unknown&&scope.generation===this.#generation&&after&&Object.keys(after).every(k=>after[k]===scope.context[k]))return;}}catch{/* Refuse failed authority. */}
   refuse('SENDER_REFUSED');
  }
- #begin(grant,method){
-  let scope;try{const c=context(grant);if(this.#disposed||!c||this.#authorize?.(grant,method)!==true)refuse('SENDER_REFUSED');scope={grant,method,context:c,generation:this.#generation,guard:this.#capture?.(grant)};}catch{refuse('SENDER_REFUSED');}
-  this.#assert(scope);if(this.#pending>=this.#maxPending)refuse('CAPACITY_EXCEEDED');this.#pending++;return scope;
+ #begin(cell,grant,method){
+  let scope;try{const c=context(grant),generation=this.#generation;if(this.#disposed||!c||this.#life.sync(cell,this.#authorize,grant,method)!==true||this.#disposed||generation!==this.#generation)refuse('SENDER_REFUSED');scope={cell,grant,method,context:c,generation,isCurrent:providerMethod(this.#life.sync(cell,this.#capture,grant),'isCurrent')};}catch{refuse('SENDER_REFUSED');}
+  this.#assert(scope);return scope;
  }
- async #step(scope,fn){this.#assert(scope);let value;try{value=await fn();}catch{this.#assert(scope);refuse('CWD_REFUSED');}this.#assert(scope);return value;}
- async #inspectPath(scope,value){return evidence(await this.#step(scope,()=>{if(typeof this.#inspect!=='function')refuse('CWD_REFUSED');return this.#inspect(value);}),value);}
+ #step(scope,fn){return this.#life.step(scope.cell,()=>this.#assert(scope),fn,'CWD_REFUSED');}
+ async #inspectPath(scope,value){return evidence((await this.#step(scope,()=>{if(typeof this.#inspect!=='function')refuse('CWD_REFUSED');return this.#inspect(value);})).value,value);}
  async #protected(scope){if(!this.#roots)refuse('CWD_REFUSED');const roots=[];for(const value of this.#roots)roots.push(await this.#inspectPath(scope,value));return roots;}
- async pick(grant){
-  const scope=this.#begin(grant,'terminalPickCwd');try{
+ pick(grant){return this.#life.run(async cell=>{
+  const scope=this.#begin(cell,grant,'terminalPickCwd');
    if(!this.#roots||typeof this.#pick!=='function'||typeof this.#inspect!=='function')refuse('CWD_REFUSED');
    if(this.#grants.size>=this.#maxGrants)refuse('CAPACITY_EXCEEDED');
-   const answer=data(await this.#step(scope,()=>this.#pick(grant)),['canceled','filePaths']);
+   const answer=data((await this.#step(scope,()=>this.#pick(grant))).value,['canceled','filePaths']);
    if(!answer||typeof answer.canceled!=='boolean')refuse('CWD_REFUSED');
    const files=array(answer.filePaths,2);if(!files)refuse('CWD_REFUSED');if(answer.canceled)refuse('CANCELLED');
    const selected=files.length===1?localPath(files[0]):null;if(!selected||this.#roots.some(root=>inside(selected,root)))refuse('CWD_REFUSED');
@@ -86,17 +92,17 @@ export class CwdAuthority {
    this.#assert(scope);if(this.#grants.size>=this.#maxGrants)refuse('CAPACITY_EXCEEDED');
    const cwdId=randomUUID(),publicGrant=Object.freeze({cwdId,projectId:scope.context.projectId,displayPath:directory.canonical});
    this.#grants.set(cwdId,{projectId:scope.context.projectId,epoch:scope.context.epoch,generation:this.#generation,directory,roots:roots.map(r=>r.signature)});return publicGrant;
-  }finally{this.#pending--;}
+  });
  }
- async resolve(grant,cwdId){
-  const scope=this.#begin(grant,'terminalCreate');try{
+ resolve(grant,cwdId){return this.#life.run(async cell=>{
+  const scope=this.#begin(cell,grant,'terminalCreate');
    const record=id(cwdId)?this.#grants.get(cwdId):null;
    if(!record||record.projectId!==scope.context.projectId||record.epoch!==scope.context.epoch||record.generation!==this.#generation)refuse('CWD_REFUSED');
    const roots=await this.#protected(scope),directory=await this.#inspectPath(scope,record.directory.canonical);
    if(directory.signature!==record.directory.signature||roots.some((root,i)=>root.signature!==record.roots[i]||inside(directory.canonical,root.canonical)))refuse('CWD_REFUSED');
    this.#assert(scope);return directory.canonical;
-  }finally{this.#pending--;}
+  });
  }
  revoke(){this.#generation=Symbol();this.#grants.clear();}
- dispose(){this.#disposed=true;this.revoke();}
+ dispose(){this.retireCwd();}
 }
