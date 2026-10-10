@@ -136,6 +136,32 @@ try{
  assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
  result.writeClose={observation:observed,before:{revision:largeBefore.revision,sha256:largeBefore.sha256},unreferencedCompleteAssets:retention.unreferenced};
  check('Observed incomplete source asset staging overlaps actual native Close, joins cleanup and preserves all three exact saved projects');
+ await writeFile(join(evidence,'stage-close-electron.log'),driver.logs());await driver.close();driver=null;page=null;
+ phase='lock-incomplete-stage';
+ const lockLarge=await projects.createProject({label:'Pending asset Lock fixture',json:'{}'}),lockLargeMetadata=structuredClone(largeMetadata);
+ assert.equal((await commitManifest({projects,repository:sources,recovery,projectId:lockLarge.project.id,baseRevision:1,sourceRefs:[],metadata:lockLargeMetadata,operationId:'pending-native-lock-fixture'})).ok,true);
+ const lockLargeBefore=await projects.readProject(lockLarge.project.id);await mkdir(join(await projects.directory(lockLarge.project.id),'diagram-embed-staging'));
+ await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:lockLarge.project.id}));
+ const lockWritePort=await reserveDocsInspectorPort();driver=await launchDesktop({extraArgs:['--siren-test-root='+data,'--siren-test-project='+lockLarge.project.id,'--inspect=127.0.0.1:'+lockWritePort]});
+ io=await attachDocsIO({port:lockWritePort,pid:driver.pid,file:join(evidence,'backup.siren-backup')});await io.restoreChooser();
+ await unlockDesktop(driver,{pin:'4826',surface:'home'});const lockLargeReader=await open('docs','doc-a'),lockLargeEditor=await working(lockLargeReader,'docs');page=lockLargeEditor.page;
+ await click(page,'.document-block-actions>button:first-child');await page.waitFor('document.querySelector(".document-diagram-picker")?.open===true&&document.querySelector("[data-embed-action=choose-diagram]")?.options.length===1');
+ await click(page,'[data-embed-action=preview]');await page.waitFor('document.querySelector(".document-diagram-picker img")?.naturalWidth>0&&!document.querySelector("[data-embed-action=confirm-insert]").disabled');
+ result.writeLockArmed=await io.armIncompleteStageLock({projectId:lockLarge.project.id,expectedBytes:expectedSourceBytes});await io.close();io=null;
+ await click(page,'[data-embed-action=confirm-insert]').catch(error=>{if(error.cdpCode!==-32000)throw error;result.writeLockInputTransport={retired:true,message:error.message};});
+ await driver.waitFor('window.sirenDesktopBootstrap.mode==="locked"');
+ const lockedObservation=JSON.parse(await readFile(join(data,'native-diagram-stage-lock.json')));assert.equal(lockedObservation.pid,driver.pid);assert.equal(lockedObservation.projectId,lockLarge.project.id);assert.equal(lockedObservation.expectedSourceBytes,expectedSourceBytes);assert.ok(lockedObservation.bytesAtLock<expectedSourceBytes);
+ assert.equal((await driver.send('Target.getTargets')).targetInfos.some(t=>t.url.startsWith('siren://app/windows/')),false);
+ assert.deepEqual(await projects.readProject(lockLarge.project.id),lockLargeBefore);assert.deepEqual(await projects.readProject(large.project.id),largeBefore);assert.deepEqual(await saved(),beforeClose);assert.deepEqual(await projects.readProject(imported.project.id),imported);
+ assert.deepEqual(await readdir(join(await projects.directory(lockLarge.project.id),'diagram-embed-staging')),[]);
+ const lockRetention=await assets.scanRetention({projectId:lockLarge.project.id,authorities:['current','revision','pending','undo','recovery'].map(kind=>({kind,refs:[]}))});assert.equal(lockRetention.deletionAuthorized,false);
+ result.writeLock={observation:lockedObservation,before:{revision:lockLargeBefore.revision,sha256:lockLargeBefore.sha256},unreferencedCompleteAssets:lockRetention.unreferenced};
+ check('Observed incomplete source asset stage receives actual native CtrlAltL, retires all views and preserves four exact saved projects');
+ await unlockDesktop(driver,{pin:'4826',surface:'home'});const lockReopened=await open('docs','doc-a');page=lockReopened.page;
+ const lockRead=await page.evaluate('window.sirenDocsRead.getDocument()');assert.equal(lockRead.ok,true);assert.equal(lockRead.document.blocks.length,2);assert.equal(lockRead.document.blocks.some(b=>b.kind==='diagram-embed'),false);
+ io=await attachDocsIO({port:lockWritePort,pid:driver.pid,file:join(evidence,'backup.siren-backup')});await io.restoreChooser();result.writeLockQuit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+lockReopened.view.windowId);await io.close();io=null;
+ await driver.waitForExit();result.writeLockQuitJoined=true;assert.deepEqual(await projects.readProject(lockLarge.project.id),lockLargeBefore);
+ check('Unlock after staged-write cancellation reopens the exact saved document; actual Docs CtrlQ joins process exit');
  result.status='BOUNDED_NATIVE_COMPLETE';
 }catch(error){result.error={phase,code:error.code,message:error.message,stack:error.stack};try{result.ui=await(page??driver)?.evaluate('({url:location.href,body:{...document.body.dataset},text:document.body.innerText.slice(0,5000)})');await(page??driver)?.screenshot(join(evidence,'failure.png'));}catch{}}
 finally{try{await io?.close();}catch{}if(driver)await writeFile(join(evidence,'electron.log'),driver.logs());await driver?.close();result.finishedAt=new Date().toISOString();if(result.inputs){const after=await inventory();result.changedInputs=result.inputs.filter((row,i)=>JSON.stringify(row)!==JSON.stringify(after[i]));if(result.changedInputs.length)result.status='ADVERSE';}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error}));process.exitCode=result.status==='BOUNDED_NATIVE_COMPLETE'?0:1;}
