@@ -1,0 +1,9 @@
+{
+  "name": "siren-terminal-provider",
+  "version": "0.1.0-dev.1",
+  "private": true,
+  "description": "Pinned private production Terminal provider resource; candidate qualification required",
+  "dependencies": {
+    "node-pty": "1.1.0"
+  }
+}

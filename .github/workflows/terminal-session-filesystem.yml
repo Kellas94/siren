@@ -1,0 +1,61 @@
+name: Terminal Session filesystem prerequisite (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-session-20261010']
+    paths:
+      - '.github/workflows/terminal-session-filesystem.yml'
+      - 'desktop/tests/fixtures/terminal-filesystem-evidence.cs'
+      - 'desktop/tests/native/terminal-session-filesystem-*'
+permissions:
+  contents: read
+concurrency:
+  group: terminal-session-filesystem-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native-filesystem:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Actual native directory and executable evidence
+        shell: pwsh
+        run: |
+          node desktop/tests/native/terminal-session-filesystem-probe.mjs
+          exit $LASTEXITCODE
+      - name: Retain raw controls, source inputs and helper binary even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-session-filesystem-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-session-filesystem/*/*.json
+            desktop/evidence/terminal-session-filesystem/*/*.exe
+            desktop/tests/fixtures/terminal-filesystem-evidence.cs
+            desktop/tests/native/terminal-session-filesystem-*
+            .github/workflows/terminal-session-filesystem.yml
+            desktop/src/terminal/**
+            desktop/src/windows/registry.mjs
+            desktop/native/terminal-creator-three-lane/*.cc
+            desktop/native/terminal-creator-three-lane/*.inc
+            desktop/native/terminal-creator-three-lane/*.gyp
+            desktop/native/terminal-host-roster-candidate/*.cc
+            desktop/native/terminal-host-roster-candidate/*.inc
+            desktop/native/terminal-host-roster-candidate/*.gyp
+            desktop/runtime/terminal-provider/package*.json
+            desktop/src/navigation/contracts.mjs
+            desktop/src/navigation/entries.mjs
+            desktop/src/navigation/window-labels.mjs
+            desktop/src/projects/budgets.mjs
+            desktop/src/projects/paths.mjs
+            desktop/src/windows/entities.mjs
+            desktop/src/windows/surface.mjs
