@@ -307,6 +307,16 @@
       "sha256": "017f76d9be5b67b66ee695b617d148881a1e66549f8610241fc6e94f8799b2c4"
     },
     {
+      "path": "desktop/tests/native/terminal-session-provision-copy.mjs",
+      "bytes": 264,
+      "sha256": "9e5a44a749c906e62db2feaa7fe0ac66017e8900cd58341eb71c70e5dae32365"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-copy.test.mjs",
+      "bytes": 1518,
+      "sha256": "1f6b51286fd9f8812e587ceb1218d160ba7224cf7beee1c9a50a1b79e5c0c1ed"
+    },
+    {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
       "bytes": 780,
       "sha256": "85e8b22f42ae76ee51ed0641c907156f7c260e09752fd07f733d1d550e8a0eba"
@@ -333,8 +343,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-provision.mjs",
-      "bytes": 11105,
-      "sha256": "21864cd0ec9a4a0870ab167beee37348a5a6f2ca03244feaa53ad8630020c63d"
+      "bytes": 11135,
+      "sha256": "5099c6f7e0efeebe61724d68549c952cd8056a1f55d763cece36fc42d008f912"
     }
   ],
   "nativeExecutionAdmitted": false

@@ -6,6 +6,7 @@ import {promisify} from 'node:util';
 import {createHash,randomUUID} from 'node:crypto';
 import {join,dirname,resolve} from 'node:path';
 import {sessionProvisionLocations} from './terminal-session-provision-paths.mjs';
+import {copySessionProvisionTree} from './terminal-session-provision-copy.mjs';
 import {retainSessionProvisionFailure} from './terminal-session-provision-retention.mjs';
 import {captureShutdownGraphResources,prepareProductionResources,recheckPreparedProductionResources} from './terminal-production-resources.mjs';
 import {captureTerminalSessionExecutionResources,recheckTerminalSessionExecutionResources} from './terminal-session-execution-resources.mjs';
@@ -32,7 +33,7 @@ try{
  const work=locations.work;await mkdir(work);ownedWork=work;receipt.work=work;
  const source=await captureShutdownGraphResources({sourceRoot:root});assert.equal(source.entries.length,55);await save('source-capture.json',source);
  const prepared=await prepareProductionResources({capture:source,parentDirectory:work});receipt.prepared={directory:prepared.directory,manifest:prepared.manifest};
- const application=join(work,'execution');await mkdir(application);await cp(prepared.applicationDirectory,application,{recursive:true,errorOnExist:true,force:false});
+ const application=join(work,'execution');await copySessionProvisionTree(prepared.applicationDirectory,application);
  const deps=join(work,'electron-deps');await mkdir(deps);for(const name of ['package.json','package-lock.json'])await copyFile(join(root,'desktop',name),join(deps,name));
  const npm=join(dirname(process.execPath),'node_modules/npm/bin/npm-cli.js'),gyp=join(dirname(process.execPath),'node_modules/npm/node_modules/node-gyp');assert.equal(JSON.parse(await readFile(join(gyp,'package.json'),'utf8')).version,'12.3.0');
  await phase('locked-electron-packages',process.execPath,[npm,'--prefix',deps,'ci','--ignore-scripts','--no-audit','--no-fund'],root);
