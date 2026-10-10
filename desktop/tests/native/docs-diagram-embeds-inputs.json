@@ -132,8 +132,8 @@
     },
     {
       "path": "desktop/build/source-bundle-metadata.mjs",
-      "bytes": 15062,
-      "sha256": "8351c63024d31447389424c4001b7ddd07649dac522e1ddb317bc97d063eef42"
+      "bytes": 15723,
+      "sha256": "300d4b8e7b64a3860a8c695af741dee4e4310e35a9e4baa2b320fda6aded7272"
     },
     {
       "path": "desktop/build/terminal-host-async-candidate-derive.mjs",
