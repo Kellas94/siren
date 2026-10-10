@@ -94,14 +94,22 @@ export function deriveHostRosterCandidate(value,...extra){
  if(state==WAIT_OBJECT_0)return true;
  wchar_t image[32768];DWORD length=32768;
  if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)){
-  // Exit can race the live observation. Unknown or still-live query failure
-  // remains a refusal; only the same signaled HANDLE with exit data can pass.
-  return WaitForSingleObject(m.process.h,0)==WAIT_OBJECT_0&&GetExitCodeProcess(m.process.h,&code);
+  // A terminating process can refuse image queries before signaling. The
+  // retained identity remains pending, never dead, until the exact HANDLE
+  // signals. Unknown wait/exit observations still refuse immediately.
+  DWORD second=WaitForSingleObject(m.process.h,0);
+  if((second!=WAIT_OBJECT_0&&second!=WAIT_TIMEOUT)||!GetExitCodeProcess(m.process.h,&code))return false;
+  if(second==WAIT_TIMEOUT)dead=false;
+  return true;
  }
  if(length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
  dead=false;return true;
 }
 `+ownership.slice(exitEnd);
+ ownership=once(ownership,'bool HostCaptureCurrentMembers(Owner* p){','bool HostCaptureCurrentMembers(Owner* p,bool& retry){\n retry=false;','capture-retry-status');
+ ownership=once(ownership,'if(!QueryInformationJobObject(p->job.h,JobObjectBasicProcessIdList,list,sizeof(buffer),nullptr)||list->NumberOfAssignedProcesses!=list->NumberOfProcessIdsInList||list->NumberOfProcessIdsInList>128)return false;','if(!QueryInformationJobObject(p->job.h,JobObjectBasicProcessIdList,list,sizeof(buffer),nullptr))return false;\n if(list->NumberOfAssignedProcesses>128||list->NumberOfProcessIdsInList>128)return false;\n if(list->NumberOfAssignedProcesses!=list->NumberOfProcessIdsInList){retry=true;return false;}','capture-incomplete-list');
+ ownership=once(ownership,' if(!HostCaptureCurrentMembers(p)){work->error="HOST_HELD_ROSTER_UNKNOWN";return;}',' for(;;){\n  if(!HostDeadline(work)){work->error="HOST_ASYNC_DEADLINE";return;}\n  bool retry=false;if(HostCaptureCurrentMembers(p,retry))break;\n  if(!retry){work->error="HOST_HELD_ROSTER_UNKNOWN";return;}Sleep(2);\n }','bounded-capture-retry');
+ ownership=once(ownership,'  std::lock_guard<std::mutex> termination(p->terminationLock);\n  if(!p->stopping.load()){','  std::lock_guard<std::mutex> termination(p->terminationLock);\n  if(!HostDeadline(work)){work->error="HOST_ASYNC_DEADLINE";return;}\n  if(!p->stopping.load()){','deadline-before-termination');
  ownership=once(ownership,'bool HostExactExited(const Member& m,bool& dead){',helpers+'\nbool HostExactExited(const Member& m,bool& dead){','native-expected-accessors');
  ownership=once(ownership,'if(!work->error&&!HostCloseVerified(p))work->error="HOST_CLOSE_UNVERIFIED";','if(!work->error&&!HostCaptureExpectedData(env,work))work->error="HOST_EXPECTATION_CAPTURE_FAILED";\n if(!work->error&&!HostCloseVerified(p))work->error="HOST_CLOSE_UNVERIFIED";','expected-before-close');
  ownership=once(ownership,'p->asyncPending.store(false);work->peers.clear();napi_close_handle_scope(env,handles);','work->receiptDelivered=true;p->asyncPending.store(false);work->peers.clear();napi_close_handle_scope(env,handles);','publish-success-only');

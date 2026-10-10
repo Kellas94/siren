@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {deriveFixedRosterDiagnostic} from './native/derive-terminal-roster-fixed-diagnostic.mjs';
-const bytes=readFileSync(new URL('../native/terminal-host-roster-candidate/ownership.cc',import.meta.url));
+const bytes=readFileSync(new URL('./fixtures/terminal-host-roster-pre-pending-fix.cc',import.meta.url));
 test('fixed diagnostic refuses unknown bytes before output',()=>{for(const b of [null,'source',Buffer.concat([bytes,Buffer.from('\n')])])assert.throws(()=>deriveFixedRosterDiagnostic(b),/FIXED_DIAGNOSTIC_BASE_REFUSED/);});
 test('fixed diagnostic preserves all source outside explicit observation functions and accounting check',()=>{
  const s=bytes.toString(),d=deriveFixedRosterDiagnostic(bytes),start=s.indexOf('bool HostExactExited('),end=s.indexOf('bool HostDeadline(');
@@ -11,5 +11,5 @@ test('fixed diagnostic preserves all source outside explicit observation functio
  assert(d.endsWith(tail));
  for(const step of ['image-failure-second-wait','image-match','capture-list-mismatch','capture-open','capture-read-identity'])assert(d.includes('"'+step+'"'));
  assert.equal((d.match(/TerminateJobObject\(/g)||[]).length,(s.match(/TerminateJobObject\(/g)||[]).length);
- assert.deepEqual(bytes,readFileSync(new URL('../native/terminal-host-roster-candidate/ownership.cc',import.meta.url)));
+ assert.deepEqual(bytes,readFileSync(new URL('./fixtures/terminal-host-roster-pre-pending-fix.cc',import.meta.url)));
 });

@@ -1,4 +1,4 @@
-name: Terminal shutdown remaining diagnosis (not admitted)
+name: Terminal shutdown qualification (not admitted)
 on:
   push:
     branches: ['probe/terminal-roster-20261010']
@@ -32,12 +32,12 @@ jobs:
         shell: pwsh
         timeout-minutes: 3
         run: ./desktop/tests/native/build-terminal-roster-ci.ps1
-      - name: Diagnose remaining scenarios under independent Safety Job
+      - name: Run ten native scenarios under independent Safety Job
         shell: pwsh
         timeout-minutes: 5
         run: |
           $taskOutput="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/observation"
-          node desktop/tests/native/terminal-host-roster-local-runner.mjs $taskOutput --diagnostic-fixed
+          node desktop/tests/native/terminal-host-roster-local-runner.mjs $taskOutput
           exit $LASTEXITCODE
       - name: Recheck actual case records
         shell: pwsh
@@ -62,13 +62,13 @@ jobs:
             desktop/tests/native/terminal-local-*.mjs
             desktop/tests/native/verify-terminal-local-run.mjs
             desktop/tests/native/build-terminal-roster-ci.ps1
-            desktop/tests/native/derive-terminal-roster-diagnostic.mjs
             desktop/tests/native/derive-terminal-roster-fixed-diagnostic.mjs
+            desktop/tests/native/derive-terminal-roster-diagnostic.mjs
             desktop/tests/native/emit-terminal-host-exit-unit.mjs
             desktop/tests/fixtures/terminal-host-exit-unit.cpp
             desktop/tests/terminal-local-*.test.mjs
-            desktop/tests/terminal-roster-diagnostic-derive.test.mjs
             desktop/tests/terminal-roster-fixed-diagnostic-derive.test.mjs
+            desktop/tests/terminal-roster-diagnostic-derive.test.mjs
             desktop/tests/terminal-host-roster-candidate-derive.test.mjs
             desktop/build/terminal-host-roster-candidate-derive.mjs
             desktop/native/terminal-creator-host-async/**

@@ -408,24 +408,17 @@ bool HostExactExited(const Member& m,bool& dead){
  if(state==WAIT_OBJECT_0)return true;
  wchar_t image[32768];DWORD length=32768;
  if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)){
-  // A terminating process can refuse image queries before signaling. The
-  // retained identity remains pending, never dead, until the exact HANDLE
-  // signals. Unknown wait/exit observations still refuse immediately.
-  DWORD second=WaitForSingleObject(m.process.h,0);
-  if((second!=WAIT_OBJECT_0&&second!=WAIT_TIMEOUT)||!GetExitCodeProcess(m.process.h,&code))return false;
-  if(second==WAIT_TIMEOUT)dead=false;
-  return true;
+  // Exit can race the live observation. Unknown or still-live query failure
+  // remains a refusal; only the same signaled HANDLE with exit data can pass.
+  return WaitForSingleObject(m.process.h,0)==WAIT_OBJECT_0&&GetExitCodeProcess(m.process.h,&code);
  }
  if(length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
  dead=false;return true;
 }
-bool HostCaptureCurrentMembers(Owner* p,bool& retry){
- retry=false;
+bool HostCaptureCurrentMembers(Owner* p){
  alignas(JOBOBJECT_BASIC_PROCESS_ID_LIST) unsigned char buffer[sizeof(JOBOBJECT_BASIC_PROCESS_ID_LIST)+128*sizeof(ULONG_PTR)]{};
  auto* list=reinterpret_cast<JOBOBJECT_BASIC_PROCESS_ID_LIST*>(buffer);
- if(!QueryInformationJobObject(p->job.h,JobObjectBasicProcessIdList,list,sizeof(buffer),nullptr))return false;
- if(list->NumberOfAssignedProcesses>128||list->NumberOfProcessIdsInList>128)return false;
- if(list->NumberOfAssignedProcesses!=list->NumberOfProcessIdsInList){retry=true;return false;}
+ if(!QueryInformationJobObject(p->job.h,JobObjectBasicProcessIdList,list,sizeof(buffer),nullptr)||list->NumberOfAssignedProcesses!=list->NumberOfProcessIdsInList||list->NumberOfProcessIdsInList>128)return false;
  for(DWORD i=0;i<list->NumberOfProcessIdsInList;i++){
   ULONG_PTR raw=list->ProcessIdList[i];if(!raw||raw>0xFFFFFFFF)return false;DWORD pid=static_cast<DWORD>(raw);
   bool known=pid==p->root.pid;for(const auto& m:p->held)known=known||m.pid==pid;if(known)continue;
@@ -449,14 +442,9 @@ void HostAsyncExecute(napi_env,void* context){
  if(!HostDeadline(work)){work->error="HOST_ASYNC_DEADLINE";return;}
  // No Session fields are touched. Session workers own independent Job/process
  // handles; their real JS cleanup receipts remain a separate required join.
- for(;;){
-  if(!HostDeadline(work)){work->error="HOST_ASYNC_DEADLINE";return;}
-  bool retry=false;if(HostCaptureCurrentMembers(p,retry))break;
-  if(!retry){work->error="HOST_HELD_ROSTER_UNKNOWN";return;}Sleep(2);
- }
+ if(!HostCaptureCurrentMembers(p)){work->error="HOST_HELD_ROSTER_UNKNOWN";return;}
  {
   std::lock_guard<std::mutex> termination(p->terminationLock);
-  if(!HostDeadline(work)){work->error="HOST_ASYNC_DEADLINE";return;}
   if(!p->stopping.load()){
    if(!TerminateJobObject(p->job.h,work->code)){work->error="HOST_ASYNC_STOP_FAILED";return;}
    p->stopping.store(true);
