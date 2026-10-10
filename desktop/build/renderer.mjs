@@ -225,7 +225,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     if (html.split(tour).length !== 2) throw new Error('Desktop tour marker mismatch');
     html=patchDesktopTour(html);
     html = html.replace(tour, tour + `
-        ...(window.sirenDesktop ? [{sel:'#desktopOptions',title:'Local desktop workspace',text:'Desktop holds local project import, saved backups, account status, signed update checks and Disaster Recovery. Recovery opens a new copy and preserves the original. Code drafts stay private until Save to Docs. This development build has no production account service or update installation.'}] : []),`);
+        ...(window.sirenDesktop ? [{sel:'#desktopOptions',title:'Local desktop workspace',text:'Desktop holds local project import, saved backups, account status, signed update checks and Disaster Recovery. Recovery opens a new copy and preserves the original. In desktop Docs, Insert diagram brings a saved flow between text blocks: Live follows saved changes, Fixed preserves the reviewed version. Preview first; missing steps keep the last good image. Code drafts stay private until Save to Docs. This development build has no production account service or update installation.'}] : []),`);
     const tourCard = '        tourCard.replaceChildren();';
     if (html.split(tourCard).length !== 2) throw new Error('Desktop tour card marker mismatch');
     html = html.replace(tourCard, tourCard + "\n        tourCard.dataset.desktopStep = String(step.sel === '#desktopOptions');");

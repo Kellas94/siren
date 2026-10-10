@@ -45,14 +45,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node scripts/build-process-reader.mjs
           exit $LASTEXITCODE
+      - name: Join isolated real engine diagnostic process
+        run: |
+          node -e "const r=require('node:child_process').spawnSync('./node_modules/electron/dist/electron.exe',['tests/native/docs-diagram-embeds-diagnostic.mjs'],{windowsHide:true,stdio:'inherit',timeout:60000});if(r.error)throw r.error;process.exit(r.status??1)"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Get-ChildItem -LiteralPath evidence/docs-diagram-embeds-native -Recurse -Filter diagnostic.json)) { throw 'Diagnostic process exited without its receipt' }
       - name: Actual native flow insertion, versions and offline export
         run: |
           node tests/native/docs-diagram-embeds.mjs
-          exit $LASTEXITCODE
-      - name: Preserve isolated real engine diagnostic after failure
-        if: failure()
-        run: |
-          & ./node_modules/electron/dist/electron.exe tests/native/docs-diagram-embeds-diagnostic.mjs
           exit $LASTEXITCODE
       - name: Preserve original adverse results and screenshots
         # Actual engine output is diagnostic data, never an approval or repair.

@@ -7,8 +7,8 @@
   "rows": [
     {
       "path": ".github/workflows/docs-diagram-embeds.yml",
-      "bytes": 2776,
-      "sha256": "19c858fe12ccb511a9aacf82a394b71a9d7a5887db1348102a6c780c618fd82a"
+      "bytes": 3112,
+      "sha256": "53c97533ebb3df34b89c3fbd7246230ba9bfd51dbf453929e1d0b0ac864e0fbc"
     },
     {
       "path": "desktop/baseline/R78.html",
@@ -127,8 +127,8 @@
     },
     {
       "path": "desktop/build/renderer.mjs",
-      "bytes": 24524,
-      "sha256": "53e610a1b5817437e451dacd546e65268bf9ebe5b9dfd200f4fafbbf7ed5d9a7"
+      "bytes": 24718,
+      "sha256": "ee5d28b4a4bed82a3656268ab8fe5cca51aee592d29a2a4a4919a37feeadebd2"
     },
     {
       "path": "desktop/build/source-bundle-metadata.mjs",
@@ -1307,8 +1307,8 @@
     },
     {
       "path": "desktop/src/ui/workspace/guide.js",
-      "bytes": 8766,
-      "sha256": "d568ec6dc2f7cac8d041da1680ba328755dd0ed48f3128d1381739c887d4690f"
+      "bytes": 9801,
+      "sha256": "e680077e706923a035f49ea6cafeea17ed75390e68e090046d90d9ff6002d488"
     },
     {
       "path": "desktop/src/ui/workspace/home.js",
