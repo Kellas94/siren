@@ -2,7 +2,7 @@
   "schema": 1,
   "author": "/root",
   "scope": "ALLOWLISTED_DISPOSABLE_HOSTED_DOCS_DIAGRAM_SOURCE",
-  "localBase": "3b36b0e6a078b5e901ecd51ac7d3f7f57916314c",
+  "localBase": "87abb74307ec8c8039ac656803412cde0c493ce9",
   "nativeOutcome": "UNVERIFIED",
   "rows": [
     {
@@ -1607,18 +1607,18 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 33732,
-      "sha256": "838ddaa9217f74775c499e6895bfe5ac832e598e61244102132263818ea7d2c0"
+      "bytes": 40798,
+      "sha256": "24fa6ffccb3f52c4ee66b7a8b7b46b542f019c6c31585e2a6e09a94f65e2d8f0"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",
-      "bytes": 9052,
-      "sha256": "18637518cf53829661a249d6aec5de54329c0772d986dadb64cd059514db7ed9"
+      "bytes": 11150,
+      "sha256": "77b197066b795f0b94db9a934bb9f356c57c29345242d5b8475b63847eb86124"
     },
     {
       "path": "desktop/tests/native/drive.mjs",
-      "bytes": 12270,
-      "sha256": "897408a2e194127b6e3cce4d4a487bdcd231178ce61d69e0443bc3a6ee02a5ca"
+      "bytes": 12366,
+      "sha256": "c5ecc88e35db2e07d47716950f8bb120cb4f4d1c1b306e6a0c44c4ffcd9ae33f"
     },
     {
       "path": "desktop/tests/native/pointer.mjs",
