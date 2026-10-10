@@ -1,0 +1,66 @@
+name: Terminal Session separate execution tree (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-session-20261010']
+    paths:
+      - '.github/workflows/terminal-session-provision.yml'
+      - 'desktop/tests/native/terminal-session-provision*'
+      - 'desktop/tests/native/terminal-production-resources.mjs'
+      - 'desktop/tests/native/terminal-production-provider-graph.mjs'
+      - 'desktop/tests/native/terminal-session-execution-resources.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: terminal-session-provision-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  provision:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Build both exact Electron targets and inventory separate execution resources
+        shell: pwsh
+        run: |
+          node --experimental-vm-modules desktop/tests/native/terminal-session-provision.mjs
+          exit $LASTEXITCODE
+      - name: Preserve inert files and raw build results even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-session-provision-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-session-provision/**
+            desktop/tests/native/terminal-session-provision*
+            .github/workflows/terminal-session-provision.yml
+            desktop/src/terminal/**
+            desktop/src/navigation/contracts.mjs
+            desktop/src/navigation/entries.mjs
+            desktop/src/navigation/window-labels.mjs
+            desktop/src/projects/budgets.mjs
+            desktop/src/projects/paths.mjs
+            desktop/src/windows/entities.mjs
+            desktop/src/windows/registry.mjs
+            desktop/src/windows/surface.mjs
+            desktop/native/terminal-creator-three-lane/*.cc
+            desktop/native/terminal-creator-three-lane/*.inc
+            desktop/native/terminal-creator-three-lane/*.gyp
+            desktop/native/terminal-host-roster-candidate/*.cc
+            desktop/native/terminal-host-roster-candidate/*.inc
+            desktop/native/terminal-host-roster-candidate/*.gyp
+            desktop/runtime/terminal-provider/package*.json
+            desktop/package.json
+            desktop/package-lock.json
+            desktop/tests/native/terminal-production-provider-graph.mjs
+            desktop/tests/native/terminal-production-resources.mjs
+            desktop/tests/native/terminal-session-execution-resources.mjs
