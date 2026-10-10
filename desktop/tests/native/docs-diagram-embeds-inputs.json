@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 19465,
-      "sha256": "86951c80dff6ae50208390ca914f18edb3b922c0b7cc89bc44e781f131b1e78a"
+      "bytes": 19986,
+      "sha256": "1ae4b7700eac04e4c7e22d88e5aec9fa1e502dedcd55042ad79144a2f4c52d46"
     },
     {
       "path": "desktop/tests/native/drive.mjs",
