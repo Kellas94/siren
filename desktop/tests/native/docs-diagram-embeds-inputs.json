@@ -317,8 +317,8 @@
     },
     {
       "path": "desktop/src/documents/diagram-embed-svg.mjs",
-      "bytes": 6286,
-      "sha256": "b5fb8b838e1ea3f22afb42f684c4413241dbbd45336fba34135b05f690271552"
+      "bytes": 6358,
+      "sha256": "c7ffa927511dd1be1f8f2f130f3b0bd5c5904c98fc4e307c664c1631daaf367b"
     },
     {
       "path": "desktop/src/documents/diagram-embeds.mjs",
