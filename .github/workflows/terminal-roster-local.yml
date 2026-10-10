@@ -1,0 +1,64 @@
+name: Bounded Terminal host shutdown (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-roster-20261010']
+permissions:
+  contents: read
+concurrency:
+  group: terminal-roster-local-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  bounded-node:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-roster-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Pure fixture and verdict tests
+        shell: pwsh
+        timeout-minutes: 1
+        run: |
+          node --test desktop/tests/terminal-local-native-fixture.test.mjs desktop/tests/terminal-local-case-verdict.test.mjs
+          exit $LASTEXITCODE
+      - name: Compile exact candidate with verified official inputs
+        shell: pwsh
+        timeout-minutes: 3
+        run: ./desktop/tests/native/build-terminal-roster-ci.ps1
+      - name: Execute bounded cases under independent Safety Job
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          $taskOutput="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/observation"
+          node desktop/tests/native/terminal-host-roster-local-runner.mjs $taskOutput
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+          node desktop/tests/native/verify-terminal-local-run.mjs $taskOutput
+          exit $LASTEXITCODE
+      - name: Preserve raw results even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-roster-local-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          compression-level: 9
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-roster-ci/*/build-result.json
+            desktop/evidence/terminal-roster-ci/*/compile.txt
+            desktop/evidence/terminal-roster-ci/*/observation/**
+            desktop/tests/native/terminal-host-roster-local-*.mjs
+            desktop/tests/native/terminal-local-*.mjs
+            desktop/tests/native/verify-terminal-local-run.mjs
+            desktop/tests/native/build-terminal-roster-ci.ps1
+            desktop/tests/fixtures/terminal-host-roster-*
+            desktop/tests/fixtures/terminal-main-owner-observer.cs
+            desktop/native/terminal-host-roster-candidate/**
+            desktop/src/terminal/host-async-receipt-contract.mjs
+            desktop/src/terminal/host-async-captured-operation.mjs
+            .github/workflows/terminal-roster-local.yml
