@@ -49,7 +49,13 @@ jobs:
         run: |
           node tests/native/docs-diagram-embeds.mjs
           exit $LASTEXITCODE
+      - name: Preserve isolated real engine diagnostic after failure
+        if: failure()
+        run: |
+          & ./node_modules/electron/dist/electron.exe tests/native/docs-diagram-embeds-diagnostic.mjs
+          exit $LASTEXITCODE
       - name: Preserve original adverse results and screenshots
+        # Actual engine output is diagnostic data, never an approval or repair.
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

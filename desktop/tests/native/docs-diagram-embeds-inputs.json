@@ -7,8 +7,8 @@
   "rows": [
     {
       "path": ".github/workflows/docs-diagram-embeds.yml",
-      "bytes": 2459,
-      "sha256": "d293af19df6c6802c37069c842895e8aa410b242f5a5f56a7d9f8be96cdec54f"
+      "bytes": 2776,
+      "sha256": "19c858fe12ccb511a9aacf82a394b71a9d7a5887db1348102a6c780c618fd82a"
     },
     {
       "path": "desktop/baseline/R78.html",
@@ -1594,6 +1594,11 @@
       "path": "desktop/tests/native/condition.mjs",
       "bytes": 648,
       "sha256": "caa3c18db9d750d52917ec1b351b6d6b8948b1529e659842c570bcd18feda8d4"
+    },
+    {
+      "path": "desktop/tests/native/docs-diagram-embeds-diagnostic.mjs",
+      "bytes": 2752,
+      "sha256": "f35f5042934d9186fc1233e6a459b8297293508b3b7e79b67888afa6dc1e9a61"
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds-preflight.mjs",
