@@ -9,17 +9,19 @@ import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
 import {DiagramEmbedAssetStore} from '../../src/documents/diagram-embed-assets.mjs';
-import {verifyDiagramSnapshot,parseEmbedBundle} from '../../src/documents/diagram-embed-bundle.mjs';
+import {verifyDiagramSnapshot,parseEmbedBundle,diagramBundleRefs} from '../../src/documents/diagram-embed-bundle.mjs';
+import {readSourceBundleImportStatus} from '../../src/navigation/source-bundle-copy.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
 import {documentVersion} from '../../src/windows/docs.mjs';
 import {workspaceMetadata} from '../../src/windows/entities.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
+import {reserveDocsInspectorPort,attachDocsIO} from './docs-diagram-io.mjs';
 if(process.platform!=='win32'||process.env.GITHUB_ACTIONS!=='true'||process.env.GITHUB_REPOSITORY!=='Kellas94/siren'||process.env.GITHUB_REF!=='refs/heads/probe/docs-diagram-embeds-20261010')throw Error('HOSTED_DISPOSABLE_WINDOWS_ONLY');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const evidence=resolve('evidence/docs-diagram-embeds-native',new Date().toISOString().replaceAll(':','-')),data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const result={author:'/root',status:'ADVERSE',githubCommit:process.env.GITHUB_SHA,startedAt:new Date().toISOString(),cases:[],limitations:['Development Electron windows only; no installed/packaged release','Hosted viewport and CSS resize are not physical multiple-monitor qualification','Native in-flight write overlap remains unqualified; actual observed render overlap is recorded separately','No imported PNG qualification or asset garbage-collection admission','Close uses the production public requestClose IPC; CtrlQ native shortcut is not qualified by CDP keyboard input','Screenshots require separate visual inspection; blueprint is a built-in theme, not custom palette qualification']};
-let driver,page,phase='fixture';
+const result={author:'/root',status:'ADVERSE',githubCommit:process.env.GITHUB_SHA,startedAt:new Date().toISOString(),cases:[],limitations:['Development Electron windows only; no installed/packaged release','Hosted viewport and CSS resize are not physical multiple-monitor qualification','Native in-flight write overlap remains unqualified; actual observed render overlap is recorded separately','No imported PNG qualification or asset garbage-collection admission','Restore uses a fixture-controlled OS file chooser; actual admission/copy/validation remain unchanged, manual dialog interaction unqualified','CtrlQ uses PID-checked Electron WebContents input; physical OS keyboard delivery remains unqualified','Screenshots require separate visual inspection; blueprint is a built-in theme, not custom palette qualification']};
+let driver,page,io,phase='fixture';
 async function inventory(){const rows=[];async function walk(path){const stat=await lstat(path);assert.equal(stat.isSymbolicLink(),false);if(stat.isDirectory()){for(const name of (await readdir(path)).sort())await walk(join(path,name));}else{const bytes=await readFile(path);rows.push({path:relative(resolve('.'),path).replaceAll('\\','/'),bytes:bytes.length,sha256:hash(bytes)});}}for(const p of ['src','build','tests/native','baseline','package.json','package-lock.json','generated/build.json','node_modules/electron/dist/electron.exe'])await walk(resolve(p));return rows;}
 const keys=async(own,key,code,vk,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await own.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:vk,modifiers});};
 const click=async(own,selector)=>{await own.evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'center',behavior:'instant'})`);await own.click(selector);};
@@ -69,6 +71,45 @@ try{
  assert.notEqual(result.closePreviewSettlement.reply?.ok,true,'Closing must revoke the actual pending preview');
  assert.deepEqual(await saved(),beforeClose);await verifyDiagramSnapshot({snapshot:await saved(),assets,isCurrent:()=>true});
  check('Coordinated Close overlaps an observed pending vector render, joins process exit and preserves exact saved references');
+ await writeFile(join(evidence,'first-electron.log'),driver.logs());await driver.close();driver=null;page=null;
+ phase='restore-backup';const port=await reserveDocsInspectorPort();
+ driver=await launchDesktop({extraArgs:['--siren-test-root='+data,'--siren-test-project='+initial.project.id,'--inspect=127.0.0.1:'+port]});
+ result.restorePid=driver.pid;io=await attachDocsIO({port,pid:driver.pid,file:join(evidence,'backup.siren-backup')});
+ await unlockDesktop(driver,{pin:'4826',surface:'home'});
+ await driver.waitFor('document.querySelector("#homeImportProject")?.disabled===false');await driver.click('#homeImportProject');
+ await driver.waitFor(`(async()=>{const r=await window.sirenHome.getHomeState();return r.ok&&r.state.selectedProjectId!==${JSON.stringify(initial.project.id)}&&r.state.projectFormat==='desktop'&&document.querySelector('#homeRoot')?.getAttribute('aria-busy')==='false';})()`);
+ const pointer=JSON.parse(await readFile(join(data,'session-selection.json'))),imported=await projects.readProject(pointer.projectId);
+ assert.equal(imported.schema,2);assert.notEqual(imported.project.id,initial.project.id);
+ assert.deepEqual(workspaceMetadata(imported).workpapers,workspaceMetadata(beforeClose).workpapers);
+ assert.deepEqual(workspaceMetadata(imported).diagrams,workspaceMetadata(beforeClose).diagrams);
+ assert.deepEqual(diagramBundleRefs(imported),diagramBundleRefs(beforeClose));
+ const restoredAssets=await verifyDiagramSnapshot({snapshot:imported,assets,isCurrent:()=>true});
+ for(const record of restoredAssets)assert.deepEqual(record.bytes,await assets.read({projectId:initial.project.id,ref:record.ref,isCurrent:()=>true}));
+ assert.equal(await recovery.hasSavedSnapshot(imported),true);
+ const importStatus=await readSourceBundleImportStatus({projects,projectId:imported.project.id});
+ assert.equal(importStatus.state,'complete');assert.equal(importStatus.sha256,imported.sha256);
+ assert.deepEqual(await saved(),beforeClose);assert.deepEqual(await readFile(join(evidence,'backup.siren-backup')),bundle);
+ result.restore={projectId:imported.project.id,revision:imported.revision,sha256:imported.sha256,assetRefs:restoredAssets.map(r=>r.ref),status:importStatus,chooser:await io.observations()};
+ assert.deepEqual(result.restore.chooser,[{title:'Open a SIREN project',extensions:['siren','siren-backup','json']}]);
+ check('Actual Home restore admits genuine backup through isolated validator, copies exact current/history assets and retains original project');
+ const restoredView=await open('docs','doc-a');page=restoredView.page;
+ for(const id of [fixedId,live.id]){
+  const target=`[data-embed-action=viewport][data-embed-id="${id}"]`;
+  await page.evaluate('document.querySelector('+JSON.stringify(target)+').scrollIntoView({block:"center",behavior:"instant"})');
+  await page.waitFor('document.querySelector('+JSON.stringify(target+' img')+')?.naturalWidth>0');
+ }
+ assert.equal(await page.evaluate('document.querySelectorAll(".document-diagram img").length'),2);
+ const restoredRead=await page.evaluate('window.sirenDocsRead.getDocument()');assert.equal(restoredRead.ok,true);
+ assert.equal(restoredRead.version,documentVersion(imported,'doc-a'));
+ result.restore.read={version:restoredRead.version,sha256:restoredRead.sha256,projectRevision:restoredRead.projectRevision};
+ await page.screenshot(join(evidence,'restored-docs.png'));
+ check('Restored native Docs displays both exact saved visual captures and document version');
+ phase='native-ctrl-q';await io.restoreChooser();
+ result.nativeQuit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+restoredView.view.windowId);
+ await io.close();io=null;await driver.waitForExit();result.nativeQuitJoined=true;
+ assert.deepEqual(await projects.readProject(imported.project.id),imported);assert.deepEqual(await saved(),beforeClose);
+ assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
+ check('Actual Electron CtrlQ from restored Docs reaches coordinated Close, joins process exit and retains both projects');
  result.status='BOUNDED_NATIVE_COMPLETE';
 }catch(error){result.error={phase,code:error.code,message:error.message,stack:error.stack};try{result.ui=await(page??driver)?.evaluate('({url:location.href,body:{...document.body.dataset},text:document.body.innerText.slice(0,5000)})');await(page??driver)?.screenshot(join(evidence,'failure.png'));}catch{}}
-finally{if(driver)await writeFile(join(evidence,'electron.log'),driver.logs());await driver?.close();result.finishedAt=new Date().toISOString();if(result.inputs){const after=await inventory();result.changedInputs=result.inputs.filter((row,i)=>JSON.stringify(row)!==JSON.stringify(after[i]));if(result.changedInputs.length)result.status='ADVERSE';}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error}));process.exitCode=result.status==='BOUNDED_NATIVE_COMPLETE'?0:1;}
+finally{try{await io?.close();}catch{}if(driver)await writeFile(join(evidence,'electron.log'),driver.logs());await driver?.close();result.finishedAt=new Date().toISOString();if(result.inputs){const after=await inventory();result.changedInputs=result.inputs.filter((row,i)=>JSON.stringify(row)!==JSON.stringify(after[i]));if(result.changedInputs.length)result.status='ADVERSE';}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error}));process.exitCode=result.status==='BOUNDED_NATIVE_COMPLETE'?0:1;}

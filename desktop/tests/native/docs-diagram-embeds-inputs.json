@@ -1607,8 +1607,13 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 21121,
-      "sha256": "9280fad45b9483ddaabfbd02ca784a07a06e593691d652d2a55315e23faa92ee"
+      "bytes": 25540,
+      "sha256": "770f8c4d69ad2c682f44b59ccfd56f22f4ffc791c5699fdaf27f4ec40c8f4aa0"
+    },
+    {
+      "path": "desktop/tests/native/docs-diagram-io.mjs",
+      "bytes": 4599,
+      "sha256": "94f234ef5442c392b159259222f909f5c54334476f557738ae4f07f0efca3636"
     },
     {
       "path": "desktop/tests/native/drive.mjs",
