@@ -36,7 +36,13 @@ try {
  foreach($taskPath in @($taskCl,$taskLink,$taskTar,$taskNode,$PSCommandPath,$taskLocator,(Join-Path $taskRoot 'desktop/native/terminal-host-roster-candidate/binding.gyp'))){$taskReceipt.inputs+=,(Task-Pin $taskPath)}
  $taskBuild=Join-Path $taskEvidence 'observation/build';New-Item -ItemType Directory -Path $taskBuild | Out-Null
  $taskAddon=Join-Path $taskBuild 'siren_terminal_host_roster_candidate.node'
- $taskArgs=@('/nologo','/LD','/MD','/EHsc','/std:c++20','/showIncludes','/DNAPI_VERSION=10','/D_WIN32_WINNT=0x0A00','/DWIN32_LEAN_AND_MEAN','/DNOMINMAX',('/I'+(Join-Path $taskHeaders 'node-v24.16.0/include/node')),('/I'+(Split-Path -Parent $taskSource)),('/Fo'+(Join-Path $taskBuild 'ownership.obj')),$taskSource,'/link',('/OUT:'+$taskAddon),(Join-Path $taskDownloads 'node.lib'),'kernel32.lib','advapi32.lib')
+ $taskDeriver=Join-Path $taskRoot 'desktop/tests/native/derive-terminal-roster-fixed-diagnostic.mjs'
+ $taskDiagnosticSource=Join-Path $taskBuild 'ownership-fixed-diagnostic.cc'
+ & $taskNode $taskDeriver $taskSource $taskDiagnosticSource
+ if($LASTEXITCODE -ne 0){throw 'FIXED_DIAGNOSTIC_DERIVATION_FAILED'}
+ $taskReceipt.inputs+=,(Task-Pin $taskDeriver);$taskReceipt.inputs+=,(Task-Pin $taskDiagnosticSource)
+ $taskReceipt.testOnlyDiagnosticDerivative=$true
+ $taskArgs=@('/nologo','/LD','/MD','/EHsc','/std:c++20','/showIncludes','/DNAPI_VERSION=10','/D_WIN32_WINNT=0x0A00','/DWIN32_LEAN_AND_MEAN','/DNOMINMAX',('/I'+(Join-Path $taskHeaders 'node-v24.16.0/include/node')),('/I'+(Split-Path -Parent $taskSource)),('/Fo'+(Join-Path $taskBuild 'ownership.obj')),$taskDiagnosticSource,'/link',('/OUT:'+$taskAddon),(Join-Path $taskDownloads 'node.lib'),'kernel32.lib','advapi32.lib')
  $taskReceipt.compiler=$taskCl;$taskReceipt.args=$taskArgs;$taskReceipt.sdk=$taskSdkVersion;$taskReceipt.msvc=$taskMsvc
  foreach($taskOption in @('CL','_CL_','LINK','_LINK_')){if([Environment]::GetEnvironmentVariable($taskOption)){throw 'UNEXPECTED_COMPILER_ENVIRONMENT'}}
  $taskOldInclude=$env:INCLUDE;$taskOldLib=$env:LIB;$taskOldLang=$env:VSLANG;$taskOldPath=$env:PATH
@@ -71,6 +77,6 @@ try {
  foreach($taskPath in $taskIncluded){$taskReceipt.reportedHeaders+=,(Task-Pin $taskPath)}
  $taskReceipt.binary=Task-Pin $taskAddon
  foreach($taskPin in $taskReceipt.inputs){if((Task-Pin $taskPin.path).sha256 -ne $taskPin.sha256){throw 'BUILD_INPUT_DRIFT'}}
- $taskReceipt.status='COMPILED_NOT_RUNTIME_QUALIFIED'
+ $taskReceipt.status='DIAGNOSTIC_DERIVATIVE_COMPILED_NOT_RUNTIME_QUALIFIED'
 } catch {$taskReceipt.status='BUILD_FAILED';$taskReceipt.error=$_.Exception.Message;throw}
 finally {$taskReceipt.finishedUtc=[DateTime]::UtcNow.ToString('o');$taskReceipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $taskEvidence 'build-result.json') -Encoding utf8}

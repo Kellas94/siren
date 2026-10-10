@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import {localNativeCasePassed,localNativeBatchPassed} from './terminal-local-case-verdict.mjs';
 const root=fileURLToPath(new URL('../../../',import.meta.url)),run=promisify(execFile);
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert([3,4].includes(process.argv.length));
-const prepareOnly=process.argv[3]==='--prepare-only',diagnosticOnly=process.argv[3]==='--diagnostic-only';
+const prepareOnly=process.argv[3]==='--prepare-only',diagnosticFixed=process.argv[3]==='--diagnostic-fixed',diagnosticOnly=process.argv[3]==='--diagnostic-only'||diagnosticFixed;
 assert(process.argv.length===3||prepareOnly||diagnosticOnly);
 const output=resolve(process.argv[2]),build=join(output,'build');
 const digest=b=>createHash('sha256').update(b).digest('hex');
@@ -43,7 +43,7 @@ const addon=join(build,'siren_terminal_host_roster_candidate.node');
 const manifest={schema:1,scope:'LOCAL_WINDOWS_NODE_ROSTER_QUALIFICATION',nativeExecutionAdmitted:false,diagnosticOnly,node:process.versions,inputs,cases:[],boundaries:{electron:false,pty:false,connectedPeers:false,fullFaultMatrix:false,productActivation:false}};
 await writeFile(join(output,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
 if(prepareOnly){await writeFile(join(output,'prepared.json'),JSON.stringify({status:'PREPARED_NOT_EXECUTED',nativeExecutionAdmitted:false,manifest},null,2)+'\n',{flag:'wx'});console.log('PREPARED_NOT_EXECUTED');process.exit(0);}
-for(const mode of (diagnosticOnly?['zero','host-loss']:['zero','eight','listeners','accepts','captured','gc','session-async','host-loss','negative-no-stop','negative-js-hang'])){
+for(const mode of (diagnosticFixed?['zero','eight','listeners','accepts','captured','gc','session-async','host-loss']:diagnosticOnly?['zero','host-loss']:['zero','eight','listeners','accepts','captured','gc','session-async','host-loss','negative-no-stop','negative-js-hang'])){
  const dir=join(output,'case-'+mode);await mkdir(dir);
  const config={mode,addon,addonHash:byPath(addon).sha256,nodeHash:byPath(process.execPath).sha256,inputs,payload:join(root,'desktop/tests/fixtures/terminal-host-roster-local-payload.mjs'),creator:join(root,'desktop/tests/fixtures/terminal-host-roster-local-creator.mjs')};
  await writeFile(join(dir,'config.json'),JSON.stringify(config,null,2)+'\n',{flag:'wx'});

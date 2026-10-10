@@ -60,6 +60,9 @@ try {
   assert.equal(operation.start({code:77,deadlineMs,shutdownId:id}),original);
  }else original=native.stopAndCloseHostAsync(host,77,deadlineMs,id);
  assert(original instanceof Promise);
+ // GC awaits below must not turn an early native rejection into an unhandled
+ // process exit. Awaiting the same original later still reports its failure.
+ original.catch(()=>{});
  assert.equal(native.stopAndCloseHostAsync(host,77,deadlineMs,id),original);
  assert.throws(()=>native.stopAndCloseHostAsync(host,98,deadlineMs,id));
  const roster=native.captureHostShutdownPeerRoster(host,id);assert(Object.isFrozen(roster));assert(Object.isFrozen(roster.pairOrdinals));
