@@ -17,7 +17,8 @@ export async function reserveDocsInspectorPort(){
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});
  const port=server.address().port;await new Promise(yes=>server.close(yes));return port;
 }
-export async function attachDocsIO({port,pid,file}){
+export async function attachDocsIO({port,pid,file,adaptChooser=true}){
+ assert.equal(typeof adaptChooser,'boolean');
  hosted();assert.ok(Number.isSafeInteger(pid)&&pid>0);assert.ok(isAbsolute(file)&&file.endsWith('.siren-backup'));
  let target;const end=Date.now()+15000;
  while(Date.now()<end){try{target=(await(await fetch(`http://127.0.0.1:${port}/json/list`,{signal:AbortSignal.timeout(1000)})).json()).find(t=>t.type==='node');if(target)break;}catch{}await delay(100);}
@@ -32,7 +33,7 @@ export async function attachDocsIO({port,pid,file}){
  const electron="process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron')";
  try{
   assert.equal(await evaluate('process.pid'),pid,'Inspector PID must match our launched Electron');
-  await evaluate(`(()=>{const e=${electron},open=e.dialog.showOpenDialog; if(globalThis.__docsEmbedChooser)throw Error('Chooser already installed');globalThis.__docsEmbedChooser={calls:[],restore:()=>{e.dialog.showOpenDialog=open;}};e.dialog.showOpenDialog=async(...args)=>{const o=args.at(-1);if(o?.title!=='Open a SIREN project')throw Error('Unexpected chooser');globalThis.__docsEmbedChooser.calls.push({title:o.title,extensions:o.filters?.[0]?.extensions??null});return {canceled:false,filePaths:[${JSON.stringify(file)}]};};return true;})()`);adapted=true;
+  if(adaptChooser){await evaluate(`(()=>{const e=${electron},open=e.dialog.showOpenDialog; if(globalThis.__docsEmbedChooser)throw Error('Chooser already installed');globalThis.__docsEmbedChooser={calls:[],restore:()=>{e.dialog.showOpenDialog=open;}};e.dialog.showOpenDialog=async(...args)=>{const o=args.at(-1);if(o?.title!=='Open a SIREN project')throw Error('Unexpected chooser');globalThis.__docsEmbedChooser.calls.push({title:o.title,extensions:o.filters?.[0]?.extensions??null});return {canceled:false,filePaths:[${JSON.stringify(file)}]};};return true;})()`);adapted=true;}
  }catch(error){ws.close();throw error;}
  const restoreChooser=async()=>{if(adapted){await evaluate('globalThis.__docsEmbedChooser.restore();true');adapted=false;}};
  return {

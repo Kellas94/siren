@@ -159,7 +159,7 @@ try{
  check('Observed incomplete source asset stage receives actual native CtrlAltL, retires all views and preserves four exact saved projects');
  await unlockDesktop(driver,{pin:'4826',surface:'home'});const lockReopened=await open('docs','doc-a');page=lockReopened.page;
  const lockRead=await page.evaluate('window.sirenDocsRead.getDocument()');assert.equal(lockRead.ok,true);assert.equal(lockRead.document.blocks.length,2);assert.equal(lockRead.document.blocks.some(b=>b.kind==='diagram-embed'),false);
- io=await attachDocsIO({port:lockWritePort,pid:driver.pid,file:join(evidence,'backup.siren-backup')});await io.restoreChooser();result.writeLockQuit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+lockReopened.view.windowId);await io.close();io=null;
+ io=await attachDocsIO({port:lockWritePort,pid:driver.pid,file:join(evidence,'backup.siren-backup'),adaptChooser:false});await io.restoreChooser();result.writeLockQuit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+lockReopened.view.windowId);await io.close();io=null;
  await driver.waitForExit();result.writeLockQuitJoined=true;assert.deepEqual(await projects.readProject(lockLarge.project.id),lockLargeBefore);
  check('Unlock after staged-write cancellation reopens the exact saved document; actual Docs CtrlQ joins process exit');
  result.status='BOUNDED_NATIVE_COMPLETE';
