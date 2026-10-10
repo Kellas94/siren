@@ -43,3 +43,14 @@ test('empty, truncated, duplicated or reordered batch refuses',()=>{
 test('malformed data refuses without throwing',()=>{
  for(const value of [null,undefined,{},[],true,'PASS']){assert.equal(localNativeCasePassed(value),false);assert.equal(localNativeBatchPassed(value),false);}
 });
+test('actual observer numeric error suffix preserves only the exact expected negative code',()=>{
+ for(const mode of modes.slice(-2))for(const suffix of [':0',':2',':-2147483648',':2147483647']){
+  const f=fixture(mode);f.result.error+=suffix;assert.equal(localNativeCasePassed(f),true);
+ }
+});
+test('numeric suffix parsing cannot admit another phase, prefix or malformed error',()=>{
+ for(const error of ['EXTERNAL_WATCHDOG_DEADLINE:before.json:2','prefixEXTERNAL_WATCHDOG_DEADLINE:after.json:2','EXTERNAL_WATCHDOG_DEADLINE:after.json:2:3','EXTERNAL_WATCHDOG_DEADLINE:after.json:NaN','EXTERNAL_WATCHDOG_DEADLINE:after.json:02','EXTERNAL_WATCHDOG_DEADLINE:after.json:2147483648','EXTERNAL_WATCHDOG_DEADLINE:after.json:','EXTERNAL_WATCHDOG_DEADLINE:after.json:-0']){
+  const f=fixture('negative-js-hang');f.result.error=error;assert.equal(localNativeCasePassed(f),false);
+ }
+ const f=fixture('negative-no-stop');f.result.error+=':2';f.result.cleanupVerified=false;assert.equal(localNativeCasePassed(f),false);
+});

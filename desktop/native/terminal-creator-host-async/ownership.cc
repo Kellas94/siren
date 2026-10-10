@@ -1,4 +1,4 @@
-// Isolated native-owned host roster WIP candidate. SOURCE_ONLY / NOT_ADMITTED.
+// Isolated async-host native WIP candidate. SOURCE_ONLY / NOT_ADMITTED.
 // Minimal-environment variant; separate source/artifact qualification required.
 #include <windows.h>
 #include <node_api.h>
@@ -11,7 +11,7 @@
 // Candidate reusable ownership core. Main-only opaque capabilities.
 // Source preparation is not native qualification or product admission.
 namespace {
-const napi_type_tag tag={0x334c414e454f574eULL,0x2026101000050001ULL};
+const napi_type_tag tag={0x334c414e454f574eULL,0x2026100900040001ULL};
 struct Handle {
  HANDLE h=nullptr;
  Handle()=default;explicit Handle(HANDLE value):h(value){}
@@ -146,7 +146,7 @@ napi_value Close(napi_env env,napi_callback_info info){
 }
 // Atomically pre-contained creator and held-identity Session ownership.
 // Main alone owns both Job handles; no renderer capability or raw HANDLE.
-const napi_type_tag sessionTag={0x334c414e45534553ULL,0x2026101000050002ULL};
+const napi_type_tag sessionTag={0x334c414e45534553ULL,0x2026100900040002ULL};
 std::atomic<unsigned> sessionCount{0};
 struct Session:Owner {
  Member shell;Handle watchedHost;HANDLE shellWait=nullptr;napi_env env=nullptr;napi_ref hostRef=nullptr;
@@ -311,12 +311,11 @@ napi_value SessionSnapshot(napi_env env,Session* p){
 // WIP HOST + EXACT PEER ROSTER ONLY. Full JS Session/allocation cleanup join is
 // deliberately UNIMPLEMENTED and must be consumed separately before app exit.
 struct HostAsyncShutdown {
- Owner* owner=nullptr;napi_env env=nullptr;napi_ref ownerRef=nullptr,promiseRef=nullptr,expectationRef=nullptr;
+ Owner* owner=nullptr;napi_env env=nullptr;napi_ref ownerRef=nullptr,promiseRef=nullptr;
  napi_async_work task=nullptr;napi_deferred deferred=nullptr;napi_async_cleanup_hook_handle cleanupHook=nullptr;
  std::atomic<bool> environmentClosing{false};
  DWORD code=0,timeout=0;ULONGLONG deadline=0;std::wstring shutdownId;const char* error=nullptr;
- Handle cancelEvent;bool cancellationRequested=false,workerCompleted=false,receiptDelivered=false;
- DWORD peerOrdinals[8]{};size_t peerOrdinalCount=0;bool peerRosterCaptured=false;
+ Handle cancelEvent;bool cancellationRequested=false,workerCompleted=false;
  std::vector<std::shared_ptr<PeerPair>> peers;
 };
 bool HostCloseHandleVerified(Handle&);
@@ -331,89 +330,14 @@ bool HostShutdownId(napi_env env,napi_value value,std::wstring& text){
  for(wchar_t c:text)if(!((c>=L'a'&&c<=L'z')||(c>=L'A'&&c<=L'Z')||(c>=L'0'&&c<=L'9')||c==L'_'||c==L'-'))return false;
  return true;
 }
-
-// Capture exact native-owned ordinals before any async work can publish a
-// receipt. Fixed storage survives peers.clear(); no endpoint/receipt inference.
-bool HostCapturePeerOrdinalData(HostAsyncShutdown* work){
- if(work->peerRosterCaptured||work->peers.size()>8)return false;
- for(size_t i=0;i<work->peers.size();i++){
-  const auto& p=work->peers[i];if(!p)return false;
-  std::lock_guard<std::recursive_mutex> guard(p->lock);
-  if(!p->server||p->hostOwnerToken!=work->owner->peerOwnerToken||!p->shutdownOrdinal)return false;
-  for(size_t j=0;j<i;j++)if(work->peerOrdinals[j]==p->shutdownOrdinal)return false;
-  work->peerOrdinals[i]=p->shutdownOrdinal;
- }
- work->peerOrdinalCount=work->peers.size();work->peerRosterCaptured=true;return true;
-}
-napi_value HostCapturedOrdinalArray(napi_env env,const HostAsyncShutdown* work){
- if(!work->peerRosterCaptured||work->peerOrdinalCount>8)return Refuse(env,"HOST_PEER_ROSTER_UNKNOWN");
- napi_value result=nullptr;CHECK(napi_create_array_with_length(env,work->peerOrdinalCount,&result));
- for(size_t i=0;i<work->peerOrdinalCount;i++)CHECK(napi_set_element(env,result,static_cast<uint32_t>(i),Integer(env,work->peerOrdinals[i])));
- CHECK(napi_object_freeze(env,result));return result;
-}
-napi_value HostExpectedIdentityData(napi_env env,const Member& m){
- if(!m.pid||!m.created||m.image.empty()||m.image.size()>32767)return Refuse(env,"HOST_EXPECTED_IDENTITY_UNKNOWN");
- napi_value result=nullptr,image=nullptr,created=nullptr;CHECK(napi_create_object(env,&result));
- CHECK(napi_create_string_utf16(env,reinterpret_cast<const char16_t*>(m.image.data()),m.image.size(),&image));
- const auto time=std::to_string(m.created);CHECK(napi_create_string_utf8(env,time.c_str(),time.size(),&created));
- if(!Set(env,result,"pid",Integer(env,m.pid))||!Set(env,result,"image",image)||!Set(env,result,"createdFileTime",created))return Refuse(env,"NAPI_FAILURE");
- CHECK(napi_object_freeze(env,result));return result;
-}
-bool HostCaptureExpectedData(napi_env env,HostAsyncShutdown* work){
- auto* owner=work->owner;
- if(work->env!=env||work->expectationRef||!work->workerCompleted||!work->peerRosterCaptured||owner->held.size()>128)return false;
- napi_value result=nullptr,request=nullptr,held=nullptr,shutdownId=nullptr;
- if(napi_create_object(env,&result)!=napi_ok||napi_create_object(env,&request)!=napi_ok||napi_create_array_with_length(env,owner->held.size(),&held)!=napi_ok||napi_create_string_utf16(env,reinterpret_cast<const char16_t*>(work->shutdownId.data()),work->shutdownId.size(),&shutdownId)!=napi_ok)return false;
- const auto root=HostExpectedIdentityData(env,owner->root);if(!root)return false;
- for(size_t i=0;i<owner->held.size();i++){
-  const auto row=HostExpectedIdentityData(env,owner->held[i]);
-  if(!row||napi_set_element(env,held,static_cast<uint32_t>(i),row)!=napi_ok)return false;
- }
- const auto ordinals=HostCapturedOrdinalArray(env,work);if(!ordinals)return false;
- if(!Set(env,request,"shutdownId",shutdownId)||!Set(env,request,"code",Integer(env,work->code))||!Set(env,request,"deadlineMs",Integer(env,work->timeout))||napi_object_freeze(env,request)!=napi_ok||napi_object_freeze(env,held)!=napi_ok)return false;
- if(!Set(env,result,"request",request)||!Set(env,result,"root",root)||!Set(env,result,"held",held)||!Set(env,result,"pairOrdinals",ordinals)||napi_object_freeze(env,result)!=napi_ok)return false;
- return napi_create_reference(env,result,1,&work->expectationRef)==napi_ok;
-}
-HostAsyncShutdown* HostGetShutdownIdentity(napi_env env,napi_callback_info info){
- napi_value a[2];if(!Args(env,info,2,a))return nullptr;
- auto* owner=GetHostIdentity(env,a[0]);if(!owner)return nullptr;
- std::wstring id;if(!HostShutdownId(env,a[1],id)||!owner->hostShutdown||owner->hostShutdown->env!=env||owner->hostShutdown->shutdownId!=id||owner->hostShutdown->environmentClosing.load()){
-  Refuse(env,"HOST_EXPECTATION_REQUEST_REFUSED");return nullptr;
- }
- return owner->hostShutdown;
-}
-napi_value CaptureHostShutdownPeerRoster(napi_env env,napi_callback_info info){
- auto* work=HostGetShutdownIdentity(env,info);if(!work)return nullptr;
- const auto ordinals=HostCapturedOrdinalArray(env,work);if(!ordinals)return nullptr;
- napi_value result=nullptr,shutdownId=nullptr,scope=nullptr;CHECK(napi_create_object(env,&result));
- CHECK(napi_create_string_utf16(env,reinterpret_cast<const char16_t*>(work->shutdownId.data()),work->shutdownId.size(),&shutdownId));
- CHECK(napi_create_string_utf8(env,"HOST_ASYNC_CAPTURED_PEER_ROSTER",NAPI_AUTO_LENGTH,&scope));
- if(!Set(env,result,"version",Integer(env,1))||!Set(env,result,"shutdownId",shutdownId)||!Set(env,result,"scope",scope)||!Set(env,result,"pairOrdinals",ordinals))return Refuse(env,"NAPI_FAILURE");
- CHECK(napi_object_freeze(env,result));return result;
-}
-napi_value CaptureHostShutdownExpectation(napi_env env,napi_callback_info info){
- auto* work=HostGetShutdownIdentity(env,info);if(!work)return nullptr;
- if(work->error||!work->workerCompleted||!work->receiptDelivered||!work->owner->closed||work->owner->asyncPending.load()||!work->expectationRef)return Refuse(env,"HOST_EXPECTATION_UNAVAILABLE");
- napi_value result=nullptr;CHECK(napi_get_reference_value(env,work->expectationRef,&result));
- return result?result:Refuse(env,"HOST_EXPECTATION_UNAVAILABLE");
-}
-
 bool HostExactExited(const Member& m,bool& dead){
- if(!m.process.h||m.image.empty()||GetProcessId(m.process.h)!=m.pid)return false;
+ if(!m.process.h||GetProcessId(m.process.h)!=m.pid)return false;
  FILETIME c,e,k,u;if(!GetProcessTimes(m.process.h,&c,&e,&k,&u)||Ticks(c)!=m.created)return false;
+ wchar_t image[32768];DWORD length=32768;
+ if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)||length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
  DWORD state=WaitForSingleObject(m.process.h,0),code=0;
  if((state!=WAIT_OBJECT_0&&state!=WAIT_TIMEOUT)||!GetExitCodeProcess(m.process.h,&code))return false;
- // The exact retained HANDLE identifies the object after exit. Windows may
- // no longer provide its executable path; image was checked while it was live.
- if(state==WAIT_OBJECT_0)return true;
- wchar_t image[32768];DWORD length=32768;
- if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)){
-  // Exit can race the live observation. Unknown or still-live query failure
-  // remains a refusal; only the same signaled HANDLE with exit data can pass.
-  return WaitForSingleObject(m.process.h,0)==WAIT_OBJECT_0&&GetExitCodeProcess(m.process.h,&code);
- }
- if(length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
- dead=false;return true;
+ dead=dead&&state==WAIT_OBJECT_0;return true;
 }
 bool HostCaptureCurrentMembers(Owner* p){
  alignas(JOBOBJECT_BASIC_PROCESS_ID_LIST) unsigned char buffer[sizeof(JOBOBJECT_BASIC_PROCESS_ID_LIST)+128*sizeof(ULONG_PTR)]{};
@@ -499,7 +423,6 @@ void HostAsyncComplete(napi_env env,napi_status status,void* context){
   if(!work->error&&(!Set(env,result,"version",Integer(env,1))||!Set(env,result,"shutdownId",shutdownId)||!Set(env,result,"code",Integer(env,work->code))||!Set(env,result,"deadlineMs",Integer(env,work->timeout))||!Set(env,result,"snapshot",snapshot)||!Set(env,result,"peers",peers)||!Set(env,result,"scope",scope)||!Set(env,result,"sessionCleanupJoined",Boolean(env,false))||!Set(env,result,"closed",Boolean(env,true))))work->error="HOST_FINAL_OBSERVATION_FAILED";
  }
  if(!work->error&&(!HostDeadline(work)||PeerHostRosterJoined(work->peers)!=1))work->error="HOST_FINAL_ADMISSION_FAILED";
- if(!work->error&&!HostCaptureExpectedData(env,work))work->error="HOST_EXPECTATION_CAPTURE_FAILED";
  if(!work->error&&!HostCloseVerified(p))work->error="HOST_CLOSE_UNVERIFIED";
  if(!work->error&&!HostDeadline(work))work->error="HOST_ASYNC_DEADLINE";
  if(work->error){HostRejectRetained(env,work);return;}
@@ -514,22 +437,19 @@ void HostAsyncComplete(napi_env env,napi_status status,void* context){
   work->error="HOST_RECEIPT_UNDELIVERED";napi_create_reference(env,heldOwner,1,&work->ownerRef);HostRejectRetained(env,work);napi_close_handle_scope(env,handles);return;
  }
  // The exact Promise remains referenced for duplicates until Owner finalization.
- work->receiptDelivered=true;p->asyncPending.store(false);work->peers.clear();napi_close_handle_scope(env,handles);
+ p->asyncPending.store(false);work->peers.clear();napi_close_handle_scope(env,handles);
 }
 void HostShutdownFinalize(napi_env env,Owner* p){
  auto* work=p->hostShutdown;
- if(!env||!work||work->env!=env||p->asyncPending.load()||!p->closed||work->ownerRef||work->task||work->cleanupHook)return;
- if(work->expectationRef){if(napi_delete_reference(env,work->expectationRef)!=napi_ok)return;work->expectationRef=nullptr;}
- if(work->promiseRef){if(napi_delete_reference(env,work->promiseRef)!=napi_ok)return;work->promiseRef=nullptr;}
- p->hostShutdown=nullptr;delete work;DeleteOwner{}(p);
+ if(!env||!work||p->asyncPending.load()||!p->closed||work->ownerRef||work->task||work->cleanupHook)return;
+ if(work->promiseRef)napi_delete_reference(env,work->promiseRef);p->hostShutdown=nullptr;delete work;DeleteOwner{}(p);
 }
 napi_value StopAndCloseHostAsync(napi_env env,napi_callback_info info){
  napi_value a[4];if(!Args(env,info,4,a))return nullptr;auto* p=GetHostIdentity(env,a[0]);if(!p)return nullptr;
  DWORD code=0,timeout=0;std::wstring shutdownId;
  if(!Number(env,a[1],code)||(code!=77&&code!=98)||!Number(env,a[2],timeout)||timeout>10000||!HostShutdownId(env,a[3],shutdownId))return Refuse(env,"HOST_ASYNC_REQUEST_REFUSED");
  if(p->hostShutdown){
-  auto* prior=p->hostShutdown;if(prior->env!=env)return Refuse(env,"HOST_ENVIRONMENT_REFUSED");
-  if(prior->code!=code||prior->timeout!=timeout||prior->shutdownId!=shutdownId)return Refuse(env,"HOST_SHUTDOWN_CONFLICT");
+  auto* prior=p->hostShutdown;if(prior->code!=code||prior->timeout!=timeout||prior->shutdownId!=shutdownId)return Refuse(env,"HOST_SHUTDOWN_CONFLICT");
   napi_value same=nullptr;if(napi_get_reference_value(env,prior->promiseRef,&same)!=napi_ok||!same)return Refuse(env,"HOST_SHUTDOWN_PROMISE_UNAVAILABLE");return same;
  }
  if(p->closed||p->asyncPending.load())return Refuse(env,"HOST_ASYNC_PENDING");
@@ -542,7 +462,6 @@ napi_value StopAndCloseHostAsync(napi_env env,napi_callback_info info){
  // can use raw identity; every other host entry goes through fenced Get().
  p->asyncPending.store(true);p->hostShutdown=work.release();auto* owned=p->hostShutdown;
  if(!PeerCaptureAndRetireHost(p,owned->peers)){owned->error="HOST_PEER_ROSTER_UNKNOWN";HostRejectRetained(env,owned);return promise;}
- if(!HostCapturePeerOrdinalData(owned)){owned->error="HOST_PEER_ORDINAL_CAPTURE_FAILED";HostRejectRetained(env,owned);return promise;}
  if(napi_queue_async_work(env,owned->task)!=napi_ok){owned->error="HOST_ASYNC_QUEUE_FAILED";HostRejectRetained(env,owned);return promise;}
  return promise;
 }
@@ -817,8 +736,6 @@ NAPI_MODULE_INIT(){
   {"consumePeerBootstrap",nullptr,PeerConsumeBootstrap,nullptr,nullptr,nullptr,napi_default,nullptr},
   {"closePeerWitness",nullptr,PeerCloseWitness,nullptr,nullptr,nullptr,napi_default,nullptr},
 
-  {"captureHostShutdownPeerRoster",nullptr,CaptureHostShutdownPeerRoster,nullptr,nullptr,nullptr,napi_default,nullptr},
-  {"captureHostShutdownExpectation",nullptr,CaptureHostShutdownExpectation,nullptr,nullptr,nullptr,napi_default,nullptr},
   {"stopAndCloseHostAsync",nullptr,StopAndCloseHostAsync,nullptr,nullptr,nullptr,napi_default,nullptr},
   {"stopAndCloseSessionAsync",nullptr,StopAndCloseSessionAsync,nullptr,nullptr,nullptr,napi_default,nullptr},
   {"createBootstrappedSession",nullptr,CreateBootstrappedSession,nullptr,nullptr,nullptr,napi_default,nullptr},

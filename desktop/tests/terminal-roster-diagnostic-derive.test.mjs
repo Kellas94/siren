@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {deriveRosterDiagnostic} from './native/derive-terminal-roster-diagnostic.mjs';
-const original=()=>readFileSync(new URL('../native/terminal-host-roster-candidate/ownership.cc',import.meta.url));
+const original=()=>readFileSync(new URL('./fixtures/terminal-host-roster-pre-exit-fix.cc',import.meta.url));
 test('diagnostic derivative retains source around the two explicit observation sites',()=>{
  const before=original(),text=before.toString('utf8'),derived=deriveRosterDiagnostic(before);
  const start=text.indexOf('bool HostExactExited('),end=text.indexOf('bool HostCaptureCurrentMembers(',start);

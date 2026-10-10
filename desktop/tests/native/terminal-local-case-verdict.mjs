@@ -1,5 +1,13 @@
 // Pure controlled-fixture DATA checks. No kernel authority or product admission.
 export const localNativeModes=Object.freeze(['zero','eight','listeners','accepts','captured','gc','session-async','host-loss','negative-no-stop','negative-js-hang']);
+function observerErrorMatches(error,expected){
+ if(error===expected)return true;
+ if(typeof error!=='string'||!error.startsWith(expected+':'))return false;
+ // The pinned C# Require appends a canonical signed Int32 error number.
+ // That suffix is informational; it cannot replace the exact failure code.
+ const suffix=error.slice(expected.length+1),number=Number(suffix);
+ return Number.isInteger(number)&&number>=-2147483648&&number<=2147483647&&String(number)===suffix;
+}
 export function localNativeCasePassed(value){
  try{
   const {mode,exit,result:r}=value;
@@ -8,8 +16,8 @@ export function localNativeCasePassed(value){
   if(!before||before.mode!==mode||before.sessionCount!==(mode==='zero'?0:8)||before.peerCount!==(['listeners','accepts','captured','gc','session-async'].includes(mode)?8:0)||!Array.isArray(r.before)||r.before.length===0)return false;
   if(mode.startsWith('negative-')){
    if(exit!==1||r.status!=='FAILED'||!Number.isInteger(r.cleanupEntryActive)||r.cleanupEntryActive<=0)return false;
-   if(mode==='negative-js-hang')return r.error==='EXTERNAL_WATCHDOG_DEADLINE:after.json'&&r.nativeAfter===undefined&&r.watchdogWorkerAlive===true&&Number.isInteger(r.watchdogElapsedMs)&&r.watchdogElapsedMs>=20000&&r.watchdogElapsedMs<25000&&r.watchdogProtocol==='after.json';
-   return r.error==='NATIVE_LEFT_LIVE_DESCENDANT'&&r.nativeAfter?.status==='DELIBERATELY_FALSE_SUCCESS_NEGATIVE_CONTROL'&&Array.isArray(r.afterBeforeSafetyCleanup)&&r.afterBeforeSafetyCleanup.some(p=>p.alive===true);
+   if(mode==='negative-js-hang')return observerErrorMatches(r.error,'EXTERNAL_WATCHDOG_DEADLINE:after.json')&&r.nativeAfter===undefined&&r.watchdogWorkerAlive===true&&Number.isInteger(r.watchdogElapsedMs)&&r.watchdogElapsedMs>=20000&&r.watchdogElapsedMs<25000&&r.watchdogProtocol==='after.json';
+   return observerErrorMatches(r.error,'NATIVE_LEFT_LIVE_DESCENDANT')&&r.nativeAfter?.status==='DELIBERATELY_FALSE_SUCCESS_NEGATIVE_CONTROL'&&Array.isArray(r.afterBeforeSafetyCleanup)&&r.afterBeforeSafetyCleanup.some(p=>p.alive===true);
   }
   return exit===0&&r.status==='LOCAL_NATIVE_CASE_PASSED'&&r.nativeGroupDeadBeforeSafetyCleanup===true&&r.canaryAliveBeforeSafetyCleanup===true&&r.finalActiveBeforeSafetyCleanup===0&&r.nativeAfter?.status==='NATIVE_OPERATION_COMPLETED'&&r.nativeAfter.mode===mode&&r.nativeAfter.checked?.ok===true&&r.nativeAfter.nativeExecutionAdmitted===false;
  }catch{return false;}

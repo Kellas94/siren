@@ -39,7 +39,7 @@ try {
  if(usePeers)for(let i=0;i<8;i++){
   const names=['control','data','command'].map(lane=>'\\\\.\\pipe\\siren-terminal-'+lane+'-'+randomBytes(16).toString('hex'));
   const pair=native.createPeerListeners(host,...names);pairs.push(pair);
-  if(config.mode!=='listeners')for(let lane=0;lane<3;lane++)pending.push(native.acceptPeerLane(pair,lane,10000).then(()=>({accepted:true}),e=>({accepted:false,error:e.code??e.message})));
+  if(config.mode!=='listeners')for(let lane=0;lane<3;lane++)pending.push(native.acceptPeerLane(pair,['control','history','command'][lane],10000).then(()=>({accepted:true}),e=>({accepted:false,error:e.code??e.message})));
  }
  const before=native.capture(host);assert(before.active>=1+count*2&&before.active<=2+count*4);assert.equal(before.held.length,before.active);
  write('before.json',{mainPid:process.pid,canaryPid:canary.pid,mode:config.mode,before,sessionCount:count,peerCount:pairs.length,sessionCaptures});

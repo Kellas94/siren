@@ -399,21 +399,13 @@ napi_value CaptureHostShutdownExpectation(napi_env env,napi_callback_info info){
 }
 
 bool HostExactExited(const Member& m,bool& dead){
- if(!m.process.h||m.image.empty()||GetProcessId(m.process.h)!=m.pid)return false;
+ if(!m.process.h||GetProcessId(m.process.h)!=m.pid)return false;
  FILETIME c,e,k,u;if(!GetProcessTimes(m.process.h,&c,&e,&k,&u)||Ticks(c)!=m.created)return false;
+ wchar_t image[32768];DWORD length=32768;
+ if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)||length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
  DWORD state=WaitForSingleObject(m.process.h,0),code=0;
  if((state!=WAIT_OBJECT_0&&state!=WAIT_TIMEOUT)||!GetExitCodeProcess(m.process.h,&code))return false;
- // The exact retained HANDLE identifies the object after exit. Windows may
- // no longer provide its executable path; image was checked while it was live.
- if(state==WAIT_OBJECT_0)return true;
- wchar_t image[32768];DWORD length=32768;
- if(!QueryFullProcessImageNameW(m.process.h,0,image,&length)){
-  // Exit can race the live observation. Unknown or still-live query failure
-  // remains a refusal; only the same signaled HANDLE with exit data can pass.
-  return WaitForSingleObject(m.process.h,0)==WAIT_OBJECT_0&&GetExitCodeProcess(m.process.h,&code);
- }
- if(length!=m.image.size()||CompareStringOrdinal(image,static_cast<int>(length),m.image.c_str(),static_cast<int>(m.image.size()),TRUE)!=CSTR_EQUAL)return false;
- dead=false;return true;
+ dead=dead&&state==WAIT_OBJECT_0;return true;
 }
 bool HostCaptureCurrentMembers(Owner* p){
  alignas(JOBOBJECT_BASIC_PROCESS_ID_LIST) unsigned char buffer[sizeof(JOBOBJECT_BASIC_PROCESS_ID_LIST)+128*sizeof(ULONG_PTR)]{};

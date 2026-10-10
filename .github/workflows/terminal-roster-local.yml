@@ -1,4 +1,4 @@
-name: Terminal shutdown diagnosis (not admitted)
+name: Terminal shutdown qualification (not admitted)
 on:
   push:
     branches: ['probe/terminal-roster-20261010']
@@ -26,19 +26,24 @@ jobs:
         run: |
           node --test desktop/tests/terminal-local-native-fixture.test.mjs desktop/tests/terminal-local-case-verdict.test.mjs
           if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-          node --test desktop/tests/terminal-roster-diagnostic-derive.test.mjs
+          node --test desktop/tests/terminal-roster-diagnostic-derive.test.mjs desktop/tests/terminal-local-worker-contract.test.mjs desktop/tests/terminal-host-roster-candidate-derive.test.mjs
           exit $LASTEXITCODE
       - name: Compile exact candidate with verified official inputs
         shell: pwsh
         timeout-minutes: 3
         run: ./desktop/tests/native/build-terminal-roster-ci.ps1
-      - name: Diagnose zero and host-loss under independent Safety Job
+      - name: Run ten native scenarios under independent Safety Job
         shell: pwsh
         timeout-minutes: 5
         run: |
           $taskOutput="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/observation"
-          # Diagnostic-only execution deliberately exits nonzero and cannot qualify a batch.
-          node desktop/tests/native/terminal-host-roster-local-runner.mjs $taskOutput --diagnostic-only
+          node desktop/tests/native/terminal-host-roster-local-runner.mjs $taskOutput
+          exit $LASTEXITCODE
+      - name: Recheck actual case records
+        shell: pwsh
+        run: |
+          $taskOutput="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/observation"
+          node desktop/tests/native/verify-terminal-local-run.mjs $taskOutput
           exit $LASTEXITCODE
       - name: Preserve raw results even on failure
         if: always()
@@ -58,6 +63,13 @@ jobs:
             desktop/tests/native/verify-terminal-local-run.mjs
             desktop/tests/native/build-terminal-roster-ci.ps1
             desktop/tests/native/derive-terminal-roster-diagnostic.mjs
+            desktop/tests/native/emit-terminal-host-exit-unit.mjs
+            desktop/tests/fixtures/terminal-host-exit-unit.cpp
+            desktop/tests/terminal-local-*.test.mjs
+            desktop/tests/terminal-roster-diagnostic-derive.test.mjs
+            desktop/tests/terminal-host-roster-candidate-derive.test.mjs
+            desktop/build/terminal-host-roster-candidate-derive.mjs
+            desktop/native/terminal-creator-host-async/**
             desktop/tests/fixtures/terminal-host-roster-*
             desktop/tests/fixtures/terminal-main-owner-observer.cs
             desktop/native/terminal-host-roster-candidate/**
