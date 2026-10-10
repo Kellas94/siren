@@ -1162,8 +1162,8 @@
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.js",
-      "bytes": 17741,
-      "sha256": "8db35a92629bb69324c23e4aa34481feff068ce3557ccfa8ed8848831766a59d"
+      "bytes": 17815,
+      "sha256": "6c65d6a279f8c70110378cc529fbee971c979c43d8804e40304df9fc0b1aed83"
     },
     {
       "path": "desktop/src/ui/docs/draft.js",

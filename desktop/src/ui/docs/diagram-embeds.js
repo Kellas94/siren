@@ -23,7 +23,7 @@
   async function command(method,block,extra={}){
    if(paused||disposed)return;const c=['setMode','update'].includes(method)?editable():getContext();if(!c)return;
    if(method==='setMode'&&extra.mode==='live')return previewLive(block,c);
-   return enqueue(async token=>{if(method!=='openSource'&&!stillEditable(c))return;const result=await api[method]({blockId:block.id,expectedDocumentVersion:c.version,...extra,...(method==='openSource'?{}:{operationId:crypto.randomUUID()})});if(!alive(token))return;if(result?.ok!==true){onStatus(result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Your local work is retained.':'Diagram could not be updated. The last saved visual is retained.');return;}if(method!=='openSource')onChanged(result);return result;});
+   return enqueue(async token=>{if(method!=='openSource'&&!stillEditable(c))return;const result=await api[method]({blockId:block.id,expectedDocumentVersion:c.version,...extra,...(method==='openSource'?{}:{operationId:crypto.randomUUID()})});if(!alive(token))return;if(result?.ok!==true){onStatus(result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Your local work is retained.':'Diagram could not be updated. The last saved visual is retained.'+(/^[A-Z][A-Z0-9_]{2,63}$/.test(result?.code??'')?' ('+result.code+')':''));return;}if(method!=='openSource')onChanged(result);return result;});
   }
   function render(block){
    const card=make('figure');card.className='document-diagram';card.dataset.embedId=block.id;cards.add(card);
