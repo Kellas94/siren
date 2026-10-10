@@ -27,6 +27,8 @@ jobs:
           node --test desktop/tests/terminal-local-native-fixture.test.mjs desktop/tests/terminal-local-case-verdict.test.mjs
           if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
           node --test desktop/tests/terminal-roster-diagnostic-derive.test.mjs desktop/tests/terminal-roster-fixed-diagnostic-derive.test.mjs desktop/tests/terminal-local-worker-contract.test.mjs desktop/tests/terminal-host-roster-candidate-derive.test.mjs
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+          node --expose-gc --test desktop/tests/terminal-shutdown-graph.test.mjs desktop/tests/terminal-graph-native-verdict.test.mjs desktop/tests/terminal-graph-native-evidence.test.mjs
           exit $LASTEXITCODE
       - name: Compile exact candidate with verified official inputs
         shell: pwsh
@@ -45,6 +47,15 @@ jobs:
           $taskOutput="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/observation"
           node desktop/tests/native/verify-terminal-local-run.mjs $taskOutput
           exit $LASTEXITCODE
+      - name: Run actual private graph with the same native candidate
+        shell: pwsh
+        timeout-minutes: 2
+        run: |
+          $taskRoot="desktop/evidence/terminal-roster-ci/$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          node desktop/tests/native/terminal-graph-native-runner.mjs "$taskRoot/graph-observation" "$taskRoot/observation/build/siren_terminal_host_roster_candidate.node"
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+          node desktop/tests/native/verify-terminal-graph-native.mjs "$taskRoot/graph-observation"
+          exit $LASTEXITCODE
       - name: Preserve raw results even on failure
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -58,6 +69,7 @@ jobs:
             desktop/evidence/terminal-roster-ci/*/build-result.json
             desktop/evidence/terminal-roster-ci/*/compile.txt
             desktop/evidence/terminal-roster-ci/*/observation/**
+            desktop/evidence/terminal-roster-ci/*/graph-observation/**
             desktop/tests/native/terminal-host-roster-local-*.mjs
             desktop/tests/native/terminal-local-*.mjs
             desktop/tests/native/verify-terminal-local-run.mjs
@@ -78,3 +90,69 @@ jobs:
             desktop/src/terminal/host-async-receipt-contract.mjs
             desktop/src/terminal/host-async-captured-operation.mjs
             .github/workflows/terminal-roster-local.yml
+            # GRAPH_SOURCE_INPUTS_BEGIN
+            .github/workflows/terminal-roster-local.yml
+            desktop/native/terminal-host-roster-candidate/binding.gyp
+            desktop/native/terminal-host-roster-candidate/ownership.cc
+            desktop/native/terminal-host-roster-candidate/peer-endpoints.inc
+            desktop/src/navigation/contracts.mjs
+            desktop/src/navigation/entries.mjs
+            desktop/src/navigation/window-labels.mjs
+            desktop/src/projects/budgets.mjs
+            desktop/src/projects/paths.mjs
+            desktop/src/terminal/command-protocol.mjs
+            desktop/src/terminal/contracts.mjs
+            desktop/src/terminal/creator-commands.mjs
+            desktop/src/terminal/creator-session.mjs
+            desktop/src/terminal/creator-startup.mjs
+            desktop/src/terminal/credits.mjs
+            desktop/src/terminal/cwd.mjs
+            desktop/src/terminal/host-async-captured-operation.mjs
+            desktop/src/terminal/host-async-receipt-contract.mjs
+            desktop/src/terminal/host-candidate-ownership.mjs
+            desktop/src/terminal/input-gate.mjs
+            desktop/src/terminal/native-three-lane-stream.mjs
+            desktop/src/terminal/output.mjs
+            desktop/src/terminal/policy.mjs
+            desktop/src/terminal/production-access-transitions.mjs
+            desktop/src/terminal/production-aggregate-gate.mjs
+            desktop/src/terminal/production-attachment-output.mjs
+            desktop/src/terminal/production-backend.mjs
+            desktop/src/terminal/production-control-channel.mjs
+            desktop/src/terminal/production-creator.mjs
+            desktop/src/terminal/production-gate-link.mjs
+            desktop/src/terminal/production-history-channel.mjs
+            desktop/src/terminal/production-manager.mjs
+            desktop/src/terminal/production-ownership.mjs
+            desktop/src/terminal/production-remote-output.mjs
+            desktop/src/terminal/production-session-state.mjs
+            desktop/src/terminal/profiles.mjs
+            desktop/src/terminal/provider-lifetime.mjs
+            desktop/src/terminal/remote-output.mjs
+            desktop/src/terminal/request-router.mjs
+            desktop/src/terminal/session-cleanup.mjs
+            desktop/src/terminal/session-command-channel.mjs
+            desktop/src/terminal/session-link.mjs
+            desktop/src/terminal/shutdown-graph.mjs
+            desktop/src/terminal/startup-protocol.mjs
+            desktop/src/terminal/three-lane-bootstrap-codec.mjs
+            desktop/src/windows/entities.mjs
+            desktop/src/windows/registry.mjs
+            desktop/src/windows/surface.mjs
+            desktop/tests/fixtures/terminal-graph-native-data.mjs
+            desktop/tests/fixtures/terminal-host-candidate-ownership.mjs
+            desktop/tests/fixtures/terminal-host-roster-local-payload.mjs
+            desktop/tests/fixtures/terminal-host-roster-observer-tail.cs
+            desktop/tests/fixtures/terminal-main-owner-observer.cs
+            desktop/tests/fixtures/terminal-manager-global.mjs
+            desktop/tests/fixtures/terminal-production-inert.mjs
+            desktop/tests/native/terminal-graph-native-runner.mjs
+            desktop/tests/native/terminal-graph-native-verdict.mjs
+            desktop/tests/native/terminal-graph-native-worker.mjs
+            desktop/tests/native/verify-terminal-graph-native.mjs
+            desktop/tests/terminal-graph-native-evidence.test.mjs
+            desktop/tests/terminal-graph-native-verdict.test.mjs
+            desktop/tests/terminal-shutdown-graph.test.mjs
+            docs/research/2026-10-10-terminal-graph-native-continuation.md
+            desktop/tests/native/terminal-graph-native-inputs.json
+            # GRAPH_SOURCE_INPUTS_END
