@@ -152,8 +152,8 @@
     },
     {
       "path": "desktop/build/windows.mjs",
-      "bytes": 23957,
-      "sha256": "b9590e0072169e5c8149c338cba1bf7c3778942a80a5bdd27bdbac30db491949"
+      "bytes": 24118,
+      "sha256": "3bf49c4b54acc7c7e3bea64b56338529da627286e61f559adcea3b87180fcbb5"
     },
     {
       "path": "desktop/build/workspace.mjs",
