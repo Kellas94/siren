@@ -2,7 +2,7 @@
   "schema": 1,
   "author": "/root",
   "scope": "ALLOWLISTED_DISPOSABLE_HOSTED_DOCS_DIAGRAM_SOURCE",
-  "localBase": "87abb74307ec8c8039ac656803412cde0c493ce9",
+  "localBase": "aeabd1b36a29522b43adcc3d64ff341e88e5fac7",
   "nativeOutcome": "UNVERIFIED",
   "rows": [
     {
@@ -297,8 +297,8 @@
     },
     {
       "path": "desktop/src/documents/diagram-embed-assets.mjs",
-      "bytes": 6590,
-      "sha256": "00236559fc41390b0e6c56ffdb1307c83df706b434104037e931106fe52138e1"
+      "bytes": 7695,
+      "sha256": "e61958a644cef6d22417511e1ae65d2c8d95614620dc329f360ccc04bf2128a8"
     },
     {
       "path": "desktop/src/documents/diagram-embed-bundle.mjs",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 40798,
-      "sha256": "24fa6ffccb3f52c4ee66b7a8b7b46b542f019c6c31585e2a6e09a94f65e2d8f0"
+      "bytes": 40774,
+      "sha256": "073f07fd3c6f384fd5cf3d9a0be9c2cfdd959947fea91957bf737ab60008f96f"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",

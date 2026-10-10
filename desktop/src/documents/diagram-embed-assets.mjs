@@ -1,4 +1,4 @@
-// Main-only inert asset storage. No decoding, rendering or collection/deletion.
+// Main-only inert asset storage. Never collects immutable/saved assets.
 import {open,lstat,opendir,link,unlink} from 'node:fs/promises';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
@@ -14,9 +14,24 @@ async function inventory(directory,staging=false){
  for await(const d of await opendir(directory)){
   if(!(staging?/^pending-[a-f0-9-]{36}\.tmp$/:/^[a-f0-9]{64}\.blob$/).test(d.name)||!d.isFile()||d.isSymbolicLink())fail('DIAGRAM_EMBED_ASSET_CORRUPT');
   const info=await lstat(join(directory,d.name));if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.size<(staging?0:1)||info.size>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
-  bytes+=info.size;rows.push({sha256:d.name.slice(0,-5),bytes:info.size});if(rows.length>4096||bytes>DIAGRAM_EMBED_PROJECT_BYTES)fail('DIAGRAM_EMBED_BUDGET');
+  bytes+=info.size;rows.push(staging?{name:d.name,identity:info,bytes:info.size}:{sha256:d.name.slice(0,-5),bytes:info.size});if(rows.length>4096||bytes>DIAGRAM_EMBED_PROJECT_BYTES)fail('DIAGRAM_EMBED_BUDGET');
  }
  return {rows,bytes};
+}
+function trustedWriter(options){
+ const owner=options?.ownerIdentity;
+ return Number.isSafeInteger(owner?.pid)&&owner.pid>0&&typeof owner.path==='string'&&owner.path.length>0&&typeof owner.startedAt==='string'&&owner.startedAt.length>0&&typeof options.inspectProcess==='function';
+}
+async function retireStages(directory,all,current){
+ // The complete inventory has already passed validation, and the caller owns
+ // the exclusive project writer. These names are unpublished, never saved refs.
+ for(const row of all.rows){
+  current();await ownedDirectory(directory);current();const info=await lstat(join(directory,row.name));current();
+  const prior=row.identity;
+  if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.dev!==prior.dev||info.ino!==prior.ino||info.size!==prior.size||info.mtimeMs!==prior.mtimeMs||info.ctimeMs!==prior.ctimeMs)fail('PENDING_CLEANUP_FAILED');
+  await unlink(join(directory,row.name));current();
+ }
+ return {rows:[],bytes:0};
 }
 export class DiagramEmbedAssetStore{
  #projects;
@@ -31,11 +46,12 @@ export class DiagramEmbedAssetStore{
   const copy=Buffer.from(bytes),ref={kind,bytes:copy.length,sha256:digest(copy)},directory=await this.#directory(projectId,true);current();
   return exclusiveWriter(await this.#projects.directory(projectId),async()=>{
    current();const all=await inventory(directory),existing=all.rows.find(r=>r.sha256===ref.sha256);current();
+   const staging=await childDirectory(await this.#projects.directory(projectId),'diagram-embed-staging',{create:true});current();let abandoned=await inventory(staging,true);current();
+   if(trustedWriter(this.#projects.writerOptions))abandoned=await retireStages(staging,abandoned,current);
    if(existing){await this.#verified(directory,ref);current();return ref;}
-   const staging=await childDirectory(await this.#projects.directory(projectId),'diagram-embed-staging',{create:true});current();const abandoned=await inventory(staging,true);current();
    if(all.bytes+abandoned.bytes+copy.length>DIAGRAM_EMBED_PROJECT_BYTES||all.rows.length+abandoned.rows.length>=4096)fail('DIAGRAM_EMBED_BUDGET');
-   // Incomplete bytes stay outside the immutable namespace; abandoned stages
-   // count against its budget and never grant deletion of another asset.
+   // Unproven stages remain bounded and count against the budget. Trusted
+   // cleanup above never grants deletion of an immutable asset.
    const temporary=join(staging,'pending-'+randomUUID()+'.tmp');let handle,identity,staged=false;
    try{
     current();handle=await open(temporary,'wx',0o600);staged=true;identity=await handle.stat();current();await handle.writeFile(copy);current();await handle.sync();await handle.close();handle=null;current();
