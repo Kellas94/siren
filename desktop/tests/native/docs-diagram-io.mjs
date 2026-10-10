@@ -38,6 +38,14 @@ export async function attachDocsIO({port,pid,file}){
  return {
   observations:()=>evaluate('globalThis.__docsEmbedChooser.calls'),
   restoreChooser,
+  armIncompleteStageClose:async({projectId,expectedBytes})=>{
+   assert.match(projectId,/^[a-f0-9-]{36}$/);assert.ok(Number.isSafeInteger(expectedBytes)&&expectedBytes>1000000&&expectedBytes<=2*1024*1024);
+   assert.equal(adapted,false,'Restore chooser before normal Close');
+   // Observe real filesystem staging, then call the actual native window Close
+   // synchronously in that callback. No write delay, IO replacement or fake
+   // publisher. This observes incomplete staging, not kernel flush completion.
+   return evaluate(`(()=>{const e=${electron},fs=process.getBuiltinModule('fs'),path=process.getBuiltinModule('path'),root=e.app.getPath('userData'),test=process.argv.find(a=>a.startsWith('--siren-test-root='))?.slice('--siren-test-root='.length);if(!test||fs.realpathSync(root)!==fs.realpathSync(test))throw Error('Owned test root required');const directory=path.join(root,'Projects',${JSON.stringify(projectId)},'diagram-embed-staging'),report=path.join(root,'native-diagram-stage-close.json');if(fs.lstatSync(directory).isSymbolicLink()||fs.existsSync(report))throw Error('Fresh owned stage observation required');const watcher=fs.watch(directory,(_event,name)=>{if(!/^pending-[a-f0-9-]{36}\\.tmp$/.test(String(name)))return;let stat;try{stat=fs.lstatSync(path.join(directory,String(name)));}catch{return;}if(!stat.isFile()||stat.isSymbolicLink()||stat.size>=${expectedBytes})return;watcher.close();const home=e.BaseWindow.getAllWindows().find(w=>!w.isDestroyed()&&w.webContents?.getURL()==='siren://app/home.html');if(!home)throw Error('Actual owned Home close target required');const observed={pid:process.pid,projectId:${JSON.stringify(projectId)},name:String(name),bytesAtClose:stat.size,expectedSourceBytes:${expectedBytes},at:new Date().toISOString(),route:'Native BaseWindow.close from observed incomplete asset stage',kernelWriteOrFlushQualified:false};home.close();fs.writeFileSync(report,JSON.stringify(observed),{flag:'wx'});});return {armed:true,projectId:${JSON.stringify(projectId)},expectedSourceBytes:${expectedBytes}};})()`);
+  },
   quitFromDocs:async url=>{
    assert.match(url,/^siren:\/\/app\/windows\/docs\.html\?windowId=[a-f0-9-]{36}$/);
    assert.equal(adapted,false,'Restore chooser before testing normal quit');

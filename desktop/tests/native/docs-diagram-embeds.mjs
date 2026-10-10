@@ -20,7 +20,7 @@ import {reserveDocsInspectorPort,attachDocsIO} from './docs-diagram-io.mjs';
 if(process.platform!=='win32'||process.env.GITHUB_ACTIONS!=='true'||process.env.GITHUB_REPOSITORY!=='Kellas94/siren'||process.env.GITHUB_REF!=='refs/heads/probe/docs-diagram-embeds-20261010')throw Error('HOSTED_DISPOSABLE_WINDOWS_ONLY');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const evidence=resolve('evidence/docs-diagram-embeds-native',new Date().toISOString().replaceAll(':','-')),data=join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const result={author:'/root',status:'ADVERSE',githubCommit:process.env.GITHUB_SHA,startedAt:new Date().toISOString(),cases:[],limitations:['Development Electron windows only; no installed/packaged release','Hosted viewport and CSS resize are not physical multiple-monitor qualification','Native in-flight write overlap remains unqualified; actual observed render overlap is recorded separately','No imported PNG qualification or asset garbage-collection admission','Restore uses a fixture-controlled OS file chooser; actual admission/copy/validation remain unchanged, manual dialog interaction unqualified','CtrlQ uses PID-checked Electron WebContents input; physical OS keyboard delivery remains unqualified','Screenshots require separate visual inspection; blueprint is a built-in theme, not custom palette qualification']};
+const result={author:'/root',status:'ADVERSE',githubCommit:process.env.GITHUB_SHA,startedAt:new Date().toISOString(),cases:[],limitations:['Development Electron windows only; no installed/packaged release','Hosted viewport and CSS resize are not physical multiple-monitor qualification','Observed incomplete asset staging can qualify pending publication Close; kernel write/flush and hard-crash overlap remain unqualified','No imported PNG qualification or asset garbage-collection admission','Restore uses a fixture-controlled OS file chooser; actual admission/copy/validation remain unchanged, manual dialog interaction unqualified','CtrlQ uses PID-checked Electron WebContents input; physical OS keyboard delivery remains unqualified','Screenshots require separate visual inspection; blueprint is a built-in theme, not custom palette qualification']};
 let driver,page,io,phase='fixture';
 async function inventory(){const rows=[];async function walk(path){const stat=await lstat(path);assert.equal(stat.isSymbolicLink(),false);if(stat.isDirectory()){for(const name of (await readdir(path)).sort())await walk(join(path,name));}else{const bytes=await readFile(path);rows.push({path:relative(resolve('.'),path).replaceAll('\\','/'),bytes:bytes.length,sha256:hash(bytes)});}}for(const p of ['src','build','tests/native','baseline','package.json','package-lock.json','generated/build.json','node_modules/electron/dist/electron.exe'])await walk(resolve(p));return rows;}
 const keys=async(own,key,code,vk,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await own.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:vk,modifiers});};
@@ -110,6 +110,32 @@ try{
  assert.deepEqual(await projects.readProject(imported.project.id),imported);assert.deepEqual(await saved(),beforeClose);
  assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
  check('Actual Electron CtrlQ from restored Docs reaches coordinated Close, joins process exit and retains both projects');
+ await writeFile(join(evidence,'restore-electron.log'),driver.logs());await driver.close();driver=null;page=null;
+ phase='close-incomplete-stage';
+ const large=await projects.createProject({label:'Pending asset publication fixture',json:'{}'}),largeMetadata=structuredClone(metadata);
+ const largeWorkspace=JSON.parse(largeMetadata.storage['t-industries-siren-v23-state']);
+ largeWorkspace.diagrams[0].futureNativeOverlapPadding='P'.repeat(1850000);
+ const expectedSourceBytes=Buffer.byteLength(JSON.stringify(largeWorkspace.diagrams[0]));
+ largeMetadata.storage['t-industries-siren-v23-state']=JSON.stringify(largeWorkspace);
+ assert.equal((await commitManifest({projects,repository:sources,recovery,projectId:large.project.id,baseRevision:1,sourceRefs:[],metadata:largeMetadata,operationId:'pending-native-asset-fixture'})).ok,true);
+ const largeBefore=await projects.readProject(large.project.id);await mkdir(join(await projects.directory(large.project.id),'diagram-embed-staging'));
+ await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:large.project.id}));
+ const writePort=await reserveDocsInspectorPort();driver=await launchDesktop({extraArgs:['--siren-test-root='+data,'--siren-test-project='+large.project.id,'--inspect=127.0.0.1:'+writePort]});
+ io=await attachDocsIO({port:writePort,pid:driver.pid,file:join(evidence,'backup.siren-backup')});await io.restoreChooser();
+ await unlockDesktop(driver,{pin:'4826',surface:'home'});const largeReader=await open('docs','doc-a'),largeEditor=await working(largeReader,'docs');page=largeEditor.page;
+ await click(page,'.document-block-actions>button:first-child');
+ await page.waitFor('document.querySelector(".document-diagram-picker")?.open===true&&document.querySelector("[data-embed-action=choose-diagram]")?.options.length===1');
+ await click(page,'[data-embed-action=preview]');await page.waitFor('document.querySelector(".document-diagram-picker img")?.naturalWidth>0&&!document.querySelector("[data-embed-action=confirm-insert]").disabled');
+ result.writeCloseArmed=await io.armIncompleteStageClose({projectId:large.project.id,expectedBytes:expectedSourceBytes});await io.close();io=null;
+ await click(page,'[data-embed-action=confirm-insert]').catch(error=>{if(error.cdpCode!==-32000)throw error;result.writeCloseInputTransport={retired:true,message:error.message};});
+ await driver.waitForExit();result.writeCloseJoined=true;
+ const observed=JSON.parse(await readFile(join(data,'native-diagram-stage-close.json')));assert.equal(observed.pid,driver.pid);assert.equal(observed.projectId,large.project.id);assert.equal(observed.expectedSourceBytes,expectedSourceBytes);assert.ok(observed.bytesAtClose<expectedSourceBytes);
+ assert.deepEqual(await projects.readProject(large.project.id),largeBefore);assert.deepEqual(await saved(),beforeClose);assert.deepEqual(await projects.readProject(imported.project.id),imported);
+ assert.deepEqual(await readdir(join(await projects.directory(large.project.id),'diagram-embed-staging')),[]);
+ const retention=await assets.scanRetention({projectId:large.project.id,authorities:['current','revision','pending','undo','recovery'].map(kind=>({kind,refs:[]}))});assert.equal(retention.deletionAuthorized,false);
+ assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
+ result.writeClose={observation:observed,before:{revision:largeBefore.revision,sha256:largeBefore.sha256},unreferencedCompleteAssets:retention.unreferenced};
+ check('Observed incomplete source asset staging overlaps actual native Close, joins cleanup and preserves all three exact saved projects');
  result.status='BOUNDED_NATIVE_COMPLETE';
 }catch(error){result.error={phase,code:error.code,message:error.message,stack:error.stack};try{result.ui=await(page??driver)?.evaluate('({url:location.href,body:{...document.body.dataset},text:document.body.innerText.slice(0,5000)})');await(page??driver)?.screenshot(join(evidence,'failure.png'));}catch{}}
 finally{try{await io?.close();}catch{}if(driver)await writeFile(join(evidence,'electron.log'),driver.logs());await driver?.close();result.finishedAt=new Date().toISOString();if(result.inputs){const after=await inventory();result.changedInputs=result.inputs.filter((row,i)=>JSON.stringify(row)!==JSON.stringify(after[i]));if(result.changedInputs.length)result.status='ADVERSE';}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error}));process.exitCode=result.status==='BOUNDED_NATIVE_COMPLETE'?0:1;}
