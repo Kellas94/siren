@@ -1597,8 +1597,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds-diagnostic.mjs",
-      "bytes": 2752,
-      "sha256": "f35f5042934d9186fc1233e6a459b8297293508b3b7e79b67888afa6dc1e9a61"
+      "bytes": 3337,
+      "sha256": "cc6a17ea403acc7cff36ec55bb26b99895e43b9bb38a83d9f233182afd29acd3"
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds-preflight.mjs",
