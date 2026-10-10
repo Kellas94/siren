@@ -41,7 +41,7 @@ try{
  if($taskProject -notmatch 'win_delay_load_hook.cc' -or $taskProject -notmatch '<DelayLoadDLLs>node.exe(?:;|<)'){throw 'ELECTRON_DELAY_LOAD_CONFIGURATION_REQUIRED'}
  $taskReadLogs=@(Get-ChildItem -LiteralPath (Join-Path $taskCandidate 'build') -Recurse -File -Filter '*.read.*.tlog')
  if($taskReadLogs.Count -eq 0){throw 'COMPILER_TRACKING_REQUIRED'}
- $taskTracked=@($taskReadLogs | ForEach-Object {Get-Content -LiteralPath $_.FullName -Encoding Unicode} | ForEach-Object {$_.Trim()} | Where-Object {$_ -and -not $_.StartsWith('^') -and [IO.Path]::IsPathRooted($_)} | Sort-Object -Unique)
+ $taskTracked=@($taskReadLogs | ForEach-Object {Get-Content -LiteralPath $_.FullName -Encoding Unicode} | ForEach-Object {$_.Trim()} | ForEach-Object {if($_.StartsWith('^')){$_.Substring(1).Split('|')}else{$_}} | Where-Object {$_ -and [IO.Path]::IsPathRooted($_)} | Sort-Object -Unique)
  foreach($taskPath in $taskTracked){$taskReceipt.trackedInputs+=,(Task-Pin $taskPath)}
  if(-not ($taskTracked | Where-Object {$_ -match '[\\/]win_delay_load_hook.cc$'}) -or -not ($taskTracked | Where-Object {$_ -match '[\\/]node_api.h$'}) -or -not ($taskTracked | Where-Object {$_ -match '[\\/]windows.h$'})){throw 'ACTUAL_TARGET_COMPILER_INPUTS_REQUIRED'}
  $taskReceipt.delayLoadHook=$true;$taskReceipt.binary=Task-Pin (Join-Path $taskCandidate 'build/Release/siren_terminal_host_roster_candidate.node')

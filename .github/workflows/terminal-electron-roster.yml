@@ -32,6 +32,8 @@ jobs:
           if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
           ./desktop/tests/native/terminal-electron-tool-discovery.test.ps1
           if(-not $?){exit 1}
+          ./desktop/tests/native/terminal-electron-roster-tracking.test.ps1
+          if(-not $?){exit 1}
           exit $LASTEXITCODE
       - name: Compile corrected sources against exact Electron target
         shell: pwsh
