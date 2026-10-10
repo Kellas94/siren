@@ -48,7 +48,7 @@ export class DiagramEmbedAssetStore{
     if(handle)await handle.close();
     if(staged){await ownedDirectory(staging);const info=await lstat(temporary);if(!identity||!info.isFile()||info.isSymbolicLink()||info.dev!==identity.dev||info.ino!==identity.ino)fail('PENDING_CLEANUP_FAILED');await unlink(temporary);}
    }
-  });
+  },this.#projects.writerOptions);
  }
  async read({projectId,ref,isCurrent}){
   const current=guard(isCurrent);current();const normalized=normalizeDiagramEmbedAssetRef(ref),directory=await this.#directory(projectId);current();const bytes=await this.#verified(directory,normalized);current();return bytes;
