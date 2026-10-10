@@ -2,7 +2,7 @@ $ErrorActionPreference='Stop'
 if($env:GITHUB_ACTIONS -ne 'true' -or $env:GITHUB_REPOSITORY -ne 'Kellas94/siren' -or $env:GITHUB_REF -ne 'refs/heads/probe/terminal-roster-20261010'){throw 'EXACT_HOSTED_PROBE_CONTEXT_REQUIRED'}
 if($env:GITHUB_RUN_ID -notmatch '^\d+$' -or $env:GITHUB_RUN_ATTEMPT -notmatch '^\d+$' -or $env:GITHUB_SHA -notmatch '^[a-f0-9]{40}$'){throw 'EXACT_RUN_IDENTITY_REQUIRED'}
 $taskRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
-$taskNode=(Get-Command node.exe -CommandType Application -ErrorAction Stop).Source
+$taskNode=(Get-Command node.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 if((& $taskNode --version) -ne 'v24.16.0' -or $LASTEXITCODE -ne 0){throw 'EXACT_NODE_REQUIRED'}
 $taskEvidence=Join-Path $taskRoot ('desktop/evidence/terminal-roster-ci/'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
 New-Item -ItemType Directory -Path $taskEvidence -ErrorAction Stop | Out-Null
