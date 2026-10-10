@@ -1157,13 +1157,13 @@
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.css",
-      "bytes": 2996,
-      "sha256": "759e037150333cd5604785c1e697e9c959a0fb40506ff8899568737d137e8a56"
+      "bytes": 3571,
+      "sha256": "71c3f4ee3176ec63914a9a80cbb10f5725cfccc92ce87a26c82fb7fd8b6a9a76"
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.js",
-      "bytes": 17815,
-      "sha256": "6c65d6a279f8c70110378cc529fbee971c979c43d8804e40304df9fc0b1aed83"
+      "bytes": 19688,
+      "sha256": "30fe9b22dc46e74689bfac8f649b5946881e2bb75f750f86fe466cb60e2af85e"
     },
     {
       "path": "desktop/src/ui/docs/draft.js",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 16788,
-      "sha256": "a80864cee78a6513d4253583f29e1b9c23355468a66ea43e0466ec206cfa8129"
+      "bytes": 18187,
+      "sha256": "803fde6fb118efe58b35c03ef4ff179969e86116daa6d4fdd54ff629ce4b0ff5"
     },
     {
       "path": "desktop/tests/native/drive.mjs",
