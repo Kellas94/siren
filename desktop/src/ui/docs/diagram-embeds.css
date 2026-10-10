@@ -6,3 +6,5 @@
 .document-diagram-selection{max-height:260px;overflow:auto;border:1px solid #78859a44;border-radius:12px;margin:16px 0;padding:12px}.document-diagram-selection legend{font-size:12px;opacity:.7}.document-diagram-selection label{display:flex;gap:10px;align-items:baseline;padding:7px;font-size:13px;overflow-wrap:anywhere}.document-diagram-selection input{accent-color:var(--desktop-accent,#648dff)}.document-diagram-selection[hidden]{display:none}
 
 .document-diagram-resize{display:block;width:100%;height:20px;padding:0!important;margin:0;border:0!important;border-radius:0!important;background:transparent!important;cursor:ns-resize;touch-action:none;box-shadow:none!important}.document-diagram-resize::after{content:"";display:block;width:36px;height:3px;border-radius:3px;margin:auto;background:currentColor;opacity:.3}.document-diagram-resize:hover::after,.document-diagram-resize:focus-visible::after{opacity:.85}.document-diagram-resize:focus-visible{outline:2px solid var(--desktop-accent,#648dff);outline-offset:-3px}
+
+.document-diagram-identity{margin:0 18px 10px!important;font-size:12px!important;line-height:1.5!important;opacity:.8;overflow-wrap:anywhere}

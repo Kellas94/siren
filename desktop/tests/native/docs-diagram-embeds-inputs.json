@@ -297,8 +297,8 @@
     },
     {
       "path": "desktop/src/documents/diagram-embed-assets.mjs",
-      "bytes": 5250,
-      "sha256": "5cdf18478ceb4e56710fc1817894d422058a4437b4b1c80ad1bea21664152456"
+      "bytes": 6561,
+      "sha256": "60af167cca0b641d88384c0a5653dc0f76fb9c62c0bf74cfbe37f3d5d781cf3d"
     },
     {
       "path": "desktop/src/documents/diagram-embed-bundle.mjs",
@@ -1157,13 +1157,13 @@
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.css",
-      "bytes": 3571,
-      "sha256": "71c3f4ee3176ec63914a9a80cbb10f5725cfccc92ce87a26c82fb7fd8b6a9a76"
+      "bytes": 3724,
+      "sha256": "699978629d88d6702221062f2735278c5adf7e03d2deb59f0a3b2615cd57a062"
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.js",
-      "bytes": 19723,
-      "sha256": "efe6e676cc5b36524561bb2c6b36f58fb64fbf9889aa0a7cf8a65ecefe260e82"
+      "bytes": 20327,
+      "sha256": "7f974748294cd12dea65a2bd4ae1156770d4292b7713c10346064c4c63b7d10b"
     },
     {
       "path": "desktop/src/ui/docs/draft.js",
@@ -1417,8 +1417,8 @@
     },
     {
       "path": "desktop/src/windows/docs-diagrams.mjs",
-      "bytes": 26219,
-      "sha256": "364f53eccee5fea5cb21b8cfa1da3def494cbd9621782b4f260d423f89030634"
+      "bytes": 26962,
+      "sha256": "5c23459246217cb8613c4fcd52f0b09cedec48ae25aa2adeb9c60d18ef1c407a"
     },
     {
       "path": "desktop/src/windows/docs-edits.mjs",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 18813,
-      "sha256": "578af344f938bcb0a19d319c0d0ce6b53584ae9e82e69b1d9fc4865aef4c8c4b"
+      "bytes": 19021,
+      "sha256": "5c63bea42af83370444495608e8079de46d2a8f3479ccc849456bddf2f5dda95"
     },
     {
       "path": "desktop/tests/native/drive.mjs",

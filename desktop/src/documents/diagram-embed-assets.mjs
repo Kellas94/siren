@@ -1,6 +1,7 @@
 // Main-only inert asset storage. No decoding, rendering or collection/deletion.
-import {open,lstat,opendir} from 'node:fs/promises';
+import {open,lstat,opendir,link,unlink} from 'node:fs/promises';
 import {join} from 'node:path';
+import {randomUUID} from 'node:crypto';
 import {ownedDirectory,childDirectory,validId} from '../projects/paths.mjs';
 import {readOwnedBytes} from '../projects/io.mjs';
 import {digest,exclusiveWriter} from '../projects/atomic.mjs';
@@ -8,11 +9,11 @@ import {DIAGRAM_EMBED_ASSET_BYTES,normalizeDiagramEmbedAssetRef} from './diagram
 export const DIAGRAM_EMBED_PROJECT_BYTES=128*1024*1024;
 const fail=code=>{throw Object.assign(Error(code),{code});},kinds=['svg','png','diagram-source'];
 function guard(callback){if(typeof callback!=='function')fail('ACCESS_REFUSED');let revoked=false;return()=>{try{if(callback()!==true)revoked=true;}catch{revoked=true;}if(revoked)fail('ACCESS_REFUSED');};}
-async function inventory(directory){
+async function inventory(directory,staging=false){
  const rows=[];let bytes=0;await ownedDirectory(directory);
  for await(const d of await opendir(directory)){
-  if(!/^[a-f0-9]{64}\.blob$/.test(d.name)||!d.isFile()||d.isSymbolicLink())fail('DIAGRAM_EMBED_ASSET_CORRUPT');
-  const info=await lstat(join(directory,d.name));if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.size<1||info.size>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+  if(!(staging?/^pending-[a-f0-9-]{36}\.tmp$/:/^[a-f0-9]{64}\.blob$/).test(d.name)||!d.isFile()||d.isSymbolicLink())fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+  const info=await lstat(join(directory,d.name));if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.size<(staging?0:1)||info.size>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
   bytes+=info.size;rows.push({sha256:d.name.slice(0,-5),bytes:info.size});if(rows.length>4096||bytes>DIAGRAM_EMBED_PROJECT_BYTES)fail('DIAGRAM_EMBED_BUDGET');
  }
  return {rows,bytes};
@@ -31,10 +32,22 @@ export class DiagramEmbedAssetStore{
   return exclusiveWriter(await this.#projects.directory(projectId),async()=>{
    current();const all=await inventory(directory),existing=all.rows.find(r=>r.sha256===ref.sha256);current();
    if(existing){await this.#verified(directory,ref);current();return ref;}
-   if(all.bytes+copy.length>DIAGRAM_EMBED_PROJECT_BYTES||all.rows.length>=4096)fail('DIAGRAM_EMBED_BUDGET');
-   await ownedDirectory(directory);current();const handle=await open(join(directory,ref.sha256+'.blob'),'wx',0o600);
-   try{current();await handle.writeFile(copy);await handle.sync();}finally{await handle.close();}
-   current();await this.#verified(directory,ref);current();return ref;
+   const staging=await childDirectory(await this.#projects.directory(projectId),'diagram-embed-staging',{create:true});current();const abandoned=await inventory(staging,true);current();
+   if(all.bytes+abandoned.bytes+copy.length>DIAGRAM_EMBED_PROJECT_BYTES||all.rows.length+abandoned.rows.length>=4096)fail('DIAGRAM_EMBED_BUDGET');
+   // Incomplete bytes stay outside the immutable namespace; abandoned stages
+   // count against its budget and never grant deletion of another asset.
+   const temporary=join(staging,'pending-'+randomUUID()+'.tmp');let handle,identity,staged=false;
+   try{
+    current();handle=await open(temporary,'wx',0o600);staged=true;identity=await handle.stat();current();await handle.writeFile(copy);current();await handle.sync();await handle.close();handle=null;current();
+    const actual=await readOwnedBytes(temporary,copy.length);if(!actual.equals(copy))fail('DIAGRAM_EMBED_ASSET_CORRUPT');current();await ownedDirectory(directory);current();
+    // Atomic no-replace publication. Always retire our staging name before
+    // checking revocation, so ordinary Lock cannot leave a two-link file.
+    await link(temporary,join(directory,ref.sha256+'.blob'));await unlink(temporary);staged=false;
+    current();await this.#verified(directory,ref);current();return ref;
+   }finally{
+    if(handle)await handle.close();
+    if(staged){await ownedDirectory(staging);const info=await lstat(temporary);if(!identity||!info.isFile()||info.isSymbolicLink()||info.dev!==identity.dev||info.ino!==identity.ino)fail('PENDING_CLEANUP_FAILED');await unlink(temporary);}
+   }
   });
  }
  async read({projectId,ref,isCurrent}){
