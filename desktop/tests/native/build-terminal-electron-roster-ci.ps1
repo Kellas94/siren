@@ -2,7 +2,7 @@ $ErrorActionPreference='Stop'
 if($env:GITHUB_ACTIONS -ne 'true' -or $env:GITHUB_REPOSITORY -ne 'Kellas94/siren' -or $env:GITHUB_REF -ne 'refs/heads/probe/terminal-roster-20261010'){throw 'EXACT_HOSTED_CONTEXT_REQUIRED'}
 if($env:GITHUB_RUN_ID -notmatch '^\d+$' -or $env:GITHUB_RUN_ATTEMPT -notmatch '^\d+$' -or $env:GITHUB_SHA -notmatch '^[a-f0-9]{40}$'){throw 'RUN_IDENTITY_REQUIRED'}
 $taskRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
-$taskNode=(Get-Command node.exe -CommandType Application).Source
+$taskNode=(Get-Command node.exe -CommandType Application | Select-Object -First 1).Source
 if((& $taskNode --version) -ne 'v24.16.0' -or $LASTEXITCODE -ne 0){throw 'EXACT_NODE_REQUIRED'}
 $taskOut=Join-Path $taskRoot ('desktop/evidence/terminal-electron-roster/'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
 New-Item -ItemType Directory -Path $taskOut -ErrorAction Stop | Out-Null
@@ -30,7 +30,7 @@ try{
  if($LASTEXITCODE -ne 0 -or $taskVs.Count -ne 1){throw 'EXACT_COMPILER_DISCOVERY_REQUIRED'}
  $taskMsvc=(Get-ChildItem -LiteralPath (Join-Path $taskVs[0] 'VC/Tools/MSVC') -Directory | Where-Object {$_.Name -match '^\d+\.\d+\.\d+$'} | Sort-Object {[version]$_.Name} -Descending | Select-Object -First 1).Name
  $taskMsbuild=Join-Path $taskVs[0] 'MSBuild/Current/Bin/amd64/MSBuild.exe'
- $taskPython=(Get-Command python.exe -CommandType Application).Source
+ $taskPython=(Get-Command python.exe -CommandType Application | Select-Object -First 1).Source
  foreach($taskPath in @($taskNode,$taskNpm,$taskInstall,$taskElectronPackage,$taskHook,$taskLocator,$taskMsbuild,$taskPython,$PSCommandPath)){$taskReceipt.inputs+=,(Task-Pin $taskPath)}
  Push-Location -LiteralPath $taskCandidate
  try{

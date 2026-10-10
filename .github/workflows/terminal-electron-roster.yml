@@ -6,6 +6,7 @@ on:
       - '.github/workflows/terminal-electron-roster.yml'
       - 'desktop/tests/native/*terminal-electron-roster*'
       - 'desktop/tests/terminal-electron-roster-contract.test.mjs'
+      - 'desktop/tests/native/terminal-electron-tool-discovery.test.ps1'
 permissions:
   contents: read
 concurrency:
@@ -28,6 +29,9 @@ jobs:
         shell: pwsh
         run: |
           node --test desktop/tests/terminal-electron-roster-contract.test.mjs
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+          ./desktop/tests/native/terminal-electron-tool-discovery.test.ps1
+          if(-not $?){exit 1}
           exit $LASTEXITCODE
       - name: Compile corrected sources against exact Electron target
         shell: pwsh
@@ -65,6 +69,7 @@ jobs:
             desktop/evidence/terminal-electron-roster/*/deps/package*.json
             .github/workflows/terminal-electron-roster.yml
             desktop/tests/native/*terminal-electron-roster*
+            desktop/tests/native/terminal-electron-tool-discovery.test.ps1
             desktop/tests/terminal-electron-roster-contract.test.mjs
             desktop/native/terminal-host-roster-candidate/ownership.cc
             desktop/native/terminal-host-roster-candidate/peer-endpoints.inc
