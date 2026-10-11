@@ -2,7 +2,7 @@
   "schema": 1,
   "author": "/root",
   "scope": "ALLOWLISTED_DISPOSABLE_HOSTED_DOCS_DIAGRAM_SOURCE",
-  "localBase": "820b7f2ab95494fff5dd20f58081432e979f060a",
+  "localBase": "6f157bc55d82be4c9762989c68a8433563bab86f",
   "nativeOutcome": "UNVERIFIED",
   "rows": [
     {
@@ -367,8 +367,8 @@
     },
     {
       "path": "desktop/src/help/catalog.mjs",
-      "bytes": 16908,
-      "sha256": "5960afe68c72ba7a6558718f63b072ecfa8ec7d03f26f8e869575798f213feb1"
+      "bytes": 20080,
+      "sha256": "3f2a259ae8c5e6f54521f6df512d942f40510c2815322c8af0b8a29aa2fb556a"
     },
     {
       "path": "desktop/src/help/native.mjs",
@@ -1162,8 +1162,8 @@
     },
     {
       "path": "desktop/src/ui/docs/diagram-embeds.js",
-      "bytes": 20327,
-      "sha256": "7f974748294cd12dea65a2bd4ae1156770d4292b7713c10346064c4c63b7d10b"
+      "bytes": 20481,
+      "sha256": "1d6f1e1c61f750fea9397e38de3c6fb66adfb4416db9d8391d147799b9ee751d"
     },
     {
       "path": "desktop/src/ui/docs/draft.js",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 47984,
-      "sha256": "ea817d2571736ebbff8c2429cbec891d4e9d8ccc0c046ce83a7b0f82e3897da8"
+      "bytes": 51434,
+      "sha256": "661a3c81f750861f2b30781ae3424e0f4ece5771a76a9afe3ed38d8a5a6ed10a"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",

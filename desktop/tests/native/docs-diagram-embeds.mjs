@@ -6,6 +6,7 @@ import {join,resolve,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
 import {ProjectStore} from '../../src/projects/store.mjs';
+import {exclusiveWriter} from '../../src/projects/atomic.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {RecoveryStore} from '../../src/recovery/checkpoints.mjs';
 import {DiagramEmbedAssetStore} from '../../src/documents/diagram-embed-assets.mjs';
@@ -233,6 +234,27 @@ try{
  const linkedRetry=await projects.readProject(linkedLarge.project.id);assert.equal(workspaceMetadata(linkedRetry).workpapers[0].blocks.length,3);assert.equal((await verifyDiagramSnapshot({snapshot:linkedRetry,assets,isCurrent:()=>true})).length,2);
  assert.deepEqual(await readdir(join(linkedDirectory,'diagram-embed-staging')),[]);assert.deepEqual(await readFile(linkedFinal),linkedBytes);assert.equal((await lstat(linkedFinal)).nlink,1);
  result.linkedRestart={pid:driver.pid,saved:{revision:linkedRetry.revision,sha256:linkedRetry.sha256,assetRefs:diagramBundleRefs(linkedRetry)},retainedFinal:{name:linkedObserved.finalName,sha256:hash(await readFile(linkedFinal)),links:1},stagingEmpty:true};
+ phase='insertion-help';
+ await click(page,'.document-block-actions>button:first-child');await page.waitFor('document.querySelector(".document-diagram-picker")?.open===true');await click(page,'[data-embed-action=preview]');await page.waitFor('document.querySelector(".document-diagram-picker img")?.naturalWidth>0&&!document.querySelector("[data-embed-action=confirm-insert]").disabled');
+ // Hold a genuine project writer in this fixture process. No product result,
+ // publisher, recovery function or main-process handler is replaced.
+ let releaseWriter,writerReady;const writerEntered=new Promise(r=>writerReady=r);
+ const heldWriter=exclusiveWriter(linkedDirectory,async()=>{writerReady();await new Promise(r=>releaseWriter=r);});
+ await Promise.race([writerEntered,heldWriter.then(()=>{throw Error('Writer did not remain held');})]);
+ try{
+  const lock=JSON.parse(await readFile(join(linkedDirectory,'writer.lock')));assert.equal(lock.pid,process.pid);
+  await click(page,'[data-embed-action=confirm-insert]');await page.waitFor('document.querySelector(".document-diagram-picker p[role=status]")?.textContent.includes("WRITER_BUSY")&&document.querySelector(".document-diagram-picker .siren-help-error")!=null');
+  const status=await page.evaluate('document.querySelector(".document-diagram-picker p[role=status]").textContent');assert.doesNotMatch(status,/Preview the latest/);assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedRetry);
+  await click(page,'.document-diagram-picker .siren-help-error');await page.waitFor('document.getElementById("sirenHelpDiagnostics")?.open===true');
+  assert.equal(await page.evaluate('document.querySelector("#sirenHelpArticle h2").textContent'),'Diagram insertion and safe recovery');assert.match(await page.evaluate('document.getElementById("sirenHelpContext").textContent'),/WRITER_BUSY/);
+  const firstStep=await page.evaluate('document.getElementById("sirenHelpFlowCurrent").textContent');await click(page,'#sirenHelpFlowChoices button');assert.notEqual(await page.evaluate('document.getElementById("sirenHelpFlowCurrent").textContent'),firstStep);
+  await click(page,'#sirenHelpQuery');await keys(page,'a','KeyA',65,2);await page.send('Input.insertText',{text:'PENDING_CLEANUP_FAILED'});await page.waitFor('document.querySelectorAll("#sirenHelpResults button").length===1');await click(page,'#sirenHelpResults button');assert.equal(await page.evaluate('document.querySelector("#sirenHelpArticle h2").textContent'),'Diagram insertion and safe recovery');
+  await page.screenshot(join(evidence,'docs-insertion-help.png'));await keys(page,'Escape','Escape',27);await page.waitFor('document.getElementById("sirenHelpDiagnostics")==null');assert.equal(await page.evaluate('document.activeElement.classList.contains("siren-help-error")'),true);
+  result.insertionHelp={code:'WRITER_BUSY',writerPid:process.pid,mainPid:driver.pid,realExclusiveWriter:true,status,article:'docs-diagram-insert',searchCode:'PENDING_CLEANUP_FAILED',interactiveFlow:true,focusRestored:true,savedUnchanged:true};assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedRetry);
+  await click(page,'[data-embed-action=cancel-insert]');
+ }finally{releaseWriter();await heldWriter;}
+ await assert.rejects(lstat(join(linkedDirectory,'writer.lock')),{code:'ENOENT'});assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedRetry);
+ check('Actual held project writer refuses UI insertion with WRITER_BUSY; Explain error opens offline scoped manual, interactive flow/search and Escape focus, without changing saved data');
  result.linkedRestart.quit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+linkedRestartEditor.view.windowId);await io.close();io=null;await driver.waitForExit();result.linkedRestart.processJoined=true;
  assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedRetry);assert.deepEqual(await projects.readProject(crashLarge.project.id),retry);assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
  check('Actual restart repairs only the pending hardlink name, preserves final bytes, saves a fresh valid embed and joins genuine Docs CtrlQ');
