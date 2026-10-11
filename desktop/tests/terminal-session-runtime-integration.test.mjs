@@ -100,3 +100,18 @@ test('hosted shell environment retains only explicit normal Windows context and 
  assert.equal(env.USERPROFILE,'C:\\Users\\fixture');assert.equal(env.TEMP,'C:\\Temp');
  for(const key of ['GITHUB_TOKEN','ACTIONS_RUNTIME_TOKEN','NODE_OPTIONS','PSModulePath'])assert.equal(Object.hasOwn(env,key),false);
 });
+
+async function observerReadyFragment(chunks){
+ const start=worker.indexOf('const observerReady=new Promise('),end=worker.indexOf('\n  const observed=',start);assert.ok(start>0&&end>start);
+ const stdout=new EventEmitter(),stderr=new EventEmitter(),observer=new EventEmitter();observer.stdout=stdout;observer.stderr=stderr;
+ const ready=runInNewContext(worker.slice(start,end)+';observerReady',{observer,observerStdout:'',observerStderr:'',Promise,Error});
+ let state='pending';ready.then(()=>state='resolved',()=>state='rejected');
+ for(const chunk of chunks){stdout.emit('data',chunk);await Promise.resolve();assert.equal(state,'pending','incomplete stdout line cannot settle READY');}
+ return {stdout,ready};
+}
+test('actual observer READY waits for a complete newline-framed JSON across stdout chunks',async()=>{
+ const f=await observerReadyFragment(['{"status":"REA','DY","identities":[',']}']);f.stdout.emit('data','\r\n');assert.deepEqual(JSON.parse(JSON.stringify(await f.ready)),{status:'READY',identities:[]});
+});
+test('complete malformed observer JSON is refused instead of accepted as READY',async()=>{
+ const f=await observerReadyFragment(['{"status":']);f.stdout.emit('data','invalid}\n');await assert.rejects(f.ready,/OBSERVER_READY_JSON/);
+});

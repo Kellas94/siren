@@ -125,7 +125,8 @@ export async function startRuntimeProbe(config){
   assert.deepEqual(await pin(observerExecutable),observerPin);
   observer=spawn(observerExecutable,['capture',observerPath,expectedPath],{cwd:out,windowsHide:true,stdio:['ignore','pipe','pipe']});
   observerExit=new Promise((resolve,reject)=>{observer.once('exit',(code,signal)=>resolve({code,signal}));observer.once('error',reject);});observerExit.catch(()=>{});
-  const observerReady=new Promise((resolve,reject)=>{observer.stdout.on('data',b=>{observerStdout+=b;const line=observerStdout.split(/\r?\n/).find(x=>x.startsWith('{'));if(line)try{resolve(JSON.parse(line));}catch{reject(Error('OBSERVER_READY_JSON'));}});observer.stderr.on('data',b=>observerStderr+=b);observer.once('error',reject);});
+  observer.stdout.setEncoding('utf8');observer.stderr.setEncoding('utf8');
+  const observerReady=new Promise((resolve,reject)=>{observer.stdout.on('data',b=>{observerStdout+=b;const line=observerStdout.split(/\r?\n/).slice(0,-1).find(x=>x.startsWith('{'));if(line)try{resolve(JSON.parse(line));}catch{reject(Error('OBSERVER_READY_JSON'));}});observer.stderr.on('data',b=>observerStderr+=b);observer.once('error',reject);});
   const observed=await bounded(observerReady,5000,'OBSERVER_READY');assert.equal(observed.status,'READY');assert.equal(observed.identities.length,expected.size);
   for(const actual of observed.identities)assert.deepEqual(expected.get(actual.pid),{pid:actual.pid,image:actual.image,createdFileTime:actual.createdFileTime});
   await milestone('before-lock',{beforeSession,beforeHost,input,observer:observed,completionAbsent:true,initialProgress});
