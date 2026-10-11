@@ -46,3 +46,16 @@ test('actual failure path keeps the native capability in scope and preserves his
  assert.deepEqual(saved.map(r=>r.name),['failure-ownership.json','failure-native-session.json','failure-history.json']);
  assert.equal(saved[2].value,history);
 });
+
+test('actual attachment retains the router canonical genuine grant for private output handoff',async()=>{
+ const start=worker.indexOf('  async function attach(){'),end=worker.indexOf('\n  const first=await attach();',start);assert.ok(start>0&&end>start);
+ const record={windowId:'window1'},routerGrants=new Map(),w={isDestroyed:()=>false,webContents:{getURL:()=> 'siren://app/windows/terminal.html?windowId=window1',mainFrame:{}}};
+ let managerGrant,sequence=0;
+ const registry={openView:async()=>record,capture:()=>{const grant={role:'terminal',windowId:'window1',capture:++sequence};routerGrants.set('window1',grant);return grant;}};
+ const router={route:async q=>{managerGrant=registry.capture(q.event);return{ok:true,value:{leaseId:'lease1',generation:1}};}};
+ const attached=await runInNewContext('(async()=>{'+worker.slice(start,end)+';return attach();})()',{
+  registry,routerGrants,windows:new Set([w]),event:window=>({sender:window.webContents}),members:{access:{currentRouter:()=>router}},sessionId:'session1',request:(_grant,fields)=>fields,assert
+ });
+ assert.equal(attached.grant,managerGrant);
+ assert.equal(attached.grant.capture,2);
+});

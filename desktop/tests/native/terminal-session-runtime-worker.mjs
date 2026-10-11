@@ -59,7 +59,11 @@ export async function startRuntimeProbe(config){
   const project=join(out,'project țară 日本語');await mkdir(project);
   const fixture=createLockContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});
   await writeFile(fixture.scriptPath,'\uFEFF'+fixture.script,{flag:'wx'});await save('fixed-command-fixture.json',fixture);
-  const entities=[],registry=new WindowRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:o=>windowAt(o.mainFrameUrl)});
+  // Observe original registry returns only. Router retains its first genuine
+  // grant per caller; private output must use that same attachment object.
+  const routerGrants=new Map();
+  class ObservedRegistry extends WindowRegistry{capture(e){const g=super.capture(e);if(g)routerGrants.set(g.windowId,g);return g;}}
+  const entities=[],registry=new ObservedRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:o=>windowAt(o.mainFrameUrl)});
   const workspace=await windowAt('siren://app/app.html');registry.bindWorkspace(workspace);registry.activateWorkspace();
   const workspaceGrant=registry.capture(event(workspace));assert.equal(workspaceGrant.role,'workspace');
   const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
@@ -102,7 +106,7 @@ export async function startRuntimeProbe(config){
   const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
   await milestone('actual-session-create',{created,manager:members.manager.stats()});assert.equal(created.ok,true);assert.equal(nativeState.sessions.length,1);
   const sessionId=created.value.sessionId;entities.push(sessionId);
-  async function attach(){const record=await registry.openView({role:'terminal',entityId:sessionId});const w=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(w);const grant=registry.capture(event(w));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(w),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);return{w,caller:event(w),grant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};}
+  async function attach(){const record=await registry.openView({role:'terminal',entityId:sessionId});const w=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(w);const grant=registry.capture(event(w));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(w),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);const canonicalGrant=routerGrants.get(record.windowId);assert.ok(canonicalGrant);return{w,caller:event(w),grant:canonicalGrant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};}
   const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
   const input=await first.router.route({event:event(first.w),method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:0,data:fixture.input})});assert.equal(input.ok,true);
   await waitFile(fixture.startedPath,fixture.expected);await absent(fixture.completedPath);
@@ -130,7 +134,7 @@ export async function startRuntimeProbe(config){
   const second=await attach();assert.notEqual(second.grant.windowId,first.grant.windowId);assert.ok(second.lease.generation>first.lease.generation);
   const oldRefused=await first.router.route({event:event(workspace),method:'terminalList',payload:request(workspaceGrant)});assert.equal(oldRefused.ok,false);
   let output='',chunks=0;for(let i=0;i<100&&!output.includes('SIREN_LOCK_CONTINUATION_COMPLETE');i++){
-   let transfer;const delivered=await members.manager.deliverAvailable(second.grant,request(second.grant,second.lease),v=>{transfer=v;});assert.equal(delivered.ok,true);
+   let transfer;const delivered=await members.manager.deliverAvailable(second.grant,request(second.grant,second.lease),v=>{transfer=v;});if(!delivered.ok)await save('history-delivery-refused.json',{delivered,manager:members.manager.stats()});assert.equal(delivered.ok,true);
    if(transfer?.chunk){chunks++;output+=transfer.chunk.data;assert.equal(members.manager.commitOutputHandoff(delivered.value.handoffTicket).ok,true);const ack=await second.router.route({event:event(second.w),method:'terminalAck',payload:request(second.grant,{...second.lease,throughSequence:transfer.chunk.sequence+transfer.chunk.utf8Bytes})});assert.equal(ack.ok,true);}else await delay(50);
   }
   assert.ok(chunks>0);assert.ok(output.includes('SIREN_LOCK_CONTINUATION_COMPLETE'));await writeFile(join(out,'replayed-history.txt'),output,{flag:'wx'});
