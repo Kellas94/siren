@@ -8,6 +8,9 @@ import * as crypto from 'node:crypto';
 import * as util from 'node:util';
 import {EventEmitter} from 'node:events';
 const here=import.meta.url;
+// Explicit prospective raw-binding observer delta; historical snapshots remain unchanged.
+function withoutRawBinding(text){const a=text.indexOf('// FRESH_RAW_BINDING_DIAGNOSTIC_BEGIN'),b=text.indexOf('// FRESH_RAW_BINDING_DIAGNOSTIC_END')+'// FRESH_RAW_BINDING_DIAGNOSTIC_END\n'.length;assert.ok(a>0&&b>a);text=text.slice(0,a)+text.slice(b);const pattern=/rawBindingFailure=(rawRecordFailure\(record\)|'RAW_[A-Z_]+'|null);/g;assert.equal([...text.matchAll(pattern)].length,23);text=text.replace(pattern,'');assert.equal(text.split('result.bindingFailure=rawBindingFailure;').length,2);return text.replace('result.bindingFailure=rawBindingFailure;','');}
+
 function source(name){return readFileSync(new URL(name,here),'utf8');}
 test('new inactive fixed driver exists with genuine private receipt seam',async()=>{
  const text=source('./terminal-fresh-pair-driver.mjs'),calls=[];
@@ -30,7 +33,7 @@ test('fresh worker retains actual original command wait and cleanup boundaries',
 function workerFragments(){
  const text=source('./terminal-fresh-pair-worker.mjs'),start=text.indexOf('function argsToCommandLine(file, args) {'),end=text.indexOf('// FRESH_BOUNDARY_HELPERS_END');
  assert.ok(start>0&&end>start);const stdin=new EventEmitter();stdin.setEncoding=()=>{};const writes=[],timers=new Map();let tick=0,id=0;
- const context=vm.createContext({assert,Buffer,createHash:crypto.createHash,performance:{now:()=>++tick},process:{pid:100,stdin,stdout:{write:s=>writes.push(s)}},setTimeout:fn=>{timers.set(++id,fn);return id;},clearTimeout:key=>timers.delete(key)});
+ const context=vm.createContext({assert,types:util.types,Buffer,createHash:crypto.createHash,performance:{now:()=>++tick},process:{pid:100,stdin,stdout:{write:s=>writes.push(s)}},setTimeout:fn=>{timers.set(++id,fn);return id;},clearTimeout:key=>timers.delete(key)});
  new vm.Script(text.slice(start,end)).runInContext(context,{timeout:500});return{context,stdin,writes,timers};
 }
 function rawFixture(){
@@ -66,7 +69,7 @@ test('literal derivation exactly reconstructs current worker and leaves wait bod
  assert.equal(crypto.createHash('sha256').update(Buffer.from(original)).digest('hex'),map.original.sha256);
  for(const row of map.changes){assert.equal(original.split(row.originalAnchor).length,2);original=original.replace(row.originalAnchor,row.replacement);}
  // Prospective worker observability is explicit; historical source/derivation remain immutable.
- let current=source('./terminal-fresh-pair-worker.mjs');const begin=current.indexOf('// FRESH_WORKER_DIAGNOSTIC_BEGIN'),end=current.indexOf('// FRESH_WORKER_DIAGNOSTIC_END')+'// FRESH_WORKER_DIAGNOSTIC_END\n'.length;assert.ok(begin>0&&end>begin);current=current.slice(0,begin)+current.slice(end);current=current.replace("import {promisify,types} from 'node:util';","import {promisify} from 'node:util';");
+ let current=withoutRawBinding(source('./terminal-fresh-pair-worker.mjs'));const begin=current.indexOf('// FRESH_WORKER_DIAGNOSTIC_BEGIN'),end=current.indexOf('// FRESH_WORKER_DIAGNOSTIC_END')+'// FRESH_WORKER_DIAGNOSTIC_END\n'.length;assert.ok(begin>0&&end>begin);current=current.slice(0,begin)+current.slice(end);current=current.replace("import {promisify,types} from 'node:util';","import {promisify} from 'node:util';");
  for(const phase of ['module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','initial-access','profile-discovery','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck']){const assignment="observationPhase='"+phase+"';";assert.equal(current.split(assignment).length,2);current=current.replace(assignment,'');}
  const capture='result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);';assert.equal(current.split(capture).length,2);current=current.replace(capture,'');assert.equal(original,current);
  const wait=text=>text.slice(text.indexOf(' const waitFile='),text.indexOf(' const absent='));assert.equal(wait(original),wait(initial));

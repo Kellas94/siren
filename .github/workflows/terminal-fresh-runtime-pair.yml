@@ -66,7 +66,8 @@ jobs:
             $workerCategories = @('UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE')
             $workerPhases = @('setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup')
             $workerMilestones = @('actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins')
-            $diagnosticKeys = @('errorCategory','observationPhase','lastMilestone','challengeCount','cleanupVerified','unavailableCount')
+            $bindingFailures = @('RAW_RECORD_OK','RAW_SCHEMA','RAW_BOUNDARY','RAW_ARGUMENT_COUNT','RAW_CREATOR_IDENTITY','RAW_SHELL_IDENTITY','RAW_CALL_COUNT','RAW_DUPLICATE','RAW_PHASE','RAW_RETURN_STATUS','RAW_PID_ASSIGNMENT','RAW_ARGUMENTS_UNCHANGED','RAW_CAPTURE_CODES','RAW_CLOCK_DOMAIN','RAW_CLOCK_ORDER','RAW_SNAPSHOT_STABILITY','RAW_CONPTY_FLAG','RAW_ENVIRONMENT','RAW_CWD_HASH','RAW_CWD_BYTES','RAW_COMMAND_HASH','RAW_COMMAND_BYTES','RAW_FILE_ARGUMENT_REFUSED','RAW_FILE_PATH_REFUSED','RAW_FILE_SIZE_REFUSED','RAW_FILE_IDENTITY_CHANGED','RAW_FILE_READ_REFUSED','RAW_FILE_JSON_REFUSED','RAW_FILE_UNAVAILABLE')
+            $diagnosticKeys = @('errorCategory','observationPhase','lastMilestone','challengeCount','cleanupVerified','unavailableCount','bindingFailure')
             $records = @()
             foreach ($line in $lines) {
               $outer = ConvertFrom-Json -InputObject $line -AsHashtable -Depth 8
@@ -88,11 +89,12 @@ jobs:
                 if ($d.kind -ceq 'pair') {
                   if (-not $phase.Contains('workerDiagnostic')) { throw 'Worker diagnostic missing' }
                   $workerDiagnostic = $phase.workerDiagnostic
-                  if ($workerDiagnostic -isnot [System.Collections.IDictionary] -or $workerDiagnostic.Count -ne 6) { throw 'Worker diagnostic shape' }
+                  if ($workerDiagnostic -isnot [System.Collections.IDictionary] -or $workerDiagnostic.Count -ne 7) { throw 'Worker diagnostic shape' }
                   foreach ($key in $diagnosticKeys) { if (-not $workerDiagnostic.Contains($key)) { throw 'Worker diagnostic key' } }
                   if ($null -ne $workerDiagnostic.errorCategory -and ($workerDiagnostic.errorCategory -isnot [string] -or $workerCategories -cnotcontains $workerDiagnostic.errorCategory)) { throw 'Worker diagnostic category' }
                   if ($null -ne $workerDiagnostic.observationPhase -and ($workerDiagnostic.observationPhase -isnot [string] -or $workerPhases -cnotcontains $workerDiagnostic.observationPhase)) { throw 'Worker diagnostic phase' }
                   if ($null -ne $workerDiagnostic.lastMilestone -and ($workerDiagnostic.lastMilestone -isnot [string] -or $workerMilestones -cnotcontains $workerDiagnostic.lastMilestone)) { throw 'Worker diagnostic milestone' }
+                  if ($null -ne $workerDiagnostic.bindingFailure -and ($workerDiagnostic.bindingFailure -isnot [string] -or $bindingFailures -cnotcontains $workerDiagnostic.bindingFailure)) { throw 'Worker diagnostic raw binding' }
                   if ($null -ne $workerDiagnostic.challengeCount -and (($workerDiagnostic.challengeCount -isnot [long] -and $workerDiagnostic.challengeCount -isnot [int]) -or $workerDiagnostic.challengeCount -lt 0 -or $workerDiagnostic.challengeCount -gt 65535)) { throw 'Worker diagnostic challenges' }
                   if ($null -ne $workerDiagnostic.cleanupVerified -and $workerDiagnostic.cleanupVerified -isnot [bool]) { throw 'Worker diagnostic cleanup' }
                   if ($null -ne $workerDiagnostic.unavailableCount -and (($workerDiagnostic.unavailableCount -isnot [long] -and $workerDiagnostic.unavailableCount -isnot [int]) -or $workerDiagnostic.unavailableCount -lt 0 -or $workerDiagnostic.unavailableCount -gt 128)) { throw 'Worker diagnostic callbacks' }

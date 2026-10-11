@@ -94,6 +94,15 @@ function xOr(arg1, arg2) {
 
 
 // FRESH_BOUNDARY_HELPERS_BEGIN
+// FRESH_RAW_BINDING_DIAGNOSTIC_BEGIN
+let rawBindingFailure=null;
+const bindingFailures=['RAW_RECORD_OK','RAW_SCHEMA','RAW_BOUNDARY','RAW_ARGUMENT_COUNT','RAW_CREATOR_IDENTITY','RAW_SHELL_IDENTITY','RAW_CALL_COUNT','RAW_DUPLICATE','RAW_PHASE','RAW_RETURN_STATUS','RAW_PID_ASSIGNMENT','RAW_ARGUMENTS_UNCHANGED','RAW_CAPTURE_CODES','RAW_CLOCK_DOMAIN','RAW_CLOCK_ORDER','RAW_SNAPSHOT_STABILITY','RAW_CONPTY_FLAG','RAW_ENVIRONMENT','RAW_CWD_HASH','RAW_CWD_BYTES','RAW_COMMAND_HASH','RAW_COMMAND_BYTES','RAW_FILE_ARGUMENT_REFUSED','RAW_FILE_PATH_REFUSED','RAW_FILE_SIZE_REFUSED','RAW_FILE_IDENTITY_CHANGED','RAW_FILE_READ_REFUSED','RAW_FILE_JSON_REFUSED','RAW_FILE_UNAVAILABLE'];
+function rawRecordFailure(record){
+ if(!record||typeof record!=='object'||types.isProxy(record))return 'RAW_RECORD_OK';
+ const ok=Object.getOwnPropertyDescriptor(record,'ok'),code=Object.getOwnPropertyDescriptor(record,'code');
+ return ok&&Object.hasOwn(ok,'value')&&ok.value===false&&code&&Object.hasOwn(code,'value')&&typeof code.value==='string'&&bindingFailures.slice(22).includes(code.value)?code.value:'RAW_RECORD_OK';
+}
+// FRESH_RAW_BINDING_DIAGNOSTIC_END
 function freshEnvironmentRows(environment){
  const rows=[];for(const [key,value]of Object.entries(environment)){
   assert.equal(typeof value,'string');assert.ok(value.isWellFormed()&&!value.includes('\0')&&Buffer.byteLength(value)<=32768);
@@ -101,18 +110,18 @@ function freshEnvironmentRows(environment){
  }return rows;
 }
 function assertFreshBoundary(record,expected){
- assert.equal(record.ok,true);const r=record.decoded.observation;
- assert.equal(r.schema,1);assert.equal(r.boundary,'JS_NATIVE_CONNECT_ARGUMENTS');assert.equal(r.argumentCount,6);
- assert.equal(r.creatorPid,expected.creatorPid);assert.equal(r.returnedPid,expected.shellPid);
- assert.equal(r.count,1);assert.equal(r.duplicate,false);assert.equal(r.phase,'RETURNED');assert.equal(r.returnStatus,'RETURNED');
- assert.equal(r.pidAssignment,'ASSIGNED');assert.equal(r.argumentsUnchanged,true);assert.deepEqual(r.captureCodes,[]);
- assert.equal(r.clock,'PROCESS_MONOTONIC');assert.ok(Number.isFinite(r.beforeConnectMs)&&r.beforeConnectMs>=0&&Number.isFinite(r.afterConnectMs)&&r.afterConnectMs>=r.beforeConnectMs);
- assert.deepEqual(r.before,r.after);assert.equal(r.before.useConptyDll,false);
- assert.deepEqual(r.before.env,expected.env);
- assert.equal(r.before.cwdSha256,createHash('sha256').update(expected.cwd).digest('hex'));
- assert.equal(r.before.cwdBytes,Buffer.byteLength(expected.cwd));
- assert.equal(r.before.commandLineSha256,createHash('sha256').update(expected.commandLine).digest('hex'));
- assert.equal(r.before.commandLineBytes,Buffer.byteLength(expected.commandLine));return r;
+ rawBindingFailure=rawRecordFailure(record);assert.equal(record.ok,true);const r=record.decoded.observation;
+ rawBindingFailure='RAW_SCHEMA';assert.equal(r.schema,1);rawBindingFailure='RAW_BOUNDARY';assert.equal(r.boundary,'JS_NATIVE_CONNECT_ARGUMENTS');rawBindingFailure='RAW_ARGUMENT_COUNT';assert.equal(r.argumentCount,6);
+ rawBindingFailure='RAW_CREATOR_IDENTITY';assert.equal(r.creatorPid,expected.creatorPid);rawBindingFailure='RAW_SHELL_IDENTITY';assert.equal(r.returnedPid,expected.shellPid);
+ rawBindingFailure='RAW_CALL_COUNT';assert.equal(r.count,1);rawBindingFailure='RAW_DUPLICATE';assert.equal(r.duplicate,false);rawBindingFailure='RAW_PHASE';assert.equal(r.phase,'RETURNED');rawBindingFailure='RAW_RETURN_STATUS';assert.equal(r.returnStatus,'RETURNED');
+ rawBindingFailure='RAW_PID_ASSIGNMENT';assert.equal(r.pidAssignment,'ASSIGNED');rawBindingFailure='RAW_ARGUMENTS_UNCHANGED';assert.equal(r.argumentsUnchanged,true);rawBindingFailure='RAW_CAPTURE_CODES';assert.deepEqual(r.captureCodes,[]);
+ rawBindingFailure='RAW_CLOCK_DOMAIN';assert.equal(r.clock,'PROCESS_MONOTONIC');rawBindingFailure='RAW_CLOCK_ORDER';assert.ok(Number.isFinite(r.beforeConnectMs)&&r.beforeConnectMs>=0&&Number.isFinite(r.afterConnectMs)&&r.afterConnectMs>=r.beforeConnectMs);
+ rawBindingFailure='RAW_SNAPSHOT_STABILITY';assert.deepEqual(r.before,r.after);rawBindingFailure='RAW_CONPTY_FLAG';assert.equal(r.before.useConptyDll,false);
+ rawBindingFailure='RAW_ENVIRONMENT';assert.deepEqual(r.before.env,expected.env);
+ rawBindingFailure='RAW_CWD_HASH';assert.equal(r.before.cwdSha256,createHash('sha256').update(expected.cwd).digest('hex'));
+ rawBindingFailure='RAW_CWD_BYTES';assert.equal(r.before.cwdBytes,Buffer.byteLength(expected.cwd));
+ rawBindingFailure='RAW_COMMAND_HASH';assert.equal(r.before.commandLineSha256,createHash('sha256').update(expected.commandLine).digest('hex'));
+ rawBindingFailure='RAW_COMMAND_BYTES';assert.equal(r.before.commandLineBytes,Buffer.byteLength(expected.commandLine));rawBindingFailure=null;return r;
 }
 async function freshParentPermit(challenge){
  const started=performance.now();let pending='',seen=false,timer,invalid=false;
@@ -382,7 +391,7 @@ export async function startRuntimeProbe(config){
   await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt:cleanup.hostReceipt,hostExpected:cleanup.hostExpected,checked:cleanup.checked,external:cleanup.external,externalExit:cleanup.externalExit,utilityExit:cleanup.utilityExit});
   assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;
  }catch(error){
-  result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
+  result.bindingFailure=rawBindingFailure;result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
   await captureFailureEvidence();observationPhase='failure-cleanup';let failureGraph;
   const shutdownId='failure_'+run;
   if(graph)try{failureGraph=await bounded(graph.shutdown({code:98,deadlineMs:5000,shutdownId}),15000,'FAILURE_SHUTDOWN');result.failureShutdown=failureGraph;}catch(e){result.failureShutdownError=e.message;}
