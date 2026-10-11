@@ -57,8 +57,8 @@
     },
     {
       "path": "desktop/build/diagram-style.mjs",
-      "bytes": 2900,
-      "sha256": "c87a0963edcc484e9c9b260c7885f0e1338b799a3512b90e622358da42fc5e8e"
+      "bytes": 2974,
+      "sha256": "3d11a9dd9e8128620d70c19697a383bf907d0ffc2250f0ed31253603a13d9faf"
     },
     {
       "path": "desktop/build/diagram-vector.mjs",
@@ -267,8 +267,8 @@
     },
     {
       "path": "desktop/src/appearance/render.mjs",
-      "bytes": 13160,
-      "sha256": "dcd90d9ee70bc9f5724e452c4b67a8ab5873c4a142c2f84419b22258e120d87f"
+      "bytes": 20018,
+      "sha256": "4ca9cc42f492e5e6384e7375be3c06c7872dfa04aed5f797d837016da3191e58"
     },
     {
       "path": "desktop/src/appearance/store.mjs",
@@ -1127,8 +1127,8 @@
     },
     {
       "path": "desktop/src/ui/diagram/style.js",
-      "bytes": 6275,
-      "sha256": "0b124b24ca424565b5c8fe824017abcb175cf73380cf2496219517acb1f525eb"
+      "bytes": 7243,
+      "sha256": "a132b4c8271744f6174f11f60ac6c6efb4f6218ebbc88507abe16b463c94ce82"
     },
     {
       "path": "desktop/src/ui/diagram/vector.js",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 58956,
-      "sha256": "54bcadbab75caac56c5635e6e59608a1c9d57e206d43b1f817e99b0981742294"
+      "bytes": 60557,
+      "sha256": "7fc2ae8de88d22e77de4bff322e5808998218d20cb0b32f19e1fee95673f217d"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",
