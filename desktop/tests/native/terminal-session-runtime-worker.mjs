@@ -21,7 +21,12 @@ export async function startRuntimeProbe(config){
  assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
  const result={scope:'BOUNDED_ACTUAL_ELECTRON_SESSION_MAIN_DISPATCH',status:'STARTED',run,commit,
   nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
-  milestones:[],helperCalls:[],unavailable:[],verified:[],nativeCalls:[]};
+  milestones:[],helperCalls:[],unavailable:[],verified:[],ownershipEvents:[],nativeCalls:[]};
+ const probeStarted=performance.now();let observationPhase='setup';
+ const observeOwnership=(kind,value)=>{
+  const row={kind,phase:observationPhase,elapsedMs:performance.now()-probeStarted,afterMilestone:result.milestones.at(-1)?.name??null,sessionOwnerId:value?.sessionOwnerId??null,sessionId:value?.sessionId??null,code:value?.code??null,stack:String(new Error('Ownership callback observation').stack).slice(0,4096)};
+  result.ownershipEvents.push(row);result[kind==='unavailable'?'unavailable':'verified'].push(kind==='unavailable'?'OWNERSHIP_UNAVAILABLE':'SESSION_VERIFIED');
+ };
  const save=(name,data)=>writeFile(join(out,name),JSON.stringify(data,(_,v)=>typeof v==='bigint'?v.toString():v,2)+'\n',{flag:'wx'});
  const pin=async p=>{const b=await readFile(p);return{path:p,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')};};
  const milestone=async(name,data={})=>{result.milestones.push({name,...data});await save(String(result.milestones.length).padStart(2,'0')+'-'+name+'.json',data);};
@@ -90,22 +95,23 @@ export async function startRuntimeProbe(config){
   assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
   const system=await helper('system'),systemRoot=dirname(system);
   graph=createTerminalShutdownGraph({projectId:'project1',registry,native:facade,hostProcessIdentity:{pid:host.pid,image:process.execPath,since:mark},
-   ownership:{isCurrent:()=>true,onUnavailable:()=>{result.unavailable.push('OWNERSHIP_UNAVAILABLE');},onVerified:()=>{result.verified.push('SESSION_VERIFIED');}},
+   ownership:{isCurrent:()=>true,onUnavailable:value=>observeOwnership('unavailable',value),onVerified:value=>observeOwnership('verified',value)},
    creator:{executable:process.execPath,entry:join(execution,'desktop/src/terminal/production-creator-launcher.mjs'),directory:execution},
    cwd:{pickDirectory:async()=>({canceled:false,filePaths:[project]}),protectedRoots:[execution],inspectDirectory:p=>helper('directory',p)},
    profiles:{grants:[workspaceGrant],getSystemDirectory:async()=>system,inspectExecutable:p=>helper('file',p),readEnvironment:async()=>{const env={SystemRoot:systemRoot,PATH:system+';'+systemRoot};for(const key of ['USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','ProgramFiles','ProgramFiles(x86)','CommonProgramFiles','CommonProgramFiles(x86)','ProgramData','ComSpec','USERNAME','USERDOMAIN','HOMEDRIVE','HOMEPATH','SystemDrive','windir'])if(typeof process.env[key]==='string'&&process.env[key])env[key]=process.env[key];return env;},privateEnvironmentKeys:[]},
    access:{prepareWorkspace:async()=>{},retireViews:async()=>{for(const w of windows)if(w!==workspace&&!w.isDestroyed())w.destroy();},rollbackWorkspace:async()=>{},isReady:()=>!locked},
    policy:{isUnlocked:()=>!locked,getMode:()=> 'normal',canExecute:g=>{routerGrants.set(g.windowId,g);return true;}},deadlineMs:5000});
-  assert.equal(graph.start().ok,true);members=graph.mainAuthorities();
+  observationPhase='host-start';assert.equal(graph.start().ok,true);members=graph.mainAuthorities();
   await milestone('actual-native-host',{mainPid:process.pid,utilityPid:host.pid,before:native.capture(nativeState.host),versions:process.versions,workspaceGrant});
   assert.equal((await members.access.beginLock('initial closed gate')).ok,true);
   assert.equal((await members.access.reopen(event(workspace))).ok,true);
   const router=members.access.currentRouter();assert.ok(router);
   const cwd=await members.cwdAuthority.pick(workspaceGrant);assert.equal(cwd.displayPath,project);
   assert.equal((await members.profileCatalogues[0].listShellProfiles())[0].available,true);
-  const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
+  observationPhase='session-create';const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
   await milestone('actual-session-create',{created,manager:members.manager.stats()});assert.equal(created.ok,true);assert.equal(nativeState.sessions.length,1);
   const sessionId=created.value.sessionId;entities.push(sessionId);
+  observationPhase='first-attach';
   async function attach(){const record=await registry.openView({role:'terminal',entityId:sessionId});const w=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(w);const grant=registry.capture(event(w));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(w),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);const canonicalGrant=routerGrants.get(record.windowId);assert.ok(canonicalGrant);return{w,caller:event(w),grant:canonicalGrant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};}
   const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
   const input=await first.router.route({event:event(first.w),method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:0,data:fixture.input})});assert.equal(input.ok,true);
@@ -123,15 +129,15 @@ export async function startRuntimeProbe(config){
   const observed=await bounded(observerReady,5000,'OBSERVER_READY');assert.equal(observed.status,'READY');assert.equal(observed.identities.length,expected.size);
   for(const actual of observed.identities)assert.deepEqual(expected.get(actual.pid),{pid:actual.pid,image:actual.image,createdFileTime:actual.createdFileTime});
   await milestone('before-lock',{beforeSession,beforeHost,input,observer:observed,completionAbsent:true,initialProgress});
-  const lock=await members.access.beginLock('actual running PowerShell fixture');assert.equal(lock.ok,true);locked=true;
+  observationPhase='running-command-lock';const lock=await members.access.beginLock('actual running PowerShell fixture');assert.equal(lock.ok,true);locked=true;
   assert.equal(nativeState.sessionStops.length,0);assert.equal(nativeState.hostStops.length,0);assert.equal(first.w.isDestroyed(),true);assert.equal(registry.isCurrent(first.grant),false);assert.equal(members.access.currentRouter(),null);
   const refused=await first.router.route({event:first.caller,method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:1,data:fixture.forbiddenInput})});assert.equal(refused.ok,false);
   const afterLock=native.snapshotSession(nativeState.sessions[0]);assert.equal(afterLock.root.alive,true);assert.equal(afterLock.shell.alive,true);
   await absent(fixture.completedPath);await absent(fixture.forbiddenPath);await milestone('lock-ack-input-refused',{lock,refused,afterLock,sessionStopCalls:0,hostStopCalls:0});
-  await writeFile(fixture.releasePath,fixture.expected,{flag:'wx'});await waitFile(fixture.completedPath,fixture.expected);await absent(fixture.forbiddenPath);
+  observationPhase='locked-command-release';await writeFile(fixture.releasePath,fixture.expected,{flag:'wx'});await waitFile(fixture.completedPath,fixture.expected);await absent(fixture.forbiddenPath);
   assert.equal(locked,true);assert.equal(members.access.currentRouter(),null);assert.equal(nativeState.sessionStops.length,0);
   await milestone('command-completed-while-locked',{completion:await readFile(fixture.completedPath,'utf8'),forbiddenAbsent:true,locked:true});
-  locked=false;assert.equal((await members.access.reopen(event(workspace))).ok,true);
+  observationPhase='unlock-history';locked=false;assert.equal((await members.access.reopen(event(workspace))).ok,true);
   const second=await attach();assert.notEqual(second.grant.windowId,first.grant.windowId);assert.ok(second.lease.generation>first.lease.generation);
   const oldRefused=await first.router.route({event:event(workspace),method:'terminalList',payload:request(workspaceGrant)});assert.equal(oldRefused.ok,false);
   const historyStarted=performance.now(),historyPolls=[];let output='',chunks=0;for(let i=0;i<100&&!output.includes('SIREN_LOCK_CONTINUATION_COMPLETE');i++){
@@ -142,16 +148,17 @@ export async function startRuntimeProbe(config){
   await save('history-observation.json',{elapsedMs:performance.now()-historyStarted,chunks,output,polls:historyPolls});
   assert.ok(chunks>0);assert.ok(output.includes('SIREN_LOCK_CONTINUATION_COMPLETE'));await writeFile(join(out,'replayed-history.txt'),output,{flag:'wx'});
   await milestone('unlock-fresh-lease-history',{grant:second.grant,lease:second.lease,chunks,bytes:Buffer.byteLength(output),oldRouterRefused:oldRefused});
-  const stopped=await members.access.currentRouter().route({event:event(workspace),method:'terminalStop',payload:request(workspaceGrant,{sessionId})});assert.equal(stopped.ok,true);assert.equal(nativeState.sessionStops.length,1);
+  observationPhase='explicit-session-stop';const stopped=await members.access.currentRouter().route({event:event(workspace),method:'terminalStop',payload:request(workspaceGrant,{sessionId})});assert.equal(stopped.ok,true);assert.equal(nativeState.sessionStops.length,1);
   const sessionReceipt=await nativeState.sessionStops[0];assert.equal(sessionReceipt.closed,true);assert.equal(sessionReceipt.snapshot.active,0);for(const p of [sessionReceipt.snapshot.root,sessionReceipt.snapshot.shell,...sessionReceipt.snapshot.held])if(p)assert.equal(p.alive,false);
   await milestone('session-stop-native-receipt',{stopped,receipt:sessionReceipt});
-  const shutdownId='runtime_'+run,handle=graph.captureSettlement(),joined=await bounded(graph.shutdown({code:77,deadlineMs:5000,shutdownId}),15000,'GRAPH_JOIN');assert.equal(joined.actualSettled,true);assert.equal(joined.unknown,false);assert.equal(handle.snapshot().hostNativeJoined,false);
+  observationPhase='graph-shutdown';const shutdownId='runtime_'+run,handle=graph.captureSettlement(),joined=await bounded(graph.shutdown({code:77,deadlineMs:5000,shutdownId}),15000,'GRAPH_JOIN');assert.equal(joined.actualSettled,true);assert.equal(joined.unknown,false);assert.equal(handle.snapshot().hostNativeJoined,false);
   assert.equal(nativeState.hostStops.length,1);const hostReceipt=await nativeState.hostStops[0],hostExpected=native.captureHostShutdownExpectation(nativeState.host,shutdownId),checked=validateHostAsyncReceipt(hostExpected,hostReceipt);assert.equal(checked.ok,true);
   const externalExit=await bounded(observerExit,10000,'EXTERNAL_JOIN');assert.equal(externalExit.code,0);const external=JSON.parse(await readFile(observerPath,'utf8'));assert.equal(external.status,'EXACT_HELD_PROCESSES_EXITED');
   const utilityExit=await bounded(hostExit,5000,'UTILITY_EXIT');await save('utility-output.json',{stdout:hostOut,stderr:hostErr,exit:utilityExit});
   await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt,hostExpected,checked,external,externalExit,utilityExit});
+  await save('ownership-callback-observations.json',result.ownershipEvents);assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');observationPhase='complete';
   result.status='BOUNDED_SESSION_RUNTIME_COMPLETE';result.realSessions=1;result.commandCompletedAfterLockAck=true;result.lockRefusedNewInput=true;result.externalProcessJoin=true;
- }catch(error){result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
+ }catch(error){observationPhase='failure-cleanup';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
   // Fixed-fixture MAIN-only failure evidence. No renderer receives this output;
   // no command is submitted or replayed and an adverse run stays adverse.
   if(members)try{
