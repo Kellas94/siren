@@ -145,6 +145,14 @@ export async function startRuntimeProbe(config){
   await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt,hostExpected,checked,external,externalExit,utilityExit});
   result.status='BOUNDED_SESSION_RUNTIME_COMPLETE';result.realSessions=1;result.commandCompletedAfterLockAck=true;result.lockRefusedNewInput=true;result.externalProcessJoin=true;
  }catch(error){result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
+  // Fixed-fixture MAIN-only failure evidence. No renderer receives this output;
+  // no command is submitted or replayed and an adverse run stays adverse.
+  if(members)try{
+   const ownership=members.ownership.snapshot();await save('failure-ownership.json',ownership);
+   if(nativeState.sessions.length)await save('failure-native-session.json',native.snapshotSession(nativeState.sessions[0]));
+   const owner=ownership.sessions.find(row=>row.state==='running');
+   if(owner){const history=await bounded(members.backend.readHistory({ownerId:owner.sessionOwnerId,fromSequence:0,maxBytes:32768}),2000,'FAILURE_HISTORY');await save('failure-history.json',history);}
+  }catch(e){result.failureDiagnosticError=e.message;}
   if(graph)try{result.failureShutdown=await bounded(graph.shutdown({code:98,deadlineMs:5000,shutdownId:'failure_'+run}),15000,'FAILURE_SHUTDOWN');}catch(e){result.failureShutdownError=e.message;}
  }finally{
   if(observer){await save('observer-output.json',{stdout:observerStdout,stderr:observerStderr});assert.deepEqual(await pin(observerExecutable),observerPin);}

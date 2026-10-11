@@ -398,8 +398,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime-worker.mjs",
-      "bytes": 18856,
-      "sha256": "a1cbc8530c7addc6512f59e504adda345339b73a510bef7ad656b29ff779d766"
+      "bytes": 19573,
+      "sha256": "4f6d0f7d3f7037f43fb1dde6db85e47d6b71675b5ff5e784c709c64f6fe149c3"
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime.mjs",
