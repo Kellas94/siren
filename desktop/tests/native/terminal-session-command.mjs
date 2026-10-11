@@ -28,3 +28,10 @@ export function createOutputDiagnosticContinuationFixture(options){
  const instrumented="    [IO.File]::WriteAllText($stage, 'before-direct-output')\r\n    [Console]::WriteLine('SIREN_DIRECT_CONSOLE_CONTROL')\r\n    [IO.File]::WriteAllText($stage, 'before-pipeline-output')\r\n"+output+"    [IO.File]::WriteAllText($stage, 'after-pipeline-output')\r\n";
  return Object.freeze({...original,variant:'IN_PROCESS_WAIT_OUTPUT_DIAGNOSTIC',script:original.script.replace(output,instrumented)});
 }
+
+// Distinct .NET-only wait/output path. It does not qualify PowerShell cmdlets
+// or replace the original/diagnostic fixtures and their adverse observations.
+export function createDirectConsoleContinuationFixture(options){
+ const original=createInProcessLockContinuationFixture(options);
+ return Object.freeze({...original,variant:'IN_PROCESS_WAIT_DIRECT_CONSOLE',script:original.script.replace("    Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'\r\n","    [Console]::WriteLine('SIREN_LOCK_CONTINUATION_COMPLETE')\r\n")});
+}

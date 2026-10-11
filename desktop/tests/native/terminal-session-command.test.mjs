@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createLockContinuationFixture,createInProcessLockContinuationFixture,createOutputDiagnosticContinuationFixture} from './terminal-session-command.mjs';
+import {createLockContinuationFixture,createInProcessLockContinuationFixture,createOutputDiagnosticContinuationFixture,createDirectConsoleContinuationFixture} from './terminal-session-command.mjs';
 
 test('fixed PowerShell fixture waits for main release before producing completion proof',()=>{
  const f=createLockContinuationFixture({projectDirectory:"C:\\probe țară\\O'Brien",token:'a'.repeat(32)});
@@ -41,5 +41,13 @@ test('output diagnostic control cannot replace the mandatory original pipeline m
  assert.ok(f.script.includes(before));assert.ok(f.script.includes(after));assert.equal(f.script.replace(before,'').replace(after,''),original.script);
  assert.equal((f.script.match(/Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'/g)??[]).length,1);
  assert.ok(f.script.indexOf('WriteAllText($completed')<f.script.indexOf('SIREN_DIRECT_CONSOLE_CONTROL'));
+ for(const key of ['input','forbiddenInput','startedPath','releasePath','completedPath','forbiddenPath','stagePath','expected'])assert.equal(f[key],original[key]);
+});
+
+test('distinct direct-console fixture keeps every proof and original pipeline fixture unchanged',()=>{
+ const options={projectDirectory:'C:\\fixed fixture',token:'f'.repeat(32)},original=createInProcessLockContinuationFixture(options),f=createDirectConsoleContinuationFixture(options);
+ assert.equal(f.variant,'IN_PROCESS_WAIT_DIRECT_CONSOLE');assert.equal(Object.isFrozen(f),true);
+ assert.equal(f.script.replace("    [Console]::WriteLine('SIREN_LOCK_CONTINUATION_COMPLETE')\r\n","    Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'\r\n"),original.script);
+ assert.match(createLockContinuationFixture(options).script,/Start-Sleep/);assert.match(createOutputDiagnosticContinuationFixture(options).script,/Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'/);
  for(const key of ['input','forbiddenInput','startedPath','releasePath','completedPath','forbiddenPath','stagePath','expected'])assert.equal(f[key],original[key]);
 });
