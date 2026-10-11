@@ -21,7 +21,7 @@ export async function startRuntimeProbe(config){
  assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
  const result={scope:'BOUNDED_ACTUAL_ELECTRON_SESSION_MAIN_DISPATCH',status:'STARTED',run,commit,
   nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
-  milestones:[],helperCalls:[],unavailable:[],verified:[]};
+  milestones:[],helperCalls:[],unavailable:[],verified:[],nativeCalls:[]};
  const save=(name,data)=>writeFile(join(out,name),JSON.stringify(data,(_,v)=>typeof v==='bigint'?v.toString():v,2)+'\n',{flag:'wx'});
  const pin=async p=>{const b=await readFile(p);return{path:p,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')};};
  const milestone=async(name,data={})=>{result.milestones.push({name,...data});await save(String(result.milestones.length).padStart(2,'0')+'-'+name+'.json',data);};
@@ -66,7 +66,16 @@ export async function startRuntimeProbe(config){
   const native=createRequire(import.meta.url)(addonPath),mark=native.mark(),facade=Object.create(null);
   for(const [key,d] of Object.entries(Object.getOwnPropertyDescriptors(native))){
    assert.ok(Object.hasOwn(d,'value'));if(typeof d.value!=='function')continue;
-   facade[key]=(...args)=>{const value=Reflect.apply(d.value,native,args);if(key==='start')nativeState.host=value;if(key==='createPeerSession')nativeState.sessions.push(value);if(key==='stopAndCloseHostAsync')nativeState.hostStops.push(value);if(key==='stopAndCloseSessionAsync')nativeState.sessionStops.push(value);return value;};
+   facade[key]=(...args)=>{
+    // Record only bounded, non-secret facts. Never record bootstrap bytes,
+    // pipe credentials or provider Promise results; preserve original returns.
+    const traced=['start','createPeerListeners','createPeerSession','snapshotSession','watchRoot','captureSession','assertPeerCurrent'].includes(key);
+    const row=traced&&result.nativeCalls.length<512?{method:key,elapsedFromStartMs:performance.now()}:null;
+    if(row)result.nativeCalls.push(row);
+    try{const value=Reflect.apply(d.value,native,args);if(row){row.returned=true;if(key==='snapshotSession'||key==='watchRoot'||key==='captureSession')row.observation=value;else if(key==='assertPeerCurrent')row.current=value;}
+     if(key==='start')nativeState.host=value;if(key==='createPeerSession')nativeState.sessions.push(value);if(key==='stopAndCloseHostAsync')nativeState.hostStops.push(value);if(key==='stopAndCloseSessionAsync')nativeState.sessionStops.push(value);return value;
+    }catch(error){if(row)row.error={code:error.code??null,message:error.message};throw error;}
+   };
   }
   // Electron utility processes expose process.parentPort, not a Node worker port.
   const hostEntry=join(out,'session-host.mjs');await writeFile(hostEntry,"setInterval(()=>{},1000);\nprocess.parentPort.postMessage({ready:true,electron:process.versions.electron,modules:process.versions.modules,napi:process.versions.napi});\n",{flag:'wx'});
