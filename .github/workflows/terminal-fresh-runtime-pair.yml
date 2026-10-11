@@ -34,7 +34,7 @@ jobs:
           if ($env:GITHUB_REPOSITORY -cne 'Kellas94/siren' -or $env:GITHUB_REF -cne 'refs/heads/probe/terminal-session-20261010') { throw 'Unexpected hosted context' }
           $launchEvidence = Join-Path $env:RUNNER_TEMP 'siren-fresh-build-launch'
           New-Item -ItemType Directory -Path $launchEvidence -ErrorAction Stop | Out-Null
-          $pythonCommand = Get-Command python.exe -CommandType Application -ErrorAction Stop
+          $pythonCommand = Get-Command python.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1
           if (@($pythonCommand).Count -ne 1) { throw 'Ambiguous Python executable' }
           $env:pythonLocation = [System.IO.Path]::GetDirectoryName($pythonCommand.Source)
           & $pythonCommand.Source -I -c 'import sys; assert sys.version_info >= (3, 12); print(sys.version)' > (Join-Path $launchEvidence 'python-version.txt')
