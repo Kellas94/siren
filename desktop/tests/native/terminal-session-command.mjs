@@ -18,3 +18,13 @@ export function createInProcessLockContinuationFixture(options){
  const original=createLockContinuationFixture(options);
  return Object.freeze({...original,variant:'IN_PROCESS_THREAD_SLEEP',script:original.script.replace('  Start-Sleep -Milliseconds 100\r\n','  [Threading.Thread]::Sleep(100)\r\n')});
 }
+
+// A separate diagnostic fixture preserves the mandatory pipeline marker.
+// Its distinct direct-console marker and stages locate output stalls; they
+// cannot satisfy the original completion/history assertion by themselves.
+export function createOutputDiagnosticContinuationFixture(options){
+ const original=createInProcessLockContinuationFixture(options);
+ const output="    Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'\r\n";
+ const instrumented="    [IO.File]::WriteAllText($stage, 'before-direct-output')\r\n    [Console]::WriteLine('SIREN_DIRECT_CONSOLE_CONTROL')\r\n    [IO.File]::WriteAllText($stage, 'before-pipeline-output')\r\n"+output+"    [IO.File]::WriteAllText($stage, 'after-pipeline-output')\r\n";
+ return Object.freeze({...original,variant:'IN_PROCESS_WAIT_OUTPUT_DIAGNOSTIC',script:original.script.replace(output,instrumented)});
+}

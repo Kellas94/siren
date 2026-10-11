@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createLockContinuationFixture,createInProcessLockContinuationFixture} from './terminal-session-command.mjs';
+import {createLockContinuationFixture,createInProcessLockContinuationFixture,createOutputDiagnosticContinuationFixture} from './terminal-session-command.mjs';
 
 test('fixed PowerShell fixture waits for main release before producing completion proof',()=>{
  const f=createLockContinuationFixture({projectDirectory:"C:\\probe țară\\O'Brien",token:'a'.repeat(32)});
@@ -32,4 +32,14 @@ test('separate in-process wait fixture preserves original cmdlet fixture and eve
  assert.match(original.script,/Start-Sleep -Milliseconds 100/);assert.doesNotMatch(alternate.script,/Start-Sleep/);
  assert.equal(alternate.script.replace('  [Threading.Thread]::Sleep(100)\r\n','  Start-Sleep -Milliseconds 100\r\n'),original.script);
  for(const key of ['input','forbiddenInput','startedPath','releasePath','completedPath','forbiddenPath','expected'])assert.equal(alternate[key],original[key]);
+});
+
+test('output diagnostic control cannot replace the mandatory original pipeline marker',()=>{
+ const options={projectDirectory:'C:\\fixed fixture',token:'e'.repeat(32)},original=createInProcessLockContinuationFixture(options),f=createOutputDiagnosticContinuationFixture(options);
+ assert.equal(f.variant,'IN_PROCESS_WAIT_OUTPUT_DIAGNOSTIC');assert.equal(Object.isFrozen(f),true);
+ const before="    [IO.File]::WriteAllText($stage, 'before-direct-output')\r\n    [Console]::WriteLine('SIREN_DIRECT_CONSOLE_CONTROL')\r\n    [IO.File]::WriteAllText($stage, 'before-pipeline-output')\r\n",after="    [IO.File]::WriteAllText($stage, 'after-pipeline-output')\r\n";
+ assert.ok(f.script.includes(before));assert.ok(f.script.includes(after));assert.equal(f.script.replace(before,'').replace(after,''),original.script);
+ assert.equal((f.script.match(/Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'/g)??[]).length,1);
+ assert.ok(f.script.indexOf('WriteAllText($completed')<f.script.indexOf('SIREN_DIRECT_CONSOLE_CONTROL'));
+ for(const key of ['input','forbiddenInput','startedPath','releasePath','completedPath','forbiddenPath','stagePath','expected'])assert.equal(f[key],original[key]);
 });

@@ -10,7 +10,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {spawn,execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createInProcessLockContinuationFixture} from './terminal-session-command.mjs';
+import {createOutputDiagnosticContinuationFixture} from './terminal-session-command.mjs';
 
 export async function startRuntimeProbe(config){
  const {root,out,execution,electronExecutable,filesystemExecutable,observerExecutable,run,commit}=config;
@@ -58,7 +58,7 @@ export async function startRuntimeProbe(config){
   });
   session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));session.defaultSession.setPermissionCheckHandler(()=>false);
   const project=join(out,'project țară 日本語');await mkdir(project);
-  const fixture=createInProcessLockContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});result.fixtureVariant=fixture.variant;
+  const fixture=createOutputDiagnosticContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});result.fixtureVariant=fixture.variant;
   await writeFile(fixture.scriptPath,'\uFEFF'+fixture.script,{flag:'wx'});await save('fixed-command-fixture.json',fixture);
   // Observe genuine grants through the existing trusted execution policy.
   // The exact registry and access prototype capture paths remain unchanged.
@@ -134,10 +134,12 @@ export async function startRuntimeProbe(config){
   locked=false;assert.equal((await members.access.reopen(event(workspace))).ok,true);
   const second=await attach();assert.notEqual(second.grant.windowId,first.grant.windowId);assert.ok(second.lease.generation>first.lease.generation);
   const oldRefused=await first.router.route({event:event(workspace),method:'terminalList',payload:request(workspaceGrant)});assert.equal(oldRefused.ok,false);
-  let output='',chunks=0;for(let i=0;i<100&&!output.includes('SIREN_LOCK_CONTINUATION_COMPLETE');i++){
+  const historyStarted=performance.now(),historyPolls=[];let output='',chunks=0;for(let i=0;i<100&&!output.includes('SIREN_LOCK_CONTINUATION_COMPLETE');i++){
    let transfer;const delivered=await members.manager.deliverAvailable(second.grant,request(second.grant,second.lease),v=>{transfer=v;});if(!delivered.ok)await save('history-delivery-refused.json',{delivered,manager:members.manager.stats()});assert.equal(delivered.ok,true);
+   historyPolls.push({iteration:i,elapsedMs:performance.now()-historyStarted,sequence:transfer?.chunk?.sequence??null,utf8Bytes:transfer?.chunk?.utf8Bytes??0});
    if(transfer?.chunk){chunks++;output+=transfer.chunk.data;assert.equal(members.manager.commitOutputHandoff(delivered.value.handoffTicket).ok,true);const ack=await second.router.route({event:event(second.w),method:'terminalAck',payload:request(second.grant,{...second.lease,throughSequence:transfer.chunk.sequence+transfer.chunk.utf8Bytes})});assert.equal(ack.ok,true);}else await delay(50);
   }
+  await save('history-observation.json',{elapsedMs:performance.now()-historyStarted,chunks,output,polls:historyPolls});
   assert.ok(chunks>0);assert.ok(output.includes('SIREN_LOCK_CONTINUATION_COMPLETE'));await writeFile(join(out,'replayed-history.txt'),output,{flag:'wx'});
   await milestone('unlock-fresh-lease-history',{grant:second.grant,lease:second.lease,chunks,bytes:Buffer.byteLength(output),oldRouterRefused:oldRefused});
   const stopped=await members.access.currentRouter().route({event:event(workspace),method:'terminalStop',payload:request(workspaceGrant,{sessionId})});assert.equal(stopped.ok,true);assert.equal(nativeState.sessionStops.length,1);
