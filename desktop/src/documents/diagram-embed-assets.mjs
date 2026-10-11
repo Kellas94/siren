@@ -9,12 +9,12 @@ import {DIAGRAM_EMBED_ASSET_BYTES,normalizeDiagramEmbedAssetRef} from './diagram
 export const DIAGRAM_EMBED_PROJECT_BYTES=128*1024*1024;
 const fail=code=>{throw Object.assign(Error(code),{code});},kinds=['svg','png','diagram-source'];
 function guard(callback){if(typeof callback!=='function')fail('ACCESS_REFUSED');let revoked=false;return()=>{try{if(callback()!==true)revoked=true;}catch{revoked=true;}if(revoked)fail('ACCESS_REFUSED');};}
-async function inventory(directory,staging=false){
+async function inventory(directory,staging=false,allowLinked=false){
  const rows=[];let bytes=0;await ownedDirectory(directory);
  for await(const d of await opendir(directory)){
   if(!(staging?/^pending-[a-f0-9-]{36}\.tmp$/:/^[a-f0-9]{64}\.blob$/).test(d.name)||!d.isFile()||d.isSymbolicLink())fail('DIAGRAM_EMBED_ASSET_CORRUPT');
-  const info=await lstat(join(directory,d.name));if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.size<(staging?0:1)||info.size>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
-  bytes+=info.size;rows.push(staging?{name:d.name,identity:info,bytes:info.size}:{sha256:d.name.slice(0,-5),bytes:info.size});if(rows.length>4096||bytes>DIAGRAM_EMBED_PROJECT_BYTES)fail('DIAGRAM_EMBED_BUDGET');
+  const info=await lstat(join(directory,d.name));if(!info.isFile()||info.isSymbolicLink()||!(info.nlink===1||allowLinked&&info.nlink===2)||info.size<(staging?0:1)||info.size>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+  bytes+=info.size;rows.push(staging?{name:d.name,identity:info,bytes:info.size}:{sha256:d.name.slice(0,-5),bytes:info.size,...(allowLinked?{identity:info}:{})});if(rows.length>4096||bytes>DIAGRAM_EMBED_PROJECT_BYTES)fail('DIAGRAM_EMBED_BUDGET');
  }
  return {rows,bytes};
 }
@@ -22,13 +22,29 @@ function trustedWriter(options){
  const owner=options?.ownerIdentity;
  return Number.isSafeInteger(owner?.pid)&&owner.pid>0&&typeof owner.path==='string'&&owner.path.length>0&&typeof owner.startedAt==='string'&&owner.startedAt.length>0&&typeof options.inspectProcess==='function';
 }
+function sameFile(info,prior){return info.isFile()&&!info.isSymbolicLink()&&info.nlink===prior.nlink&&info.dev===prior.dev&&info.ino===prior.ino&&info.size===prior.size&&info.mtimeMs===prior.mtimeMs&&info.ctimeMs===prior.ctimeMs;}
+async function qualifyLinkedStages(directory,staging,all,abandoned,current){
+ const matched=new Set();
+ for(const row of abandoned.rows){
+  if(row.identity.nlink!==2)continue;
+  current();const bytes=await readOwnedBytes(join(staging,row.name),row.bytes);current();const hash=digest(bytes),final=all.rows.find(r=>r.sha256===hash);
+  if(bytes.length!==row.bytes||!final?.identity||final.identity.nlink!==2||!sameFile(final.identity,row.identity)||matched.has(hash))fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+  const path=join(directory,hash+'.blob'),saved=await readOwnedBytes(path,row.bytes);current();
+  if(!saved.equals(bytes)||digest(saved)!==hash)fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+  row.final={path,identity:final.identity};matched.add(hash);
+ }
+ // A linked final without its exact staged counterpart is never repaired.
+ if(all.rows.some(r=>r.identity?.nlink===2&&!matched.has(r.sha256)))fail('DIAGRAM_EMBED_ASSET_CORRUPT');
+}
 async function retireStages(directory,all,current){
  // The complete inventory has already passed validation, and the caller owns
  // the exclusive project writer. These names are unpublished, never saved refs.
  for(const row of all.rows){
-  current();await ownedDirectory(directory);current();const info=await lstat(join(directory,row.name));current();
+  current();await ownedDirectory(directory);current();
+  if(row.final){const counterpart=await lstat(row.final.path);current();if(!sameFile(counterpart,row.final.identity))fail('PENDING_CLEANUP_FAILED');}
+  const info=await lstat(join(directory,row.name));current();
   const prior=row.identity;
-  if(!info.isFile()||info.isSymbolicLink()||info.nlink!==1||info.dev!==prior.dev||info.ino!==prior.ino||info.size!==prior.size||info.mtimeMs!==prior.mtimeMs||info.ctimeMs!==prior.ctimeMs)fail('PENDING_CLEANUP_FAILED');
+  if(!sameFile(info,prior)||(prior.nlink!==1&&!row.final))fail('PENDING_CLEANUP_FAILED');
   await unlink(join(directory,row.name));current();
  }
  return {rows:[],bytes:0};
@@ -45,9 +61,10 @@ export class DiagramEmbedAssetStore{
   const current=guard(isCurrent);current();if(!kinds.includes(kind)||!Buffer.isBuffer(bytes))fail('DIAGRAM_EMBED_REFUSED');if(bytes.length<1||bytes.length>DIAGRAM_EMBED_ASSET_BYTES)fail('DIAGRAM_EMBED_BUDGET');
   const copy=Buffer.from(bytes),ref={kind,bytes:copy.length,sha256:digest(copy)},directory=await this.#directory(projectId,true);current();
   return exclusiveWriter(await this.#projects.directory(projectId),async()=>{
-   current();const all=await inventory(directory),existing=all.rows.find(r=>r.sha256===ref.sha256);current();
-   const staging=await childDirectory(await this.#projects.directory(projectId),'diagram-embed-staging',{create:true});current();let abandoned=await inventory(staging,true);current();
-   if(trustedWriter(this.#projects.writerOptions))abandoned=await retireStages(staging,abandoned,current);
+   current();const trusted=trustedWriter(this.#projects.writerOptions);let all=await inventory(directory,false,trusted);current();
+   const staging=await childDirectory(await this.#projects.directory(projectId),'diagram-embed-staging',{create:true});current();let abandoned=await inventory(staging,true,trusted);current();
+   if(trusted){await qualifyLinkedStages(directory,staging,all,abandoned,current);abandoned=await retireStages(staging,abandoned,current);all=await inventory(directory);current();}
+   const existing=all.rows.find(r=>r.sha256===ref.sha256);
    if(existing){await this.#verified(directory,ref);current();return ref;}
    if(all.bytes+abandoned.bytes+copy.length>DIAGRAM_EMBED_PROJECT_BYTES||all.rows.length+abandoned.rows.length>=4096)fail('DIAGRAM_EMBED_BUDGET');
    // Unproven stages remain bounded and count against the budget. Trusted

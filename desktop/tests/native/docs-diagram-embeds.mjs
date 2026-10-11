@@ -198,6 +198,44 @@ try{
  result.writeCrashRestart.saved={revision:retry.revision,sha256:retry.sha256,assetRefs:diagramBundleRefs(retry)};result.writeCrashRestart.quit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+restartEditor.view.windowId);await io.close();io=null;await driver.waitForExit();result.writeCrashRestart.processJoined=true;
  assert.deepEqual(await projects.readProject(crashLarge.project.id),retry);assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
  check('Actual restart after abrupt staging exit opens the exact saved document, admits a fresh whole embed and cleans unpublished abandoned staging and joins genuine Docs CtrlQ');
+
+ await writeFile(join(evidence,'stage-restart-electron.log'),driver.logs());await driver.close();driver=null;page=null;
+ phase='crash-linked-stage';
+ const linkedLarge=await projects.createProject({label:'Final-link recovery fixture',json:'{}'});
+ assert.equal((await commitManifest({projects,repository:sources,recovery,projectId:linkedLarge.project.id,baseRevision:1,sourceRefs:[],metadata:structuredClone(largeMetadata),operationId:'linked-native-crash-fixture'})).ok,true);
+ const linkedBefore=await projects.readProject(linkedLarge.project.id),linkedDirectory=await projects.directory(linkedLarge.project.id);
+ await mkdir(join(linkedDirectory,'diagram-embed-staging'));await mkdir(join(linkedDirectory,'diagram-embed-assets'));
+ await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:linkedLarge.project.id}));
+ const linkedPort=await reserveDocsInspectorPort();driver=await launchDesktop({extraArgs:['--siren-test-root='+data,'--siren-test-project='+linkedLarge.project.id,'--inspect=127.0.0.1:'+linkedPort]});
+ io=await attachDocsIO({port:linkedPort,pid:driver.pid,file:join(evidence,'backup.siren-backup'),adaptChooser:false});
+ await unlockDesktop(driver,{pin:'4826',surface:'home'});const linkedReader=await open('docs','doc-a'),linkedEditor=await working(linkedReader,'docs');page=linkedEditor.page;
+ await click(page,'.document-block-actions>button:first-child');await page.waitFor('document.querySelector(".document-diagram-picker")?.open===true&&document.querySelector("[data-embed-action=choose-diagram]")?.options.length===1');
+ await click(page,'[data-embed-action=preview]');await page.waitFor('document.querySelector(".document-diagram-picker img")?.naturalWidth>0&&!document.querySelector("[data-embed-action=confirm-insert]").disabled');
+ result.linkedCrashArmed=await io.armLinkedStageCrash({projectId:linkedLarge.project.id,expectedBytes:expectedSourceBytes});await io.close();io=null;
+ result.linkedCrashInput=await click(page,'[data-embed-action=confirm-insert]').then(()=>({delivered:true}),error=>({retired:true,code:error.cdpCode??null,message:error.message}));
+ await driver.waitForExit();const linkedExit=driver.processExit();assert.ok(Number.isInteger(linkedExit.exitCode)&&linkedExit.exitCode!==0||linkedExit.signalCode==='SIGKILL');
+ const linkedObserved=JSON.parse(await readFile(join(data,'native-diagram-linked-crash.json')));assert.equal(linkedObserved.pid,driver.pid);assert.equal(linkedObserved.projectId,linkedLarge.project.id);assert.equal(linkedObserved.bytes,expectedSourceBytes);assert.equal(linkedObserved.links,2);
+ const linkedStage=join(linkedDirectory,'diagram-embed-staging',linkedObserved.stageName),linkedFinal=join(linkedDirectory,'diagram-embed-assets',linkedObserved.finalName),stageInfo=await lstat(linkedStage),finalInfo=await lstat(linkedFinal);
+ assert.equal(stageInfo.nlink,2);assert.equal(finalInfo.nlink,2);assert.equal(stageInfo.ino,finalInfo.ino);assert.equal(stageInfo.dev,finalInfo.dev);
+ const linkedBytes=await readFile(linkedFinal);assert.equal(linkedBytes.length,expectedSourceBytes);assert.equal(hash(linkedBytes),linkedObserved.sha256);assert.deepEqual(await readFile(linkedStage),linkedBytes);
+ assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedBefore);assert.deepEqual(await projects.readProject(crashLarge.project.id),retry);assert.deepEqual(await projects.readProject(lockLarge.project.id),lockLargeBefore);assert.deepEqual(await projects.readProject(large.project.id),largeBefore);assert.deepEqual(await saved(),beforeClose);assert.deepEqual(await projects.readProject(imported.project.id),imported);assert.doesNotMatch(driver.logs(),/SIREN_CLOSE_STAGE/);
+ result.linkedCrash={observation:linkedObserved,exit:linkedExit,before:{revision:linkedBefore.revision,sha256:linkedBefore.sha256},pairAfterExit:{stageLinks:stageInfo.nlink,finalLinks:finalInfo.nlink,sameInode:true}};
+ check('Actual final-link SIGKILL preserves the complete two-name inode and all six exact saved manifests without coordinated Close');
+ await writeFile(join(evidence,'linked-crash-electron.log'),driver.logs());await driver.close();driver=null;page=null;
+ phase='restart-linked-stage';const linkedRestartPort=await reserveDocsInspectorPort();driver=await launchDesktop({extraArgs:['--siren-test-root='+data,'--siren-test-project='+linkedLarge.project.id,'--inspect=127.0.0.1:'+linkedRestartPort]});
+ io=await attachDocsIO({port:linkedRestartPort,pid:driver.pid,file:join(evidence,'backup.siren-backup'),adaptChooser:false});await unlockDesktop(driver,{pin:'4826',surface:'home'});
+ assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.mode'),'normal');const linkedRestartReader=await open('docs','doc-a');page=linkedRestartReader.page;
+ const linkedRead=await page.evaluate('window.sirenDocsRead.getDocument()');assert.equal(linkedRead.ok,true);assert.equal(linkedRead.document.blocks.length,2);assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedBefore);
+ const linkedRestartEditor=await working(linkedRestartReader,'docs');page=linkedRestartEditor.page;
+ await page.waitFor('document.body.dataset.documentReady==="true"&&document.body.dataset.documentReadonly==="false"');
+ await click(page,'.document-block-actions>button:first-child');await page.waitFor('document.querySelector(".document-diagram-picker")?.open===true&&document.querySelector("[data-embed-action=choose-diagram]")?.options.length===1');await select(page,'[data-embed-action=choose-position]',1);
+ await click(page,'[data-embed-action=preview]');await page.waitFor('document.querySelector(".document-diagram-picker img")?.naturalWidth>0&&!document.querySelector("[data-embed-action=confirm-insert]").disabled');await click(page,'[data-embed-action=confirm-insert]');await page.waitFor('document.querySelector(".document-diagram-picker")==null&&document.body.dataset.documentDirty==="false"');
+ const linkedRetry=await projects.readProject(linkedLarge.project.id);assert.equal(workspaceMetadata(linkedRetry).workpapers[0].blocks.length,3);assert.equal((await verifyDiagramSnapshot({snapshot:linkedRetry,assets,isCurrent:()=>true})).length,2);
+ assert.deepEqual(await readdir(join(linkedDirectory,'diagram-embed-staging')),[]);assert.deepEqual(await readFile(linkedFinal),linkedBytes);assert.equal((await lstat(linkedFinal)).nlink,1);
+ result.linkedRestart={pid:driver.pid,saved:{revision:linkedRetry.revision,sha256:linkedRetry.sha256,assetRefs:diagramBundleRefs(linkedRetry)},retainedFinal:{name:linkedObserved.finalName,sha256:hash(await readFile(linkedFinal)),links:1},stagingEmpty:true};
+ result.linkedRestart.quit=await io.quitFromDocs('siren://app/windows/docs.html?windowId='+linkedRestartEditor.view.windowId);await io.close();io=null;await driver.waitForExit();result.linkedRestart.processJoined=true;
+ assert.deepEqual(await projects.readProject(linkedLarge.project.id),linkedRetry);assert.deepEqual(await projects.readProject(crashLarge.project.id),retry);assert.match(driver.logs(),/SIREN_CLOSE_STAGE.*"stage":"window-close"/);
+ check('Actual restart repairs only the pending hardlink name, preserves final bytes, saves a fresh valid embed and joins genuine Docs CtrlQ');
  result.status='BOUNDED_NATIVE_COMPLETE';
 }catch(error){result.error={phase,code:error.code,message:error.message,stack:error.stack};try{result.ui=await(page??driver)?.evaluate('({url:location.href,body:{...document.body.dataset},text:document.body.innerText.slice(0,5000)})');await(page??driver)?.screenshot(join(evidence,'failure.png'));}catch{}}
 finally{try{await io?.close();}catch{}if(driver)await writeFile(join(evidence,'electron.log'),driver.logs());await driver?.close();result.finishedAt=new Date().toISOString();if(result.inputs){const after=await inventory();result.changedInputs=result.inputs.filter((row,i)=>JSON.stringify(row)!==JSON.stringify(after[i]));if(result.changedInputs.length)result.status='ADVERSE';}await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error}));process.exitCode=result.status==='BOUNDED_NATIVE_COMPLETE'?0:1;}
