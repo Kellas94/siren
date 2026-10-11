@@ -8,22 +8,22 @@ export function sanitizeDiagramEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLS
   const parsed=new DOMParser({onError:refuse}).parseFromString(svg,'image/svg+xml'),root=parsed.documentElement;
   if(!root||root.localName!=='svg'||root.namespaceURI!==NS||parsed.doctype||parsed.getElementsByTagName('parsererror').length)refuse();
   const box=(root.getAttribute('viewBox')??'').trim().split(/[\s,]+/).map(Number);if(box.length!==4||!box.every(v=>Number.isFinite(v)&&Math.abs(v)<=1000000)||box[2]<=0||box[3]<=0)refuse();
-  const tags=new Set('svg g path rect line polyline polygon circle ellipse text tspan defs marker clipPath mask linearGradient radialGradient stop filter feGaussianBlur feDropShadow feOffset feColorMatrix feBlend feComposite feMerge feMergeNode feFlood style title desc a use'.split(' '));
-  const attrs=new Set('id class viewBox width height x y x1 y1 x2 y2 cx cy r rx ry dx dy d points transform fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline textLength lengthAdjust letter-spacing word-spacing whitespace white-space style href role tabindex focusable preserveAspectRatio marker-start marker-mid marker-end markerWidth markerHeight markerUnits refX refY orient clip-path clip-rule clipPathUnits mask maskUnits maskContentUnits gradientUnits gradientTransform spreadMethod offset stop-color stop-opacity filter filterUnits primitiveUnits stdDeviation in in2 result type values operator k1 k2 k3 k4 mode flood-color flood-opacity'.split(' '));
-  const properties=new Set('fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline letter-spacing word-spacing white-space overflow display visibility transform transform-origin transform-box filter clip-path mask marker-start marker-mid marker-end stop-color stop-opacity flood-color flood-opacity max-width height width padding margin line-height text-align vertical-align background background-color position max-width z-index border border-radius border-color border-width border-style rx ry animation animation-name animation-duration animation-timing-function animation-iteration-count cursor pointer-events'.split(' '));
-  const ids=new Set(),references=[];
-  function value(text){
+  const tags=new Set('svg symbol g path rect line polyline polygon circle ellipse text tspan defs marker clipPath mask linearGradient radialGradient stop filter feGaussianBlur feDropShadow feOffset feColorMatrix feBlend feComposite feMerge feMergeNode feFlood style title desc a use'.split(' '));
+  const attrs=new Set('id name class viewBox width height x y x1 y1 x2 y2 cx cy r rx ry dx dy d points transform transform-origin fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline textLength lengthAdjust letter-spacing word-spacing whitespace white-space style href role tabindex focusable preserveAspectRatio marker-start marker-mid marker-end markerWidth markerHeight markerUnits refX refY orient clip-path clip-rule clipPathUnits mask maskUnits maskContentUnits gradientUnits gradientTransform spreadMethod offset stop-color stop-opacity filter filterUnits primitiveUnits stdDeviation in in2 result type values operator k1 k2 k3 k4 mode flood-color flood-opacity'.split(' '));
+  const properties=new Set('fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline letter-spacing word-spacing white-space overflow display visibility transform transform-origin transform-box filter clip-path mask marker-start marker-mid marker-end stop-color stop-opacity flood-color flood-opacity max-width height width padding margin line-height text-align vertical-align background background-color position max-width z-index border border-radius border-color border-width border-style rx ry animation animation-name animation-duration animation-timing-function animation-iteration-count cursor pointer-events box-shadow border-bottom shape-rendering scale transition-duration'.split(' '));
+  const ids=new Set(),references=[];const neoClasses=[];
+  function value(text,neoTargets=null){
    if(typeof text!=='string'||/[\\@<>\u0000-\u0008\u000b\u000c\u000e-\u001f]|\/\*|\*\/|expression\s*\(/i.test(text))refuse();
-   let remaining=text;for(const match of text.matchAll(/url\(\s*(['"]?)(#[A-Za-z_][\w:.-]*)\1\s*\)/gi)){references.push(match[2].slice(1));remaining=remaining.replace(match[0],'');}if(/url\s*\(|(?:https?|file|data|javascript|vbscript):|\/\//i.test(remaining))refuse();
+   let remaining=text;for(const match of text.matchAll(/url\(\s*(['"]?)(#[A-Za-z_][\w:.-]*)\1\s*\)/gi)){references.push(neoTargets?{id:match[2].slice(1),neoTargets}:match[2].slice(1));remaining=remaining.replace(match[0],'');}if(/url\s*\(|(?:https?|file|data|javascript|vbscript):|\/\//i.test(remaining))refuse();
   }
-  function declarations(text){
-   for(const declaration of text.split(';')){if(!declaration.trim())continue;const at=declaration.indexOf(':');if(at<1)refuse();const property=declaration.slice(0,at).trim().toLowerCase(),v=declaration.slice(at+1).trim();if(!properties.has(property)&&!/^--[a-z][a-z0-9-]*$/.test(property)||!v||/[{}]/.test(v))refuse();value(v);}
+  function declarations(text,neoTargets=null){
+   for(const declaration of text.split(';')){if(!declaration.trim())continue;const at=declaration.indexOf(':');if(at<1)refuse();const property=declaration.slice(0,at).trim().toLowerCase(),v=declaration.slice(at+1).trim();if(!properties.has(property)&&!/^--[a-z][a-z0-9-]*$/.test(property)||!v||/[{}]/.test(v))refuse();value(v,neoTargets);}
   }
   function stylesheet(text){
    if(/[\\]|\/\*|\*\//.test(text))refuse();let rules=0;
    const parse=(body,keyframes=false)=>{let rest=body.trim();while(rest){if(++rules>10000)refuse();const open=rest.indexOf('{');if(open<1)refuse();let depth=1,close=open+1;for(;close<rest.length&&depth;close++){if(rest[close]==='{')depth++;else if(rest[close]==='}')depth--;if(depth>2)refuse();}if(depth)refuse();const selector=rest.slice(0,open).trim(),inner=rest.slice(open+1,close-1);
     if(selector.startsWith('@')){if(keyframes||!/^@(?:-webkit-)?keyframes\s+[A-Za-z_][\w-]*$/.test(selector))refuse();parse(inner,true);}
-    else{const invalidSelector=keyframes?!/^(?:from|to|(?:\d{1,3}(?:\.\d+)?%))(?:\s*,\s*(?:from|to|\d{1,3}(?:\.\d+)?%))*$/.test(selector):/[^\w\s.#,:>*+~\[\]="'()|-]/.test(selector);if(!selector||invalidSelector)refuse();declarations(inner);}rest=rest.slice(close).trim();}};
+    else{const invalidSelector=keyframes?!/^(?:from|to|(?:\d{1,3}(?:\.\d+)?%))(?:\s*,\s*(?:from|to|\d{1,3}(?:\.\d+)?%))*$/.test(selector):/[^\w\s.#,:>*+~$^\[\]="'()|-]/.test(selector);if(!selector||invalidSelector)refuse();const targets=keyframes?[]:selector.split(',').map(part=>/^#[A-Za-z_][\w:.-]*\s+\[data-look=(?:"neo"|'neo')\]((?:\.[A-Za-z_][\w-]*)+)/.exec(part.trim())?.[1].slice(1).split('.'));declarations(inner,targets.length&&targets.every(classes=>classes?.length<=4&&classes.every(c=>['node','cluster','swimlane','icon-shape'].includes(c)))?targets:null);}rest=rest.slice(close).trim();}};
    parse(text);
   }
   let nodes=0;
@@ -40,10 +40,15 @@ export function sanitizeDiagramEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLS
     else if(name==='style')declarations(a.value);
     else value(a.value);
    }
+   if(node.getAttribute('data-look')==='neo')neoClasses.push(new Set((node.getAttribute('class')??'').split(/\s+/)));
    if(node.localName==='style')stylesheet(node.textContent);
    for(let c=node.firstChild;c;c=c.nextSibling)walk(c,depth+1);
   }
   for(let child=parsed.firstChild;child;child=child.nextSibling){if(child===root)walk(child,0);else if(child.nodeType!==8&&!(child.nodeType===3&&!child.textContent.trim()))refuse();}
-  if(references.some(id=>!ids.has(id)))refuse();const result=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(result).length>2097152)refuse();return result;
+  // Mermaid emits shared neo-only CSS even for non-neo families. A missing
+  // local paint is inert only if every selector requires absent neo classes.
+  // Actual attributes, mixed selectors and all external URLs remain strict.
+  const neoMatch=new Map(),matchesNeo=classes=>{const key=[...new Set(classes)].sort().join(' ');if(!neoMatch.has(key))neoMatch.set(key,neoClasses.some(actual=>classes.every(c=>actual.has(c))));return neoMatch.get(key);};
+  if(references.some(ref=>typeof ref==='string'?!ids.has(ref):ref.neoTargets.some(matchesNeo)&&!ids.has(ref.id)))refuse();const result=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(result).length>2097152)refuse();return result;
  }catch{refuse();}
 }
