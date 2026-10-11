@@ -3,3 +3,5 @@ terminal-fresh-runtime-provision.mjs -text
 terminal-fresh-runtime-provision.test.mjs -text
 terminal-fresh-runtime-provision-inputs.json -text
 terminal_fresh_build_archive.py -text
+terminal-fresh-entry-import-cycle.test.mjs -text
+terminal-fresh-entry-continuation.test.mjs -text

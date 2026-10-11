@@ -1,3 +1,4 @@
+import {runFreshTerminalPair} from './terminal-fresh-pair-driver.mjs';
 // Inactive hosted prerequisite: default build-only, fixed diagnostic opt-in. Import never provisions or launches.
 import {readFile,writeFile,mkdir,copyFile,cp,rename,readdir,lstat,open} from 'node:fs/promises';
 import {constants,realpathSync} from 'node:fs';
@@ -166,7 +167,7 @@ if(import.meta.main===true){
  if(!receipt.ok)process.exitCode=1;
  else if(entryMode==='fixed-pathext-pair'){
   try{
-   const {runFreshTerminalPair}=await import('./terminal-fresh-pair-driver.mjs'),pair=await runFreshTerminalPair(receipt);
+   const pair=await runFreshTerminalPair(receipt);
    console.log(JSON.stringify({ok:pair.ok,status:pair.status,...flags}));
    if(pair.ok!==true||pair.status!=='FRESH_PAIR_OBSERVED_NOT_ADMITTED'||pair.hasAdverseArm===true)process.exitCode=1;
   }catch{console.log(JSON.stringify({ok:false,status:'FRESH_PAIR_CONTINUATION_UNAVAILABLE',...flags}));process.exitCode=1;}
