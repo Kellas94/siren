@@ -31,3 +31,18 @@ test('post-Lock refusal uses the original captured event without touching a dest
  });
  assert.equal(observed.ok,false);
 });
+
+test('actual failure path keeps the native capability in scope and preserves history before cleanup',async()=>{
+ const declaration=worker.match(/^ let graph[^\n]+/m)[0];
+ const nativeLine=worker.match(/^  (?:const native=|native=)[^\n]+/m)[0].replace('import.meta.url','moduleUrl');
+ const start=worker.indexOf('  if(members)try{'),end=worker.indexOf('\n  if(graph)try{',start);assert.ok(start>0&&end>start);
+ const saved=[],cap={},snapshot={alive:true},history={chunks:['fixed fixture error']},result={};
+ await runInNewContext('(async()=>{'+declaration+';members=fixtureMembers;try{'+nativeLine+';throw Error("fixed probe failure");}catch{'+worker.slice(start,end)+'} })()',{
+  fixtureMembers:{ownership:{snapshot:()=>({sessions:[{state:'running',sessionOwnerId:'owner'}]})},backend:{readHistory:async q=>{assert.equal(q.ownerId,'owner');return history;}}},
+  createRequire:()=>()=>({mark:()=>0,snapshotSession:q=>{assert.equal(q,cap);return snapshot;}}),moduleUrl:'fixed probe',addonPath:'fixed addon',
+  nativeState:{sessions:[cap]},Object,result,bounded:async p=>p,save:async(name,value)=>saved.push({name,value})
+ });
+ assert.equal(result.failureDiagnosticError,undefined);
+ assert.deepEqual(saved.map(r=>r.name),['failure-ownership.json','failure-native-session.json','failure-history.json']);
+ assert.equal(saved[2].value,history);
+});

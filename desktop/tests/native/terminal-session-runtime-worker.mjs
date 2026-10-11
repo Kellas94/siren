@@ -29,7 +29,7 @@ export async function startRuntimeProbe(config){
  const waitFile=async(p,expected)=>{for(let i=0;i<300;i++){try{const v=await readFile(p,'utf8');assert.equal(v,expected);return;}catch(e){if(e.code!=='ENOENT')throw e;}await delay(50);}throw Error('FIXTURE_FILE_DEADLINE:'+p);};
  const absent=async p=>{try{await readFile(p);assert.fail('Unexpected fixture execution:'+p);}catch(e){if(e.code!=='ENOENT')throw e;}};
  const nativeState={host:null,sessions:[],hostStops:[],sessionStops:[]},windows=new Set();
- let graph,members,observer,observerExit,observerStdout='',observerStderr='',host,hostExit,locked=false,op=0,helperCount=0;
+ let graph,members,native,observer,observerExit,observerStdout='',observerStderr='',host,hostExit,locked=false,op=0,helperCount=0;
  const exec=promisify(execFile),helperPin=await pin(filesystemExecutable),observerPin=await pin(observerExecutable);
  const event=w=>({sender:w.webContents,senderFrame:w.webContents.mainFrame});
  const importExecution=p=>import(pathToFileURL(join(execution,p)).href);
@@ -63,7 +63,7 @@ export async function startRuntimeProbe(config){
   const workspace=await windowAt('siren://app/app.html');registry.bindWorkspace(workspace);registry.activateWorkspace();
   const workspaceGrant=registry.capture(event(workspace));assert.equal(workspaceGrant.role,'workspace');
   const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
-  const native=createRequire(import.meta.url)(addonPath),mark=native.mark(),facade=Object.create(null);
+  native=createRequire(import.meta.url)(addonPath);const mark=native.mark(),facade=Object.create(null);
   for(const [key,d] of Object.entries(Object.getOwnPropertyDescriptors(native))){
    assert.ok(Object.hasOwn(d,'value'));if(typeof d.value!=='function')continue;
    facade[key]=(...args)=>{

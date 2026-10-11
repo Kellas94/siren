@@ -398,8 +398,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime-worker.mjs",
-      "bytes": 19573,
-      "sha256": "4f6d0f7d3f7037f43fb1dde6db85e47d6b71675b5ff5e784c709c64f6fe149c3"
+      "bytes": 19580,
+      "sha256": "c98c8c1aaba4640d2f0bd9c249f5cc575e82cdd8b15a4a98eb9d53b7b9df67ef"
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime.mjs",
@@ -418,8 +418,8 @@
     },
     {
       "path": "desktop/tests/terminal-session-runtime-integration.test.mjs",
-      "bytes": 2699,
-      "sha256": "dc185d94c08b160a59bf2b95e931d69f48f372d129c89c6d2faca9d5724d01f6"
+      "bytes": 4044,
+      "sha256": "b813e8cea9b4d9c5ceba8d9551343290d881960994067afda16cf3a7789cea1e"
     }
   ],
   "nativeExecutionAdmitted": false
