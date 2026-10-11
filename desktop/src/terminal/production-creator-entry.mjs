@@ -47,7 +47,9 @@ try{
     try{
      const pty=loadProductionPtyProvider(),d=Object.getOwnPropertyDescriptor(pty,'spawn');if(!d||!Object.hasOwn(d,'value')||typeof d.value!=='function')throw Error();const spawn=d.value;
      resolve(Object.freeze({spawn(executable,args,options){
-      const term=Reflect.apply(spawn,pty,[executable,args,options]);
+      // node-pty initializes opt.env even when supplied. Keep the validated
+      // startup options immutable and give the trusted provider its own object.
+      const term=Reflect.apply(spawn,pty,[executable,args,{...options}]);
       // Version-specific trusted provider normalization. The private agent
       // observation refuses winpty/the bundled DLL fallback before ready.
       if(term?._agent?._useConpty!==true||term?._agent?._useConptyDll!==false)throw Error('CREATOR_CONPTY_BACKEND_REFUSED');

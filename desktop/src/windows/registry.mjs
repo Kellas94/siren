@@ -4,7 +4,7 @@ import {WORKSPACE_ENTRIES,workspaceEntryURL} from '../navigation/entries.mjs';
 import {workspaceSurfaceFor,ownsWorkspaceWindow} from './surface.mjs';
 import {surfaceWindowLabel} from '../navigation/window-labels.mjs';
 
-const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
+const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience', 'terminal']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const refuse = (code, message) => Object.assign(new Error(message), { code });
 
@@ -61,17 +61,27 @@ export class WindowRegistry {
   #navigationTickets = new WeakMap();
   #navigationCommits = new WeakMap();
   #selectedSurface = null;
+  #terminalViews = false;
 
-  constructor({ createWindow, authorize, closeTimeoutMs = 10000 }) {
+  constructor({ createWindow, authorize, closeTimeoutMs = 10000, terminalViews = false }) {
     if (typeof createWindow !== 'function' || typeof authorize !== 'function') throw new TypeError('Native factory and authorization required');
     if (!Number.isSafeInteger(closeTimeoutMs) || closeTimeoutMs < 1 || closeTimeoutMs > 10000) throw new TypeError('Bounded native close deadline required');
+    if (typeof terminalViews !== 'boolean') throw new TypeError('Explicit native Terminal view opt-in required');
     this.#createWindow = createWindow;
     this.#authorize = authorize;
     this.#closeTimeoutMs = closeTimeoutMs;
+    this.#terminalViews = terminalViews;
   }
 
   #policy(request) {
-    try { return authorized(this.#authorize(request), request); }
+    try {
+      // MAIN-only opt-in for the native Session integration. Existing product
+      // registries remain disabled; a role string or IPC payload cannot opt in.
+      if(request.role==='terminal'&&!this.#terminalViews)throw refuse('ACCESS_REFUSED','Terminal view unavailable');
+      const scope=authorized(this.#authorize(request),request);
+      if(request.role==='terminal'&&(scope.mode!=='normal'||scope.access!=='write'))throw refuse('ACCESS_REFUSED','Terminal execution scope refused');
+      return scope;
+    }
     catch { throw refuse('ACCESS_REFUSED', 'Native view access refused'); }
   }
 

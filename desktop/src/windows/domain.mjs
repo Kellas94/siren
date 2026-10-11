@@ -122,7 +122,11 @@ export class DomainRepository {
    const request=readDiagramEmbedPublication(token);if(!request||typeof this.#diagramAssets?.read!=='function')throw error('REQUEST_REFUSED');
    const {projects,repository}=this.#adapters(scope),history=await selectedManifestHistory(projects,scope.projectId);guard(scope);
    const current=history[0],id=request.documentId,requestHash=fingerprint(request),prior=history.find(s=>s.schema===2&&s.operationId===request.operationId);
-   if(prior){const marker=JSON.parse(prior.json).sirenNativeEntityOperation;if(marker?.schema!==1||marker.projectId!==scope.projectId||marker.domain!=='docs'||marker.entityId!==id||marker.requestHash!==requestHash||marker.sha256!==fingerprint(selectedEntity(prior,'docs',id)))throw error('OPERATION_CONFLICT');return receipt(prior,'docs',id,'committed',request.operationId);}
+   if(prior){const marker=JSON.parse(prior.json).sirenNativeEntityOperation;if(marker?.schema!==1||marker.projectId!==scope.projectId||marker.domain!=='docs'||marker.entityId!==id||marker.requestHash!==requestHash||marker.sha256!==fingerprint(selectedEntity(prior,'docs',id)))throw error('OPERATION_CONFLICT');
+    // Replay through the same manifest admission and recovery proof as ordinary
+    // Docs saves; an existing operation alone cannot establish its durability.
+    const saved=await commitManifest({projects,repository,recovery:this.#recovery,projectId:scope.projectId,baseRevision:prior.revision-1,sourceRefs:prior.sourceRefs,metadata:JSON.parse(prior.json),operationId:prior.operationId});guard(scope);if(!saved.ok)return fail(saved.code);return receipt(prior,'docs',id,saved.durability,request.operationId);
+   }
    if(version(current,'docs',id)!==request.expectedVersion)throw error('DOCUMENT_CONFLICT');
    const workspace=workspaceMetadata(current),target=selectedEntity(current,'docs',id),blocks=target.blocks??[];
    if(!Array.isArray(blocks)||blocks.length>=300&&request.action==='insert')throw error('ENTITY_BUDGET');

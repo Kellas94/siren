@@ -79,6 +79,8 @@ export class TerminalProductionManager {
   const p=data(options,['registry','policy','backend','accessReady','cwdAuthority','profilesFor','deadlineMs']);
   if(extra.length||!p||!callable(p.accessReady)||!callable(p.profilesFor)||!positive(p.deadlineMs)||p.deadlineMs>limits.stopDeadlineMs)throw TypeError('Bounded private lifecycle dependencies required');
   this.#deadline=p.deadlineMs;this.#deps={current:method(p.registry,'isCurrent'),capture:method(p.registry,'captureAdmissionGuard'),authorize:method(p.policy,'authorize'),cwd:method(p.cwdAuthority,'resolve'),profiles:p.profilesFor,ready:p.accessReady};
+  // Additive optional discovery; resolve-only private callers remain supported.
+  try{this.#deps.pick=method(p.cwdAuthority,'pick');}catch{this.#deps.pick=null;}
   for(const name of ['prepare','allocate','connect','stopSession','sendGate','isAvailable','subscribeUnavailable'])this.#deps[name]=method(p.backend,name);
   for(const name of ['captureBackendSettlement','captureControlSettlement','retireControl','install','revoke','input','resize','readHistory']){try{this.#deps[name]=method(p.backend,name);}catch{this.#deps[name]=null;}}
   this.#ledger=new TerminalProductionSessionLedger({writeInput:p=>{const r=this.#records.get(p.sessionId);return r?this.#work(r,()=>this.#writeInput(p)):this.#writeInput(p);}});
@@ -115,12 +117,12 @@ export class TerminalProductionManager {
   const g=this.#globalRecord.life;if(g.callbackSlots>=64)refuse('CAPACITY_EXCEEDED');g.callbackSlots++;let transferred=false;
   try{return this.#frame(this.#globalRecord,()=>{const value=callback();if(value&&typeof value==='object'&&!types.isProxy(value)&&types.isPromise(value)){transferred=true;void this.#work(this.#globalRecord,()=>value,{consume:()=>{},swallow:true,onSettled:()=>{g.callbackSlots--;}});refuse('SENDER_REFUSED');}if(!settledValue(value)){g.unknown=true;refuse('REQUEST_REFUSED');}return value;});}finally{if(!transferred)g.callbackSlots--;this.#finishGlobal();}
  }
- #lane(kind,callback,onTimeout=()=>{},code='HOST_UNAVAILABLE'){
+ #lane(kind,callback,onTimeout=()=>{},code='HOST_UNAVAILABLE',operationId=undefined){
   const g=this.#globalRecord.life,existing=g.slots.get(kind);if(existing)return existing.reply;const slot={kind,epoch:this.#generation,requests:0,publicDrained:false,unknown:false},state=requestLifetime(kind,++this.#requestSequence);let resolve;const actual=new NativePromise(yes=>resolve=yes);
   slot.requestState=state;slot.handle=state.handle;
-  slot.reply=this.#public(actual,onTimeout,code,undefined,null,this.#globalRecord,null,()=>{slot.publicDrained=true;this.#releaseLane(slot);});g.slots.set(kind,slot);
+  slot.reply=this.#public(actual,onTimeout,code,operationId,null,this.#globalRecord,null,()=>{slot.publicDrained=true;this.#releaseLane(slot);});g.slots.set(kind,slot);
   this.#requestHandles.set(slot.reply,slot.handle);
-  void this.#work(this.#globalRecord,()=>callback(slot),{consume:value=>{resolve(forwardedValue(value));resolve=null;},swallow:true,onRejected:()=>{resolve(fail(code));resolve=null;}});return slot.reply;
+  void this.#work(this.#globalRecord,()=>callback(slot),{consume:value=>{resolve(forwardedValue(value));resolve=null;},swallow:true,onRejected:()=>{resolve(fail(code,operationId));resolve=null;}});return slot.reply;
  }
  #releaseLane(slot){if(slot.publicDrained&&!slot.requests&&!slot.unknown&&this.#globalRecord.life.slots.get(slot.kind)===slot){this.#globalRecord.life.slots.delete(slot.kind);const c=slot.requestState;c.done=true;const resolve=c.resolve;c.resolve=null;resolve(Object.freeze({scope:'MANAGER_CONTROL_REQUEST',kind:c.kind,requestId:c.requestId,actualSettled:true,nativeExecutionAdmitted:false}));}}
  #fenceRequest(slot,promise){
@@ -278,6 +280,30 @@ export class TerminalProductionManager {
   }catch(error){if(record.unknownOwner)record.life.unknown=true;this.#abort(record,98);return fail(errorCode(error),scope.payload.operationId);}
   finally{record.activeCreate=false;this.#reclaim(record);}
  }
+ #discovery(grant,payload,operation,kind,selectProvider){
+  let checked,scope;
+  try{
+   if(types.isProxy(payload))refuse('REQUEST_REFUSED');checked=validateTerminalRequest(operation,payload);if(!checked.ok)refuse('REQUEST_REFUSED');if(!context(grant))refuse('SENDER_REFUSED');
+   const operationId=checked.payload.operationId;if(this.#closed)refuse('PIN_REQUIRED');if(this.#retired||this.#lost)refuse('HOST_UNAVAILABLE');
+   // Reserve one distinct global lane before registry/policy/provider reentry.
+   // Never share another operation's Promise or correlation ID.
+   if(this.#globalRecord.life.slots.has(kind))return new NativePromise(resolve=>resolve(fail('CAPACITY_EXCEEDED',operationId)));
+   return this.#lane(kind,async()=>{
+    try{
+     scope=this.#begin(grant,operation,checked.payload);const invoke=selectProvider(scope);this.#check(scope);
+     // The actual returned provider remains in global settlement accounting
+     // after a public deadline/Lock; unsupported work is never refunded.
+     const value=await nativePromise(this.#work(this.#globalRecord,invoke));this.#check(scope);return pass(value,operationId);
+    }catch(error){return fail(errorCode(error),operationId);}
+   },()=>{if(scope)scope.revoked=true;},'HOST_UNAVAILABLE',operationId);
+  }catch(error){return new NativePromise(resolve=>resolve(fail(errorCode(error),checked?.payload?.operationId)));}
+ }
+ pickCwd(grant,payload){return this.#discovery(grant,payload,'terminalPickCwd','pick-cwd',scope=>{
+  if(!this.#deps.pick)refuse('HOST_UNAVAILABLE');return()=>this.#deps.pick(scope.grant);
+ });}
+ listProfiles(grant,payload){return this.#discovery(grant,payload,'terminalListProfiles','list-profiles',scope=>{
+  const catalogue=this.#sync(()=>this.#deps.profiles(scope.grant)),list=method(catalogue,'listShellProfiles');return()=>list();
+ });}
  list(grant,payload){const g=this.#globalRecord.life;if(g.listBusy)return fail('CAPACITY_EXCEEDED');if(this.#retired||this.#lost)return fail();g.listBusy=true;try{return this.#frame(this.#globalRecord,()=>{let scope;try{scope=this.#begin(grant,'terminalList',payload);const rows=[...this.#records.values()].filter(r=>r.projectId===scope.context.projectId).map(r=>this.#info(r));this.#check(scope);return pass(Object.freeze(rows),scope.payload.operationId);}catch(error){return fail(errorCode(error),scope?.payload.operationId);}});}finally{g.listBusy=false;this.#finishGlobal();}}
  stop(grant,payload){
   let scope,record,entry;try{entry=this.#reserveEntry(grant,'terminalStop',payload,'stop');if(entry?.refused)return Promise.resolve(fail('CAPACITY_EXCEEDED',entry.operationId));scope=this.#begin(grant,'terminalStop',payload);record=this.#records.get(scope.payload.sessionId);if(!record)refuse('SESSION_REFUSED');this.#abort(record,77);

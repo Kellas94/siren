@@ -63,7 +63,7 @@
    const toolbar=make('div',host);toolbar.className='code-docs-actions';
    select(toolbar,'documentActivitySection','Activity section',[['comments','Comments'],['revisions','Changes'],['review','Review & releases']],section,changeSection);
    if(section==='comments')select(toolbar,'documentActivityFilter','Comment filter',[['all','All'],['open','Open'],['resolved','Resolved']],filter,changeFilter);
-   if(section==='revisions')select(toolbar,'documentActivityAgainst','Compare revision against',[['saved','Saved current content'],['working','Working content'+(context.dirty?' · Unsaved':' · No unsaved edits')]],against,value=>{against=value;retire();paint();});
+   if(section==='revisions'){if(context.readonly)against='saved';select(toolbar,'documentActivityAgainst','Compare revision against',[['saved','Saved current content'],...(!context.readonly?[['working','Working content'+(context.dirty?' · Unsaved':' · No unsaved edits')]]:[])],against,value=>{against=value;retire();paint();});}
    notice(host,'Recorded activity · '+(context.readonly?'Read only':'Working window')+' · Saved version '+context.version.slice(0,12)+'…'+(context.dirty?' · Unsaved changes remain in this window.':' · No unsaved changes reported.'),'documentActivityContext');
    notice(host,'Review, release, author, timestamp and fingerprint values are recorded claims, not independently verified approvals, signatures or tests. Unknown fields remain in Preserved fields and the exact archive.');
    const page=model.page(context.document,{section,filter,cursor,limit:20});

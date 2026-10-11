@@ -1,50 +1,40 @@
-// Pure, browser-compatible display-event shapes for future typed preload use.
-// No Electron/Node/PTY import, delivery authority, HTML conversion or side effect.
-// IPC structured clones are data. Accessors are refused without reading them;
-// exotic Proxy traps are caught, not claimed to be a native identity boundary.
-const id=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(v);
-const integer=v=>Number.isSafeInteger(v)&&v>=0;
-const positive=v=>integer(v)&&v>0;
-const fail=()=>Object.freeze({ok:false,code:'EVENT_REFUSED'});
-function record(value,fields){
- if(!value||typeof value!=='object'||![Object.prototype,null].includes(Object.getPrototypeOf(value)))return null;
- const keys=Reflect.ownKeys(value);if(keys.length!==fields.length||keys.some(k=>typeof k!=='string'||!fields.includes(k)))return null;
- const out={};for(const k of fields){const d=Object.getOwnPropertyDescriptor(value,k);if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;out[k]=d.value;}return out;
+// Renderer event shapes only; this grants no caller, lease, credit or input authority.
+import {TERMINAL_LIMITS} from './contracts.mjs';
+const id=value=>typeof value==='string'&&/^[a-z0-9][a-z0-9_-]{0,127}$/.test(value);
+const counter=value=>Number.isSafeInteger(value)&&value>=0;
+const positive=value=>counter(value)&&value>0;
+const encoder=new TextEncoder();
+const states=['starting','running','exited','host-failed','stopping','cleanup-failed'];
+const lease={epoch:counter,sessionId:id,leaseId:id,generation:positive};
+const sessionFields={sessionId:id,projectId:id,profileId:id,
+ cwdDisplay:value=>typeof value==='string'&&value.length<=32768&&value.isWellFormed(),
+ state:value=>typeof value==='string'&&states.includes(value),
+ exitCode:value=>value===null||counter(value),droppedUtf8Bytes:counter,
+ attachedWindowId:value=>value===null||id(value)};
+const eventFields={
+ terminalData:{...lease,sequence:counter,data:value=>typeof value==='string'&&value.length>0&&value.length<=TERMINAL_LIMITS.outputBytes&&value.isWellFormed(),utf8Bytes:value=>positive(value)&&value<=TERMINAL_LIMITS.outputBytes},
+ terminalGap:{...lease,droppedUtf8Bytes:positive,resumeSequence:counter},
+ terminalState:{epoch:counter,session:value=>value!==null&&typeof value==='object'},
+};
+function copy(value,fields){
+ if(!value||typeof value!=='object'||Array.isArray(value))return null;
+ const proto=Object.getPrototypeOf(value);if(proto!==Object.prototype&&proto!==null)return null;
+ const keys=Reflect.ownKeys(value);if(keys.length!==Object.keys(fields).length)return null;
+ const result=Object.create(null);
+ for(const key of keys){
+  if(typeof key!=='string'||!Object.hasOwn(fields,key))return null;
+  const d=Object.getOwnPropertyDescriptor(value,key);
+  if(!d?.enumerable||!Object.hasOwn(d,'value')||!fields[key](d.value))return null;
+  result[key]=d.value;
+ }
+ return result;
 }
-function utf8Bytes(text){
- if(typeof text!=='string'||text.length>32768)return null;let bytes=0;
- for(let i=0;i<text.length;i++){const c=text.charCodeAt(i);
-  if(c<128)bytes++;else if(c<2048)bytes+=2;
-  else if(c>=0xd800&&c<=0xdbff){const low=text.charCodeAt(++i);if(!(low>=0xdc00&&low<=0xdfff))return null;bytes+=4;}
-  else if(c>=0xdc00&&c<=0xdfff)return null;else bytes+=3;
-  if(bytes>32768)return null;
- }return bytes;
-}
-const scope=['epoch','sessionId','leaseId','generation'];
-const states=new Set(['starting','running','exited','host-failed','stopping','cleanup-failed']);
-function session(value){
- const s=record(value,['sessionId','projectId','profileId','cwdDisplay','state','exitCode','droppedUtf8Bytes','attachedWindowId']);
- if(!s||![s.sessionId,s.projectId,s.profileId].every(id)||typeof s.cwdDisplay!=='string'||s.cwdDisplay.length>32768||!s.cwdDisplay.isWellFormed()||/[\x00-\x1f\x7f]/.test(s.cwdDisplay)||!states.has(s.state)||
-  !(s.exitCode===null||integer(s.exitCode)&&s.exitCode<=0xffffffff)||!integer(s.droppedUtf8Bytes)||!(s.attachedWindowId===null||id(s.attachedWindowId)))return null;
- return Object.freeze(s);
-}
-export function validateTerminalEvent(name,value){
+export function validateTerminalEvent(method,payload){
  try{
-  if(typeof name!=='string')return fail();let event;
-  if(name==='terminalData'){
-   event=record(value,[...scope,'sequence','data','utf8Bytes']);if(!event)return fail();
-   const bytes=utf8Bytes(event.data);
-   if(bytes===null||!integer(event.sequence)||!integer(event.utf8Bytes)||event.utf8Bytes!==bytes||!Number.isSafeInteger(event.sequence+bytes))return fail();
-  }else if(name==='terminalGap'){
-   event=record(value,[...scope,'droppedUtf8Bytes','resumeSequence']);
-   if(!event||!integer(event.droppedUtf8Bytes)||!integer(event.resumeSequence))return fail();
-  }else if(name==='terminalState'){
-   event=record(value,['epoch','session']);if(!event||!positive(event.epoch))return fail();
-   const normalized=session(event.session);if(!normalized)return fail();
-   return Object.freeze({ok:true,event:Object.freeze({epoch:event.epoch,session:normalized})});
-  }else return fail();
-  if(!positive(event.epoch)||!id(event.sessionId)||!id(event.leaseId)||!positive(event.generation))return fail();
+  if(typeof method!=='string'||!Object.hasOwn(eventFields,method))throw Error();
+  const event=copy(payload,eventFields[method]);if(!event)throw Error();
+  if(method==='terminalData'&&(encoder.encode(event.data).byteLength!==event.utf8Bytes||!Number.isSafeInteger(event.sequence+event.utf8Bytes)))throw Error();
+  if(method==='terminalState'){const session=copy(event.session,sessionFields);if(!session)throw Error();event.session=Object.freeze(session);}
   return Object.freeze({ok:true,event:Object.freeze(event)});
- }catch{return fail();}
+ }catch{return Object.freeze({ok:false,code:'EVENT_REFUSED'});}
 }
-

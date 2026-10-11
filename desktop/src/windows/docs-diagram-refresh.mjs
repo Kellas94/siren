@@ -16,7 +16,7 @@ export class DocsDiagramRefresh{
  }
  onDocumentSettled(value){
   if(this.#paused||this.#disposed||typeof value?.projectId!=='string'||typeof value?.documentId!=='string')return false;
-  for(const job of this.#jobs.values())if(job.receipt.projectId===value.projectId&&(job.deferred.has(value.documentId)||job.deferred.has('*'))){job.revision++;job.queued=true;}this.#schedule();return true;
+  for(const job of this.#jobs.values())if(job.receipt.projectId===value.projectId&&(job.deferred.has(value.documentId)||job.deferred.has('*')||(job===this.#activeJob&&job.inFlightDocument===value.documentId))){job.revision++;job.queued=true;}this.#schedule();return true;
  }
  rescanProject(projectId){
   if(this.#paused||this.#disposed||typeof this.#diagrams.listRefreshSources!=='function'||this.#scans.size>=1)return Promise.resolve(false);const generation=this.#generation,current=()=>!this.#paused&&!this.#disposed&&generation===this.#generation;
@@ -36,16 +36,19 @@ export class DocsDiagramRefresh{
    job.deferred.clear();
    for(const target of targets){
     if(!current())return;if(target.mode!=='live')continue;
+    // Settlement must also retire a target whose preparation has not returned yet.
+    job.inFlightDocument=target.documentId;try{
     const request={...receipt,documentId:target.documentId,blockId:target.blockId,isCurrent:current};
     if(this.#working.isBlocked(receipt.projectId,target.documentId)!==false){job.deferred.add(target.documentId);this.#notice({...request,isCurrent:undefined,reason:'working-draft'});continue;}
     for(let attempt=0;attempt<2&&current();attempt++){
      const capability=this.#owner.captureDiagramRefresh(receipt.projectId,target.documentId,current);
      if(!capability){job.deferred.add(target.documentId);this.#notice({...request,isCurrent:undefined,reason:'native-lease'});break;}
-     const prepared=await this.#diagrams.prepareRefresh({...request,capability});if(!current()||!capability.isCurrent())break;if(prepared?.skip)break;
+     const prepared=await this.#diagrams.prepareRefresh({...request,capability});if(!current())break;if(!capability.isCurrent()){job.deferred.add(target.documentId);this.#notice({...request,isCurrent:undefined,reason:'native-lease'});break;}if(prepared?.skip)break;
      if(!prepared?.token){this.#notice({...request,isCurrent:undefined,reason:prepared?.code??'refresh-failed'});break;}
      const result=await this.#owner.invokeDiagramRefresh(prepared.token,capability);if(!current())break;if(result?.ok)break;
      if(!['DOCUMENT_CONFLICT','DIAGRAM_EMBED_SOURCE_CHANGED'].includes(result?.code)||attempt===1){job.deferred.add(target.documentId);this.#notice({...request,isCurrent:undefined,reason:result?.code??'refresh-failed'});break;}
     }
+    }finally{job.inFlightDocument=null;}
    }
   }catch{if(current()){job.deferred.add('*');this.#notice({...receipt,reason:'refresh-failed'});}}
  }

@@ -321,8 +321,12 @@ export class TerminalProductionBackend {
    }catch{r.unknown=true;}finally{if(timer!==undefined)clearTimeout(timer);}
    if(!quiesced)this.#aggregate.dispose();
   }
+  r.stopObserverPending=true;let work;try{r.stopOriginal=this.#native.stopSession({sessionOwnerId:r.ownerId,deadlineMs:Math.max(1,Math.ceil(deadlineMs-(clock()-began))),code});work=promise(r.stopOriginal);}catch{r.stopObserverPending=false;r.unknown=true;resolve(failure());return;}finally{
+   // Reserve expected ownership shutdown before channel disposal closes the
+   // shared native streams. Failed Stop still disposes every local channel.
   for(const [lane,proto]of[['command',sp],['history',hp],['control',cp]])try{if(r.channels?.[lane])apply(proto.dispose,r.channels[lane],[]);}catch{}
-  r.stopObserverPending=true;let work;try{r.stopOriginal=this.#native.stopSession({sessionOwnerId:r.ownerId,deadlineMs:Math.max(1,Math.ceil(deadlineMs-(clock()-began))),code});work=promise(r.stopOriginal);}catch{r.stopObserverPending=false;r.unknown=true;resolve(failure());return;}finally{this.#retireAggregate(r);}
+   this.#retireAggregate(r);
+  }
   if(!this.#observe(r,work,reply=>{try{const value=data(reply);if(value?.ok===true&&value.verifiedExited===true&&this.#verifyFinal(r))resolve(success({verifiedExited:true}));else resolve(failure());}finally{r.stopObserverPending=false;r.stopOriginal=null;}},()=>{try{resolve(failure());}finally{r.stopObserverPending=false;r.stopOriginal=null;}})){r.stopObserverPending=false;r.unknown=true;resolve(failure());}
   }finally{r.stopWorker=false;this.#finishActual(r);}
  }

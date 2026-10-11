@@ -1,0 +1,118 @@
+name: Docs clean pending Save bounded native probe
+on:
+  push:
+    branches: ['probe/docs-clean-pending-save-20261011']
+    paths:
+      - '.github/workflows/docs-clean-pending-save.yml'
+permissions:
+  contents: read
+concurrency:
+  group: docs-clean-pending-save-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/docs-clean-pending-save-20261011' && github.run_attempt == 1
+    runs-on: windows-2025
+    timeout-minutes: 12
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+      - name: Record and require exact prospective Node and npm versions
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          New-Item -ItemType Directory -Path evidence/docs-clean-pending-save-launch | Out-Null
+          & node --version 1> evidence/docs-clean-pending-save-launch/node-version.stdout.log 2> evidence/docs-clean-pending-save-launch/node-version.stderr.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & npm --version 1> evidence/docs-clean-pending-save-launch/npm-version.stdout.log 2> evidence/docs-clean-pending-save-launch/npm-version.stderr.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $nodeVersion = (Get-Content -Raw evidence/docs-clean-pending-save-launch/node-version.stdout.log).Trim()
+          $npmVersion = (Get-Content -Raw evidence/docs-clean-pending-save-launch/npm-version.stdout.log).Trim()
+          [ordered]@{node=$nodeVersion;npm=$npmVersion;commit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/toolchain.json
+          if ($nodeVersion -ne 'v24.16.0' -or $npmVersion -ne '11.13.0') { throw 'EXACT_TOOLCHAIN_UNAVAILABLE_NO_INSTALL_OR_NATIVE_RUN' }
+      - name: Verify complete exact source closure and absent build outputs
+        run: |
+          node tests/native/docs-clean-pending-save-preflight.mjs source
+          exit $LASTEXITCODE
+      - name: Install locked dependencies without automatic install scripts
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & npm ci --ignore-scripts --no-audit --no-fund --no-update-notifier 1> evidence/docs-clean-pending-save-launch/npm-ci.stdout.log 2> evidence/docs-clean-pending-save-launch/npm-ci.stderr.log
+          $code = $LASTEXITCODE
+          [ordered]@{exitCode=$code} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/npm-ci.exit.json
+          exit $code
+      - name: Explicitly install only the locked Electron runtime
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & npm run runtime:install 1> evidence/docs-clean-pending-save-launch/electron-install.stdout.log 2> evidence/docs-clean-pending-save-launch/electron-install.stderr.log
+          $code = $LASTEXITCODE
+          [ordered]@{exitCode=$code} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/electron-install.exit.json
+          exit $code
+      - name: Fresh renderer in normal production path
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & node build/renderer.mjs baseline/R78.html generated 1> evidence/docs-clean-pending-save-launch/renderer-build.stdout.log 2> evidence/docs-clean-pending-save-launch/renderer-build.stderr.log
+          $code = $LASTEXITCODE
+          [ordered]@{exitCode=$code} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/renderer-build.exit.json
+          exit $code
+      - name: Build existing fixed Windows process reader
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & node scripts/build-process-reader.mjs 1> evidence/docs-clean-pending-save-launch/process-reader-build.stdout.log 2> evidence/docs-clean-pending-save-launch/process-reader-build.stderr.log
+          $code = $LASTEXITCODE
+          [ordered]@{exitCode=$code} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/process-reader-build.exit.json
+          exit $code
+      - name: Recheck source and static built identities before native launch
+        run: |
+          node tests/native/docs-clean-pending-save-preflight.mjs built
+          exit $LASTEXITCODE
+      - name: One real clean pending Save scenario with normal Lock and close
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          & node tests/native/docs-clean-pending-save.mjs 1> evidence/docs-clean-pending-save-launch/native.stdout.log 2> evidence/docs-clean-pending-save-launch/native.stderr.log
+          $code = $LASTEXITCODE
+          [ordered]@{exitCode=$code} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM evidence/docs-clean-pending-save-launch/native.exit.json
+          exit $code
+      - name: Always preserve source, generated inputs and original adverse evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: docs-clean-pending-save-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .gitattributes
+            .github/workflows/docs-clean-pending-save.yml
+            desktop/src/**
+            desktop/build/**
+            desktop/licenses/**
+            desktop/baseline/R78.html
+            desktop/package.json
+            desktop/package-lock.json
+            desktop/reviews/2026-10-03-editor-product-dependencies.json
+            desktop/native/process-identity.cs
+            desktop/scripts/build-process-reader.mjs
+            desktop/tests/native/.gitattributes
+            desktop/tests/native/attach-page.mjs
+            desktop/tests/native/condition.mjs
+            desktop/tests/native/docs-clean-pending-save-inputs.json
+            desktop/tests/native/docs-clean-pending-save-preflight.mjs
+            desktop/tests/native/docs-clean-pending-save.mjs
+            desktop/tests/native/drive.mjs
+            desktop/tests/native/pointer.mjs
+            desktop/generated/**
+            desktop/native/generated/**
+            desktop/evidence/docs-clean-pending-save-launch/**
+            desktop/evidence/docs-clean-pending-save-native/**
+            docs-clean-pending-save-execution-preparation-20261011/**
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
