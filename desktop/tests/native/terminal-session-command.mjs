@@ -10,3 +10,11 @@ export function createLockContinuationFixture({projectDirectory,token}={}){
  const script=`$ErrorActionPreference = 'Stop'\r\n$started = ${quote(startedPath)}\r\n$release = ${quote(releasePath)}\r\n$completed = ${quote(completedPath)}\r\n$stage = ${quote(stagePath)}\r\n[IO.File]::WriteAllText($started, ${quote(token)})\r\nfor ($i=0; $i -lt 300; $i++) {\r\n  [IO.File]::WriteAllText($stage, ('checking:' + $i))\r\n  if ([IO.File]::Exists($release)) {\r\n    [IO.File]::WriteAllText($stage, 'release-observed')\r\n    if ([IO.File]::ReadAllText($release) -ne ${quote(token)}) { throw 'SIREN_TEST_RELEASE_MISMATCH' }\r\n    [IO.File]::WriteAllText($stage, 'release-validated')\r\n    [IO.File]::WriteAllText($completed, ${quote(token)})\r\n    Write-Output 'SIREN_LOCK_CONTINUATION_COMPLETE'\r\n    return\r\n  }\r\n  [IO.File]::WriteAllText($stage, ('sleeping:' + $i))\r\n  Start-Sleep -Milliseconds 100\r\n}\r\nthrow 'SIREN_TEST_RELEASE_TIMEOUT'\r\n`;
  return Object.freeze({scriptPath,script,startedPath,releasePath,completedPath,forbiddenPath,stagePath,expected:token,input:`& ${quote(scriptPath)}\r`,forbiddenInput:`[IO.File]::WriteAllText(${quote(forbiddenPath)}, ${quote(token)})\r`});
 }
+
+// Distinct finite fixture, not a correction/qualification of Start-Sleep.
+// It keeps the original command and all proof files; only the wait primitive
+// changes to an in-process .NET call without cmdlet/module resolution.
+export function createInProcessLockContinuationFixture(options){
+ const original=createLockContinuationFixture(options);
+ return Object.freeze({...original,variant:'IN_PROCESS_THREAD_SLEEP',script:original.script.replace('  Start-Sleep -Milliseconds 100\r\n','  [Threading.Thread]::Sleep(100)\r\n')});
+}

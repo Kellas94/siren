@@ -10,7 +10,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {spawn,execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createLockContinuationFixture} from './terminal-session-command.mjs';
+import {createInProcessLockContinuationFixture} from './terminal-session-command.mjs';
 
 export async function startRuntimeProbe(config){
  const {root,out,execution,electronExecutable,filesystemExecutable,observerExecutable,run,commit}=config;
@@ -58,7 +58,7 @@ export async function startRuntimeProbe(config){
   });
   session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));session.defaultSession.setPermissionCheckHandler(()=>false);
   const project=join(out,'project țară 日本語');await mkdir(project);
-  const fixture=createLockContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});
+  const fixture=createInProcessLockContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});result.fixtureVariant=fixture.variant;
   await writeFile(fixture.scriptPath,'\uFEFF'+fixture.script,{flag:'wx'});await save('fixed-command-fixture.json',fixture);
   // Observe genuine grants through the existing trusted execution policy.
   // The exact registry and access prototype capture paths remain unchanged.
