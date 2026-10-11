@@ -45,10 +45,10 @@ async function orchestration(options={}){
  if(options.manifestMutate)options.manifestMutate(manifest);
  const manifestPath=root+'\\desktop\\tests\\native\\terminal-fresh-runtime-provision-inputs.json';put(manifestPath,JSON.stringify(manifest)+'\n');
  if(options.driftInput)put(root+'\\desktop\\tests\\native\\terminal-fresh-pair-model.mjs','changed');
- const node='C:\\node',gyp=node+'\\node_modules\\npm\\node_modules\\node-gyp';
- for(const p of [node+'\\node.exe',node+'\\node_modules\\npm\\bin\\npm-cli.js',gyp+'\\bin\\node-gyp.js',gyp+'\\src\\win_delay_load_hook.cc','C:\\python\\python.exe','C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe','C:\\VS\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe','C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe','C:\\tools\\node_api.h','C:\\tools\\windows.h'])put(p,'inert tool');put(gyp+'\\package.json','{"version":"12.3.0"}');
- dirs.add('C:\\VS\\VC\\Tools\\MSVC');dirs.add('C:\\VS\\VC\\Tools\\MSVC\\14.50.12345');
- const fakeStat=p=>{p=normal(p);if(!dirs.has(p)&&!files.has(p))throw error('ENOENT');return {dev:1n,ino:1n,mode:dirs.has(p)?16877n:33188n,nlink:1n,size:BigInt(files.get(p)?.length??0),mtimeNs:2n,ctimeNs:3n,isFile:()=>files.has(p),isDirectory:()=>dirs.has(p),isSymbolicLink:()=>false};};
+ const node='C:\\node',gyp=node+'\\node_modules\\npm\\node_modules\\node-gyp',vsInstallation=options.vsInstallation??'C:\\VS',vsCompiler=win.join(vsInstallation,'MSBuild/Current/Bin/Roslyn/csc.exe');
+ for(const p of [node+'\\node.exe',node+'\\node_modules\\npm\\bin\\npm-cli.js',gyp+'\\bin\\node-gyp.js',gyp+'\\src\\win_delay_load_hook.cc','C:\\python\\python.exe','C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe',win.join(vsInstallation,'MSBuild/Current/Bin/amd64/MSBuild.exe'),vsCompiler,'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe','C:\\tools\\node_api.h','C:\\tools\\windows.h'])put(p,'inert tool');put(gyp+'\\package.json','{"version":"12.3.0"}');
+ if(options.vsCompilerMissing)files.delete(vsCompiler);dirs.add(win.join(vsInstallation,'VC/Tools/MSVC'));dirs.add(win.join(vsInstallation,'VC/Tools/MSVC/14.50.12345'));
+ const fakeStat=p=>{p=normal(p);if(!dirs.has(p)&&!files.has(p))throw error('ENOENT');return {dev:1n,ino:1n,mode:dirs.has(p)?16877n:33188n,nlink:p===vsCompiler?BigInt(options.vsCompilerAfterRunNlink&&calls.some(x=>x[0]==='phase'&&x[1]==='helper')?options.vsCompilerAfterRunNlink:options.vsCompilerNlink??1):1n,size:BigInt(files.get(p)?.length??0),mtimeNs:2n,ctimeNs:3n,isFile:()=>files.has(p),isDirectory:()=>dirs.has(p),isSymbolicLink:()=>false};};
  const fs={
   async open(p,flags){p=normal(p);calls.push(['open',p,flags]);assert.equal(flags,0);if(!files.has(p))throw error('ENOENT');if(p===refusedPath&&options.pinFault==='open')throw opaqueError;let stats=0;return {async stat(){calls.push(['handle-stat',p]);stats++;const st=fakeStat(p);if(p===refusedPath){if(options.pinFault==='nlink')st.nlink=2n;if(options.pinFault==='handle-before'&&stats===1)st.ino=77n;if(options.pinFault==='handle-after'&&stats===2)st.ctimeNs=77n;}return st;},async read(buffer,offset,length,position){calls.push(['handle-read',p,length,position]);if(p===refusedPath&&['handle-read','read-and-close'].includes(options.pinFault))throw opaqueError;const bytes=files.get(p);let n=Math.min(length,Math.max(0,bytes.length-position));if(p===refusedPath&&options.pinFault==='partial-read')n=Math.min(n,3);if(p===refusedPath&&options.pinFault==='short-read')n=0;if(p===refusedPath&&options.pinFault==='extra-byte'&&position===bytes.length){buffer[offset]=1;return {bytesRead:1};}bytes.copy(buffer,offset,position,position+n);return {bytesRead:n};},async close(){calls.push(['close',p]);if(p===refusedPath&&['close','read-and-close'].includes(options.pinFault))throw opaqueError;}};},
   async lstat(p){calls.push(['lstat',p]);const stat=fakeStat(p);if(p===refusedPath&&faultReady&&options.pinFault){trackedStats++;if(options.pinFault==='lstat')throw opaqueError;if(['nlink','accessor','metadata-limit','metadata-proxy'].includes(options.pinFault)){stat.nlink=2n;if(options.pinFault==='accessor')Object.defineProperty(stat,'dev',{get(){diagnosticHooks++;throw Error('do not read metadata getter');}});}if(options.pinFault==='nlink-zero')stat.nlink=0n;if(options.pinFault==='nlink-negative')stat.nlink=-1n;if(options.pinFault==='nlink-limit')stat.nlink=1n<<64n;if(options.pinFault==='metadata-limit')stat.dev=1n<<200n;if(options.pinFault==='metadata-proxy')return new Proxy(stat,{getOwnPropertyDescriptor(){diagnosticHooks++;throw Error('do not inspect proxy metadata');}});if(options.pinFault==='directory')stat.isFile=()=>false;if(options.pinFault==='symlink')stat.isSymbolicLink=()=>true;if(options.pinFault==='negative-size')stat.size=-1n;if(options.pinFault==='size-limit')stat.size=536870913n;if(options.pinFault==='changed'&&trackedStats===2)stat.ctimeNs=99n;}return stat;},
@@ -68,7 +68,7 @@ async function orchestration(options={}){
   else if(name==='desktop-npm'){const electron=job+'\\build-work\\electron-deps\\node_modules\\electron';put(electron+'\\package.json',JSON.stringify({version:options.electronVersion??'44.5.1'}));put(electron+'\\install.js','inert installer');}
   else if(name==='electron-install'){const dist=job+'\\build-work\\electron-deps\\node_modules\\electron\\dist';for(const p of ['electron.exe','LICENSE','LICENSES.chromium.html','snapshot_blob.bin','hidden-extra.dll','locales\\ro.pak'])put(dist+'\\'+p,'inert entire dist member');dirs.add(dist+'\\empty-directory');}
   else if(name==='provider-npm'){const p=job+'\\fresh-runtime\\execution\\desktop\\runtime\\terminal-provider\\node_modules\\node-pty';put(p+'\\package.json','{"version":"1.1.0"}');put(p+'\\lib\\windowsPtyAgent.js',originalAgent);put(p+'\\prebuilds\\win32-x64\\pty.node','inert provider binary');}
-  else if(name==='locator')stdout='C:\\VS\r\n';
+  else if(name==='locator')stdout=vsInstallation+'\r\n';
   else if(name==='configure'){const target=win.basename(opts.cwd)==='terminal-host-roster-candidate'?'siren_terminal_host_roster_candidate':'siren_terminal_creator_three_lane';put(win.join(opts.cwd,'build',target+'.vcxproj'),'<DelayLoadDLLs>node.exe</DelayLoadDLLs>win_delay_load_hook.cc');}
   else if(name==='compile'){const target=args[0].slice(6,-8),bytes=Buffer.alloc(256);bytes.writeUInt16LE(0x5a4d);bytes.writeUInt32LE(128,0x3c);bytes.writeUInt32LE(0x4550,128);bytes.writeUInt16LE(0x8664,132);put(win.join(opts.cwd,'build','Release',target+'.node'),bytes);if(options.pinFault)put(refusedPath,options.pinFault==='empty-input'?'':'inert input');put(win.join(opts.cwd,'build','native.read.1.tlog'),Buffer.from((options.pinFault?refusedPath+'\r\n':'')+gyp+'\\src\\win_delay_load_hook.cc\r\n'+(options.omitTrackedHeaders?'':'C:\\tools\\node_api.h\r\nC:\\tools\\windows.h\r\n'),'utf16le'));faultReady=true;}
   else if(name==='helper')put(args.find(a=>a.startsWith('/out:')).slice(5),'inert helper binary');
@@ -179,4 +179,50 @@ test('external snapshots never bypass required tracked headers or execute on par
 
 test('external unknown initial stat and canonical IO failures remain distinct adverse observations',async()=>{
  for(const pinFault of ['lstat','realpath']){const f=await orchestration({pinFault,trackedPath:externalPath}),r=await f.api.provisionFreshTerminalRuntime();assert.equal(r.ok,false);assert.equal(r.code,'BUILD_UNAVAILABLE');assert.equal(r.trackedInputFailure.condition,pinFault+'-unavailable');assert.equal(r.trackedInputFailure.role,'external-compiler-read');assert.equal(f.diagnosticCounts().diagnosticHooks,0);assert.equal(f.calls.some(x=>x[0]==='open'&&x[1]===externalPath),false);}
+});
+
+
+// SOURCE-ONLY compiler-selection regression: all tool/process/FS values here
+// are finite in-memory VM fixtures. The legacy compiler is deliberately present
+// to prove it is never selected as fallback. No compiler is executed by tests.
+test('VS compiler selection uses the already-discovered installation for both unchanged C# helper phases',async()=>{
+ const f=await orchestration(),r=await f.api.provisionFreshTerminalRuntime(),selected='C:\\VS\\MSBuild\\Current\\Bin\\Roslyn\\csc.exe';
+ assert.equal(r.ok,true,JSON.stringify(r));assert.ok(r.tools.some(row=>row.path===selected));
+ const helpers=f.calls.filter(row=>row[0]==='phase'&&row[1]==='helper');assert.equal(helpers.length,2);assert.ok(helpers.every(row=>row[2]===selected));
+ for(const row of helpers){assert.deepEqual(row[3].slice(0,4),['/nologo','/target:exe','/platform:x64','/r:System.Web.Extensions.dll']);assert.equal(row[4].timeout,30000);assert.equal(row[4].windowsHide,true);}
+ assert.equal(r.helperExecutions,0);assert.equal(r.nativeAdmission,false);assert.equal(r.inputAuthorized,false);assert.equal(r.providerLoaded,false);assert.equal(r.electronExecuted,false);
+ assert.equal(f.calls.some(row=>row[0]==='lstat'&&row[1]==='C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe'),false);
+});
+
+test('VS compiler selection follows a different discovered installation without a fixed host edition or PATH lookup',async()=>{
+ const vsInstallation='D:\\VS Custom\\Enterprise',selected=win.join(vsInstallation,'MSBuild/Current/Bin/Roslyn/csc.exe'),f=await orchestration({vsInstallation}),r=await f.api.provisionFreshTerminalRuntime();
+ assert.equal(r.ok,true,JSON.stringify(r));assert.ok(r.tools.some(row=>row.path===selected));assert.ok(f.calls.filter(row=>row[0]==='phase'&&row[1]==='helper').every(row=>row[2]===selected));
+ assert.equal(f.calls.some(row=>row[0]==='phase'&&row[2]==='csc.exe'),false);assert.equal(f.counts().copies,1);
+});
+
+test('VS compiler multi-link identity is refused before helper process or external-read promotion',async()=>{
+ for(const vsCompilerNlink of [2,3]){const f=await orchestration({vsCompilerNlink}),r=await f.api.provisionFreshTerminalRuntime(),selected='C:\\VS\\MSBuild\\Current\\Bin\\Roslyn\\csc.exe';
+  assert.equal(r.ok,false);assert.equal(r.code,'SOURCE_REFUSED');assert.equal(r.partialTreesRetained,true);assert.equal(f.calls.some(row=>row[0]==='phase'&&row[1]==='helper'),false);
+  assert.equal(f.calls.some(row=>row[0]==='open'&&row[1]===selected),false);assert.equal(f.calls.some(row=>row[0]==='readFile'&&row[1]===selected),false);assert.equal(f.counts().copies,0);assert.equal(r.helperExecutions,0);assert.equal(r.nativeAdmission,false);
+  const retained=JSON.parse(f.files.get(job+'\\fresh-evidence\\build-result.json'));assert.equal(retained.code,'SOURCE_REFUSED');
+  const calls=f.calls.length;assert.equal((await f.api.provisionFreshTerminalRuntime()).code,'ATTEMPT_CONSUMED');assert.equal(f.calls.length,calls);
+ }
+});
+
+test('missing VS compiler refuses and never falls back to an available Framework compiler',async()=>{
+ const f=await orchestration({vsCompilerMissing:true}),r=await f.api.provisionFreshTerminalRuntime();assert.equal(r.ok,false);assert.equal(r.code,'BUILD_UNAVAILABLE');
+ assert.ok(f.files.has('C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe'));assert.equal(f.calls.some(row=>row[0]==='phase'&&row[1]==='helper'),false);
+ assert.equal(f.calls.some(row=>row[0]==='lstat'&&row[1]==='C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe'),false);assert.equal(f.counts().copies,0);assert.equal(r.partialTreesRetained,true);
+});
+
+test('selected VS compiler identity drift after one helper remains adverse without retry or retention promotion',async()=>{
+ const f=await orchestration({vsCompilerAfterRunNlink:2}),r=await f.api.provisionFreshTerminalRuntime();assert.equal(r.ok,false);assert.equal(r.code,'SOURCE_REFUSED');
+ assert.equal(f.calls.filter(row=>row[0]==='phase'&&row[1]==='helper').length,1);assert.equal(f.counts().copies,0);assert.equal(r.partialTreesRetained,true);
+ assert.ok(f.files.has(job+'\\fresh-evidence\\filesystem-evidence-compile.stdout.txt'));assert.equal(r.nativeAdmission,false);assert.equal(r.inputAuthorized,false);
+});
+
+test('selected VS compiler phase failure preserves original outputs without another compiler attempt',async()=>{
+ const f=await orchestration({failPhase:'helper'}),r=await f.api.provisionFreshTerminalRuntime();assert.equal(r.ok,false);assert.equal(r.code,'BUILD_PHASE_FAILED');
+ assert.equal(f.calls.filter(row=>row[0]==='phase'&&row[1]==='helper').length,1);assert.equal(f.files.get(job+'\\fresh-evidence\\filesystem-evidence-compile.stderr.txt').toString(),'retained failing stderr');
+ assert.equal(f.counts().copies,0);assert.equal(r.helperExecutions,0);assert.equal(r.providerLoaded,false);assert.equal(r.realSessions,0);assert.equal(r.nativeAdmission,false);
 });
