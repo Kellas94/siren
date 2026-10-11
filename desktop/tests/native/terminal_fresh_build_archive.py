@@ -47,7 +47,13 @@ def _identity(s):
     # Python3.12 Windows path-stat legacy ctime and fd-stat ctime differ.
     # Birthtime+mtime are explicit cross-interface observations there.
     birth = getattr(s, 'st_birthtime_ns', s.st_ctime_ns) if os.name == 'nt' else s.st_ctime_ns
-    return (_object(s), s.st_nlink, s.st_size, s.st_mtime_ns, birth)
+    identity = _object(s)
+    # Windows path-stat synthesizes execute bits from .cmd/.exe suffixes;
+    # fd-stat cannot reproduce them. Keep file type and read/write bits,
+    # normalizing only these derived bits for regular files on Windows.
+    if os.name == 'nt' and stat.S_ISREG(s.st_mode):
+        identity = (s.st_dev, s.st_ino, s.st_mode & ~0o111)
+    return (identity, s.st_nlink, s.st_size, s.st_mtime_ns, birth)
 
 
 def _component(name):

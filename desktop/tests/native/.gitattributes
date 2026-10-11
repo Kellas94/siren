@@ -1,0 +1,5 @@
+# Preserve the literal bytes bound by fresh Terminal input manifests and reviews.
+terminal-fresh-runtime-provision.mjs -text
+terminal-fresh-runtime-provision.test.mjs -text
+terminal-fresh-runtime-provision-inputs.json -text
+terminal_fresh_build_archive.py -text

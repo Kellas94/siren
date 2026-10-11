@@ -33,9 +33,33 @@ function context(extra){
  const temp=canonical(env.RUNNER_TEMP);canonical(root);check(!temp.toUpperCase().startsWith(root.toUpperCase()+path.sep)&&!root.toUpperCase().startsWith(temp.toUpperCase()+path.sep)&&temp.toUpperCase()!==root.toUpperCase(),'CONTEXT_REFUSED');
  return {root,temp,run:env.GITHUB_RUN_ID,attempt:env.GITHUB_RUN_ATTEMPT,commit:env.GITHUB_SHA,mode};
 }
-async function regular(p){const s=await lstat(p,{bigint:true});check(s.isFile()&&!s.isSymbolicLink()&&s.nlink===1n&&s.size>=0n&&s.size<=536870912n&&path.normalize(realpathSync(p))===p);return s;}
+// Optional trace is private DATA, used only for the current tracked-input pin. No additional IO.
+function pinGate(value,condition,trace){if(!value&&trace)trace.condition=condition;check(value);}
+async function regular(p,trace){
+ if(trace)trace.condition='lstat-unavailable';const s=await lstat(p,{bigint:true});
+ if(trace){trace[trace.stage==='before-stat'?'before':'after']=s;trace.condition='stat-check-unavailable';}
+ pinGate(s.isFile(),'not-regular',trace);pinGate(!s.isSymbolicLink(),'symlink',trace);pinGate(s.nlink===1n,'link-count',trace);pinGate(s.size>=0n,'size-negative',trace);pinGate(s.size<=536870912n,'size-limit',trace);
+ if(trace)trace.condition='realpath-unavailable';const raw=realpathSync(p),normalized=path.normalize(raw);
+ if(trace)trace.canonical={stage:trace.stage,raw,normalized,matches:normalized===p};pinGate(normalized===p,'canonical-mismatch',trace);return s;
+}
 const stable=(a,b)=>['dev','ino','mode','nlink','size','mtimeNs','ctimeNs'].every(k=>a[k]===b[k]);
-async function pin(p){const before=await regular(p),bytes=await readFile(p);check(BigInt(bytes.length)===before.size&&stable(before,await regular(p)));return {path:p,bytes:bytes.length,sha256:sha(bytes)};}
+async function pin(p,trace){
+ if(trace)trace.stage='before-stat';const before=await regular(p,trace);if(trace){trace.stage='read';trace.condition='read-unavailable';}const bytes=await readFile(p);
+ if(trace)trace.stage='read-size';pinGate(BigInt(bytes.length)===before.size,'read-size-mismatch',trace);
+ if(trace)trace.stage='after-stat';const after=await regular(p,trace);if(trace){trace.stage='stability';trace.condition='stat-check-unavailable';}pinGate(stable(before,after),'stat-changed',trace);
+ return {path:p,bytes:bytes.length,sha256:sha(bytes)};
+}
+function diagnosticPath(value){
+ if(typeof value!=='string')return {value:null,codeUnits:null,bytes:null,sha256:null,redacted:true};
+ const bounded=value.length<=32768,bytes=bounded?Buffer.byteLength(value,'utf8'):null,digest=bounded&&bytes<=65536?sha(Buffer.from(value,'utf8')):null;
+ const visible=bounded&&value.length<=2048&&bytes<=4096&&value.isWellFormed(),clean=visible?value.replace(/[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u2028-\u202e\u2066-\u2069]/g,'\uFFFD'):null;
+ return {value:clean,codeUnits:value.length,bytes,sha256:digest,redacted:clean!==value};
+}
+function diagnosticStat(stat){
+ if(!stat||typeof stat!=='object'||types.isProxy(stat))return null;
+ const data={};for(const key of ['dev','ino','mode','nlink','size','mtimeNs','ctimeNs']){const d=Object.getOwnPropertyDescriptor(stat,key),v=d&&Object.hasOwn(d,'value')?d.value:null;data[key]=typeof v==='bigint'&&v>=-(1n<<127n)&&v<(1n<<127n)?v.toString():null;}return data;
+}
+function trackedFailure(p,folder,index,total,trace){return {schema:1,phase:folder+'-tracked-input-pin',index,total,requestedPath:diagnosticPath(p),stage:trace.stage,condition:trace.condition,before:diagnosticStat(trace.before),after:diagnosticStat(trace.after),canonical:trace.canonical?{stage:trace.canonical.stage,raw:diagnosticPath(trace.canonical.raw),normalized:diagnosticPath(trace.canonical.normalized),matches:trace.canonical.matches}:null};}
 async function directory(p){const s=await lstat(p,{bigint:true});check(s.isDirectory()&&!s.isSymbolicLink()&&path.normalize(realpathSync(p))===p,'PATH_REFUSED');return s;}
 async function absent(p){try{await lstat(p,{bigint:true});}catch(e){if(errorValue(e,'code')==='ENOENT')return;fail('PATH_REFUSED');}fail('TARGET_EXISTS');}
 async function copyPinned(source,target,expected){const before=await pin(source);check(expected&&before.bytes===expected.bytes&&before.sha256===expected.sha256);await copyFile(source,target,constants.COPYFILE_EXCL);const after=await pin(target);check(after.bytes===expected.bytes&&after.sha256===expected.sha256);check((await pin(source)).sha256===before.sha256);}
@@ -56,7 +80,7 @@ function buildEnvironment(){
 }
 export async function provisionFreshTerminalRuntime(...extra){
  if(attempted)return freeze({ok:false,code:'ATTEMPT_CONSUMED',...flags});attempted=true;
- let receipt={ok:false,scope:'HOSTED_ONCE_ONLY_FRESH_RUNTIME_BUILD_NOT_SESSION_ADMISSION',status:'STARTED',phases:[],tools:[],builds:[],inputs:[],helperExecutions:0,providerLoaded:false,electronExecuted:false,realSessions:0,...flags},job=null,jobCreated=false,save=null;
+ let receipt={ok:false,scope:'HOSTED_ONCE_ONLY_FRESH_RUNTIME_BUILD_NOT_SESSION_ADMISSION',status:'STARTED',phases:[],tools:[],builds:[],inputs:[],helperExecutions:0,providerLoaded:false,electronExecuted:false,realSessions:0,...flags},job=null,jobCreated=false,save=null,trackedInputFailure=null;
  try{
   const c=context(extra);entryMode=c.mode;
   const checked=await manifest(c.root,c.mode),env=buildEnvironment(),run=promisify(execFile);await directory(c.temp);
@@ -96,7 +120,7 @@ export async function provisionFreshTerminalRuntime(...extra){
    await phase(folder+'-compile',msbuild,['build/'+target+'.vcxproj','/p:SolutionDir='+path.join(candidate,'build')+'/', '/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+versions[0],'/p:WindowsTargetPlatformVersion=10.0.26100.0','/p:TrackFileAccess=true','/verbosity:diagnostic'],candidate);
    const project=await readFile(path.join(candidate,'build',target+'.vcxproj'),'utf8');check(project.includes('win_delay_load_hook.cc')&&/<DelayLoadDLLs>node.exe(?:;|<)/i.test(project));
    const tracked=new Set();let count=0;async function walk(dir,depth=0){check(depth<=64);for(const entry of await readdir(dir,{withFileTypes:true})){check(++count<=8192);const p=path.join(dir,entry.name);check(!entry.isSymbolicLink());if(entry.isDirectory())await walk(p,depth+1);else if(/\.read\.\d+\.tlog$/i.test(entry.name)){for(const line of (await readFile(p)).toString('utf16le').replace(/^\uFEFF/,'').split(/\r?\n/))for(const name of line.trim().replace(/^\^/,'').split('|'))if(/^[A-Za-z]:[\\/]/.test(name))tracked.add(path.normalize(name));}}}await walk(path.join(candidate,'build'));
-   check(tracked.size<=8192);for(const p of [...tracked].sort())build.trackedInputs.push(await pin(p));for(const re of [/[/\\]win_delay_load_hook\.cc$/i,/[/\\]node_api\.h$/i,/[/\\]windows\.h$/i])check(build.trackedInputs.some(r=>re.test(r.path)));
+   check(tracked.size<=8192);for(const [index,p] of [...tracked].sort().entries()){const trace={stage:'before-stat',condition:'lstat-unavailable',before:null,after:null,canonical:null};try{build.trackedInputs.push(await pin(p,trace));}catch(error){try{trackedInputFailure=trackedFailure(p,folder,index,tracked.size,trace);}catch{}throw error;}}for(const re of [/[/\\]win_delay_load_hook\.cc$/i,/[/\\]node_api\.h$/i,/[/\\]windows\.h$/i])check(build.trackedInputs.some(r=>re.test(r.path)));
    const binary=path.join(candidate,'build/Release',target+'.node'),bytes=await readFile(binary);check(bytes.length>=64&&bytes.readUInt16LE(0)===0x5a4d);const pe=bytes.readUInt32LE(0x3c);check(pe+6<=bytes.length&&bytes.readUInt32LE(pe)===0x4550&&bytes.readUInt16LE(pe+4)===0x8664);build.binary=await pin(binary);
    const dest=path.join(execution,'desktop/native',folder,'build');await mkdir(dest);await mkdir(path.join(dest,'Release'));await copyPinned(binary,path.join(dest,'Release',target+'.node'),build.binary);
   }
@@ -110,7 +134,7 @@ export async function provisionFreshTerminalRuntime(...extra){
   const inventory=await captureFreshRuntimeInventory(live);await save('whole-live-runtime-inventory.json',inventory);
   const retained=path.join(retainedParent,'fresh-runtime'),retention=await captureFreshRuntimeRetention({sourceDirectory:live,retainedDirectory:retained});await recheckFreshRuntimeInventory(inventory);await recheckFreshRuntimeRetention(retention);await save('whole-runtime-retention.json',retention);
   receipt={...receipt,ok:true,status:'FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION',liveRuntime:live,retainedRuntime:retained,projectDirectory:path.join(job,'project-Șiren-Δ'),inventory,retention};own.set(receipt,{retention});
- }catch(error){receipt={...receipt,ok:false,status:'FAILED_NOT_SESSION_ADMISSION',code:failures.get(error)??'BUILD_UNAVAILABLE',partialTreesRetained:jobCreated,...(jobCreated?{jobRoot:job}:{})};}
+ }catch(error){receipt={...receipt,ok:false,status:'FAILED_NOT_SESSION_ADMISSION',code:failures.get(error)??'BUILD_UNAVAILABLE',...(trackedInputFailure?{trackedInputFailure}:{}),partialTreesRetained:jobCreated,...(jobCreated?{jobRoot:job}:{})};}
  if(save){try{await save('build-result.json',receipt);}catch{receipt={...receipt,ok:false,status:'FAILED_NOT_SESSION_ADMISSION',code:'RESULT_RETENTION_FAILED'};}}
  return freeze(receipt);
 }
