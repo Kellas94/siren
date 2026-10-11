@@ -27,6 +27,7 @@ export async function startRuntimeProbe(config){
  const milestone=async(name,data={})=>{result.milestones.push({name,...data});await save(String(result.milestones.length).padStart(2,'0')+'-'+name+'.json',data);};
  const bounded=async(p,ms,label)=>{let timer;try{return await Promise.race([p,new Promise((_,reject)=>timer=setTimeout(()=>reject(Error(label+'_DEADLINE')),ms))]);}finally{clearTimeout(timer);}};
  const waitFile=async(p,expected)=>{for(let i=0;i<300;i++){try{const v=await readFile(p,'utf8');assert.equal(v,expected);return;}catch(e){if(e.code!=='ENOENT')throw e;}await delay(50);}throw Error('FIXTURE_FILE_DEADLINE:'+p);};
+ const waitProgress=async p=>{for(let i=0;i<300;i++){try{const stage=await readFile(p,'utf8'),m=/^(?:checking|sleeping):([0-9]+)$/.exec(stage);if(m&&Number(m[1])>=1)return{stage,observedBeforeLock:true};}catch(e){if(e.code!=='ENOENT')throw e;}await delay(50);}throw Error('FIXTURE_PRELOCK_PROGRESS_DEADLINE:'+p);};
  const absent=async p=>{try{await readFile(p);assert.fail('Unexpected fixture execution:'+p);}catch(e){if(e.code!=='ENOENT')throw e;}};
  const nativeState={host:null,sessions:[],hostStops:[],sessionStops:[]},windows=new Set();
  let graph,members,native,observer,observerExit,observerStdout='',observerStderr='',host,hostExit,locked=false,op=0,helperCount=0;
@@ -109,6 +110,7 @@ export async function startRuntimeProbe(config){
   const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
   const input=await first.router.route({event:event(first.w),method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:0,data:fixture.input})});assert.equal(input.ok,true);
   await waitFile(fixture.startedPath,fixture.expected);await absent(fixture.completedPath);
+  const initialProgress=await waitProgress(fixture.stagePath);await save('prelock-fixture-progress.json',initialProgress);
   // Capture is one-shot: backend already captured the Session held set, and
   // this probe captured the host above. Observe those same held capabilities.
   const beforeSession=native.snapshotSession(nativeState.sessions[0]),beforeHost=native.snapshot(nativeState.host);
@@ -120,7 +122,7 @@ export async function startRuntimeProbe(config){
   const observerReady=new Promise((resolve,reject)=>{observer.stdout.on('data',b=>{observerStdout+=b;const line=observerStdout.split(/\r?\n/).find(x=>x.startsWith('{'));if(line)try{resolve(JSON.parse(line));}catch{reject(Error('OBSERVER_READY_JSON'));}});observer.stderr.on('data',b=>observerStderr+=b);observer.once('error',reject);});
   const observed=await bounded(observerReady,5000,'OBSERVER_READY');assert.equal(observed.status,'READY');assert.equal(observed.identities.length,expected.size);
   for(const actual of observed.identities)assert.deepEqual(expected.get(actual.pid),{pid:actual.pid,image:actual.image,createdFileTime:actual.createdFileTime});
-  await milestone('before-lock',{beforeSession,beforeHost,input,observer:observed,completionAbsent:true});
+  await milestone('before-lock',{beforeSession,beforeHost,input,observer:observed,completionAbsent:true,initialProgress});
   const lock=await members.access.beginLock('actual running PowerShell fixture');assert.equal(lock.ok,true);locked=true;
   assert.equal(nativeState.sessionStops.length,0);assert.equal(nativeState.hostStops.length,0);assert.equal(first.w.isDestroyed(),true);assert.equal(registry.isCurrent(first.grant),false);assert.equal(members.access.currentRouter(),null);
   const refused=await first.router.route({event:first.caller,method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:1,data:fixture.forbiddenInput})});assert.equal(refused.ok,false);

@@ -82,3 +82,13 @@ test('actual policy observer receives genuine grants when native access bypasses
  assert.equal(reply.ok,true);assert.equal(routerGrants.get(canonical.windowId),canonical);
  assert.equal(registry.isCurrent(canonical),true);assert.equal(registry.isCurrent({...canonical}),false);
 });
+
+test('pre-Lock progress observation requires a returned first sleep and has a finite adverse deadline',async()=>{
+ const start=worker.indexOf(' const waitProgress='),end=worker.indexOf('\n',start);assert.ok(start>0);
+ const fragment=worker.slice(start,end)+';waitProgress("fixed-stage")';let reads=0,delays=0;
+ const progress=await runInNewContext(fragment,{readFile:async()=>++reads===1?'sleeping:0':'checking:1',delay:async()=>{delays++;}});
+ assert.equal(progress.observedBeforeLock,true);assert.equal(progress.stage,'checking:1');assert.equal(delays,1);
+ reads=0;delays=0;
+ await assert.rejects(runInNewContext(fragment,{readFile:async()=>{reads++;return 'sleeping:0';},delay:async()=>{delays++;}}),/FIXTURE_PRELOCK_PROGRESS_DEADLINE/);
+ assert.equal(reads,300);assert.equal(delays,300);
+});
