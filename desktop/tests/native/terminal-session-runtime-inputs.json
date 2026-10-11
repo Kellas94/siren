@@ -323,8 +323,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-command.mjs",
-      "bytes": 1890,
-      "sha256": "027cd56e8deefa2c7a0404580fda996ac432bcc789fe1aa4b985059d98305598"
+      "bytes": 2223,
+      "sha256": "c48d184b060c3296c5e4424fdc35ae15ddcaa16b8587fc9e6a22f18c51c9d02f"
     },
     {
       "path": "desktop/tests/native/terminal-session-command.test.mjs",
