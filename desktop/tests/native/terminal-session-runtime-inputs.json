@@ -13,8 +13,8 @@
     },
     {
       "path": ".github/workflows/terminal-session-runtime.yml",
-      "bytes": 3653,
-      "sha256": "6ff000afd24e7e0c9d499a17dac19078014b2dba47ed65709e287a6e78685177"
+      "bytes": 3722,
+      "sha256": "e23b7b260413f9b87056edcfa9abc191b1f18e812c1ca2644e4974638466c1e2"
     },
     {
       "path": "desktop/native/terminal-creator-three-lane/binding.gyp",
@@ -188,8 +188,8 @@
     },
     {
       "path": "desktop/src/terminal/production-creator-entry.mjs",
-      "bytes": 5031,
-      "sha256": "3dabd07f147c1fac2c84f968ad576073a11a90ba7ae9dfa146d8cc3ba2dfb3d0"
+      "bytes": 5194,
+      "sha256": "e298b2ca626d90a1e170d69ec017845db7892077854c74f6f68188e582f969a1"
     },
     {
       "path": "desktop/src/terminal/production-creator.mjs",
@@ -339,7 +339,7 @@
     {
       "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
       "bytes": 10731,
-      "sha256": "1ead78d2caa7398a6307b874414167ce7c3ad33da8e3f4cfefd35a74eee18329"
+      "sha256": "c540df2b45d33c78432729412b8115b01d4ab530cc9c7c12201d9ddf3e20284d"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
@@ -364,7 +364,7 @@
     {
       "path": "desktop/tests/native/terminal-session-provision-inputs.json",
       "bytes": 12601,
-      "sha256": "894f0da9fdc1f28d6e0fa4ff63a34f2cbaf56094dabe38ac96776d6304415e40"
+      "sha256": "a2cab2edd5fd5f695c93c8b90969e6e1c9bfb08b933c8799686f7fa7e23d2b19"
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
@@ -405,6 +405,11 @@
       "path": "desktop/tests/native/terminal-session-runtime.mjs",
       "bytes": 12694,
       "sha256": "b8a11ac7407f2f5606e280a57158379d7b316904ae5e6f53b5b589c5d992ba9b"
+    },
+    {
+      "path": "desktop/tests/terminal-production-entry-options.test.mjs",
+      "bytes": 3017,
+      "sha256": "951cd3a212dca2bfc3c5966d4cc88082f84be046acb8f656b82f5218a0608d6a"
     },
     {
       "path": "desktop/tests/terminal-session-runtime-controller.test.mjs",

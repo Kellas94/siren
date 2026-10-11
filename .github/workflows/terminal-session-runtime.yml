@@ -58,6 +58,7 @@ jobs:
             desktop/tests/fixtures/terminal-session-process-observer.cs
             desktop/tests/terminal-session-runtime-controller.test.mjs
             desktop/tests/terminal-session-runtime-integration.test.mjs
+            desktop/tests/terminal-production-entry-options.test.mjs
             desktop/src/terminal/**
             desktop/src/navigation/contracts.mjs
             desktop/src/navigation/entries.mjs

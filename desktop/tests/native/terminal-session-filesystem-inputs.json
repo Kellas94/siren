@@ -168,8 +168,8 @@
     },
     {
       "path": "desktop/src/terminal/production-creator-entry.mjs",
-      "bytes": 5031,
-      "sha256": "3dabd07f147c1fac2c84f968ad576073a11a90ba7ae9dfa146d8cc3ba2dfb3d0"
+      "bytes": 5194,
+      "sha256": "e298b2ca626d90a1e170d69ec017845db7892077854c74f6f68188e582f969a1"
     },
     {
       "path": "desktop/src/terminal/production-creator.mjs",
