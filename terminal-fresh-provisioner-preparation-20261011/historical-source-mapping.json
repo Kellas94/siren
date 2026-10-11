@@ -1,0 +1,774 @@
+{
+  "scope": "HISTORICAL_ARCHIVE_SOURCE_DATA_NOT_REDISPATCH_MANIFEST",
+  "archiveSha256": "0bde86db6923889ed7256096b516554234aa09140a7e6a346d5c3f528d60f7a2",
+  "archivedManifest": {
+    "member": "desktop/tests/native/terminal-resolution-runtime-inputs.json",
+    "bytes": 20255,
+    "sha256": "14c4afb19c1b6575382280aba498868ce3d7edc017337ce345d44f4db869d2f2"
+  },
+  "inputs": [
+    {
+      "path": ".github/workflows/terminal-discovery-runtime.yml",
+      "bytes": 4225,
+      "sha256": "e1cd47555d3495114a7ec5b1464b9df5f7f0699678a36f53ff1d93b8d7576949",
+      "archiveMember": ".github/workflows/terminal-discovery-runtime.yml",
+      "snapshot": "source-snapshots/000-terminal-discovery-runtime.yml.txt"
+    },
+    {
+      "path": ".github/workflows/terminal-resolution-runtime.yml",
+      "bytes": 4691,
+      "sha256": "9df4276c18bbfdd3cc4fbf6720d6579deba5b435cb87f628123e81a4b9ae8d85",
+      "archiveMember": ".github/workflows/terminal-resolution-runtime.yml",
+      "snapshot": "source-snapshots/001-terminal-resolution-runtime.yml.txt"
+    },
+    {
+      "path": ".github/workflows/terminal-session-filesystem.yml",
+      "bytes": 2757,
+      "sha256": "71d2503cefe965680c5ed6a055d5425a8560444baac43184a88bbf2716494d06",
+      "archiveMember": ".github/workflows/terminal-session-filesystem.yml",
+      "snapshot": "source-snapshots/002-terminal-session-filesystem.yml.txt"
+    },
+    {
+      "path": ".github/workflows/terminal-session-provision.yml",
+      "bytes": 3067,
+      "sha256": "56724b8b6ada7314d8f493aa113533999d90981a38f2ada663893f43b6e6f07f",
+      "archiveMember": ".github/workflows/terminal-session-provision.yml",
+      "snapshot": "source-snapshots/003-terminal-session-provision.yml.txt"
+    },
+    {
+      "path": ".github/workflows/terminal-session-runtime.yml",
+      "bytes": 3722,
+      "sha256": "e23b7b260413f9b87056edcfa9abc191b1f18e812c1ca2644e4974638466c1e2",
+      "archiveMember": ".github/workflows/terminal-session-runtime.yml",
+      "snapshot": "source-snapshots/004-terminal-session-runtime.yml.txt"
+    },
+    {
+      "path": "desktop/native/terminal-creator-three-lane/binding.gyp",
+      "bytes": 565,
+      "sha256": "77ed3cfe728eb3273a80106b84cc3c70b4d4d3d98aff0334f96ee2483e7b8cb4",
+      "archiveMember": "desktop/native/terminal-creator-three-lane/binding.gyp",
+      "snapshot": "source-snapshots/005-binding.gyp.txt"
+    },
+    {
+      "path": "desktop/native/terminal-creator-three-lane/ownership.cc",
+      "bytes": 48715,
+      "sha256": "c1e603ba57daacb8051f06dd846f0cb057d6f3754f6e65d835e6f65fcbb142c9",
+      "archiveMember": "desktop/native/terminal-creator-three-lane/ownership.cc",
+      "snapshot": "source-snapshots/006-ownership.cc.txt"
+    },
+    {
+      "path": "desktop/native/terminal-creator-three-lane/peer-endpoints.inc",
+      "bytes": 46406,
+      "sha256": "5ab996ae571763b82d1d839ee6c34a8696253e811250a87e184fc274174ab384",
+      "archiveMember": "desktop/native/terminal-creator-three-lane/peer-endpoints.inc",
+      "snapshot": "source-snapshots/007-peer-endpoints.inc.txt"
+    },
+    {
+      "path": "desktop/native/terminal-host-roster-candidate/binding.gyp",
+      "bytes": 540,
+      "sha256": "dee9c8cdc7b23751eba3d9555a9ea38b72e8a5943f1e3173576da9142cda008d",
+      "archiveMember": "desktop/native/terminal-host-roster-candidate/binding.gyp",
+      "snapshot": "source-snapshots/008-binding.gyp.txt"
+    },
+    {
+      "path": "desktop/native/terminal-host-roster-candidate/ownership.cc",
+      "bytes": 69732,
+      "sha256": "d7014c6401e4e1186f3180a7377594cd044b16a84006a0ef38d6b6903c366fdd",
+      "archiveMember": "desktop/native/terminal-host-roster-candidate/ownership.cc",
+      "snapshot": "source-snapshots/009-ownership.cc.txt"
+    },
+    {
+      "path": "desktop/native/terminal-host-roster-candidate/peer-endpoints.inc",
+      "bytes": 52173,
+      "sha256": "aa4ccd3428a1c547a5e8dccc1116ebab45a3be6972c1229903db36c5081be476",
+      "archiveMember": "desktop/native/terminal-host-roster-candidate/peer-endpoints.inc",
+      "snapshot": "source-snapshots/010-peer-endpoints.inc.txt"
+    },
+    {
+      "path": "desktop/package-lock.json",
+      "bytes": 47469,
+      "sha256": "2c887168ab1ff14bef19b7e05a1b76856569e6f393d7477e5aba2658bf0d8247",
+      "archiveMember": "desktop/package-lock.json",
+      "snapshot": "source-snapshots/011-package-lock.json.txt"
+    },
+    {
+      "path": "desktop/package.json",
+      "bytes": 1079,
+      "sha256": "3c0bf4d8fa257852a8c438f261bcaf77f032175f9f1c3457fbd1e78717d3b434",
+      "archiveMember": "desktop/package.json",
+      "snapshot": "source-snapshots/012-package.json.txt"
+    },
+    {
+      "path": "desktop/runtime/terminal-provider/package-lock.json",
+      "bytes": 966,
+      "sha256": "060ef1daf77eadaa7b43bad6ba541a5d409f0c89300404aa35a66dfd72bcbf99",
+      "archiveMember": "desktop/runtime/terminal-provider/package-lock.json",
+      "snapshot": "source-snapshots/013-package-lock.json.txt"
+    },
+    {
+      "path": "desktop/runtime/terminal-provider/package.json",
+      "bytes": 243,
+      "sha256": "c578549295947def7e7db4ce74bc8540c2513e7aa7fc351b10f19967aaccc143",
+      "archiveMember": "desktop/runtime/terminal-provider/package.json",
+      "snapshot": "source-snapshots/014-package.json.txt"
+    },
+    {
+      "path": "desktop/src/navigation/contracts.mjs",
+      "bytes": 5410,
+      "sha256": "5a38a6e573cdff2df0f656ae997c5ec32c477f9a5c272513f3a6df220b1294f5",
+      "archiveMember": "desktop/src/navigation/contracts.mjs",
+      "snapshot": "source-snapshots/015-contracts.mjs.txt"
+    },
+    {
+      "path": "desktop/src/navigation/entries.mjs",
+      "bytes": 1435,
+      "sha256": "defb1bd43bbf4753136bed28b48497776dbfdb6f7479deefbcce844ceb2fe7cd",
+      "archiveMember": "desktop/src/navigation/entries.mjs",
+      "snapshot": "source-snapshots/016-entries.mjs.txt"
+    },
+    {
+      "path": "desktop/src/navigation/window-labels.mjs",
+      "bytes": 4864,
+      "sha256": "fe3fe2883649b92fc62f751bad0f1a7c786d5777e0226636bab63e270db51f74",
+      "archiveMember": "desktop/src/navigation/window-labels.mjs",
+      "snapshot": "source-snapshots/017-window-labels.mjs.txt"
+    },
+    {
+      "path": "desktop/src/projects/budgets.mjs",
+      "bytes": 527,
+      "sha256": "daee49a88b2991356e54a9301fc121dc0b60b75ca5e870f1f9fdd2efe8bbbc1e",
+      "archiveMember": "desktop/src/projects/budgets.mjs",
+      "snapshot": "source-snapshots/018-budgets.mjs.txt"
+    },
+    {
+      "path": "desktop/src/projects/paths.mjs",
+      "bytes": 1219,
+      "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554",
+      "archiveMember": "desktop/src/projects/paths.mjs",
+      "snapshot": "source-snapshots/019-paths.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/command-protocol.mjs",
+      "bytes": 4575,
+      "sha256": "4cf4eb73fbc845f0bfea1da86d1f87224c1290a4e19fe29a25cf3c51996f86d6",
+      "archiveMember": "desktop/src/terminal/command-protocol.mjs",
+      "snapshot": "source-snapshots/020-command-protocol.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e",
+      "archiveMember": "desktop/src/terminal/contracts.mjs",
+      "snapshot": "source-snapshots/021-contracts.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/creator-commands.mjs",
+      "bytes": 10677,
+      "sha256": "85c227db1866154c1f195b97f365d3e54b9b72dd813a2f76e8ec26c4d8b91349",
+      "archiveMember": "desktop/src/terminal/creator-commands.mjs",
+      "snapshot": "source-snapshots/022-creator-commands.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/creator-session.mjs",
+      "bytes": 9732,
+      "sha256": "11746140801f68fcabeba9681a198393396e4345169259b00d7cd9e2cc881d96",
+      "archiveMember": "desktop/src/terminal/creator-session.mjs",
+      "snapshot": "source-snapshots/023-creator-session.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/creator-startup.mjs",
+      "bytes": 13927,
+      "sha256": "f722efa0e86dc1c2453e1dbb0ac3da48f6311fdc861769a2ad8cb841066a6ff2",
+      "archiveMember": "desktop/src/terminal/creator-startup.mjs",
+      "snapshot": "source-snapshots/024-creator-startup.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/credits.mjs",
+      "bytes": 2678,
+      "sha256": "e739005886735bdf39faf0b62e60cb995a0718d1ec0755686220990d354b0f16",
+      "archiveMember": "desktop/src/terminal/credits.mjs",
+      "snapshot": "source-snapshots/025-credits.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/cwd.mjs",
+      "bytes": 9610,
+      "sha256": "ba6532f1ec92e8eab9d4053897450904b6bf86a9375a73b950acec01731f3a28",
+      "archiveMember": "desktop/src/terminal/cwd.mjs",
+      "snapshot": "source-snapshots/026-cwd.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/host-async-captured-operation.mjs",
+      "bytes": 8132,
+      "sha256": "8326bd2c2e5720eae002ecf3d3254e641dd302e37b1c53bfe1ebdd5c3996d976",
+      "archiveMember": "desktop/src/terminal/host-async-captured-operation.mjs",
+      "snapshot": "source-snapshots/027-host-async-captured-operation.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/host-async-receipt-contract.mjs",
+      "bytes": 5446,
+      "sha256": "ae0a4bf38b0e23eff960c91e9264b1c50ca0509177ef7c5482069add7a1fc061",
+      "archiveMember": "desktop/src/terminal/host-async-receipt-contract.mjs",
+      "snapshot": "source-snapshots/028-host-async-receipt-contract.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/host-candidate-ownership.mjs",
+      "bytes": 43532,
+      "sha256": "c07eaf39ec053624a2d2e60b015ce37c5144d49bac3cbc93431d3e124b30e753",
+      "archiveMember": "desktop/src/terminal/host-candidate-ownership.mjs",
+      "snapshot": "source-snapshots/029-host-candidate-ownership.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/input-gate.mjs",
+      "bytes": 12473,
+      "sha256": "f49a56730f20fd25847d818bdc3168c58c918d99667bb6485f56fffb9a2e062f",
+      "archiveMember": "desktop/src/terminal/input-gate.mjs",
+      "snapshot": "source-snapshots/030-input-gate.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/native-three-lane-stream.mjs",
+      "bytes": 9270,
+      "sha256": "d9794246e8e92123370863dfba4500f9fdeb6236961630c07a97c54a20f9e705",
+      "archiveMember": "desktop/src/terminal/native-three-lane-stream.mjs",
+      "snapshot": "source-snapshots/031-native-three-lane-stream.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/output.mjs",
+      "bytes": 9161,
+      "sha256": "a72063934c63d554f3da69a584ea5d807902f67cac3efc08153bcccac94800d0",
+      "archiveMember": "desktop/src/terminal/output.mjs",
+      "snapshot": "source-snapshots/032-output.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115",
+      "archiveMember": "desktop/src/terminal/policy.mjs",
+      "snapshot": "source-snapshots/033-policy.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-access-transitions.mjs",
+      "bytes": 22082,
+      "sha256": "91f20e34bee93b7e762f6b1f3fc122917c783416336cdec48cbc686373b2094c",
+      "archiveMember": "desktop/src/terminal/production-access-transitions.mjs",
+      "snapshot": "source-snapshots/034-production-access-transitions.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-aggregate-gate.mjs",
+      "bytes": 19215,
+      "sha256": "52b51708401a200b2effc83d0b671b1d65a9f4142aa2c9e043ab62610b1c0d07",
+      "archiveMember": "desktop/src/terminal/production-aggregate-gate.mjs",
+      "snapshot": "source-snapshots/035-production-aggregate-gate.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-attachment-output.mjs",
+      "bytes": 15888,
+      "sha256": "35f5b62b30213886507eacf24895469d7c6f0c8092d783dbced703e62b366f25",
+      "archiveMember": "desktop/src/terminal/production-attachment-output.mjs",
+      "snapshot": "source-snapshots/036-production-attachment-output.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-backend.mjs",
+      "bytes": 35048,
+      "sha256": "8526a477e0ff31f8c7d835b81c4aacda000bce830adf5e5fb5ce4614ea605d2c",
+      "archiveMember": "desktop/src/terminal/production-backend.mjs",
+      "snapshot": "source-snapshots/037-production-backend.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-control-channel.mjs",
+      "bytes": 12332,
+      "sha256": "544d0bdc96fa21bdec6337250b308806c8a96770e68eae889c982f63e8b92791",
+      "archiveMember": "desktop/src/terminal/production-control-channel.mjs",
+      "snapshot": "source-snapshots/038-production-control-channel.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-creator-entry.mjs",
+      "bytes": 5194,
+      "sha256": "e298b2ca626d90a1e170d69ec017845db7892077854c74f6f68188e582f969a1",
+      "archiveMember": "desktop/src/terminal/production-creator-entry.mjs",
+      "snapshot": "source-snapshots/039-production-creator-entry.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-creator.mjs",
+      "bytes": 17385,
+      "sha256": "ce39f27f03d463e05c866aad65f51545798cdbf902add06a4ee67b461e7240d0",
+      "archiveMember": "desktop/src/terminal/production-creator.mjs",
+      "snapshot": "source-snapshots/040-production-creator.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-gate-link.mjs",
+      "bytes": 7388,
+      "sha256": "8bae39d9e20a9a7a2259aac560b55ff13d1732e1c72c778c6b92b5b5c173cd92",
+      "archiveMember": "desktop/src/terminal/production-gate-link.mjs",
+      "snapshot": "source-snapshots/041-production-gate-link.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-history-channel.mjs",
+      "bytes": 18436,
+      "sha256": "2b11a64ed82a9263fc06f6f514a54a8ad716194659d4e229abf53222de208211",
+      "archiveMember": "desktop/src/terminal/production-history-channel.mjs",
+      "snapshot": "source-snapshots/042-production-history-channel.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-manager.mjs",
+      "bytes": 62952,
+      "sha256": "06fe61b8f195a7c8584fa4e179aa316a924af31a32986395a631326be855c090",
+      "archiveMember": "desktop/src/terminal/production-manager.mjs",
+      "snapshot": "source-snapshots/043-production-manager.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-ownership.mjs",
+      "bytes": 40356,
+      "sha256": "d5147e8d95f3e1bcfd18fa40faa33edcb62a684c9e6af284a79a2b062ccec4cc",
+      "archiveMember": "desktop/src/terminal/production-ownership.mjs",
+      "snapshot": "source-snapshots/044-production-ownership.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-provider-loader.mjs",
+      "bytes": 1415,
+      "sha256": "c674dba9f2c5601b60f9fc90fe1c90fb9815ca141e660e78d517c41e1b31288a",
+      "archiveMember": "desktop/src/terminal/production-provider-loader.mjs",
+      "snapshot": "source-snapshots/045-production-provider-loader.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-remote-output.mjs",
+      "bytes": 12835,
+      "sha256": "3890318a6d70e2a836e9f1bc926499ec30b34ffdda12ca6344215cae79f22f51",
+      "archiveMember": "desktop/src/terminal/production-remote-output.mjs",
+      "snapshot": "source-snapshots/046-production-remote-output.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/production-session-state.mjs",
+      "bytes": 12218,
+      "sha256": "c68025cbe753fa9d35db35cc56e637a3cc9b1635a090e6ea86fc580736bf3ba5",
+      "archiveMember": "desktop/src/terminal/production-session-state.mjs",
+      "snapshot": "source-snapshots/047-production-session-state.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/profiles.mjs",
+      "bytes": 9475,
+      "sha256": "7e13976cb5caafd5ee7c0bd3fdd0bf9be276592cc2ce116455a31b53c63e9a43",
+      "archiveMember": "desktop/src/terminal/profiles.mjs",
+      "snapshot": "source-snapshots/048-profiles.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/provider-lifetime.mjs",
+      "bytes": 6412,
+      "sha256": "533650c9f3332476252e733dd48145e5da220847a0955c51d9013616cdbe95c8",
+      "archiveMember": "desktop/src/terminal/provider-lifetime.mjs",
+      "snapshot": "source-snapshots/049-provider-lifetime.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/remote-output.mjs",
+      "bytes": 9206,
+      "sha256": "d7e3217b45c8d7fac339b50d36eccdaf19d1d0674ecbbfac1fa778b72adcb953",
+      "archiveMember": "desktop/src/terminal/remote-output.mjs",
+      "snapshot": "source-snapshots/050-remote-output.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/request-router.mjs",
+      "bytes": 14832,
+      "sha256": "10c52a6b77787bd4612e799dc15f757adac3b14bfd1df6cbd040451ec4fc76b4",
+      "archiveMember": "desktop/src/terminal/request-router.mjs",
+      "snapshot": "source-snapshots/051-request-router.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/session-cleanup.mjs",
+      "bytes": 14413,
+      "sha256": "0a58270999cfec3e48e9e53358ad8db237991981afcaee55b69e675dc434df24",
+      "archiveMember": "desktop/src/terminal/session-cleanup.mjs",
+      "snapshot": "source-snapshots/052-session-cleanup.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/session-command-channel.mjs",
+      "bytes": 16019,
+      "sha256": "a08a8822c56fbfff98f77c34517587c488d86cbf5a8145f942d42f2be589bcbf",
+      "archiveMember": "desktop/src/terminal/session-command-channel.mjs",
+      "snapshot": "source-snapshots/053-session-command-channel.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/session-link.mjs",
+      "bytes": 15207,
+      "sha256": "ed02213867341d953c60192c40a01741481ab1ed58800434f175dbc87985d063",
+      "archiveMember": "desktop/src/terminal/session-link.mjs",
+      "snapshot": "source-snapshots/054-session-link.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/shutdown-graph.mjs",
+      "bytes": 15139,
+      "sha256": "fe84dbc5e6ecf85a71a6603c87b4705a475e9d1234b154b0b034102b6bf51491",
+      "archiveMember": "desktop/src/terminal/shutdown-graph.mjs",
+      "snapshot": "source-snapshots/055-shutdown-graph.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/startup-protocol.mjs",
+      "bytes": 16374,
+      "sha256": "cd9dd768319221d38e3c6e73fae9c307b777dbd95a27afc7627ba32188479a80",
+      "archiveMember": "desktop/src/terminal/startup-protocol.mjs",
+      "snapshot": "source-snapshots/056-startup-protocol.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/three-lane-bootstrap-codec.mjs",
+      "bytes": 4891,
+      "sha256": "082bf5610202826d61baffbccbf628cc12f80746028735d49b07255465b480a3",
+      "archiveMember": "desktop/src/terminal/three-lane-bootstrap-codec.mjs",
+      "snapshot": "source-snapshots/057-three-lane-bootstrap-codec.mjs.txt"
+    },
+    {
+      "path": "desktop/src/terminal/three-lane-bootstrap-reader.mjs",
+      "bytes": 8165,
+      "sha256": "c130d36c13e423ce8c50485131d57b265d5dbcfd987726efe55ef95988afa293",
+      "archiveMember": "desktop/src/terminal/three-lane-bootstrap-reader.mjs",
+      "snapshot": "source-snapshots/058-three-lane-bootstrap-reader.mjs.txt"
+    },
+    {
+      "path": "desktop/src/windows/entities.mjs",
+      "bytes": 3975,
+      "sha256": "faf1f39f3d0c793e42867e15627a71b89f6027d1954617f8e91b97f88322ffe4",
+      "archiveMember": "desktop/src/windows/entities.mjs",
+      "snapshot": "source-snapshots/059-entities.mjs.txt"
+    },
+    {
+      "path": "desktop/src/windows/registry.mjs",
+      "bytes": 36940,
+      "sha256": "716aa26eeaa493c2b46792da14d8294319ede58db045ce4ec06d6a54b9c2a85d",
+      "archiveMember": "desktop/src/windows/registry.mjs",
+      "snapshot": "source-snapshots/060-registry.mjs.txt"
+    },
+    {
+      "path": "desktop/src/windows/surface.mjs",
+      "bytes": 7796,
+      "sha256": "f9932c6cfe52277c554e4d4df367d8fceccbb69df1a75a9f5c10596d25e9cc54",
+      "archiveMember": "desktop/src/windows/surface.mjs",
+      "snapshot": "source-snapshots/061-surface.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/fixtures/terminal-filesystem-evidence.cs",
+      "bytes": 6127,
+      "sha256": "2bdbdd3884b07be2f045df487b5b46015a166e44c05ffc13a7dcf77e05a722ac",
+      "archiveMember": "desktop/tests/fixtures/terminal-filesystem-evidence.cs",
+      "snapshot": "source-snapshots/062-terminal-filesystem-evidence.cs.txt"
+    },
+    {
+      "path": "desktop/tests/fixtures/terminal-session-process-observer.cs",
+      "bytes": 5464,
+      "sha256": "4f3de372b4c80b07c22dd92cce7327d8927a0f117869f9094896cf4793bdea4b",
+      "archiveMember": "desktop/tests/fixtures/terminal-session-process-observer.cs",
+      "snapshot": "source-snapshots/063-terminal-session-process-observer.cs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-cmdlet-fixture.mjs",
+      "bytes": 2048,
+      "sha256": "79656c38d68eace83bdd2de2c3b9d14ac1442875bf1f67ee050d38aff4d3aa94",
+      "archiveMember": "desktop/tests/native/terminal-cmdlet-fixture.mjs",
+      "snapshot": "source-snapshots/064-terminal-cmdlet-fixture.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-cmdlet-runtime-worker.mjs",
+      "bytes": 28244,
+      "sha256": "26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33",
+      "archiveMember": "desktop/tests/native/terminal-cmdlet-runtime-worker.mjs",
+      "snapshot": "source-snapshots/065-terminal-cmdlet-runtime-worker.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-cmdlet-runtime.mjs",
+      "bytes": 17652,
+      "sha256": "5a6cb54a2d1de6c5c0db00e1b2e310600a64c46ac19a080088d1f6144d108549",
+      "archiveMember": "desktop/tests/native/terminal-cmdlet-runtime.mjs",
+      "snapshot": "source-snapshots/066-terminal-cmdlet-runtime.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-fixture.mjs",
+      "bytes": 1504,
+      "sha256": "1533374d504dfa02a8ea2e21cb8da8203641a0b88892d4ac1e5b3b18c402e0c0",
+      "archiveMember": "desktop/tests/native/terminal-discovery-fixture.mjs",
+      "snapshot": "source-snapshots/067-terminal-discovery-fixture.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-fixture.test.mjs",
+      "bytes": 4070,
+      "sha256": "b86f49b449ec642cccbaed297a437d18d7c4ee0eefd332749cd5732d891e2266",
+      "archiveMember": "desktop/tests/native/terminal-discovery-fixture.test.mjs",
+      "snapshot": "source-snapshots/068-terminal-discovery-fixture.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-runtime-inputs.json",
+      "bytes": 18123,
+      "sha256": "71e3b85a9543e33ee7c43cc20da64e3512e13f6c3af4953ee0ccaa72027d942f",
+      "archiveMember": "desktop/tests/native/terminal-discovery-runtime-inputs.json",
+      "snapshot": "source-snapshots/069-terminal-discovery-runtime-inputs.json.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-runtime.mjs",
+      "bytes": 18315,
+      "sha256": "dc170bd03671de379299297e04b2c80364b784f35b86735083f8b3d4b3937c01",
+      "archiveMember": "desktop/tests/native/terminal-discovery-runtime.mjs",
+      "snapshot": "source-snapshots/070-terminal-discovery-runtime.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-worker.mjs",
+      "bytes": 28285,
+      "sha256": "f118c4f2968f07bdfdeb953c2c4e3fa09e6705abf2f574dee71f5fbad30d276f",
+      "archiveMember": "desktop/tests/native/terminal-discovery-worker.mjs",
+      "snapshot": "source-snapshots/071-terminal-discovery-worker.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-production-provider-graph.mjs",
+      "bytes": 17044,
+      "sha256": "546cdc7720826eb0df55cbcd0516459dcb31a8875db9e8486ce38051b4e6b3e2",
+      "archiveMember": "desktop/tests/native/terminal-production-provider-graph.mjs",
+      "snapshot": "source-snapshots/072-terminal-production-provider-graph.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-production-resources.mjs",
+      "bytes": 19882,
+      "sha256": "e5b15567cdf7fcd8d754ed50af7da5c12a73cd5f499a73d3321618ddeb81c9cb",
+      "archiveMember": "desktop/tests/native/terminal-production-resources.mjs",
+      "snapshot": "source-snapshots/073-terminal-production-resources.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-resolution-observation.mjs",
+      "bytes": 8217,
+      "sha256": "677dd6f9097e217b1c4b5b5f04abdac851d1ea2677e6e4240eb7c6a75f23c6e0",
+      "archiveMember": "desktop/tests/native/terminal-resolution-observation.mjs",
+      "snapshot": "source-snapshots/074-terminal-resolution-observation.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-resolution-observation.test.mjs",
+      "bytes": 8132,
+      "sha256": "d7acf8811849845ff92434b65f7b7602296e4bbad169f714aa166635dd9fe903",
+      "archiveMember": "desktop/tests/native/terminal-resolution-observation.test.mjs",
+      "snapshot": "source-snapshots/075-terminal-resolution-observation.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-resolution-original-worker.mjs",
+      "bytes": 29780,
+      "sha256": "15927e2abc7e60e1b4222937f8283ebdb6d7fd2965d15a362f78d635becac609",
+      "archiveMember": "desktop/tests/native/terminal-resolution-original-worker.mjs",
+      "snapshot": "source-snapshots/076-terminal-resolution-original-worker.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-resolution-qualified-worker.mjs",
+      "bytes": 29781,
+      "sha256": "8fe71899a5056f357181fe39962628b222ea8ac9c2a202fdb0fca2fc071e0c99",
+      "archiveMember": "desktop/tests/native/terminal-resolution-qualified-worker.mjs",
+      "snapshot": "source-snapshots/077-terminal-resolution-qualified-worker.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-resolution-runtime.mjs",
+      "bytes": 27641,
+      "sha256": "01a51b98606dbbc9b1eff99c96cdf3ab88a1e4a02543f60f91e5d705d214120f",
+      "archiveMember": "desktop/tests/native/terminal-resolution-runtime.mjs",
+      "snapshot": "source-snapshots/078-terminal-resolution-runtime.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-command.mjs",
+      "bytes": 4134,
+      "sha256": "a1e5d3df5358cf9f240e6f325e0b35434c09515369ae63dba2bcbcdb27259954",
+      "archiveMember": "desktop/tests/native/terminal-session-command.mjs",
+      "snapshot": "source-snapshots/079-terminal-session-command.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-command.test.mjs",
+      "bytes": 5031,
+      "sha256": "ea09949c03e3d51149a42e65e7499c49c9b2d552254bf460fe38fa14288b4fc9",
+      "archiveMember": "desktop/tests/native/terminal-session-command.test.mjs",
+      "snapshot": "source-snapshots/080-terminal-session-command.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-execution-resources.mjs",
+      "bytes": 9433,
+      "sha256": "017f76d9be5b67b66ee695b617d148881a1e66549f8610241fc6e94f8799b2c4",
+      "archiveMember": "desktop/tests/native/terminal-session-execution-resources.mjs",
+      "snapshot": "source-snapshots/081-terminal-session-execution-resources.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
+      "bytes": 10731,
+      "sha256": "447787571c9b629cea67e84df1b68b68d48b6a3e626070dc1d6f5fb567176b37",
+      "archiveMember": "desktop/tests/native/terminal-session-filesystem-inputs.json",
+      "snapshot": "source-snapshots/082-terminal-session-filesystem-inputs.json.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
+      "bytes": 9001,
+      "sha256": "182c8eb22ffacedd1056ebdd1b1bc4a1e9628bfebae68227cfcf8592f244948e",
+      "archiveMember": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
+      "snapshot": "source-snapshots/083-terminal-session-filesystem-probe.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-filesystem-upload.test.mjs",
+      "bytes": 936,
+      "sha256": "5a08dafaa155efcbf58ae2bc0860f3e28b60dce817f4a2da8ae5b76fb77d0df6",
+      "archiveMember": "desktop/tests/native/terminal-session-filesystem-upload.test.mjs",
+      "snapshot": "source-snapshots/084-terminal-session-filesystem-upload.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-copy.mjs",
+      "bytes": 264,
+      "sha256": "9e5a44a749c906e62db2feaa7fe0ac66017e8900cd58341eb71c70e5dae32365",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-copy.mjs",
+      "snapshot": "source-snapshots/085-terminal-session-provision-copy.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-copy.test.mjs",
+      "bytes": 1518,
+      "sha256": "1f6b51286fd9f8812e587ceb1218d160ba7224cf7beee1c9a50a1b79e5c0c1ed",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-copy.test.mjs",
+      "snapshot": "source-snapshots/086-terminal-session-provision-copy.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-inputs.json",
+      "bytes": 12601,
+      "sha256": "90f35929af8163144c03b5a15bd6890542d06a1f4d6557e21520f24f64c44f91",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-inputs.json",
+      "snapshot": "source-snapshots/087-terminal-session-provision-inputs.json.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
+      "bytes": 780,
+      "sha256": "85e8b22f42ae76ee51ed0641c907156f7c260e09752fd07f733d1d550e8a0eba",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-paths.mjs",
+      "snapshot": "source-snapshots/088-terminal-session-provision-paths.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-paths.test.mjs",
+      "bytes": 1548,
+      "sha256": "c650e3f02d101ffc248757d2bde0ba7f5b68a26db2399a38248a6a163e7fe6d7",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-paths.test.mjs",
+      "snapshot": "source-snapshots/089-terminal-session-provision-paths.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-retention.mjs",
+      "bytes": 3113,
+      "sha256": "80175022879b9261aabc6f4106d5dd2fe014493b1b3eb1971f6bae5ae11fa96b",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-retention.mjs",
+      "snapshot": "source-snapshots/090-terminal-session-provision-retention.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-retention.test.mjs",
+      "bytes": 2239,
+      "sha256": "675846abecdb7b1f18a09356d64550aa73ac74e6e9f3b2a040c5f8bd884dd0ca",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-retention.test.mjs",
+      "snapshot": "source-snapshots/091-terminal-session-provision-retention.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision-upload.test.mjs",
+      "bytes": 841,
+      "sha256": "bfaa764e1dc168fcb79a85271c8e976ed904a50a880bf24e4b249cdf13a2f55b",
+      "archiveMember": "desktop/tests/native/terminal-session-provision-upload.test.mjs",
+      "snapshot": "source-snapshots/092-terminal-session-provision-upload.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-provision.mjs",
+      "bytes": 11135,
+      "sha256": "5099c6f7e0efeebe61724d68549c952cd8056a1f55d763cece36fc42d008f912",
+      "archiveMember": "desktop/tests/native/terminal-session-provision.mjs",
+      "snapshot": "source-snapshots/093-terminal-session-provision.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-runtime-inputs.json",
+      "bytes": 15445,
+      "sha256": "9520322f24a12ee57d450c0a286b4cd9286efaf31919e4e7f0430884d0a930c6",
+      "archiveMember": "desktop/tests/native/terminal-session-runtime-inputs.json",
+      "snapshot": "source-snapshots/094-terminal-session-runtime-inputs.json.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-runtime-worker.mjs",
+      "bytes": 22570,
+      "sha256": "39f3946590302c9c8b1d3afbc360bf03837922af18013cd1a1210750586e35d2",
+      "archiveMember": "desktop/tests/native/terminal-session-runtime-worker.mjs",
+      "snapshot": "source-snapshots/095-terminal-session-runtime-worker.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/native/terminal-session-runtime.mjs",
+      "bytes": 12694,
+      "sha256": "b8a11ac7407f2f5606e280a57158379d7b316904ae5e6f53b5b589c5d992ba9b",
+      "archiveMember": "desktop/tests/native/terminal-session-runtime.mjs",
+      "snapshot": "source-snapshots/096-terminal-session-runtime.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/terminal-discovery-runtime.test.mjs",
+      "bytes": 8802,
+      "sha256": "acd3b101a41fae669c561199bf9eb10603bd9b17960478e4811074d946e9d6fb",
+      "archiveMember": "desktop/tests/terminal-discovery-runtime.test.mjs",
+      "snapshot": "source-snapshots/097-terminal-discovery-runtime.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/terminal-production-entry-options.test.mjs",
+      "bytes": 3017,
+      "sha256": "951cd3a212dca2bfc3c5966d4cc88082f84be046acb8f656b82f5218a0608d6a",
+      "archiveMember": "desktop/tests/terminal-production-entry-options.test.mjs",
+      "snapshot": "source-snapshots/098-terminal-production-entry-options.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/terminal-resolution-runtime.test.mjs",
+      "bytes": 20997,
+      "sha256": "37ee2059002b3d29a9564bccd676632806be3a68b9540044a8b07c8c0a51039a",
+      "archiveMember": "desktop/tests/terminal-resolution-runtime.test.mjs",
+      "snapshot": "source-snapshots/099-terminal-resolution-runtime.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/terminal-session-runtime-controller.test.mjs",
+      "bytes": 6953,
+      "sha256": "54d914f6830a9ae734f97de1596670029906aba9110cb965d51d4bb17bc33a85",
+      "archiveMember": "desktop/tests/terminal-session-runtime-controller.test.mjs",
+      "snapshot": "source-snapshots/100-terminal-session-runtime-controller.test.mjs.txt"
+    },
+    {
+      "path": "desktop/tests/terminal-session-runtime-integration.test.mjs",
+      "bytes": 10427,
+      "sha256": "39331bcf9ff91c3e0e4e33fc7711ae4128ec7ca8a0815ac12cdc372b6fce0870",
+      "archiveMember": "desktop/tests/terminal-session-runtime-integration.test.mjs",
+      "snapshot": "source-snapshots/101-terminal-session-runtime-integration.test.mjs.txt"
+    },
+    {
+      "path": "terminal-discovery-diagnostic-20261011/derivation-inputs/origin.json",
+      "bytes": 622,
+      "sha256": "8a1d6292f207524a8c8bd1f345199670ce6e091ad7ae7ff51adfe7a6f9f011be",
+      "archiveMember": "terminal-discovery-diagnostic-20261011/derivation-inputs/origin.json",
+      "snapshot": "source-snapshots/102-origin.json.txt"
+    },
+    {
+      "path": "terminal-discovery-diagnostic-20261011/derivation-inputs/terminal-cmdlet-runtime.yml",
+      "bytes": 3864,
+      "sha256": "237826aeaa01028f90cec3fbb9c8340bd1b06d1e11c02d928ad6d7e5e7ad75c6",
+      "archiveMember": "terminal-discovery-diagnostic-20261011/derivation-inputs/terminal-cmdlet-runtime.yml",
+      "snapshot": "source-snapshots/103-terminal-cmdlet-runtime.yml.txt"
+    },
+    {
+      "path": "terminal-discovery-diagnostic-20261011/prepare-source.py",
+      "bytes": 6050,
+      "sha256": "6cd5ec2ae21cb3b16d4f6093a07c8eaa91c797e192ec8ee70d5951eeb77a98bb",
+      "archiveMember": "terminal-discovery-diagnostic-20261011/prepare-source.py",
+      "snapshot": "source-snapshots/104-prepare-source.py.txt"
+    },
+    {
+      "path": "terminal-discovery-diagnostic-20261011/source-derivation.json",
+      "bytes": 4374,
+      "sha256": "726b99ced29c0a45dfec8055d5c4d7573511ab582f2ec8d50f74aa5ba8a1a17d",
+      "archiveMember": "terminal-discovery-diagnostic-20261011/source-derivation.json",
+      "snapshot": "source-snapshots/105-source-derivation.json.txt"
+    },
+    {
+      "path": "terminal-resolution-controller-20261011/derivation-inputs/origin.json",
+      "bytes": 789,
+      "sha256": "be6f2f490e502b1b3c81903e0676e4c9070ebebfc271ad5de3463166b604448e",
+      "archiveMember": "terminal-resolution-controller-20261011/derivation-inputs/origin.json",
+      "snapshot": "source-snapshots/106-origin.json.txt"
+    },
+    {
+      "path": "terminal-resolution-controller-20261011/prepare-source.py",
+      "bytes": 22139,
+      "sha256": "bc56cae501e4fd49386282f3e10a1e37399ca4dd66aa6160d76ad2e6d4a887ab",
+      "archiveMember": "terminal-resolution-controller-20261011/prepare-source.py",
+      "snapshot": "source-snapshots/107-prepare-source.py.txt"
+    },
+    {
+      "path": "terminal-resolution-controller-20261011/source-derivation.json",
+      "bytes": 20209,
+      "sha256": "e8b41f914a647d10638888402d8ed77df85c7fa79a4fd29e25812e534978b63f",
+      "archiveMember": "terminal-resolution-controller-20261011/source-derivation.json",
+      "snapshot": "source-snapshots/108-source-derivation.json.txt"
+    }
+  ]
+}
