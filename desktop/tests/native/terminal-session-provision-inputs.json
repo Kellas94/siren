@@ -168,8 +168,8 @@
     },
     {
       "path": "desktop/src/terminal/production-backend.mjs",
-      "bytes": 34547,
-      "sha256": "34736a6c2907146d128ac1d996e1e04fd634506fe9291581a733d4eae32b1e7c"
+      "bytes": 35048,
+      "sha256": "8526a477e0ff31f8c7d835b81c4aacda000bce830adf5e5fb5ce4614ea605d2c"
     },
     {
       "path": "desktop/src/terminal/production-control-channel.mjs",

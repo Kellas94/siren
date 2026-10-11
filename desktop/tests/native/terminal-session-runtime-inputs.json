@@ -178,8 +178,8 @@
     },
     {
       "path": "desktop/src/terminal/production-backend.mjs",
-      "bytes": 34547,
-      "sha256": "34736a6c2907146d128ac1d996e1e04fd634506fe9291581a733d4eae32b1e7c"
+      "bytes": 35048,
+      "sha256": "8526a477e0ff31f8c7d835b81c4aacda000bce830adf5e5fb5ce4614ea605d2c"
     },
     {
       "path": "desktop/src/terminal/production-control-channel.mjs",
@@ -339,7 +339,7 @@
     {
       "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
       "bytes": 10731,
-      "sha256": "c540df2b45d33c78432729412b8115b01d4ab530cc9c7c12201d9ddf3e20284d"
+      "sha256": "447787571c9b629cea67e84df1b68b68d48b6a3e626070dc1d6f5fb567176b37"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
@@ -364,7 +364,7 @@
     {
       "path": "desktop/tests/native/terminal-session-provision-inputs.json",
       "bytes": 12601,
-      "sha256": "a2cab2edd5fd5f695c93c8b90969e6e1c9bfb08b933c8799686f7fa7e23d2b19"
+      "sha256": "90f35929af8163144c03b5a15bd6890542d06a1f4d6557e21520f24f64c44f91"
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
