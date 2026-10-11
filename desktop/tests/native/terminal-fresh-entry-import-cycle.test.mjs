@@ -18,7 +18,7 @@ const actualImport=provision.includes(staticDriverImport)?staticDriverImport+'\n
 async function run({buildOk=true,pairThrows=false,legacy=false}={}){
  const parent=resolve('evidence/terminal-entry-cycle');await mkdir(parent,{recursive:true});
  const folder=await mkdtemp(join(parent,'case-'));
- const header=`${actualImport}const flags={nativeAdmission:false};const entryMode='fixed-pathext-pair';
+ const header=`import {types} from 'node:util';\n${actualImport}const flags={nativeAdmission:false};const entryMode='fixed-pathext-pair';
  export async function provisionFreshTerminalRuntime(){return Object.freeze({ok:${buildOk},status:'INERT_BUILD',jobRoot:null});}
  export async function recheckProvisionedFreshRuntime(receipt){return receipt.ok===true;}
  `;

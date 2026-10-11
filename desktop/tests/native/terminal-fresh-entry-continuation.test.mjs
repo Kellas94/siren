@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {types} from 'node:util';
 import {readFileSync} from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
@@ -27,7 +28,7 @@ async function cli({mode='build',ok=true,pairOk=true,adverse=false,mutate=false,
  assert.equal(source.split(/\r?\n/).filter(line=>line===pairImport).length,1,'exact fixed static driver binding required');
  const calls=[],links=[],process=hosted(mode),receipt=Object.freeze({ok,status:ok?'FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION':'FAILED_NOT_SESSION_ADMISSION',jobRoot:'C:\\temp\\job'});
  // The stub is an explicit conditional seam, not a genuine provision receipt authority.
- const context=vm.createContext({process,console:{log:value=>calls.push(['log',value])},flags:{nativeAdmission:false,inputAuthorized:false},async provisionFreshTerminalRuntime(){calls.push(['build']);context.entryMode=mode==='build'?'build':'fixed-pathext-pair';if(mutate)process.argv=mode==='build'?['node',entry,'--fixed-pathext-pair']:['node',entry];return receipt;}});
+ const context=vm.createContext({types,Buffer,process,console:{log:value=>calls.push(['log',value])},flags:{nativeAdmission:false,inputAuthorized:false},async provisionFreshTerminalRuntime(){calls.push(['build']);context.entryMode=mode==='build'?'build':'fixed-pathext-pair';if(mutate)process.argv=mode==='build'?['node',entry,'--fixed-pathext-pair']:['node',entry];return receipt;}});
  context.entryMode=null;
  // Link only the literal static declaration to one strict synthetic export.
  // Actual driver/dependencies are never imported. Static link failures precede

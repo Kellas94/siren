@@ -163,13 +163,41 @@ export async function provisionFreshTerminalRuntime(...extra){
 }
 export async function recheckProvisionedFreshRuntime(receipt,...extra){const captured=!extra.length&&own.get(receipt);if(!captured)return false;try{return await recheckFreshRuntimeRetention(captured.retention)===true;}catch{return false;}}
 if(import.meta.main===true){
- const receipt=await provisionFreshTerminalRuntime();console.log(JSON.stringify({ok:receipt.ok,status:receipt.status,jobRoot:receipt.jobRoot??null,...flags}));
+ // FRESH_DIAGNOSTIC_PROJECTION_BEGIN
+ function freshDiagnosticSummary(value,kind){
+  const data=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+  const pick=(value,allowed)=>typeof value==='string'&&allowed.includes(value)?value:null;
+  const stages=['ATTEMPT_CONSUMED','ARGUMENTS','PRIVATE_RETENTION','HOSTED_CONTEXT','RESULT_DIRECTORY','RETAINED_INPUT_PINS','CONTROLLER_PINS','HOST_RECEIPT_MODULE','WORKER_WAIT_CONTRACT','ENGINE_IDENTITY','COMMON_ENVIRONMENT','COMMON_PROJECT','FIXTURE_PREPARATION','PLAN_RETENTION','PRE_ARM_RECHECK','ARM_ENTRY_RETENTION','ARM_CHILD_LAUNCH','ARM_CHANNEL_HANDSHAKE','ARM_WORKER_RESULT','ARM_CLEANUP','POST_ARM_RECHECK','ARM_EXIT_CHANNEL','ARM_INPUT_RECEIPT','ARM_HELD_IDENTITY','ARM_COMMAND_CLASSIFICATION','PAIR_RESULT_RETENTION'];
+  const statuses=['STARTED','FAILED_NOT_SESSION_ADMISSION','FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION','FRESH_PAIR_STARTED_NOT_ADMITTED','FRESH_PAIR_REFUSED','FRESH_PAIR_FAILED_NOT_ADMITTED','FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED','FRESH_PAIR_OBSERVED_NOT_ADMITTED','FRESH_PAIR_CONTINUATION_UNAVAILABLE'];
+  const codes=['ATTEMPT_CONSUMED','CONTEXT_REFUSED','SOURCE_REFUSED','SOURCE_CHANGED','PATH_REFUSED','TARGET_EXISTS','BUILD_PHASE_FAILED','BUILD_UNAVAILABLE','TOOL_CHANGED','RESULT_RETENTION_FAILED','FIXED_PAIR_GATE_UNAVAILABLE','PAIR_RESULT_RETENTION_FAILED'];
+  const names=['historical-source-stage','locked-electron-packages','electron-distribution','locked-provider-packages','compiler-discovery','terminal-host-roster-candidate-configure','terminal-host-roster-candidate-compile','terminal-creator-three-lane-configure','terminal-creator-three-lane-compile','filesystem-evidence-compile','process-observer-compile'];
+  const unavailable=()=>({schema:1,kind:kind==='pair'?'pair':'build',ok:null,status:'DIAGNOSTIC_UNAVAILABLE',code:null,failureStage:null,actualSessions:null,phases:[]});
+  if(kind!=='build'&&kind!=='pair'||!value||typeof value!=='object'||types.isProxy(value))return unavailable();
+  const ok=data(value,'ok'),status=pick(data(value,'status'),statuses),count=data(value,'realSessions');
+  if(typeof ok!=='boolean'||status===null)return unavailable();
+  const rows=data(value,kind==='build'?'phases':'arms'),phases=[];
+  if(rows!==undefined){
+   if(types.isProxy(rows)||!Array.isArray(rows))return unavailable();const length=data(rows,'length');
+   if(!Number.isInteger(length)||length<0||length>(kind==='build'?11:2))return unavailable();
+   for(let i=0;i<length;i++){
+    const row=data(rows,String(i));if(!row||typeof row!=='object'||types.isProxy(row))return unavailable();
+    const name=pick(data(row,kind==='build'?'name':'armId'),kind==='build'?names:['pathext-omitted','pathext-trusted']);if(name===null)return unavailable();
+    const exit=kind==='build'?data(row,'exit'):data(data(row,'exit'),'code');if(exit!==undefined&&exit!==null&&(!Number.isInteger(exit)||exit< -2147483648||exit>4294967295))return unavailable();
+    const status=kind==='build'?(Number.isInteger(exit)?'EXITED':'PENDING'):pick(data(row,'status'),['STARTED','FAILED','SINGLE_CMDLET_DIAGNOSTIC_COMPLETE']);if(status===null)return unavailable();
+    phases.push({name,exit:Number.isInteger(exit)?exit:null,status});
+   }
+  }
+  const result={schema:1,kind,ok,status,code:pick(data(value,'code'),codes),failureStage:pick(data(value,'failureStage'),stages),actualSessions:Number.isInteger(count)&&count>=0&&count<=2?count:null,phases};
+  return Buffer.byteLength(JSON.stringify(result),'utf8')<=8192?result:unavailable();
+ }
+ // FRESH_DIAGNOSTIC_PROJECTION_END
+ const receipt=await provisionFreshTerminalRuntime();console.log(JSON.stringify({ok:receipt.ok,status:receipt.status,jobRoot:receipt.jobRoot??null,diagnostic:freshDiagnosticSummary(receipt,'build'),...flags}));
  if(!receipt.ok)process.exitCode=1;
  else if(entryMode==='fixed-pathext-pair'){
   try{
    const pair=await runFreshTerminalPair(receipt);
-   console.log(JSON.stringify({ok:pair.ok,status:pair.status,...flags}));
+   console.log(JSON.stringify({ok:pair.ok,status:pair.status,diagnostic:freshDiagnosticSummary(pair,'pair'),...flags}));
    if(pair.ok!==true||pair.status!=='FRESH_PAIR_OBSERVED_NOT_ADMITTED'||pair.hasAdverseArm===true)process.exitCode=1;
-  }catch{console.log(JSON.stringify({ok:false,status:'FRESH_PAIR_CONTINUATION_UNAVAILABLE',...flags}));process.exitCode=1;}
+  }catch{console.log(JSON.stringify({ok:false,status:'FRESH_PAIR_CONTINUATION_UNAVAILABLE',diagnostic:freshDiagnosticSummary({ok:false,status:'FRESH_PAIR_CONTINUATION_UNAVAILABLE'},'pair'),...flags}));process.exitCode=1;}
  }
 }

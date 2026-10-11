@@ -13,7 +13,7 @@ jobs:
     # Explicit fixed diagnostic on the test branch; never product admission.
     if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010' && github.run_attempt == 1
     runs-on: windows-2025
-    # Step caps total 62 minutes, leaving four minutes for job overhead.
+    # Step caps total 63 minutes, leaving three minutes for job overhead.
     # Build has a separate cap so archive/upload still have reserved time.
     timeout-minutes: 66
     steps:
@@ -50,7 +50,60 @@ jobs:
           & node desktop/tests/native/terminal-fresh-runtime-provision.mjs --fixed-pathext-pair > (Join-Path $launchEvidence 'build.stdout.txt') 2> (Join-Path $launchEvidence 'build.stderr.txt')
           $buildExit = $LASTEXITCODE
           $buildExit | Set-Content -LiteralPath (Join-Path $launchEvidence 'build.exit.txt') -Encoding ascii
+          # Produce only bounded, allowlisted scalar DATA; never upload raw logs here.
+          # Diagnostic preparation cannot replace the original process exit status.
+          $diagnosticBody = '{"schema":1,"status":"DIAGNOSTIC_UNAVAILABLE","records":[]}'
+          try {
+            $stdoutPath = Join-Path $launchEvidence 'build.stdout.txt'
+            $length = (Get-Item -LiteralPath $stdoutPath).Length
+            if ($length -le 0 -or $length -gt 32768) { throw 'Diagnostic input bound' }
+            $lines = [System.IO.File]::ReadAllLines($stdoutPath, [System.Text.UTF8Encoding]::new($false, $true))
+            if ($lines.Count -lt 1 -or $lines.Count -gt 2) { throw 'Diagnostic record bound' }
+            $stages = @('ATTEMPT_CONSUMED','ARGUMENTS','PRIVATE_RETENTION','HOSTED_CONTEXT','RESULT_DIRECTORY','RETAINED_INPUT_PINS','CONTROLLER_PINS','HOST_RECEIPT_MODULE','WORKER_WAIT_CONTRACT','ENGINE_IDENTITY','COMMON_ENVIRONMENT','COMMON_PROJECT','FIXTURE_PREPARATION','PLAN_RETENTION','PRE_ARM_RECHECK','ARM_ENTRY_RETENTION','ARM_CHILD_LAUNCH','ARM_CHANNEL_HANDSHAKE','ARM_WORKER_RESULT','ARM_CLEANUP','POST_ARM_RECHECK','ARM_EXIT_CHANNEL','ARM_INPUT_RECEIPT','ARM_HELD_IDENTITY','ARM_COMMAND_CLASSIFICATION','PAIR_RESULT_RETENTION')
+            $statuses = @('STARTED','FAILED_NOT_SESSION_ADMISSION','FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION','FRESH_PAIR_STARTED_NOT_ADMITTED','FRESH_PAIR_REFUSED','FRESH_PAIR_FAILED_NOT_ADMITTED','FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED','FRESH_PAIR_OBSERVED_NOT_ADMITTED','FRESH_PAIR_CONTINUATION_UNAVAILABLE','DIAGNOSTIC_UNAVAILABLE')
+            $codes = @('ATTEMPT_CONSUMED','CONTEXT_REFUSED','SOURCE_REFUSED','SOURCE_CHANGED','PATH_REFUSED','TARGET_EXISTS','BUILD_PHASE_FAILED','BUILD_UNAVAILABLE','TOOL_CHANGED','RESULT_RETENTION_FAILED','FIXED_PAIR_GATE_UNAVAILABLE','PAIR_RESULT_RETENTION_FAILED')
+            $names = @('historical-source-stage','locked-electron-packages','electron-distribution','locked-provider-packages','compiler-discovery','terminal-host-roster-candidate-configure','terminal-host-roster-candidate-compile','terminal-creator-three-lane-configure','terminal-creator-three-lane-compile','filesystem-evidence-compile','process-observer-compile','pathext-omitted','pathext-trusted')
+            $records = @()
+            foreach ($line in $lines) {
+              $outer = ConvertFrom-Json -InputObject $line -AsHashtable -Depth 8
+              $d = $outer['diagnostic']
+              if ($d -isnot [System.Collections.IDictionary] -or $d.Count -ne 8) { throw 'Diagnostic shape' }
+              foreach ($key in @('schema','kind','ok','status','code','failureStage','actualSessions','phases')) { if (-not $d.Contains($key)) { throw 'Diagnostic key' } }
+              if ($d.schema -cne 1 -or @('build','pair') -cnotcontains $d.kind -or $statuses -cnotcontains $d.status) { throw 'Diagnostic label' }
+              if ($null -ne $d.ok -and $d.ok -isnot [bool]) { throw 'Diagnostic boolean' }
+              if ($null -ne $d.code -and $codes -cnotcontains $d.code) { throw 'Diagnostic code' }
+              if ($null -ne $d.failureStage -and $stages -cnotcontains $d.failureStage) { throw 'Diagnostic stage' }
+              if ($null -ne $d.actualSessions -and (($d.actualSessions -isnot [long] -and $d.actualSessions -isnot [int]) -or $d.actualSessions -lt 0 -or $d.actualSessions -gt 2)) { throw 'Diagnostic session count' }
+              $cap = if ($d.kind -ceq 'build') { 11 } else { 2 }
+              if ($d.phases -isnot [System.Array] -or $d.phases.Count -gt $cap) { throw 'Diagnostic phase bound' }
+              foreach ($phase in $d.phases) {
+                if ($phase -isnot [System.Collections.IDictionary] -or $phase.Count -ne 3 -or -not $phase.Contains('name') -or -not $phase.Contains('exit') -or -not $phase.Contains('status')) { throw 'Diagnostic phase shape' }
+                if ($names -cnotcontains $phase.name -or @('EXITED','PENDING','STARTED','FAILED','SINGLE_CMDLET_DIAGNOSTIC_COMPLETE') -cnotcontains $phase.status) { throw 'Diagnostic phase label' }
+                if ($null -ne $phase.exit -and (($phase.exit -isnot [long] -and $phase.exit -isnot [int]) -or $phase.exit -lt -2147483648 -or $phase.exit -gt 4294967295)) { throw 'Diagnostic exit bound' }
+              }
+              $records += $d
+            }
+            $candidate = ConvertTo-Json -InputObject ([ordered]@{schema=1;status='BOUNDED_DIAGNOSTIC_DATA_ONLY';records=$records}) -Depth 6 -Compress
+            if ([System.Text.Encoding]::UTF8.GetByteCount($candidate) -gt 16384) { throw 'Diagnostic output bound' }
+            $diagnosticBody = $candidate
+          } catch { }
+          try {
+            $diagnosticBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($diagnosticBody)
+            $diagnosticFile = [System.IO.File]::Open((Join-Path $launchEvidence 'diagnostic-summary.json'), [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+            try { $diagnosticFile.Write($diagnosticBytes, 0, $diagnosticBytes.Length) } finally { $diagnosticFile.Dispose() }
+          } catch { }
           exit $buildExit
+      - name: Retain small sanitized diagnostic summary separately
+        timeout-minutes: 1
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-fresh-runtime-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: warn
+          compression-level: 6
+          path: ${{ runner.temp }}/siren-fresh-build-launch/diagnostic-summary.json
       - name: Archive every owned job tree including hidden files and empty directories
         timeout-minutes: 8
         id: archive
@@ -79,6 +132,7 @@ jobs:
             desktop/tests/native/terminal-fresh-runtime-provision.test.mjs
             desktop/tests/native/terminal-fresh-entry-import-cycle.test.mjs
             desktop/tests/native/terminal-fresh-entry-continuation.test.mjs
+            desktop/tests/native/terminal-fresh-failure-observability.test.mjs
             desktop/tests/native/terminal_historical_source_stage.py
             desktop/tests/native/terminal_fresh_build_archive.py
             desktop/tests/native/terminal-fresh-runtime-inventory.mjs
