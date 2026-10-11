@@ -1,5 +1,5 @@
 // Inactive hosted prerequisite: default build-only, fixed diagnostic opt-in. Import never provisions or launches.
-import {readFile,writeFile,mkdir,copyFile,cp,rename,readdir,lstat} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,copyFile,cp,rename,readdir,lstat,open} from 'node:fs/promises';
 import {constants,realpathSync} from 'node:fs';
 import {execFile} from 'node:child_process';
 import {promisify,types} from 'node:util';
@@ -35,10 +35,10 @@ function context(extra){
 }
 // Optional trace is private DATA, used only for the current tracked-input pin. No additional IO.
 function pinGate(value,condition,trace){if(!value&&trace)trace.condition=condition;check(value);}
-async function regular(p,trace){
+async function regular(p,trace,externalRead=false){
  if(trace)trace.condition='lstat-unavailable';const s=await lstat(p,{bigint:true});
  if(trace){trace[trace.stage==='before-stat'?'before':'after']=s;trace.condition='stat-check-unavailable';}
- pinGate(s.isFile(),'not-regular',trace);pinGate(!s.isSymbolicLink(),'symlink',trace);pinGate(s.nlink===1n,'link-count',trace);pinGate(s.size>=0n,'size-negative',trace);pinGate(s.size<=536870912n,'size-limit',trace);
+ pinGate(s.isFile(),'not-regular',trace);pinGate(!s.isSymbolicLink(),'symlink',trace);pinGate(externalRead?typeof s.nlink==='bigint'&&s.nlink>0n&&s.nlink<(1n<<64n):s.nlink===1n,'link-count',trace);pinGate(s.size>=0n,'size-negative',trace);pinGate(s.size<=536870912n,'size-limit',trace);
  if(trace)trace.condition='realpath-unavailable';const raw=realpathSync(p),normalized=path.normalize(raw);
  if(trace)trace.canonical={stage:trace.stage,raw,normalized,matches:normalized===p};pinGate(normalized===p,'canonical-mismatch',trace);return s;
 }
@@ -48,6 +48,28 @@ async function pin(p,trace){
  if(trace)trace.stage='read-size';pinGate(BigInt(bytes.length)===before.size,'read-size-mismatch',trace);
  if(trace)trace.stage='after-stat';const after=await regular(p,trace);if(trace){trace.stage='stability';trace.condition='stat-check-unavailable';}pinGate(stable(before,after),'stat-changed',trace);
  return {path:p,bytes:bytes.length,sha256:sha(bytes)};
+}
+// Classification grants only a postcompile DATA read; owned mutation/retention pins stay strict.
+function strictTrackedInput(p,root,job,receipt){
+ const key=path.normalize(p).toUpperCase();
+ if([root,job].some(r=>{const base=path.normalize(r).toUpperCase();return key===base||key.startsWith(base+path.sep);}))return true;
+ return [...receipt.tools,...receipt.phases.map(row=>row.tool),...receipt.builds.flatMap(row=>row.source)].some(row=>path.normalize(row.path).toUpperCase()===key);
+}
+async function externalCompilerRead(p,trace){
+ trace.role='external-compiler-read';trace.stage='before-stat';const before=await regular(p,trace,true);let handle=null,failed=false;
+ try{
+  trace.stage='open';trace.condition='open-unavailable';handle=await open(p,constants.O_RDONLY|(constants.O_NOFOLLOW??0));
+  trace.stage='handle-before';trace.condition='handle-stat-unavailable';trace.handleBefore=await handle.stat({bigint:true});pinGate(stable(before,trace.handleBefore),'handle-before-changed',trace);
+  const digest=createHash('sha256'),buffer=Buffer.alloc(65536);let offset=0;const size=Number(before.size);
+  trace.stage='read';trace.condition='read-unavailable';
+  while(offset<size){const length=Math.min(buffer.length,size-offset),{bytesRead}=await handle.read(buffer,0,length,offset);pinGate(Number.isInteger(bytesRead)&&bytesRead>=0&&bytesRead<=length,'invalid-read',trace);pinGate(bytesRead>0,'short-read',trace);digest.update(buffer.subarray(0,bytesRead));offset+=bytesRead;}
+  const tail=await handle.read(buffer,0,1,offset);pinGate(tail.bytesRead===0,'extra-byte',trace);
+  trace.stage='handle-after';trace.condition='handle-stat-unavailable';trace.handleAfter=await handle.stat({bigint:true});pinGate(stable(before,trace.handleAfter),'handle-after-changed',trace);
+  trace.stage='after-stat';const after=await regular(p,trace,true);trace.stage='stability';trace.condition='stat-check-unavailable';pinGate(stable(before,after),'stat-changed',trace);
+  const beforeData=diagnosticStat(before),afterData=diagnosticStat(after);pinGate(beforeData!==null&&afterData!==null&&Object.values(beforeData).every(v=>v!==null)&&Object.values(afterData).every(v=>v!==null),'stat-metadata',trace);
+  return {path:p,bytes:size,sha256:digest.digest('hex'),role:'external-compiler-read',snapshotTiming:'POST_COMPILE',before:beforeData,after:afterData};
+ }catch(error){failed=true;throw error;}
+ finally{if(handle){if(!failed){trace.stage='close';trace.condition='close-unavailable';}try{await handle.close();}catch(error){if(!failed)throw error;trace.secondaryCloseFailure=true;}}}
 }
 function diagnosticPath(value){
  if(typeof value!=='string')return {value:null,codeUnits:null,bytes:null,sha256:null,redacted:true};
@@ -59,7 +81,7 @@ function diagnosticStat(stat){
  if(!stat||typeof stat!=='object'||types.isProxy(stat))return null;
  const data={};for(const key of ['dev','ino','mode','nlink','size','mtimeNs','ctimeNs']){const d=Object.getOwnPropertyDescriptor(stat,key),v=d&&Object.hasOwn(d,'value')?d.value:null;data[key]=typeof v==='bigint'&&v>=-(1n<<127n)&&v<(1n<<127n)?v.toString():null;}return data;
 }
-function trackedFailure(p,folder,index,total,trace){return {schema:1,phase:folder+'-tracked-input-pin',index,total,requestedPath:diagnosticPath(p),stage:trace.stage,condition:trace.condition,before:diagnosticStat(trace.before),after:diagnosticStat(trace.after),canonical:trace.canonical?{stage:trace.canonical.stage,raw:diagnosticPath(trace.canonical.raw),normalized:diagnosticPath(trace.canonical.normalized),matches:trace.canonical.matches}:null};}
+function trackedFailure(p,folder,index,total,trace){return {schema:1,phase:folder+'-tracked-input-pin',index,total,requestedPath:diagnosticPath(p),stage:trace.stage,condition:trace.condition,before:diagnosticStat(trace.before),after:diagnosticStat(trace.after),canonical:trace.canonical?{stage:trace.canonical.stage,raw:diagnosticPath(trace.canonical.raw),normalized:diagnosticPath(trace.canonical.normalized),matches:trace.canonical.matches}:null,...(trace.role?{role:trace.role,handleBefore:diagnosticStat(trace.handleBefore),handleAfter:diagnosticStat(trace.handleAfter),secondaryCloseFailure:trace.secondaryCloseFailure===true}:{})};}
 async function directory(p){const s=await lstat(p,{bigint:true});check(s.isDirectory()&&!s.isSymbolicLink()&&path.normalize(realpathSync(p))===p,'PATH_REFUSED');return s;}
 async function absent(p){try{await lstat(p,{bigint:true});}catch(e){if(errorValue(e,'code')==='ENOENT')return;fail('PATH_REFUSED');}fail('TARGET_EXISTS');}
 async function copyPinned(source,target,expected){const before=await pin(source);check(expected&&before.bytes===expected.bytes&&before.sha256===expected.sha256);await copyFile(source,target,constants.COPYFILE_EXCL);const after=await pin(target);check(after.bytes===expected.bytes&&after.sha256===expected.sha256);check((await pin(source)).sha256===before.sha256);}
@@ -120,7 +142,7 @@ export async function provisionFreshTerminalRuntime(...extra){
    await phase(folder+'-compile',msbuild,['build/'+target+'.vcxproj','/p:SolutionDir='+path.join(candidate,'build')+'/', '/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+versions[0],'/p:WindowsTargetPlatformVersion=10.0.26100.0','/p:TrackFileAccess=true','/verbosity:diagnostic'],candidate);
    const project=await readFile(path.join(candidate,'build',target+'.vcxproj'),'utf8');check(project.includes('win_delay_load_hook.cc')&&/<DelayLoadDLLs>node.exe(?:;|<)/i.test(project));
    const tracked=new Set();let count=0;async function walk(dir,depth=0){check(depth<=64);for(const entry of await readdir(dir,{withFileTypes:true})){check(++count<=8192);const p=path.join(dir,entry.name);check(!entry.isSymbolicLink());if(entry.isDirectory())await walk(p,depth+1);else if(/\.read\.\d+\.tlog$/i.test(entry.name)){for(const line of (await readFile(p)).toString('utf16le').replace(/^\uFEFF/,'').split(/\r?\n/))for(const name of line.trim().replace(/^\^/,'').split('|'))if(/^[A-Za-z]:[\\/]/.test(name))tracked.add(path.normalize(name));}}}await walk(path.join(candidate,'build'));
-   check(tracked.size<=8192);for(const [index,p] of [...tracked].sort().entries()){const trace={stage:'before-stat',condition:'lstat-unavailable',before:null,after:null,canonical:null};try{build.trackedInputs.push(await pin(p,trace));}catch(error){try{trackedInputFailure=trackedFailure(p,folder,index,tracked.size,trace);}catch{}throw error;}}for(const re of [/[/\\]win_delay_load_hook\.cc$/i,/[/\\]node_api\.h$/i,/[/\\]windows\.h$/i])check(build.trackedInputs.some(r=>re.test(r.path)));
+   check(tracked.size<=8192);for(const [index,p] of [...tracked].sort().entries()){const trace={stage:'before-stat',condition:'lstat-unavailable',before:null,after:null,canonical:null};try{build.trackedInputs.push(await (strictTrackedInput(p,c.root,job,receipt)?pin(p,trace):externalCompilerRead(p,trace)));}catch(error){try{trackedInputFailure=trackedFailure(p,folder,index,tracked.size,trace);}catch{}throw error;}}for(const re of [/[/\\]win_delay_load_hook\.cc$/i,/[/\\]node_api\.h$/i,/[/\\]windows\.h$/i])check(build.trackedInputs.some(r=>re.test(r.path)));
    const binary=path.join(candidate,'build/Release',target+'.node'),bytes=await readFile(binary);check(bytes.length>=64&&bytes.readUInt16LE(0)===0x5a4d);const pe=bytes.readUInt32LE(0x3c);check(pe+6<=bytes.length&&bytes.readUInt32LE(pe)===0x4550&&bytes.readUInt16LE(pe+4)===0x8664);build.binary=await pin(binary);
    const dest=path.join(execution,'desktop/native',folder,'build');await mkdir(dest);await mkdir(path.join(dest,'Release'));await copyPinned(binary,path.join(dest,'Release',target+'.node'),build.binary);
   }
