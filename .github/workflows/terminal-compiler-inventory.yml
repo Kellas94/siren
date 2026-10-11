@@ -1,0 +1,45 @@
+name: Fixed Terminal compiler inventory (read-only diagnostic)
+on:
+  push:
+    branches: ['probe/terminal-session-20261010']
+    paths: ['.github/workflows/terminal-compiler-inventory.yml']
+permissions:
+  contents: read
+concurrency:
+  group: terminal-compiler-inventory-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  inventory:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010' && github.run_attempt == 1
+    runs-on: windows-2025
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        timeout-minutes: 1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        timeout-minutes: 3
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+      - name: Inspect six fixed compiler/config paths without executing a compiler
+        timeout-minutes: 1
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & node desktop/tests/native/terminal-compiler-inventory.mjs
+          exit $LASTEXITCODE
+      - name: Retain original read-only inventory and exact diagnostic source
+        timeout-minutes: 1
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-compiler-inventory-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/siren-compiler-inventory/**
+            desktop/tests/native/terminal-compiler-inventory.mjs
+            .github/workflows/terminal-compiler-inventory.yml
