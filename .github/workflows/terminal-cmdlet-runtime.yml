@@ -1,0 +1,79 @@
+name: Terminal cold single-cmdlet diagnosis (not admitted)
+on:
+  push:
+    branches: ['probe/terminal-session-20261010']
+    paths:
+      - '.github/workflows/terminal-cmdlet-runtime.yml'
+      - 'desktop/tests/native/terminal-cmdlet-*'
+permissions:
+  contents: read
+concurrency:
+  group: terminal-cmdlet-runtime-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010'
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.16.0'
+      - name: Verify unchanged real filesystem prerequisite on this exact run
+        shell: pwsh
+        run: |
+          node --experimental-vm-modules desktop/tests/native/terminal-session-filesystem-probe.mjs
+          exit $LASTEXITCODE
+      - name: Provision unchanged exact native artifacts and immutable execution tree
+        shell: pwsh
+        run: |
+          node --experimental-vm-modules desktop/tests/native/terminal-session-provision.mjs
+          exit $LASTEXITCODE
+      - name: Observe two separate cold-session original cmdlets and native cleanup
+        shell: pwsh
+        run: |
+          node --experimental-vm-modules desktop/tests/native/terminal-cmdlet-runtime.mjs
+          exit $LASTEXITCODE
+      - name: Preserve original inputs and every adverse diagnostic result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-cmdlet-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            desktop/evidence/terminal-session-filesystem/**
+            desktop/evidence/terminal-session-provision/**
+            desktop/evidence/terminal-cmdlet-runtime/**
+            desktop/tests/native/terminal-session-*
+            desktop/tests/native/terminal-cmdlet-*
+            desktop/tests/native/terminal-production-resources.mjs
+            desktop/tests/native/terminal-production-provider-graph.mjs
+            desktop/tests/fixtures/terminal-filesystem-evidence.cs
+            desktop/tests/fixtures/terminal-session-process-observer.cs
+            desktop/tests/terminal-cmdlet-runtime-*.test.mjs
+            desktop/src/terminal/**
+            desktop/src/navigation/contracts.mjs
+            desktop/src/navigation/entries.mjs
+            desktop/src/navigation/window-labels.mjs
+            desktop/src/projects/budgets.mjs
+            desktop/src/projects/paths.mjs
+            desktop/src/windows/entities.mjs
+            desktop/src/windows/registry.mjs
+            desktop/src/windows/surface.mjs
+            desktop/native/terminal-creator-three-lane/*.cc
+            desktop/native/terminal-creator-three-lane/*.inc
+            desktop/native/terminal-creator-three-lane/*.gyp
+            desktop/native/terminal-host-roster-candidate/*.cc
+            desktop/native/terminal-host-roster-candidate/*.inc
+            desktop/native/terminal-host-roster-candidate/*.gyp
+            desktop/runtime/terminal-provider/package*.json
+            desktop/package.json
+            desktop/package-lock.json
+            .github/workflows/terminal-session-*.yml
+            .github/workflows/terminal-cmdlet-runtime.yml
