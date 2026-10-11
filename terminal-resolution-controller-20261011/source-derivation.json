@@ -1,0 +1,117 @@
+{
+  "author": "/root/session_native_failure_diagnosis",
+  "classification": "IMPLEMENTER_SOURCE_DERIVATION_NOT_INDEPENDENT_APPROVAL",
+  "originals": [
+    {
+      "path": "desktop/tests/native/terminal-cmdlet-runtime-worker.mjs",
+      "bytes": 28244,
+      "sha256": "26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-runtime.mjs",
+      "bytes": 18315,
+      "sha256": "dc170bd03671de379299297e04b2c80364b784f35b86735083f8b3d4b3937c01"
+    },
+    {
+      "path": ".github/workflows/terminal-discovery-runtime.yml",
+      "bytes": 4225,
+      "sha256": "e1cd47555d3495114a7ec5b1464b9df5f7f0699678a36f53ff1d93b8d7576949"
+    }
+  ],
+  "nativeExecutionAdmitted": false,
+  "originalSourcesModified": false,
+  "revision": "RS1_RS2_RS3_CORRECTION_V2",
+  "workerChanges": "Fixed fixture import plus seven literal diagnostic timing additions; earlier import-only claim explicitly superseded for corrected new workers. Original300x50 loop, lifecycle and nominal timer unchanged.",
+  "workerLiteralReplacements": [
+    {
+      "before": " const probeStarted=performance.now();let observationPhase='setup';",
+      "after": " const commandTiming={scope:'DIAGNOSTIC_MONOTONIC_INPUT_WAIT_V1',clockDomain:'worker-process-performance-now',run,commit,control,workerPid:process.pid,heldShellPid:null,fixtureVariant:null,token:null,commandInputSequence:0,nominalWaitMs:15000,pollCount:300,pollDelayMs:50,inputSubmittedMs:null,inputReturnedMs:null,inputAcceptedMs:null,waitStartedMs:null,nominalDeadlineMs:null,waitEndedMs:null,completionObserved:false,completionObservedMs:null,completionLate:null,completedWithinNominalDeadline:null};result.commandTiming=commandTiming;\n const probeStarted=performance.now();let observationPhase='setup';"
+    },
+    {
+      "before": "result.fixtureVariant=fixture.variant;",
+      "after": "result.fixtureVariant=fixture.variant;commandTiming.fixtureVariant=fixture.variant;commandTiming.token=fixture.expected;"
+    },
+    {
+      "before": "beforeSession=native.snapshotSession(nativeState.sessions[0]);beforeHost=native.snapshot(nativeState.host);",
+      "after": "beforeSession=native.snapshotSession(nativeState.sessions[0]);beforeHost=native.snapshot(nativeState.host);commandTiming.heldShellPid=beforeSession.shell.pid;"
+    },
+    {
+      "before": "observationPhase='single-cmdlet-command';const input=",
+      "after": "observationPhase='single-cmdlet-command';commandTiming.inputSubmittedMs=performance.now();const input="
+    },
+    {
+      "before": "data:fixture.input})});assert.equal(input.ok,true);await save('command-input-receipt.json',input);",
+      "after": "data:fixture.input})});commandTiming.inputReturnedMs=performance.now();if(input.ok===true)commandTiming.inputAcceptedMs=performance.now();assert.equal(input.ok,true);await save('command-input-receipt.json',input);"
+    },
+    {
+      "before": "  await waitFile(fixture.completedPath,fixture.expected);",
+      "after": "  commandTiming.waitStartedMs=performance.now();commandTiming.nominalDeadlineMs=commandTiming.waitStartedMs+15000;\n  try{await waitFile(fixture.completedPath,fixture.expected);commandTiming.completionObserved=true;commandTiming.completionObservedMs=performance.now();}finally{commandTiming.waitEndedMs=performance.now();}"
+    },
+    {
+      "before": " }finally{\n  try{\n   if(observer)",
+      "after": " }finally{\n  if(commandTiming.completionObserved){commandTiming.completionLate=commandTiming.completionObservedMs>commandTiming.nominalDeadlineMs;commandTiming.completedWithinNominalDeadline=!commandTiming.completionLate;}\n  try{await save('command-timing.json',commandTiming);}catch(e){result.commandTimingError={message:e.message,code:e.code??null};result.status='FAILED';completedObservations=false;}\n  try{\n   if(observer)"
+    }
+  ],
+  "driverLiteralReplacements": [
+    {
+      "before": "// Hosted-only cold cmdlet diagnosis. Local imports expose pure validators only.",
+      "after": "// Hosted-only pretarget state comparison. Local imports expose pure DATA validators only."
+    },
+    {
+      "before": "import {createComparedCmdletFixture,coldCmdletComparisonCases} from './terminal-discovery-fixture.mjs';",
+      "after": "import {createResolutionObservationFixture,resolutionObservationCases,parseResolutionObservation} from './terminal-resolution-observation.mjs';"
+    },
+    {
+      "before": "const controls=Object.freeze(['start-sleep','write-output']);",
+      "after": "const controls=Object.freeze(['write-output']);"
+    },
+    {
+      "before": "createComparedCmdletFixture({control,mode,projectDirectory:dirname(fixture.scriptPath),token:fixture.expected})",
+      "after": "createResolutionObservationFixture({control,mode,projectDirectory:dirname(fixture.scriptPath),token:fixture.expected})"
+    },
+    {
+      "before": "export function createCmdletRuntimeEntry(",
+      "after": "\n// Parent-only DATA readback: no command timer resets, worker edits or prewarming.\nexport async function captureResolutionState({armOut,readBytes=readFile,pinFile,now=()=>performance.now()}){\n const observation={status:'MISSING',parentClock:{domain:'parent-process-performance-now',startedMs:null,endedMs:null}};let bytes=null;\n try{observation.parentClock.startedMs=now();}catch{}\n try{\n  assert.ok(typeof armOut==='string'&&isAbsolute(armOut)&&armOut.isWellFormed()&&!/[\\x00-\\x1f\\x7f]/.test(armOut),'TRUSTED_ARM_PATH_REQUIRED');\n  const path=join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e','resolution-state.tsv'),raw=await readBytes(path),pin=await pinFile(path);observation.pin=pin;observation.status='INVALID';\n  assert.ok(Buffer.isBuffer(raw));assert.equal(pin.path,path);assert.equal(pin.bytes,raw.length);assert.equal(pin.sha256,sha(raw));assert.ok(raw.length<=32768,'OBSERVATION_BYTE_CAP');bytes=raw;\n }catch(error){observation.status=error.code==='ENOENT'?'MISSING':'INVALID';observation.error={message:error.message,code:error.code??null};}\n try{observation.parentClock.endedMs=now();for(const field of ['startedMs','endedMs'])assert.ok(Number.isFinite(observation.parentClock[field])&&observation.parentClock[field]>=0);assert.ok(observation.parentClock.endedMs>=observation.parentClock.startedMs);}\n catch(error){observation.status='INVALID';observation.clockError={message:error.message,code:error.code??null};}\n return {observation,bytes};\n}\nexport function validateResolutionTiming(t,{run,commit,control,status,workerPid,heldShellPid,fixtureVariant,token}){\n assert.equal(t.scope,'DIAGNOSTIC_MONOTONIC_INPUT_WAIT_V1');assert.equal(t.clockDomain,'worker-process-performance-now');assert.equal(t.run,run);assert.equal(t.commit,commit);assert.equal(t.control,control);assert.equal(t.commandInputSequence,0);\n assert.ok(Number.isInteger(workerPid)&&workerPid>0&&workerPid<=0xffffffff);assert.equal(t.workerPid,workerPid);assert.equal(t.heldShellPid,heldShellPid);assert.equal(t.fixtureVariant,fixtureVariant);assert.equal(t.token,token);\n assert.equal(t.nominalWaitMs,15000);assert.equal(t.pollCount,300);assert.equal(t.pollDelayMs,50);assert.equal(typeof t.completionObserved,'boolean');\n const fields=['inputSubmittedMs','inputReturnedMs','inputAcceptedMs','waitStartedMs','waitEndedMs'];let missing=false,last=-1;\n for(const field of fields){const value=t[field];if(value===null){missing=true;continue;}assert.ok(!missing&&Number.isFinite(value)&&value>=0&&value>=last,field);last=value;}\n if(t.waitStartedMs===null){assert.equal(t.nominalDeadlineMs,null);assert.equal(t.waitEndedMs,null);}else{assert.ok(Number.isFinite(t.nominalDeadlineMs));assert.equal(t.nominalDeadlineMs,t.waitStartedMs+15000);assert.ok(Number.isFinite(t.waitEndedMs));}\n if(t.completionObserved){assert.ok(Number.isFinite(t.completionObservedMs)&&t.waitStartedMs!==null&&t.completionObservedMs>=t.waitStartedMs&&t.completionObservedMs<=t.waitEndedMs);assert.equal(t.completionLate,t.completionObservedMs>t.nominalDeadlineMs);assert.equal(t.completedWithinNominalDeadline,!t.completionLate);if(t.completionLate)throw Object.assign(Error('COMPLETION_AFTER_NOMINAL_DEADLINE'),{code:'COMPLETION_AFTER_NOMINAL_DEADLINE'});}else{assert.equal(t.completionObservedMs,null);assert.equal(t.completionLate,null);assert.equal(t.completedWithinNominalDeadline,null);}\n if(status==='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE'){assert.ok(fields.every(field=>t[field]!==null));assert.equal(t.completionObserved,true);}else assert.equal(status,'FAILED');\n}\nexport async function observeResolutionArm({worker,fixture,armOut,launchPid,mode,context,readBytes=readFile,pinFile,captured}){\n const capture=captured??await captureResolutionState({armOut,readBytes,pinFile});\n const result={status:'FAILED',workerStatus:worker?.status??null,observation:{...capture.observation},cleanupConsistent:false,timing:{status:'MISSING'}};\n if(worker?.status==='FAILED')result.commandError=worker.error??{message:'WORKER_FAILED_WITHOUT_ERROR'};\n let bindingError=null,beforeSession;\n try{\n  assert.ok(typeof armOut==='string'&&isAbsolute(armOut));assert.equal(fixture.control,'write-output');\n  assert.deepEqual(fixture,createResolutionObservationFixture({control:'write-output',mode,projectDirectory:join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e'),token:fixture.expected}));\n  assert.equal(worker.scope,'HOSTED_SINGLE_CMDLET_DIAGNOSTIC');assert.equal(worker.run,context.run);assert.equal(worker.commit,context.commit);assert.equal(worker.control,'write-output');assert.equal(worker.fixtureVariant,fixture.variant);\n  const before=worker.milestones.filter(m=>m.name==='before-command');assert.equal(before.length,1);assert.equal(before[0].commandInputSequence,0);beforeSession=before[0].beforeSession;\n  assert.ok(Number.isInteger(beforeSession?.shell?.pid)&&beforeSession.shell.pid>0);\n }catch(error){bindingError={message:error.message,code:error.code??null};result.bindingError=bindingError;}\n // Retain and pin raw sidecar even when parsing or worker/cleanup checks fail.\n try{\n  assert.equal(capture.observation.error,undefined);assert.equal(capture.observation.clockError,undefined);const bytes=capture.bytes;assert.ok(Buffer.isBuffer(bytes)&&bytes.length<=32768);\n  const pin=capture.observation.pin;assert.equal(pin.path,join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e','resolution-state.tsv'));assert.equal(pin.bytes,bytes.length);assert.equal(pin.sha256,sha(bytes));\n  assert.equal(bindingError,null,'WORKER_NATIVE_BINDING_INVALID');\n  const parsed=parseResolutionObservation(bytes,{token:fixture.expected,pid:beforeSession.shell.pid});\n  result.observation={...result.observation,status:'VALID',...parsed};\n }catch(error){result.observation={...result.observation,status:capture.observation.status==='MISSING'?'MISSING':'INVALID',bindingOrParseError:{message:error.message,code:error.code??null}};}\n try{\n  assert.equal(bindingError,null,'WORKER_NATIVE_BINDING_INVALID');const timingPath=join(armOut,'command-timing.json'),timing=JSON.parse((await readBytes(timingPath)).toString('utf8'));result.timing={status:'INVALID',path:timingPath,value:timing};\n  assert.deepEqual(timing,worker.commandTiming);assert.equal(worker.commandTimingError,undefined);validateResolutionTiming(timing,{...context,control:'write-output',status:worker.status,workerPid:launchPid,heldShellPid:beforeSession.shell.pid,fixtureVariant:fixture.variant,token:fixture.expected});result.timing.status='VALID';\n }catch(error){result.timing={...result.timing,status:error.code==='COMPLETION_AFTER_NOMINAL_DEADLINE'?'LATE':result.timing.status,error:{message:error.message,code:error.code??null}};}\n try{\n  assert.equal(bindingError,null,'WORKER_NATIVE_BINDING_INVALID');assert.equal(worker.cleanupVerified,true);\n  const failed=worker.status==='FAILED';assert.ok(failed||worker.status==='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE');\n  const cleanupPath=join(armOut,failed?'failure-cleanup-observation.json':'cleanup-observation.json');\n  const cleanup=JSON.parse((await readBytes(cleanupPath)).toString('utf8'));result.cleanupPath=cleanupPath;\n  assert.deepEqual(cleanup.beforeSession,beforeSession,'BEFORE_SESSION_IDENTITY_DISAGREEMENT');assert.equal(cleanup.code,failed?98:77);\n  if(failed)assert.deepEqual(cleanup,worker.failureCleanup);\n  else{\n   validateSingleCmdletResult(worker,{...context,control:'write-output',mode,fixture});\n   const joined=worker.milestones.at(-1);for(const field of ['graph','hostReceipt','hostExpected','checked','external','externalExit','utilityExit'])assert.deepEqual(joined[field],cleanup[field],field);\n   assert.deepEqual(worker.milestones.at(-2).receipt,cleanup.sessionReceipts[0]);\n  }\n  validateDiagnosticCleanup(cleanup);result.cleanupConsistent=true;\n }catch(error){result.cleanupError={message:error.message,code:error.code??null};}\n if(worker?.status==='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE'&&result.observation.status==='VALID'&&result.timing.status==='VALID'&&result.cleanupConsistent)result.status='RESOLUTION_STATE_ARM_OBSERVED';\n return result;\n}\nexport function validateResolutionAggregate(rows){\n assert.deepEqual(rows.map(row=>row.armId),resolutionObservationCases.map(row=>row.armId));\n assert.ok(rows.every(row=>row.status==='RESOLUTION_STATE_ARM_OBSERVED'),'RESOLUTION_STATE_COMPARISON_ADVERSE');\n}\n\nexport function createResolutionRuntimeEntry("
+    },
+    {
+      "before": "out=join(root,'desktop/evidence/terminal-discovery-runtime',suffix)",
+      "after": "out=join(root,'desktop/evidence/terminal-resolution-runtime',suffix)"
+    },
+    {
+      "before": "scope:'HOSTED_COLD_CMDLET_RESOLUTION_COMPARISON'",
+      "after": "scope:'HOSTED_PRETARGET_RESOLUTION_STATE_COMPARISON'"
+    },
+    {
+      "before": "join(root,'desktop/tests/native/terminal-discovery-runtime-inputs.json'),manifest=",
+      "after": "join(root,'desktop/tests/native/terminal-resolution-runtime-inputs.json'),manifest="
+    },
+    {
+      "before": "manifest.scope,'CMDLET_COMPARISON_SOURCE_PINS'",
+      "after": "manifest.scope,'RESOLUTION_OBSERVATION_SOURCE_PINS'"
+    },
+    {
+      "before": "  for(const required of ['desktop/tests/native/terminal-discovery-runtime.mjs'",
+      "after": "  for(const required of ['desktop/tests/native/terminal-resolution-runtime.mjs','desktop/tests/native/terminal-resolution-observation.mjs','desktop/tests/native/terminal-resolution-observation.test.mjs','desktop/tests/native/terminal-resolution-original-worker.mjs','desktop/tests/native/terminal-resolution-qualified-worker.mjs','desktop/tests/terminal-resolution-runtime.test.mjs','.github/workflows/terminal-resolution-runtime.yml','terminal-resolution-controller-20261011/prepare-source.py','terminal-resolution-controller-20261011/source-derivation.json','terminal-resolution-controller-20261011/derivation-inputs/origin.json','desktop/tests/native/terminal-discovery-runtime-inputs.json','desktop/tests/native/terminal-discovery-runtime.mjs'"
+    },
+    {
+      "before": "const originalInputs=JSON.parse(await readFile(join(root,'desktop/tests/native/terminal-session-runtime-inputs.json'),'utf8'));assert.equal(originalInputs.scope,'SESSION_RUNTIME_SOURCE_PINS')",
+      "after": "const originalInputs=JSON.parse(await readFile(join(root,'desktop/tests/native/terminal-discovery-runtime-inputs.json'),'utf8'));assert.equal(originalInputs.scope,'CMDLET_COMPARISON_SOURCE_PINS')"
+    },
+    {
+      "before": "  for(const {armId,control,mode} of coldCmdletComparisonCases){",
+      "after": "  for(const {armId,control,mode} of resolutionObservationCases){"
+    },
+    {
+      "before": "mode==='original'?'terminal-cmdlet-runtime-worker.mjs':'terminal-discovery-worker.mjs'",
+      "after": "mode==='original'?'terminal-resolution-original-worker.mjs':'terminal-resolution-qualified-worker.mjs'"
+    },
+    {
+      "before": "createCmdletRuntimeEntry(workerPath,options)",
+      "after": "createResolutionRuntimeEntry(workerPath,options)"
+    }
+  ],
+  "driverArmLoopBefore": "   let worker;\n   try{\n    validateDiagnosticLaunch(launch);worker=JSON.parse(await readFile(join(armOut,'worker-result.json'),'utf8'));\n    const fixture=JSON.parse(await readFile(join(armOut,'fixed-command-fixture.json'),'utf8'));\n    assert.equal(fixture.scriptPath,join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e','single-cmdlet.ps1'));assert.equal(await readFile(fixture.scriptPath,'utf8'),'\\uFEFF'+fixture.script);\n    validateSingleCmdletResult(worker,{...context,control,mode,fixture});arm.status='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE';arm.workerResult=await pin(join(armOut,'worker-result.json'));arm.fixture=await pin(join(armOut,'fixed-command-fixture.json'));arm.script=await pin(fixture.scriptPath);\n   }catch(error){arm.status='FAILED';arm.error={message:error.message,code:error.code??null};if(!worker)try{worker=JSON.parse(await readFile(join(armOut,'worker-result.json'),'utf8'));}catch{}\n    // Revalidate actual-shaped receipt DATA; a true summary flag is insufficient.\n    let cleanupConsistent=false;\n    try{validateDiagnosticLaunch(launch);assert.equal(worker?.scope,'HOSTED_SINGLE_CMDLET_DIAGNOSTIC');assert.equal(worker.status,'FAILED');assert.equal(worker.run,context.run);assert.equal(worker.commit,context.commit);assert.equal(worker.control,control);assert.equal(worker.fixtureVariant,createComparedCmdletFixture({control,mode,projectDirectory:join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e'),token:'a'.repeat(32)}).variant);assert.equal(worker.cleanupVerified,true);assert.equal(worker.failureCleanup.code,98);validateDiagnosticCleanup(worker.failureCleanup);cleanupConsistent=true;}catch{}\n    if(!cleanupConsistent){arm.nextArmRefused='PREVIOUS_NATIVE_CLEANUP_UNVERIFIED';break;}\n   }",
+  "driverArmLoopAfter": "   const saveArm=(name,value)=>writeFile(join(armOut,name),JSON.stringify(value,null,2)+'\\n',{flag:'wx'});\n   const captured=await captureResolutionState({armOut,readBytes:readFile,pinFile:pin});if(captured.observation.pin)arm.state=captured.observation.pin;\n   let observation;\n   try{\n    validateDiagnosticLaunch(launch);\n    const worker=JSON.parse(await readFile(join(armOut,'worker-result.json'),'utf8'));\n    const fixture=JSON.parse(await readFile(join(armOut,'fixed-command-fixture.json'),'utf8'));\n    assert.deepEqual(fixture,createResolutionObservationFixture({control,mode,projectDirectory:join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e'),token:fixture.expected}));\n    assert.equal(fixture.scriptPath,join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e','single-cmdlet.ps1'));assert.equal(await readFile(fixture.scriptPath,'utf8'),'\\uFEFF'+fixture.script);\n    observation=await observeResolutionArm({worker,fixture,armOut,launchPid:launch.pid,mode,context,readBytes:readFile,pinFile:pin,captured});\n    arm.workerResult=await pin(join(armOut,'worker-result.json'));arm.fixture=await pin(join(armOut,'fixed-command-fixture.json'));arm.script=await pin(fixture.scriptPath);\n    if(observation.observation.pin)arm.state=observation.observation.pin;\n    if(worker.status==='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE'){\n     try{assert.equal(await readFile(fixture.completedPath,'utf8'),fixture.expected);assert.equal(await readFile(fixture.stagePath,'utf8'),'after-write-output');arm.completed=await pin(fixture.completedPath);arm.stage=await pin(fixture.stagePath);}\n     catch(error){observation.status='FAILED';observation.diskCompletionError={message:error.message,code:error.code??null};}\n    }\n   }catch(error){observation={status:'FAILED',cleanupConsistent:false,observation:{...captured.observation},parentError:{message:error.message,code:error.code??null}};}\n   await saveArm('resolution-observation-readback.json',observation);arm.observationReadback=await pin(join(armOut,'resolution-observation-readback.json'));arm.status=observation.status;\n   if(!observation.cleanupConsistent){arm.nextArmRefused='PREVIOUS_NATIVE_CLEANUP_UNVERIFIED';break;}",
+  "driverAggregateChange": "Require exact two resolution cases, retain any adverse worker/state/timing result including late completion.",
+  "workflowChanges": "Derived old workflow; retain all previous closure plus model, workers, driver, tests, own workflow and derivation provenance."
+}
