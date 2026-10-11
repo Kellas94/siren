@@ -1,5 +1,5 @@
 // Self-contained for injection into the isolated no-preload vector renderer.
-// Refusal preserves the last good visual; this never repairs/strips a diagram.
+// Refusal preserves the last good visual; this never repairs/strips an import.
 export function sanitizeDiagramEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLSerializer=globalThis.XMLSerializer}={}){
  const refuse=()=>{throw Object.assign(Error('DIAGRAM_EMBED_SVG_REFUSED'),{code:'DIAGRAM_EMBED_SVG_REFUSED'});};
  try{
@@ -10,7 +10,7 @@ export function sanitizeDiagramEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLS
   const box=(root.getAttribute('viewBox')??'').trim().split(/[\s,]+/).map(Number);if(box.length!==4||!box.every(v=>Number.isFinite(v)&&Math.abs(v)<=1000000)||box[2]<=0||box[3]<=0)refuse();
   const tags=new Set('svg symbol g path rect line polyline polygon circle ellipse text tspan defs marker clipPath mask linearGradient radialGradient stop filter feGaussianBlur feDropShadow feOffset feColorMatrix feBlend feComposite feMerge feMergeNode feFlood style title desc a use'.split(' '));
   const attrs=new Set('id name class viewBox width height x y x1 y1 x2 y2 cx cy r rx ry dx dy d points transform transform-origin fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline textLength lengthAdjust letter-spacing word-spacing whitespace white-space style href role tabindex focusable preserveAspectRatio marker-start marker-mid marker-end markerWidth markerHeight markerUnits refX refY orient clip-path clip-rule clipPathUnits mask maskUnits maskContentUnits gradientUnits gradientTransform spreadMethod offset stop-color stop-opacity filter filterUnits primitiveUnits stdDeviation in in2 result type values operator k1 k2 k3 k4 mode flood-color flood-opacity'.split(' '));
-  const properties=new Set('fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline letter-spacing word-spacing white-space overflow display visibility transform transform-origin transform-box filter clip-path mask marker-start marker-mid marker-end stop-color stop-opacity flood-color flood-opacity max-width height width padding margin line-height text-align vertical-align background background-color position max-width z-index border border-radius border-color border-width border-style rx ry animation animation-name animation-duration animation-timing-function animation-iteration-count cursor pointer-events box-shadow border-bottom shape-rendering scale transition-duration'.split(' '));
+  const properties=new Set('fill fill-opacity fill-rule stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit opacity color font-family font-size font-weight font-style text-anchor dominant-baseline alignment-baseline letter-spacing word-spacing white-space overflow display visibility transform transform-origin transform-box filter clip-path mask marker-start marker-mid marker-end stop-color stop-opacity flood-color flood-opacity max-width height width padding margin line-height text-align vertical-align background background-color position max-width z-index border border-radius border-color border-width border-style rx ry animation animation-name animation-duration animation-timing-function animation-iteration-count cursor pointer-events box-shadow border-bottom shape-rendering scale transition-duration justify-content align-items dy'.split(' '));
   const ids=new Set(),references=[];const neoClasses=[];
   function value(text,neoTargets=null){
    if(typeof text!=='string'||/[\\@<>\u0000-\u0008\u000b\u000c\u000e-\u001f]|\/\*|\*\/|expression\s*\(/i.test(text))refuse();
@@ -50,5 +50,46 @@ export function sanitizeDiagramEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLS
   // Actual attributes, mixed selectors and all external URLs remain strict.
   const neoMatch=new Map(),matchesNeo=classes=>{const key=[...new Set(classes)].sort().join(' ');if(!neoMatch.has(key))neoMatch.set(key,neoClasses.some(actual=>classes.every(c=>actual.has(c))));return neoMatch.get(key);};
   if(references.some(ref=>typeof ref==='string'?!ids.has(ref):ref.neoTargets.some(matchesNeo)&&!ids.has(ref.id)))refuse();const result=new XMLSerializer().serializeToString(root);if(new TextEncoder().encode(result).length>2097152)refuse();return result;
+ }catch{refuse();}
+}
+
+// Only the immediate output of our frozen Mermaid renderer uses this seam.
+// Imports still use the strict validator above. Keep every element and valid
+// declaration; reject identities whose visual/reference mapping is uncertain.
+// Self-contained because the no-preload renderer injects the function text.
+export function normalizeMermaidEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XMLSerializer=globalThis.XMLSerializer}={}){
+ const refuse=()=>{throw Object.assign(Error('DIAGRAM_EMBED_SVG_REFUSED'),{code:'DIAGRAM_EMBED_SVG_REFUSED'});};
+ try{
+  const NS='http://www.w3.org/2000/svg';
+  if(typeof svg!=='string'||!svg.isWellFormed()||new TextEncoder().encode(svg).length>2097152||/<!DOCTYPE|<!ENTITY|<\?/i.test(svg)||typeof DOMParser!=='function'||typeof XMLSerializer!=='function')refuse();
+  const doc=new DOMParser({onError:refuse}).parseFromString(svg,'image/svg+xml'),root=doc.documentElement;
+  if(!root||root.localName!=='svg'||root.namespaceURI!==NS||doc.doctype||doc.getElementsByTagName('parsererror').length)refuse();
+  const ids=new Map(),nodes=[],styles=[],attributes=[];let count=0;
+  function walk(node,depth){
+   if(++count>20000||depth>64)refuse();if(node.nodeType!==1)return;
+   if(node.attributes.length>128)refuse();nodes.push(node);
+   const id=node.getAttribute('id');if(id){if(!/^[A-Za-z_][\w:.-]*$/.test(id))refuse();if(!ids.has(id))ids.set(id,[]);ids.get(id).push(node);}
+   if(node.localName==='style')styles.push(node.textContent);
+   for(let i=0;i<node.attributes.length;i++){const a=node.attributes.item(i);if(a.localName!=='id')attributes.push(a.value);}
+   for(let c=node.firstChild;c;c=c.nextSibling)walk(c,depth+1);
+  }walk(root,0);
+  const duplicates=[...ids].filter(([,items])=>items.length>1);if(duplicates.length>64)refuse();
+  const localPaint=/url\(\s*(['"]?)#[A-Za-z_][\w:.-]*\1\s*\)/gi,css=styles.join('\n'),nonPaintCss=css.replace(localPaint,''),attrs=attributes.join('\n'),nonPaintAttrs=attrs.replace(localPaint,'');
+  const serializer=new XMLSerializer(),renames=[];
+  for(const [id,items]of duplicates){
+   if(items.length!==2)refuse();const [first,second]=items;
+   const nodeShape=first.localName==='g'&&first.namespaceURI===NS&&new Set((first.getAttribute('class')??'').split(/\s+/)).has('mindmap-node')&&second.localName==='path'&&second.namespaceURI===NS&&second.parentNode===first&&new Set((second.getAttribute('class')??'').split(/\s+/)).has('node-bkg');
+   const sameGradient=items.every(n=>n.localName==='linearGradient'&&n.namespaceURI===NS&&(n.parentNode===root||n.parentNode?.localName==='defs'&&n.parentNode.namespaceURI===NS))&&serializer.serializeToString(first)===serializer.serializeToString(second);
+   // Any selector mentioning the identity (including [id=...]) is ambiguous.
+   // Equal gradients keep all local paint references bound to the first one.
+   if(nodeShape?css.includes(id)||attrs.includes('#'+id):!sameGradient||nonPaintCss.includes(id)||nonPaintAttrs.includes('#'+id))refuse();
+   renames.push(second);
+  }
+  let serial=0;for(const node of renames){let id;do{id='siren-emitter-'+(++serial);}while(ids.has(id));ids.set(id,[node]);node.setAttribute('id',id);}
+  for(const node of nodes){
+   if(node.namespaceURI!==NS||node.localName!=='path'||node.getAttribute('data-edge')!=='true')continue;
+   const style=node.getAttribute('style');if(style?.split(';').some(s=>s.trim()==='undefined')){if(/['"()\\]/.test(style))refuse();node.setAttribute('style',style.split(';').filter(s=>s.trim()!=='undefined').join(';'));}
+  }
+  const result=serializer.serializeToString(root);if(new TextEncoder().encode(result).length>2097152)refuse();return result;
  }catch{refuse();}
 }

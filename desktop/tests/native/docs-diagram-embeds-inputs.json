@@ -2,7 +2,7 @@
   "schema": 1,
   "author": "/root",
   "scope": "ALLOWLISTED_DISPOSABLE_HOSTED_DOCS_DIAGRAM_SOURCE",
-  "localBase": "4ae457521dd5c44a64f2c0ef3705ab3c996d8988",
+  "localBase": "211112e4a1fb490b7aa98ca2f070677a110dd01e",
   "nativeOutcome": "UNVERIFIED",
   "rows": [
     {
@@ -62,8 +62,8 @@
     },
     {
       "path": "desktop/build/diagram-vector.mjs",
-      "bytes": 1899,
-      "sha256": "8f29036946fd8a888af6a8de42c916e67e2105afffcec58599334d1bc262bb6f"
+      "bytes": 1991,
+      "sha256": "d8c7e2f429733da73a750b670c0992a2ce1b5eba2829510dac967b64be6547e3"
     },
     {
       "path": "desktop/build/diagram-window.mjs",
@@ -317,8 +317,8 @@
     },
     {
       "path": "desktop/src/documents/diagram-embed-svg.mjs",
-      "bytes": 7534,
-      "sha256": "49033311c5d129ba2c20b6c2d9432ee73e1bd9533605ba198a2ac108e22c77f2"
+      "bytes": 11215,
+      "sha256": "8b14539c2edae03d2f3b0c551d98d8aa320127c363256a5a2e34e48f5f1fc0d1"
     },
     {
       "path": "desktop/src/documents/diagram-embeds.mjs",
@@ -1132,8 +1132,8 @@
     },
     {
       "path": "desktop/src/ui/diagram/vector.js",
-      "bytes": 5809,
-      "sha256": "29c35720a5f106adc23a901232049b0db4f8892fe41f4981fb4fee558a30c368"
+      "bytes": 5863,
+      "sha256": "40b0db4c4d6c8c449d20c3028624ee64bd65d6243bc99a19ec7cb836d1102533"
     },
     {
       "path": "desktop/src/ui/diagram/walkthrough.js",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 58147,
-      "sha256": "4d04ea84750d9d2de2db1c5b30ddfd04ac9b29e8d3b7e35f881d4ec11fce257b"
+      "bytes": 58956,
+      "sha256": "54bcadbab75caac56c5635e6e59608a1c9d57e206d43b1f817e99b0981742294"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",
