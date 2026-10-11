@@ -288,8 +288,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
-      "bytes": 8756,
-      "sha256": "14bda710106124772d4d8184b597281a59e4ba698e5d192938e5e418fdf438de"
+      "bytes": 9001,
+      "sha256": "182c8eb22ffacedd1056ebdd1b1bc4a1e9628bfebae68227cfcf8592f244948e"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-upload.test.mjs",

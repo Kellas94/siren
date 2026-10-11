@@ -339,12 +339,12 @@
     {
       "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
       "bytes": 10731,
-      "sha256": "3cf152a8c590971a8a0e3b7deccc059e59a65eb508e299ed42fc22da1722b27a"
+      "sha256": "1ead78d2caa7398a6307b874414167ce7c3ad33da8e3f4cfefd35a74eee18329"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
-      "bytes": 8756,
-      "sha256": "14bda710106124772d4d8184b597281a59e4ba698e5d192938e5e418fdf438de"
+      "bytes": 9001,
+      "sha256": "182c8eb22ffacedd1056ebdd1b1bc4a1e9628bfebae68227cfcf8592f244948e"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-upload.test.mjs",
@@ -398,8 +398,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime-worker.mjs",
-      "bytes": 18002,
-      "sha256": "60cb0feb05ea63734bf8026ebc33acc03d2154e18ddb2d985624386140e02647"
+      "bytes": 18086,
+      "sha256": "2255e2d434a5aa71ea67a3217f3225d45d5e94507031685ddfd6e23dc671db18"
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime.mjs",

@@ -36,10 +36,10 @@ export async function startRuntimeProbe(config){
  const request=(grant,fields={})=>({operationId:'runtime_'+(++op),epoch:grant.epoch,...fields});
  async function helper(mode,target){
   assert.deepEqual(await pin(filesystemExecutable),helperPin);
-  const args=target===undefined?[mode]:[mode,target],row={mode,target:target??null};
-  try{const r=await exec(filesystemExecutable,args,{cwd:out,windowsHide:true,timeout:3000,maxBuffer:262144});Object.assign(row,{exit:0,stdout:r.stdout,stderr:r.stderr});assert.equal(r.stderr.trim(),'');return JSON.parse(r.stdout);}
+  const args=target===undefined?[mode]:[mode,target],row={mode,target:target??null,deadlineMs:10000},started=performance.now();
+  try{const r=await exec(filesystemExecutable,args,{cwd:out,windowsHide:true,timeout:10000,maxBuffer:262144});Object.assign(row,{exit:0,stdout:r.stdout,stderr:r.stderr});assert.equal(r.stderr.trim(),'');return JSON.parse(r.stdout);}
   catch(e){Object.assign(row,{exit:e.code??null,stdout:e.stdout??'',stderr:e.stderr??'',message:e.message});throw e;}
-  finally{result.helperCalls.push(row);await save('filesystem-'+String(++helperCount).padStart(3,'0')+'.json',row);assert.deepEqual(await pin(filesystemExecutable),helperPin);}
+  finally{row.elapsedMs=performance.now()-started;result.helperCalls.push(row);await save('filesystem-'+String(++helperCount).padStart(3,'0')+'.json',row);assert.deepEqual(await pin(filesystemExecutable),helperPin);}
  }
  async function windowAt(url){
   const w=new BrowserWindow({show:false,width:640,height:480,webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});windows.add(w);

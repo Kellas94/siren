@@ -29,8 +29,11 @@ try{
  await save('compile-output.json',{exit:0,stdout:build.stdout,stderr:build.stderr});receipt.binary=await pin(executable);
  async function helper(mode,target,refused=null){
   const args=target===undefined?[mode]:[mode,target],number=++receipt.helperCalls;assert.deepEqual(await pin(executable),receipt.binary);
-  let result;try{const actual=await run(executable,args,{cwd:out,windowsHide:true,timeout:3000,maxBuffer:262144,encoding:'utf8'});result={exit:0,stdout:actual.stdout,stderr:actual.stderr};}catch(e){result={exit:e.code,stdout:e.stdout??'',stderr:e.stderr??'',killed:e.killed??false,signal:e.signal??null};}
-  await save('helper-'+String(number).padStart(3,'0')+'.json',{mode,target:target??null,...result});assert.deepEqual(await pin(executable),receipt.binary);
+  // Hosted observer startup budget only; product/native ownership deadlines
+  // are unchanged. Keep timeout outcomes as failures, with measured duration.
+  const started=performance.now();
+  let result;try{const actual=await run(executable,args,{cwd:out,windowsHide:true,timeout:10000,maxBuffer:262144,encoding:'utf8'});result={exit:0,stdout:actual.stdout,stderr:actual.stderr};}catch(e){result={exit:e.code,stdout:e.stdout??'',stderr:e.stderr??'',killed:e.killed??false,signal:e.signal??null};}
+  await save('helper-'+String(number).padStart(3,'0')+'.json',{mode,target:target??null,deadlineMs:10000,elapsedMs:performance.now()-started,...result});assert.deepEqual(await pin(executable),receipt.binary);
   if(refused){assert.equal(result.exit,2);assert.equal(result.stdout.trim(),'');assert.equal(result.stderr.trim(),refused);return;}
   assert.equal(result.exit,0);assert.equal(result.stderr.trim(),'');return JSON.parse(result.stdout);
  }
