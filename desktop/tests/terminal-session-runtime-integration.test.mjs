@@ -5,6 +5,9 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,win32} from 'node:path';
 import {runInNewContext} from 'node:vm';
+import {EventEmitter} from 'node:events';
+import {WindowRegistry} from '../src/windows/registry.mjs';
+import {TerminalPolicy} from '../src/terminal/policy.mjs';
 const parent=readFileSync(new URL('./native/terminal-session-runtime.mjs',import.meta.url),'utf8');
 const worker=readFileSync(new URL('./native/terminal-session-runtime-worker.mjs',import.meta.url),'utf8');
 test('actual controller root expression yields canonical resource root without terminal separator',()=>{
@@ -58,4 +61,24 @@ test('actual attachment retains the router canonical genuine grant for private o
  });
  assert.equal(attached.grant,managerGrant);
  assert.equal(attached.grant.capture,2);
+});
+
+test('actual policy observer receives genuine grants when native access bypasses own capture hooks',async()=>{
+ const routerGrants=new Map();
+ const expression=worker.match(/canExecute:(g=>\{routerGrants\.set\(g\.windowId,g\);return true;\})/);assert.ok(expression);
+ const canExecute=runInNewContext('('+expression[1]+')',{routerGrants});let view;
+ class InertView extends EventEmitter{
+  constructor(url){super();this.id=1;this.webContents=new EventEmitter();Object.assign(this.webContents,{id:1001,mainFrame:{url},getURL:()=>url,isDestroyed:()=>false});}
+  isDestroyed(){return false;}isMinimized(){return false;}restore(){}focus(){}close(){}destroy(){}
+ }
+ const registry=new WindowRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:['session1']}),createWindow:q=>view=new InertView(q.mainFrameUrl)});
+ await registry.openView({role:'terminal',entityId:'session1'});assert.equal(Object.getPrototypeOf(registry),WindowRegistry.prototype);
+ registry.capture=()=>assert.fail('native access uses its captured original prototype');
+ const event={sender:view.webContents,senderFrame:view.webContents.mainFrame};
+ const preflight=Reflect.apply(WindowRegistry.prototype.capture,registry,[event]);
+ const canonical=Reflect.apply(WindowRegistry.prototype.capture,registry,[event]);assert.notEqual(preflight,canonical);
+ const policy=new TerminalPolicy({isCurrentGrant:g=>registry.isCurrent(g),isUnlocked:()=>true,getMode:()=> 'normal',canExecute,isCurrentLease:()=>true});
+ const reply=policy.authorize({grant:canonical,method:'terminalAttach',session:{sessionId:'session1',projectId:'project1'},epoch:canonical.epoch});
+ assert.equal(reply.ok,true);assert.equal(routerGrants.get(canonical.windowId),canonical);
+ assert.equal(registry.isCurrent(canonical),true);assert.equal(registry.isCurrent({...canonical}),false);
 });

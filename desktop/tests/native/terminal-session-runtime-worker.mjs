@@ -59,11 +59,10 @@ export async function startRuntimeProbe(config){
   const project=join(out,'project țară 日本語');await mkdir(project);
   const fixture=createLockContinuationFixture({projectDirectory:project,token:randomBytes(16).toString('hex')});
   await writeFile(fixture.scriptPath,'\uFEFF'+fixture.script,{flag:'wx'});await save('fixed-command-fixture.json',fixture);
-  // Observe original registry returns only. Router retains its first genuine
-  // grant per caller; private output must use that same attachment object.
+  // Observe genuine grants through the existing trusted execution policy.
+  // The exact registry and access prototype capture paths remain unchanged.
   const routerGrants=new Map();
-  class ObservedRegistry extends WindowRegistry{capture(e){const g=super.capture(e);if(g)routerGrants.set(g.windowId,g);return g;}}
-  const entities=[],registry=new ObservedRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:o=>windowAt(o.mainFrameUrl)});
+  const entities=[],registry=new WindowRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:o=>windowAt(o.mainFrameUrl)});
   const workspace=await windowAt('siren://app/app.html');registry.bindWorkspace(workspace);registry.activateWorkspace();
   const workspaceGrant=registry.capture(event(workspace));assert.equal(workspaceGrant.role,'workspace');
   const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
@@ -95,7 +94,7 @@ export async function startRuntimeProbe(config){
    cwd:{pickDirectory:async()=>({canceled:false,filePaths:[project]}),protectedRoots:[execution],inspectDirectory:p=>helper('directory',p)},
    profiles:{grants:[workspaceGrant],getSystemDirectory:async()=>system,inspectExecutable:p=>helper('file',p),readEnvironment:async()=>({SystemRoot:systemRoot,PATH:system+';'+systemRoot}),privateEnvironmentKeys:[]},
    access:{prepareWorkspace:async()=>{},retireViews:async()=>{for(const w of windows)if(w!==workspace&&!w.isDestroyed())w.destroy();},rollbackWorkspace:async()=>{},isReady:()=>!locked},
-   policy:{isUnlocked:()=>!locked,getMode:()=> 'normal',canExecute:()=>true},deadlineMs:5000});
+   policy:{isUnlocked:()=>!locked,getMode:()=> 'normal',canExecute:g=>{routerGrants.set(g.windowId,g);return true;}},deadlineMs:5000});
   assert.equal(graph.start().ok,true);members=graph.mainAuthorities();
   await milestone('actual-native-host',{mainPid:process.pid,utilityPid:host.pid,before:native.capture(nativeState.host),versions:process.versions,workspaceGrant});
   assert.equal((await members.access.beginLock('initial closed gate')).ok,true);
