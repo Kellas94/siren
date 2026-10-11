@@ -93,7 +93,7 @@ export async function startRuntimeProbe(config){
    ownership:{isCurrent:()=>true,onUnavailable:()=>{result.unavailable.push('OWNERSHIP_UNAVAILABLE');},onVerified:()=>{result.verified.push('SESSION_VERIFIED');}},
    creator:{executable:process.execPath,entry:join(execution,'desktop/src/terminal/production-creator-launcher.mjs'),directory:execution},
    cwd:{pickDirectory:async()=>({canceled:false,filePaths:[project]}),protectedRoots:[execution],inspectDirectory:p=>helper('directory',p)},
-   profiles:{grants:[workspaceGrant],getSystemDirectory:async()=>system,inspectExecutable:p=>helper('file',p),readEnvironment:async()=>({SystemRoot:systemRoot,PATH:system+';'+systemRoot}),privateEnvironmentKeys:[]},
+   profiles:{grants:[workspaceGrant],getSystemDirectory:async()=>system,inspectExecutable:p=>helper('file',p),readEnvironment:async()=>{const env={SystemRoot:systemRoot,PATH:system+';'+systemRoot};for(const key of ['USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','ProgramFiles','ProgramFiles(x86)','CommonProgramFiles','CommonProgramFiles(x86)','ProgramData','ComSpec','USERNAME','USERDOMAIN','HOMEDRIVE','HOMEPATH','SystemDrive','windir'])if(typeof process.env[key]==='string'&&process.env[key])env[key]=process.env[key];return env;},privateEnvironmentKeys:[]},
    access:{prepareWorkspace:async()=>{},retireViews:async()=>{for(const w of windows)if(w!==workspace&&!w.isDestroyed())w.destroy();},rollbackWorkspace:async()=>{},isReady:()=>!locked},
    policy:{isUnlocked:()=>!locked,getMode:()=> 'normal',canExecute:g=>{routerGrants.set(g.windowId,g);return true;}},deadlineMs:5000});
   assert.equal(graph.start().ok,true);members=graph.mainAuthorities();

@@ -92,3 +92,11 @@ test('pre-Lock progress observation requires a returned first sleep and has a fi
  await assert.rejects(runInNewContext(fragment,{readFile:async()=>{reads++;return 'sleeping:0';},delay:async()=>{delays++;}}),/FIXTURE_PRELOCK_PROGRESS_DEADLINE/);
  assert.equal(reads,300);assert.equal(delays,300);
 });
+
+test('hosted shell environment retains only explicit normal Windows context and pinned system paths',async()=>{
+ const expression=worker.match(/readEnvironment:(async\(\)=>\{[^\n]+?\}),privateEnvironmentKeys/);assert.ok(expression);
+ const callback=runInNewContext('('+expression[1]+')',{systemRoot:'C:\\Windows',system:'C:\\Windows\\System32',process:{env:{USERPROFILE:'C:\\Users\\fixture',TEMP:'C:\\Temp',APPDATA:'C:\\Users\\fixture\\AppData\\Roaming',PATH:'untrusted inherited path',SystemRoot:'untrusted inherited root',GITHUB_TOKEN:'fixture-secret',ACTIONS_RUNTIME_TOKEN:'fixture-secret',NODE_OPTIONS:'fixture-option',PSModulePath:'fixture-injected-module'}}});
+ const env=await callback();assert.equal(env.SystemRoot,'C:\\Windows');assert.equal(env.PATH,'C:\\Windows\\System32;C:\\Windows');
+ assert.equal(env.USERPROFILE,'C:\\Users\\fixture');assert.equal(env.TEMP,'C:\\Temp');
+ for(const key of ['GITHUB_TOKEN','ACTIONS_RUNTIME_TOKEN','NODE_OPTIONS','PSModulePath'])assert.equal(Object.hasOwn(env,key),false);
+});
