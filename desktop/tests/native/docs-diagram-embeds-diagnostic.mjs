@@ -20,6 +20,14 @@ try{
  const raw=await window.webContents.executeJavaScript(`(async()=>{const result=await window.mermaid.render('diagnosticRaw',${JSON.stringify(input.diagram.source)},document.getElementById('renderHost'));return result.svg;})()`);await writeFile(join(output,'raw.svg'),raw);
  report.rawSha256=createHash('sha256').update(raw).digest('hex');report.rawBytes=Buffer.byteLength(raw);
  report.validator=await window.webContents.executeJavaScript(`(()=>{try{return {ok:true,svg:window.SirenDiagramEmbedSvg.sanitizeDiagramEmbedSvg(${JSON.stringify(raw)})};}catch(e){return {ok:false,code:e.code,message:e.message,stack:e.stack};}})()`);
+ report.families=[];
+ const familyCases=[{id:'sequence',source:'sequenceDiagram\n participant User\n participant Agent\n User->>Agent: Review\n Agent-->>User: Result'},{id:'class',source:'classDiagram\n class Agent {\n +review()\n }\n Agent --> Document'},{id:'state',source:'stateDiagram-v2\n [*] --> Draft\n Draft --> Reviewed\n Reviewed --> [*]'},{id:'er',source:'erDiagram\n AGENT ||--o{ DOCUMENT : reviews\n AGENT {\n string name\n }'},{id:'gantt',source:'gantt\n title Review schedule\n dateFormat YYYY-MM-DD\n section Work\n Review :a1, 2026-10-01, 2d'},{id:'mindmap',source:'mindmap\n root((Review))\n  Sources\n  Evidence'},{id:'pie',source:'pie title Review outcomes\n "Accepted" : 8\n "Pending" : 2'}];
+ for(const fixture of familyCases){
+  const input={diagram:{id:fixture.id,source:fixture.source},appearance:'light'},item={id:fixture.id};
+  item.production=await window.webContents.executeJavaScript(`(async()=>{try{return {ok:true,result:await window.sirenRenderDiagramEmbed(${JSON.stringify(input)})};}catch(e){return {ok:false,code:e.code,message:e.message,stack:e.stack};}})()`);
+  try{const svg=await window.webContents.executeJavaScript(`(async()=>{const result=await window.mermaid.render('diagnosticFamily',${JSON.stringify(fixture.source)},document.getElementById('renderHost'));return result.svg;})()`);await writeFile(join(output,fixture.id+'-raw.svg'),svg);item.rawSha256=createHash('sha256').update(svg).digest('hex');item.validator=await window.webContents.executeJavaScript(`(()=>{try{return {ok:true,svg:window.SirenDiagramEmbedSvg.sanitizeDiagramEmbedSvg(${JSON.stringify(svg)})};}catch(e){return {ok:false,code:e.code,message:e.message,stack:e.stack};}})()`);}catch(e){item.rawError={message:e.message,stack:e.stack};}
+  report.families.push(item);
+ }
 }catch(error){report.error={message:error.message,stack:error.stack};}
 finally{window?.destroy();report.windowDestroyed=window?.isDestroyed()===true;await writeFile(join(output,'diagnostic.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({output,production:report.production?.ok,validator:report.validator?.ok,error:report.error}));app.quit();}
 }).catch(error=>{console.error(error);app.exit(1);});
