@@ -267,8 +267,8 @@
     },
     {
       "path": "desktop/src/appearance/render.mjs",
-      "bytes": 20018,
-      "sha256": "4ca9cc42f492e5e6384e7375be3c06c7872dfa04aed5f797d837016da3191e58"
+      "bytes": 20057,
+      "sha256": "c9a575c74d0b46da8a6c3deb36566a4970522d02584deff1f17270b6de188a4a"
     },
     {
       "path": "desktop/src/appearance/store.mjs",
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 60557,
-      "sha256": "7fc2ae8de88d22e77de4bff322e5808998218d20cb0b32f19e1fee95673f217d"
+      "bytes": 60636,
+      "sha256": "19e17857af61bd6246707e1159ab68167cf5390332c3da6306f01aab9b973a15"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",
