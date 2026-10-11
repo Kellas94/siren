@@ -3,8 +3,8 @@
   "inputs": [
     {
       "path": ".github/workflows/terminal-session-provision.yml",
-      "bytes": 2999,
-      "sha256": "a2ee2329a1263ff5b9288b0112a816c2adad86f8a5a42099d4d3849e82afabbc"
+      "bytes": 3067,
+      "sha256": "56724b8b6ada7314d8f493aa113533999d90981a38f2ada663893f43b6e6f07f"
     },
     {
       "path": "desktop/native/terminal-creator-three-lane/binding.gyp",
@@ -283,8 +283,8 @@
     },
     {
       "path": "desktop/src/windows/registry.mjs",
-      "bytes": 36262,
-      "sha256": "d6a3be021689a67cb6861dc46f6e1cc9ee2c6bb98c09a0254af00df4fdd3b197"
+      "bytes": 36940,
+      "sha256": "716aa26eeaa493c2b46792da14d8294319ede58db045ce4ec06d6a54b9c2a85d"
     },
     {
       "path": "desktop/src/windows/surface.mjs",

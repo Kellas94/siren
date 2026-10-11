@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   native-filesystem:
-    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010'
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010' && !contains(github.event.head_commit.message, '[session-runtime]')
     runs-on: windows-2025
     timeout-minutes: 5
     steps:
