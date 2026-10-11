@@ -75,7 +75,10 @@ export function normalizeMermaidEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XML
   }walk(root,0);
   const duplicates=[...ids].filter(([,items])=>items.length>1);if(duplicates.length>64)refuse();
   const localPaint=/url\(\s*(['"]?)#[A-Za-z_][\w:.-]*\1\s*\)/gi,css=styles.join('\n'),nonPaintCss=css.replace(localPaint,''),attrs=attributes.join('\n'),nonPaintAttrs=attrs.replace(localPaint,'');
-  const serializer=new XMLSerializer(),renames=[];
+  // Prefix/suffix/negated attribute selectors can depend on an identity even
+  // without spelling its full value. Do not rename under those stylesheets.
+  if(duplicates.length&&/\[\s*(?:[\w*-]*\|)?id(?:\s|[~|^$*]?=|\])/i.test(css))refuse();
+  const serializer=new XMLSerializer(),renames=[],reservedIds=new Set((css+'\n'+attrs).match(/siren-emitter-[0-9]+/g)??[]);
   for(const [id,items]of duplicates){
    if(items.length!==2)refuse();const [first,second]=items;
    const nodeShape=first.localName==='g'&&first.namespaceURI===NS&&new Set((first.getAttribute('class')??'').split(/\s+/)).has('mindmap-node')&&second.localName==='path'&&second.namespaceURI===NS&&second.parentNode===first&&new Set((second.getAttribute('class')??'').split(/\s+/)).has('node-bkg');
@@ -85,10 +88,10 @@ export function normalizeMermaidEmbedSvg(svg,{DOMParser=globalThis.DOMParser,XML
    if(nodeShape?css.includes(id)||attrs.includes('#'+id):!sameGradient||nonPaintCss.includes(id)||nonPaintAttrs.includes('#'+id))refuse();
    renames.push(second);
   }
-  let serial=0;for(const node of renames){let id;do{id='siren-emitter-'+(++serial);}while(ids.has(id));ids.set(id,[node]);node.setAttribute('id',id);}
+  let serial=0;for(const node of renames){let id;do{if(++serial>20000)refuse();id='siren-emitter-'+serial;}while(ids.has(id)||reservedIds.has(id));ids.set(id,[node]);node.setAttribute('id',id);}
   for(const node of nodes){
    if(node.namespaceURI!==NS||node.localName!=='path'||node.getAttribute('data-edge')!=='true')continue;
-   const style=node.getAttribute('style');if(style?.split(';').some(s=>s.trim()==='undefined')){if(/['"()\\]/.test(style))refuse();node.setAttribute('style',style.split(';').filter(s=>s.trim()!=='undefined').join(';'));}
+   const style=node.getAttribute('style');if(style?.split(';').some(s=>s.trim()==='undefined')){if(/['"()\\]/.test(style)||/\[\s*(?:[\w*-]*\|)?style(?:\s|[~|^$*]?=|\])/i.test(css))refuse();node.setAttribute('style',style.split(';').filter(s=>s.trim()!=='undefined').join(';'));}
   }
   const result=serializer.serializeToString(root);if(new TextEncoder().encode(result).length>2097152)refuse();return result;
  }catch{refuse();}
