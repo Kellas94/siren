@@ -21,3 +21,13 @@ test('actual pre-Lock observation reads existing held capabilities without recap
  const observed=runInNewContext(worker.slice(start,end)+';({beforeSession,beforeHost})',{native,nativeState:{host,sessions:[session]}});
  assert.equal(observed.beforeSession.shell.alive,true);assert.equal(observed.beforeHost.root.alive,true);assert.deepEqual(calls,['session','host']);
 });
+
+test('post-Lock refusal uses the original captured event without touching a destroyed Electron window',async()=>{
+ const start=worker.indexOf('const refused=await first.router.route'),end=worker.indexOf(';assert.equal(refused.ok',start);assert.ok(start>0&&end>start);
+ const caller={sender:{},senderFrame:{}},first={caller,grant:{epoch:1},lease:{sessionId:'session1'},w:{}};
+ first.router={async route(q){assert.equal(q.event,caller);return{ok:false};}};
+ const observed=await runInNewContext('(async()=>{'+worker.slice(start,end)+';return refused;})()',{
+  first,event(){throw Error('Electron window is already destroyed');},request:(_grant,fields)=>fields,fixture:{forbiddenInput:'fixed probe only'}
+ });
+ assert.equal(observed.ok,false);
+});

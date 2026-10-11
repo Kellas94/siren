@@ -102,7 +102,7 @@ export async function startRuntimeProbe(config){
   const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
   await milestone('actual-session-create',{created,manager:members.manager.stats()});assert.equal(created.ok,true);assert.equal(nativeState.sessions.length,1);
   const sessionId=created.value.sessionId;entities.push(sessionId);
-  async function attach(){const record=await registry.openView({role:'terminal',entityId:sessionId});const w=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(w);const grant=registry.capture(event(w));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(w),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);return{w,grant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};}
+  async function attach(){const record=await registry.openView({role:'terminal',entityId:sessionId});const w=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(w);const grant=registry.capture(event(w));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(w),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);return{w,caller:event(w),grant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};}
   const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
   const input=await first.router.route({event:event(first.w),method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:0,data:fixture.input})});assert.equal(input.ok,true);
   await waitFile(fixture.startedPath,fixture.expected);await absent(fixture.completedPath);
@@ -120,7 +120,7 @@ export async function startRuntimeProbe(config){
   await milestone('before-lock',{beforeSession,beforeHost,input,observer:observed,completionAbsent:true});
   const lock=await members.access.beginLock('actual running PowerShell fixture');assert.equal(lock.ok,true);locked=true;
   assert.equal(nativeState.sessionStops.length,0);assert.equal(nativeState.hostStops.length,0);assert.equal(first.w.isDestroyed(),true);assert.equal(registry.isCurrent(first.grant),false);assert.equal(members.access.currentRouter(),null);
-  const refused=await first.router.route({event:event(first.w),method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:1,data:fixture.forbiddenInput})});assert.equal(refused.ok,false);
+  const refused=await first.router.route({event:first.caller,method:'terminalInput',payload:request(first.grant,{...first.lease,inputSequence:1,data:fixture.forbiddenInput})});assert.equal(refused.ok,false);
   const afterLock=native.snapshotSession(nativeState.sessions[0]);assert.equal(afterLock.root.alive,true);assert.equal(afterLock.shell.alive,true);
   await absent(fixture.completedPath);await absent(fixture.forbiddenPath);await milestone('lock-ack-input-refused',{lock,refused,afterLock,sessionStopCalls:0,hostStopCalls:0});
   await writeFile(fixture.releasePath,fixture.expected,{flag:'wx'});await waitFile(fixture.completedPath,fixture.expected);await absent(fixture.forbiddenPath);
