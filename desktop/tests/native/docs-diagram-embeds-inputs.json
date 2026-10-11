@@ -2,7 +2,7 @@
   "schema": 1,
   "author": "/root",
   "scope": "ALLOWLISTED_DISPOSABLE_HOSTED_DOCS_DIAGRAM_SOURCE",
-  "localBase": "6f157bc55d82be4c9762989c68a8433563bab86f",
+  "localBase": "4ae457521dd5c44a64f2c0ef3705ab3c996d8988",
   "nativeOutcome": "UNVERIFIED",
   "rows": [
     {
@@ -1607,8 +1607,8 @@
     },
     {
       "path": "desktop/tests/native/docs-diagram-embeds.mjs",
-      "bytes": 51434,
-      "sha256": "661a3c81f750861f2b30781ae3424e0f4ece5771a76a9afe3ed38d8a5a6ed10a"
+      "bytes": 57310,
+      "sha256": "d84a37ff741e0fd615e29136e112ea8fbbd689f29b6bed3af425649236762977"
     },
     {
       "path": "desktop/tests/native/docs-diagram-io.mjs",
