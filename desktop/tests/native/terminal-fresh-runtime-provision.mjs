@@ -171,6 +171,15 @@ if(import.meta.main===true){
   const statuses=['STARTED','FAILED_NOT_SESSION_ADMISSION','FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION','FRESH_PAIR_STARTED_NOT_ADMITTED','FRESH_PAIR_REFUSED','FRESH_PAIR_FAILED_NOT_ADMITTED','FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED','FRESH_PAIR_OBSERVED_NOT_ADMITTED','FRESH_PAIR_CONTINUATION_UNAVAILABLE'];
   const codes=['ATTEMPT_CONSUMED','CONTEXT_REFUSED','SOURCE_REFUSED','SOURCE_CHANGED','PATH_REFUSED','TARGET_EXISTS','BUILD_PHASE_FAILED','BUILD_UNAVAILABLE','TOOL_CHANGED','RESULT_RETENTION_FAILED','FIXED_PAIR_GATE_UNAVAILABLE','PAIR_RESULT_RETENTION_FAILED'];
   const names=['historical-source-stage','locked-electron-packages','electron-distribution','locked-provider-packages','compiler-discovery','terminal-host-roster-candidate-configure','terminal-host-roster-candidate-compile','terminal-creator-three-lane-configure','terminal-creator-three-lane-compile','filesystem-evidence-compile','process-observer-compile'];
+  const workerPhases=['setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup'],workerMilestones=['actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins'],workerCategories=['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE'];
+  const workerDiagnostic=value=>{
+   const keys=['errorCategory','observationPhase','lastMilestone','challengeCount','cleanupVerified','unavailableCount'],empty={errorCategory:null,observationPhase:null,lastMilestone:null,challengeCount:null,cleanupVerified:null,unavailableCount:null};
+   if(value===undefined||value===null)return empty;
+   if(!value||typeof value!=='object'||types.isProxy(value)||Array.isArray(value)||Reflect.ownKeys(value).length!==6||!keys.every(k=>Object.hasOwn(value,k)))return false;
+   const category=data(value,'errorCategory'),phase=data(value,'observationPhase'),last=data(value,'lastMilestone'),challenge=data(value,'challengeCount'),cleanup=data(value,'cleanupVerified'),unavailable=data(value,'unavailableCount');
+   if(category!==null&&pick(category,workerCategories)===null||phase!==null&&pick(phase,workerPhases)===null||last!==null&&pick(last,workerMilestones)===null||challenge!==null&&(!Number.isInteger(challenge)||challenge<0||challenge>65535)||cleanup!==null&&typeof cleanup!=='boolean'||unavailable!==null&&(!Number.isInteger(unavailable)||unavailable<0||unavailable>128))return false;
+   return {errorCategory:category,observationPhase:phase,lastMilestone:last,challengeCount:challenge,cleanupVerified:cleanup,unavailableCount:unavailable};
+  };
   const unavailable=()=>({schema:1,kind:kind==='pair'?'pair':'build',ok:null,status:'DIAGNOSTIC_UNAVAILABLE',code:null,failureStage:null,actualSessions:null,phases:[]});
   if(kind!=='build'&&kind!=='pair'||!value||typeof value!=='object'||types.isProxy(value))return unavailable();
   const ok=data(value,'ok'),status=pick(data(value,'status'),statuses),count=data(value,'realSessions');
@@ -184,7 +193,8 @@ if(import.meta.main===true){
     const name=pick(data(row,kind==='build'?'name':'armId'),kind==='build'?names:['pathext-omitted','pathext-trusted']);if(name===null)return unavailable();
     const exit=kind==='build'?data(row,'exit'):data(data(row,'exit'),'code');if(exit!==undefined&&exit!==null&&(!Number.isInteger(exit)||exit< -2147483648||exit>4294967295))return unavailable();
     const status=kind==='build'?(Number.isInteger(exit)?'EXITED':'PENDING'):pick(data(row,'status'),['STARTED','FAILED','SINGLE_CMDLET_DIAGNOSTIC_COMPLETE']);if(status===null)return unavailable();
-    phases.push({name,exit:Number.isInteger(exit)?exit:null,status});
+    const rowDiagnostic=kind==='pair'?workerDiagnostic(data(row,'workerDiagnostic')):null;if(rowDiagnostic===false)return unavailable();
+    phases.push({name,exit:Number.isInteger(exit)?exit:null,status,...(kind==='pair'?{workerDiagnostic:rowDiagnostic}:{})});
    }
   }
   const result={schema:1,kind,ok,status,code:pick(data(value,'code'),codes),failureStage:pick(data(value,'failureStage'),stages),actualSessions:Number.isInteger(count)&&count>=0&&count<=2?count:null,phases};

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {spawn,execFile} from 'node:child_process';
-import {promisify} from 'node:util';
+import {promisify,types} from 'node:util';
 import {createHash,randomBytes} from 'node:crypto';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -11,6 +11,21 @@ import {captureFreshPairLaunchEnvironment} from './terminal-fresh-environment.mj
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
 import {createOriginalResolutionFixture} from './terminal-resolution-observation.mjs';
 
+// FRESH_DRIVER_WORKER_DIAGNOSTIC_BEGIN
+const diagnosticData=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+const diagnosticPick=(value,allowed)=>typeof value==='string'&&allowed.includes(value)?value:null;
+const workerPhases=['setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup'],workerMilestones=['actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins'],workerCategories=['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE'];
+function freshWorkerDiagnostic(observed,challenges){
+ let failure=diagnosticData(observed,'failureDiagnostic');
+ if(!failure||typeof failure!=='object'||types.isProxy(failure)||Reflect.ownKeys(failure).length!==3||!['category','phase','lastMilestone'].every(k=>Object.hasOwn(failure,k)))failure=null;
+ let unavailable=diagnosticData(observed,'unavailable'),unavailableCount=null;
+ if(unavailable&&typeof unavailable==='object'&&!types.isProxy(unavailable)&&Array.isArray(unavailable)){
+  const length=diagnosticData(unavailable,'length');if(Number.isInteger(length)&&length>=0&&length<=128){let valid=true;for(let i=0;i<length;i++)if(diagnosticData(unavailable,String(i))!=='OWNERSHIP_UNAVAILABLE'){valid=false;break;}if(valid)unavailableCount=length;}
+ }
+ const cleanup=diagnosticData(observed,'cleanupVerified');
+ return Object.freeze({errorCategory:diagnosticPick(diagnosticData(failure,'category'),workerCategories),observationPhase:diagnosticPick(diagnosticData(failure,'phase'),workerPhases),lastMilestone:diagnosticPick(diagnosticData(failure,'lastMilestone'),workerMilestones),challengeCount:Number.isInteger(challenges)&&challenges>=0&&challenges<=65535?challenges:null,cleanupVerified:typeof cleanup==='boolean'?cleanup:null,unavailableCount});
+}
+// FRESH_DRIVER_WORKER_DIAGNOSTIC_END
 function argsToCommandLine(file, args) {
     if (isCommandLine(args)) {
         if (args.length === 0) {
@@ -166,7 +181,7 @@ export async function runFreshTerminalPair(provision,...extra){
    }catch{failPipe();}})();}});
    child.stderr.on('data',chunk=>{launch.stderr+=chunk;if(Buffer.byteLength(launch.stderr)>1048576){launch.stderr=launch.stderr.slice(0,1048576);failPipe();}});child.stdin.on('error',failPipe);
    stage='ARM_CHANNEL_HANDSHAKE';const exited=await new Promise(resolve=>{child.once('close',(code,signal)=>resolve({code,signal}));child.once('error',()=>resolve({code:null,signal:null,launchError:true}));timer=setTimeout(()=>{launch.watchdog=true;failPipe();try{child.kill();}catch{}resolve({code:null,signal:null,unknownNativeCleanup:true});},120000);});clearTimeout(timer);await challengeTask;launch.partialFrame=pending;launch.exit=exited;await save(armId+'-launch.json',launch);
-   stage='ARM_WORKER_RESULT';const bytes=await readFile(path.join(armOut,'worker-result.json'));assert.ok(bytes.length<=2097152);const observed=JSON.parse(bytes.toString('utf8'));launch.status=observed.status;
+   stage='ARM_WORKER_RESULT';const bytes=await readFile(path.join(armOut,'worker-result.json'));assert.ok(bytes.length<=2097152);const observed=JSON.parse(bytes.toString('utf8'));launch.status=observed.status;launch.workerDiagnostic=freshWorkerDiagnostic(observed,challenges);
    stage='ARM_CLEANUP';const cleanup=JSON.parse(await readFile(path.join(armOut,observed.status==='SINGLE_CMDLET_DIAGNOSTIC_COMPLETE'?'cleanup-observation.json':'failure-cleanup-observation.json'),'utf8'));requireFreshCleanup(cleanup);assert.equal(validateHostAsyncReceipt(cleanup.hostExpected,cleanup.hostReceipt).ok,true);launch.actualCleanupVerified=true;
    stage='POST_ARM_RECHECK';assert.equal(await recheckProvisionedFreshRuntime(provision),true);assert.equal(samePin(await pin(engine.canonicalPath),enginePin),true);for(const p of [...pins,...controllerPins,parentNodePin])assert.equal(samePin(await pin(p.path),p),true);
    stage='ARM_EXIT_CHANNEL';stage='ARM_EXIT_CODE';assert.equal(exited.code,0);stage='ARM_EXIT_SIGNAL';assert.equal(exited.signal,null);stage='ARM_PIPE_INTEGRITY';assert.equal(pipeFailed,false);stage='ARM_CHALLENGE_COUNT';assert.equal(challenges,1);stage='ARM_PERMIT_STATUS';assert.equal(launch.pipeStatus,'PERMIT_WRITTEN');stage='ARM_FRAME_REMAINDER';assert.equal(pending.trim(),'');stage='ARM_RUN_IDENTITY';assert.equal(observed.run,provision.run);stage='ARM_COMMIT_IDENTITY';assert.equal(observed.commit,provision.commit);stage='ARM_CLEANUP_VERIFIED';assert.equal(observed.cleanupVerified,true);stage='ARM_UNAVAILABLE_CALLBACKS';assert.deepEqual(observed.unavailable,[]);

@@ -8,10 +8,22 @@ import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 import {randomBytes,createHash} from 'node:crypto';
 import {spawn,execFile} from 'node:child_process';
-import {promisify} from 'node:util';
+import {promisify,types} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
 import {createOriginalResolutionFixture as createSingleCmdletFixture} from './terminal-resolution-observation.mjs';
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
+// FRESH_WORKER_DIAGNOSTIC_BEGIN
+const diagnosticData=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+const diagnosticPick=(value,allowed)=>typeof value==='string'&&allowed.includes(value)?value:null;
+const workerPhases=['setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup'],workerMilestones=['actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins'],workerCategories=['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE'];
+function freshWorkerFailure(error,phase,lastMilestone){
+ const message=diagnosticData(error,'message'),code=diagnosticData(error,'code');let category='UNCLASSIFIED';
+ if(typeof message==='string'&&workerCategories.includes(message)&&!['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FIXTURE_FILE_DEADLINE'].includes(message))category=message;
+ else if(typeof message==='string'&&message.startsWith('FIXTURE_FILE_DEADLINE:'))category='FIXTURE_FILE_DEADLINE';
+ else if(code==='ERR_ASSERTION')category='ASSERTION_REFUSED';else if(code==='ENOENT')category='FILESYSTEM_NOT_FOUND';else if(code==='EACCES'||code==='EPERM')category='FILESYSTEM_REFUSED';
+ return Object.freeze({category,phase:diagnosticPick(phase,workerPhases),lastMilestone:diagnosticPick(lastMilestone,workerMilestones)});
+}
+// FRESH_WORKER_DIAGNOSTIC_END
 function argsToCommandLine(file, args) {
     if (isCommandLine(args)) {
         if (args.length === 0) {
@@ -263,7 +275,7 @@ export async function startRuntimeProbe(config){
   return observation;
  }
  try{
-  const {WindowRegistry}=await importExecution('desktop/src/windows/registry.mjs');
+  observationPhase='module-import';const {WindowRegistry}=await importExecution('desktop/src/windows/registry.mjs');
   const {createTerminalShutdownGraph}=await importExecution('desktop/src/terminal/shutdown-graph.mjs');
   ({validateHostAsyncReceipt}=await importExecution('desktop/src/terminal/host-async-receipt-contract.mjs'));
   protocol.handle('siren',request=>{
@@ -271,14 +283,14 @@ export async function startRuntimeProbe(config){
    return new Response('<!doctype html><meta charset="utf-8"><title>Contained single-cmdlet identity probe</title>',{headers:{'Content-Type':'text/html','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'; base-uri 'none'"}});
   });
   session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));session.defaultSession.setPermissionCheckHandler(()=>false);
-  const project=projectDirectory;assert.equal(project,join(retainedJobRoot,'..','project-Șiren-Δ'));
+  observationPhase='fixture-preparation';const project=projectDirectory;assert.equal(project,join(retainedJobRoot,'..','project-Șiren-Δ'));
   assert.equal(fixtureDirectory,join(project,armId));
   fixture=createSingleCmdletFixture({projectDirectory:fixtureDirectory,token:expectedFixture.expected,control});assert.deepEqual(fixture,expectedFixture);result.fixtureVariant=fixture.variant;commandTiming.fixtureVariant=fixture.variant;commandTiming.token=fixture.expected;
   assert.equal(await readFile(fixture.scriptPath,'utf8'),'\uFEFF'+fixture.script);await save('fixed-command-fixture.json',fixture);
-  const routerGrants=new Map(),entities=[];
+  observationPhase='window-registry';const routerGrants=new Map(),entities=[];
   const registry=new WindowRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:options=>windowAt(options.mainFrameUrl)});
   workspace=await windowAt('siren://app/app.html');registry.bindWorkspace(workspace);registry.activateWorkspace();workspaceGrant=registry.capture(event(workspace));assert.equal(workspaceGrant.role,'workspace');
-  const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
+  observationPhase='native-loader';const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
   native=createRequire(import.meta.url)(addonPath);const mark=native.mark(),facade=Object.create(null);
   for(const [key,descriptor]of Object.entries(Object.getOwnPropertyDescriptors(native))){
    assert.ok(Object.hasOwn(descriptor,'value'));if(typeof descriptor.value!=='function')continue;
@@ -290,11 +302,11 @@ export async function startRuntimeProbe(config){
     }catch(e){if(row)row.error={code:e.code??null,message:e.message};throw e;}
    };
   }
-  const hostEntry=join(out,'session-host.mjs');await writeFile(hostEntry,"setInterval(()=>{},1000);\nprocess.parentPort.postMessage({ready:true,electron:process.versions.electron,modules:process.versions.modules,napi:process.versions.napi});\n",{flag:'wx'});
+  observationPhase='utility-host-start';const hostEntry=join(out,'session-host.mjs');await writeFile(hostEntry,"setInterval(()=>{},1000);\nprocess.parentPort.postMessage({ready:true,electron:process.versions.electron,modules:process.versions.modules,napi:process.versions.napi});\n",{flag:'wx'});
   host=utilityProcess.fork(hostEntry,[],{serviceName:'SIREN bounded single-cmdlet host',stdio:'pipe'});
   hostExit=new Promise((resolve,reject)=>{host.once('exit',code=>resolve(code));host.once('error',reject);});hostExit.catch(()=>{});
   host.stdout?.setEncoding('utf8');host.stderr?.setEncoding('utf8');host.stdout?.on('data',chunk=>hostOut+=chunk);host.stderr?.on('data',chunk=>hostErr+=chunk);
-  const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
+  observationPhase='utility-host-ready';const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
   const system=await helper('system'),systemRoot=dirname(system);
   graph=createTerminalShutdownGraph({projectId:'project1',registry,native:facade,hostProcessIdentity:{pid:host.pid,image:process.execPath,since:mark},
    ownership:{isCurrent:()=>true,onUnavailable:value=>observeOwnership('unavailable',value),onVerified:value=>observeOwnership('verified',value)},
@@ -305,8 +317,8 @@ export async function startRuntimeProbe(config){
    policy:{isUnlocked:()=>true,getMode:()=> 'normal',canExecute:grant=>{routerGrants.set(grant.windowId,grant);return true;}},deadlineMs:5000});
   observationPhase='host-start';assert.equal(graph.start().ok,true);members=graph.mainAuthorities();
   await milestone('actual-native-host',{mainPid:process.pid,utilityPid:host.pid,before:native.capture(nativeState.host),versions:process.versions,workspaceGrant});
-  assert.equal((await members.access.beginLock('initial closed gate before any session')).ok,true);assert.equal((await members.access.reopen(event(workspace))).ok,true);
-  const router=members.access.currentRouter();assert.ok(router);const cwd=await members.cwdAuthority.pick(workspaceGrant);assert.equal(cwd.displayPath,project);assert.equal((await members.profileCatalogues[0].listShellProfiles())[0].available,true);
+  observationPhase='initial-access';assert.equal((await members.access.beginLock('initial closed gate before any session')).ok,true);assert.equal((await members.access.reopen(event(workspace))).ok,true);
+  observationPhase='profile-discovery';const router=members.access.currentRouter();assert.ok(router);const cwd=await members.cwdAuthority.pick(workspaceGrant);assert.equal(cwd.displayPath,project);assert.equal((await members.profileCatalogues[0].listShellProfiles())[0].available,true);
   observationPhase='session-create';const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
   await milestone('actual-session-create',{created,manager:members.manager.stats()});assert.equal(created.ok,true);assert.equal(nativeState.sessions.length,1);result.realSessions=1;
   sessionId=created.value.sessionId;entities.push(sessionId);sessionOwnerId=members.ownership.snapshot().sessions.find(row=>row.sessionId===sessionId)?.sessionOwnerId;assert.ok(sessionOwnerId);
@@ -318,26 +330,26 @@ export async function startRuntimeProbe(config){
   }
   const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
   // These held capabilities are already captured by host/backend. Never recapture.
-  beforeSession=native.snapshotSession(nativeState.sessions[0]);beforeHost=native.snapshot(nativeState.host);commandTiming.heldShellPid=beforeSession.shell.pid;
+  observationPhase='held-identities';beforeSession=native.snapshotSession(nativeState.sessions[0]);beforeHost=native.snapshot(nativeState.host);commandTiming.heldShellPid=beforeSession.shell.pid;
   const expectedMap=new Map();for(const member of [beforeHost.root,...beforeHost.held,beforeSession.root,beforeSession.shell,...beforeSession.held])if(member){assert.equal(member.alive,true);const row={pid:member.pid,image:member.image,createdFileTime:member.createdFileTime};if(expectedMap.has(row.pid))assert.deepEqual(expectedMap.get(row.pid),row);expectedMap.set(row.pid,row);}
   expected=[...expectedMap.values()];assert.equal(expected.length,4);
-  const expectedPath=join(out,'expected-process-identities.json');observerPath=join(out,'external-process-exits.json');await save('expected-process-identities.json',expected);
+  observationPhase='external-observer-start';const expectedPath=join(out,'expected-process-identities.json');observerPath=join(out,'external-process-exits.json');await save('expected-process-identities.json',expected);
   assert.deepEqual(await pin(observerExecutable),observerPin);observer=spawn(observerExecutable,['capture',observerPath,expectedPath],{cwd:out,windowsHide:true,stdio:['ignore','pipe','pipe']});
   observerExit=new Promise((resolve,reject)=>{observer.once('exit',(code,signal)=>resolve({code,signal}));observer.once('error',reject);});observerExit.catch(()=>{});
   observer.stdout.setEncoding('utf8');observer.stderr.setEncoding('utf8');
   const observerReady=new Promise((resolve,reject)=>{const consume=createReadyLineConsumer(resolve,reject);observer.stdout.on('data',chunk=>{observerStdout+=chunk;consume(chunk);});observer.stderr.on('data',chunk=>observerStderr+=chunk);observer.once('error',reject);});
-  const observed=await bounded(observerReady,5000,'OBSERVER_READY');assertReadyIdentities(expected,observed);
-  await absent(fixture.startedPath);await absent(fixture.completedPath);
+  observationPhase='external-observer-ready';const observed=await bounded(observerReady,5000,'OBSERVER_READY');assertReadyIdentities(expected,observed);
+  observationPhase='fixture-absence';await absent(fixture.startedPath);await absent(fixture.completedPath);
   await milestone('before-command',{beforeSession,beforeHost,observer:observed,commandInputSequence:0,completionAbsent:true,runningCommandLock:false});
   // Genuine held capabilities and fixed raw DATA must agree BEFORE pipe permit.
-  const enginePath=join(system,'WindowsPowerShell','v1.0','powershell.exe');assert.equal(beforeSession.shell.image.toUpperCase(),enginePath.toUpperCase());
+  observationPhase='preinput-engine';const enginePath=join(system,'WindowsPowerShell','v1.0','powershell.exe');assert.equal(beforeSession.shell.image.toUpperCase(),enginePath.toUpperCase());
   const engineFile=await helper('file',enginePath),enginePin=await pin(enginePath);assert.equal(engineFile.file,true);assert.equal(engineFile.reparse,false);
-  const raw=await readTerminalConnectRawFile(retainedJobRoot,beforeSession.root.pid);await save('preinput-raw-file-data.json',raw);
-  const rawObservation=assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});
+  observationPhase='preinput-raw-read';const raw=await readTerminalConnectRawFile(retainedJobRoot,beforeSession.root.pid);await save('preinput-raw-file-data.json',raw);
+  observationPhase='preinput-raw-binding';const rawObservation=assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});
   await save('preinput-native-raw-binding.json',{raw,engineFile,enginePin,beforeSession,beforeHost,externalReady:observed,modelStatus:'UNAVAILABLE_EXTERNAL_ENGINE_NOT_IN_RETAINED_RUNTIME',inputAuthorized:false});
   const challenge={schema:1,type:'FRESH_PREINPUT_CHALLENGE',workerPid:process.pid,creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,armId,token:fixture.expected,nonce:randomBytes(16).toString('hex'),rawSha256:raw.rawSha256};
-  const handoff=await freshParentPermit(challenge);await save('preinput-pipe-handoff.json',{challenge,...handoff,inputAuthorized:false});
-  assert.deepEqual(native.snapshotSession(nativeState.sessions[0]),beforeSession);assert.deepEqual(native.snapshot(nativeState.host),beforeHost);
+  observationPhase='preinput-parent-permit';const handoff=await freshParentPermit(challenge);await save('preinput-pipe-handoff.json',{challenge,...handoff,inputAuthorized:false});
+  observationPhase='preinput-held-recheck';assert.deepEqual(native.snapshotSession(nativeState.sessions[0]),beforeSession);assert.deepEqual(native.snapshot(nativeState.host),beforeHost);
   assert.deepEqual(await pin(enginePath),enginePin);assert.deepEqual(await helper('file',enginePath),engineFile);
   assertReadyIdentities(expected,observed);assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});assert.equal(handoff.isCurrent(),true,'FRESH_PIPE_REVOKED');
   // The observer owns all four live handles before the one fixed input write.
@@ -370,7 +382,7 @@ export async function startRuntimeProbe(config){
   await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt:cleanup.hostReceipt,hostExpected:cleanup.hostExpected,checked:cleanup.checked,external:cleanup.external,externalExit:cleanup.externalExit,utilityExit:cleanup.utilityExit});
   assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;
  }catch(error){
-  observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
+  result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
   await captureFailureEvidence();observationPhase='failure-cleanup';let failureGraph;
   const shutdownId='failure_'+run;
   if(graph)try{failureGraph=await bounded(graph.shutdown({code:98,deadlineMs:5000,shutdownId}),15000,'FAILURE_SHUTDOWN');result.failureShutdown=failureGraph;}catch(e){result.failureShutdownError=e.message;}

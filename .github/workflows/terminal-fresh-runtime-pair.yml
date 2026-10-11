@@ -63,6 +63,10 @@ jobs:
             $statuses = @('STARTED','FAILED_NOT_SESSION_ADMISSION','FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION','FRESH_PAIR_STARTED_NOT_ADMITTED','FRESH_PAIR_REFUSED','FRESH_PAIR_FAILED_NOT_ADMITTED','FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED','FRESH_PAIR_OBSERVED_NOT_ADMITTED','FRESH_PAIR_CONTINUATION_UNAVAILABLE','DIAGNOSTIC_UNAVAILABLE')
             $codes = @('ATTEMPT_CONSUMED','CONTEXT_REFUSED','SOURCE_REFUSED','SOURCE_CHANGED','PATH_REFUSED','TARGET_EXISTS','BUILD_PHASE_FAILED','BUILD_UNAVAILABLE','TOOL_CHANGED','RESULT_RETENTION_FAILED','FIXED_PAIR_GATE_UNAVAILABLE','PAIR_RESULT_RETENTION_FAILED')
             $names = @('historical-source-stage','locked-electron-packages','electron-distribution','locked-provider-packages','compiler-discovery','terminal-host-roster-candidate-configure','terminal-host-roster-candidate-compile','terminal-creator-three-lane-configure','terminal-creator-three-lane-compile','filesystem-evidence-compile','process-observer-compile','pathext-omitted','pathext-trusted')
+            $workerCategories = @('UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE')
+            $workerPhases = @('setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup')
+            $workerMilestones = @('actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins')
+            $diagnosticKeys = @('errorCategory','observationPhase','lastMilestone','challengeCount','cleanupVerified','unavailableCount')
             $records = @()
             foreach ($line in $lines) {
               $outer = ConvertFrom-Json -InputObject $line -AsHashtable -Depth 8
@@ -77,9 +81,22 @@ jobs:
               $cap = if ($d.kind -ceq 'build') { 11 } else { 2 }
               if ($d.phases -isnot [System.Array] -or $d.phases.Count -gt $cap) { throw 'Diagnostic phase bound' }
               foreach ($phase in $d.phases) {
-                if ($phase -isnot [System.Collections.IDictionary] -or $phase.Count -ne 3 -or -not $phase.Contains('name') -or -not $phase.Contains('exit') -or -not $phase.Contains('status')) { throw 'Diagnostic phase shape' }
+                $rowSize = if ($d.kind -ceq 'build') { 3 } else { 4 }
+                if ($phase -isnot [System.Collections.IDictionary] -or $phase.Count -ne $rowSize -or -not $phase.Contains('name') -or -not $phase.Contains('exit') -or -not $phase.Contains('status')) { throw 'Diagnostic phase shape' }
                 if ($names -cnotcontains $phase.name -or @('EXITED','PENDING','STARTED','FAILED','SINGLE_CMDLET_DIAGNOSTIC_COMPLETE') -cnotcontains $phase.status) { throw 'Diagnostic phase label' }
                 if ($null -ne $phase.exit -and (($phase.exit -isnot [long] -and $phase.exit -isnot [int]) -or $phase.exit -lt -2147483648 -or $phase.exit -gt 4294967295)) { throw 'Diagnostic exit bound' }
+                if ($d.kind -ceq 'pair') {
+                  if (-not $phase.Contains('workerDiagnostic')) { throw 'Worker diagnostic missing' }
+                  $workerDiagnostic = $phase.workerDiagnostic
+                  if ($workerDiagnostic -isnot [System.Collections.IDictionary] -or $workerDiagnostic.Count -ne 6) { throw 'Worker diagnostic shape' }
+                  foreach ($key in $diagnosticKeys) { if (-not $workerDiagnostic.Contains($key)) { throw 'Worker diagnostic key' } }
+                  if ($null -ne $workerDiagnostic.errorCategory -and ($workerDiagnostic.errorCategory -isnot [string] -or $workerCategories -cnotcontains $workerDiagnostic.errorCategory)) { throw 'Worker diagnostic category' }
+                  if ($null -ne $workerDiagnostic.observationPhase -and ($workerDiagnostic.observationPhase -isnot [string] -or $workerPhases -cnotcontains $workerDiagnostic.observationPhase)) { throw 'Worker diagnostic phase' }
+                  if ($null -ne $workerDiagnostic.lastMilestone -and ($workerDiagnostic.lastMilestone -isnot [string] -or $workerMilestones -cnotcontains $workerDiagnostic.lastMilestone)) { throw 'Worker diagnostic milestone' }
+                  if ($null -ne $workerDiagnostic.challengeCount -and (($workerDiagnostic.challengeCount -isnot [long] -and $workerDiagnostic.challengeCount -isnot [int]) -or $workerDiagnostic.challengeCount -lt 0 -or $workerDiagnostic.challengeCount -gt 65535)) { throw 'Worker diagnostic challenges' }
+                  if ($null -ne $workerDiagnostic.cleanupVerified -and $workerDiagnostic.cleanupVerified -isnot [bool]) { throw 'Worker diagnostic cleanup' }
+                  if ($null -ne $workerDiagnostic.unavailableCount -and (($workerDiagnostic.unavailableCount -isnot [long] -and $workerDiagnostic.unavailableCount -isnot [int]) -or $workerDiagnostic.unavailableCount -lt 0 -or $workerDiagnostic.unavailableCount -gt 128)) { throw 'Worker diagnostic callbacks' }
+                }
               }
               $records += $d
             }
