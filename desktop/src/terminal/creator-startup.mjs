@@ -4,7 +4,7 @@
 // identity and both Jobs before exposing a product session or input lease.
 import {types} from 'node:util';
 import {performance} from 'node:perf_hooks';
-import {STARTUP_LIMITS,decodeStartupRequest,decodeStartupEnvelope,encodeStartupReply,validateStartupReply} from './startup-protocol.mjs';
+import {STARTUP_LIMITS,decodeStartupRequest,decodeStartupEnvelope,encodeStartupReply,validateStartupReply,combineStartupPolicies} from './startup-protocol.mjs';
 
 const invoke=Reflect.apply,isProxy=types.isProxy,isPromise=types.isPromise;
 const promisePrototype=Promise.prototype,then=promisePrototype.then;
@@ -113,7 +113,8 @@ export class TerminalCreatorStartup {
    try{
     if(q.type==='startup-begin'){
      if(this.#phase!=='await-begin')return this.#decline(wire,'STARTUP_ORDER_REFUSED');
-     this.#begin=Object.freeze({type:q.type,...common(q),totalBytes:q.totalBytes,chunkCount:q.chunkCount});
+     const policy=combineStartupPolicies(this.#policy,q.startupPolicy?{privateEnvironmentKeys:[],...q.startupPolicy}:undefined);if(!policy)return this.#decline(wire,'STARTUP_REFUSED');this.#policy=policy;
+     this.#begin=Object.freeze({type:q.type,...common(q),totalBytes:q.totalBytes,chunkCount:q.chunkCount,...(q.startupPolicy?{startupPolicy:q.startupPolicy}:{})});
      this.#bytes=alloc(q.totalBytes);this.#phase='receiving';
      return this.#reply(wire,{type:'startup-begin-ack',...common(q),status:'accepted',code:'STARTUP_ACCEPTED'});
     }

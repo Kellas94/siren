@@ -9,7 +9,8 @@ import {ProductionGateLink} from './production-gate-link.mjs';
 import {TerminalSessionCommandChannel} from './session-command-channel.mjs';
 import {TerminalSessionLink} from './session-link.mjs';
 import {ProductionAggregateGateLink} from './production-aggregate-gate.mjs';
-import {validateStartupEnvelope} from './startup-protocol.mjs';
+import {validateStartupEnvelope,combineStartupPolicies} from './startup-protocol.mjs';
+import {readShellProfileStartupPolicy} from './profiles.mjs';
 
 const apply=Reflect.apply,clock=performance.now.bind(performance),NativePromise=Promise;
 const promisePrototype=NativePromise.prototype,then=promisePrototype.then;
@@ -164,18 +165,22 @@ export class TerminalProductionBackend {
   if(r.phase!=='ready'&&r.connectGuard&&apply(r.connectGuard,undefined,[])!==true)throw Error('ADMISSION_REFUSED');
   // Arbitrary trusted providers above may reenter Lock/Stop. Final state check
   // must occur after them and before any publication or command dispatch.
+  if(r.phase!=='ready'&&r.startupPolicyReceipt&&!readShellProfileStartupPolicy(r.startupPolicyReceipt,r.startupShell))throw Error('ADMISSION_REFUSED');
   if(this.#lost||this.#control.retired||r.failed||r.stop||r.phase!==expectedPhase||this.#records.get(r.ownerId)!==r||phase&&r.phase!==phase||open&&(!this.#open||this.#gatePending)||r.phase!=='ready'&&clock()>=r.expires)throw Error('BACKEND_RETIRED');
  }
  prepare(value,admission,...extra){
-  const began=clock(),p=!extra.length&&data(value,configKeys),g=guard(admission);if(!p||!g||this.#lost||this.#control.retired)return failure();
-  const c=validateStartupEnvelope({version:1,...p,channelId:randomUUID(),startupId:randomUUID()},this.#policy);if(!c||this.#lifetimes.size>=8||[...this.#records.values(),...this.#lifetimes].some(r=>r.sessionId===c.sessionId))return failure();
-  const r={ownerId:null,sessionId:c.sessionId,channelId:c.channelId,projectId:c.projectId,epoch:c.admissionEpoch,leaseEpochFloor:c.admissionEpoch,config:c,guard:g,connectGuard:null,phase:'prepared',failed:false,allocated:false,connected:false,attempted:false,prepared:false,gateBinding:false,gateBound:false,lease:null,lastLeaseGeneration:0,busy:false,channels:null,link:null,gate:null,reader:null,pendingConnection:false,verified:false,stop:null,expires:began+this.#deadline,timer:null,finish:null};
+  const began=clock(),p=!extra.length&&data(value),g=guard(admission);if(!p||Object.keys(p).some(k=>!configKeys.includes(k)&&k!=='startupPolicyReceipt')||configKeys.some(k=>!Object.hasOwn(p,k))||!g||this.#lost||this.#control.retired)return failure();
+  const receipt=p.startupPolicyReceipt,seed=Object.hasOwn(p,'startupPolicyReceipt')?readShellProfileStartupPolicy(receipt,p.shell):undefined;if(Object.hasOwn(p,'startupPolicyReceipt')&&!seed)return failure();
+  const policy=combineStartupPolicies(this.#policy,seed);if(!policy||!receipt&&Object.hasOwn(policy,'expectedModuleDirectory'))return failure();
+  const config=Object.fromEntries(configKeys.map(k=>[k,p[k]]));
+  const c=validateStartupEnvelope({version:1,...config,channelId:randomUUID(),startupId:randomUUID()},policy);if(!c||this.#lifetimes.size>=8||[...this.#records.values(),...this.#lifetimes].some(r=>r.sessionId===c.sessionId))return failure();
+  const r={startupShell:p.shell,startupPolicyReceipt:receipt??null,startupPolicy:policy,ownerId:null,sessionId:c.sessionId,channelId:c.channelId,projectId:c.projectId,epoch:c.admissionEpoch,leaseEpochFloor:c.admissionEpoch,config:c,guard:g,connectGuard:null,phase:'prepared',failed:false,allocated:false,connected:false,attempted:false,prepared:false,gateBinding:false,gateBound:false,lease:null,lastLeaseGeneration:0,busy:false,channels:null,link:null,gate:null,reader:null,pendingConnection:false,verified:false,stop:null,expires:began+this.#deadline,timer:null,finish:null};
   this.#observation(r);this.#lifetimes.add(r);
   return this.#frame(r,()=>{try{
-  if(apply(g,undefined,[])!==true||this.#lost||this.#control.retired||r.retired){r.retired=true;return failure();}
+  if(apply(g,undefined,[])!==true||receipt&&!readShellProfileStartupPolicy(receipt,p.shell)||this.#lost||this.#control.retired||r.retired){r.retired=true;return failure();}
   if(this.#records.size>=8){const old=[...this.#records.values()].find(r=>!r.pendingConnection&&r.actualDone&&r.sessionReleaseProof);if(!old){r.retired=true;return failure();}this.#records.delete(old.ownerId);}
   r.aggregateEntering=true;let reserved;try{reserved=apply(aggregateReserve,this.#aggregate,[c.sessionId]);this.#aggregateObservation(r,reserved.settlement);}finally{r.aggregateEntering=false;}
-  if(reserved.result.ok!==true||this.#lost||this.#control.retired||r.retired){r.retired=true;this.#releaseAggregate(r);return failure();}
+  if(reserved.result.ok!==true||receipt&&!readShellProfileStartupPolicy(receipt,p.shell)||this.#lost||this.#control.retired||r.retired){r.retired=true;this.#releaseAggregate(r);return failure();}
   r.sessionAttempted=true;let prepared;try{prepared=data(this.#native.prepareSession({hostOwnerId:this.#host,sessionId:c.sessionId,channelId:c.channelId,creator:this.#creator}));}catch{r.unknown=true;this.#lose();return failure();}
   if(!prepared||prepared.ok!==true||!id(prepared.sessionOwnerId)||this.#records.has(prepared.sessionOwnerId)){r.unknown=true;this.#lose();return failure();}
   r.ownerId=prepared.sessionOwnerId;this.#capture(r);
@@ -218,7 +223,7 @@ export class TerminalProductionBackend {
    promise(control.ready);
    r.link=new TerminalSessionLink({channel:channels.command,onUnavailable:()=>{if(!['stopping','exited'].includes(r.phase))this.#fail(r);},deadlineMs:Math.max(1,Math.ceil(r.expires-clock()))});
    if(!(await this.#wait(r,this.#all(r,[control.ready,channels.history.ready,r.link.authenticated]))).value.every(v=>v===true))throw Error();this.#check(r,{open:true});
-   const prepared=(await this.#wait(r,apply(lp.prepare,r.link,[r.config,this.#policy]))).value;this.#check(r,{open:true});if(prepared.initiallyClosed!==true)throw Error();r.prepared=true;
+   const prepared=(await this.#wait(r,apply(lp.prepare,r.link,[r.config,r.startupPolicy]))).value;this.#check(r,{open:true});if(prepared.initiallyClosed!==true)throw Error();r.prepared=true;
    r.gateBinding=true;let bound;
    try{bound=(await this.#wait(r,this.#aggregate.bind(r.sessionId,r.channelId))).value;}finally{r.gateBinding=false;}
    if(bound.ok!==true)throw Error();r.gateBound=true;this.#check(r,{open:true});
@@ -228,12 +233,12 @@ export class TerminalProductionBackend {
    if(this.#native.captureSession({sessionOwnerId:r.ownerId})?.ok!==true)throw Error();this.#check(r,{open:true});
    // The startup grant expires at this publication boundary. Later operations
    // use their own fresh main admission guards, including after Lock/Unlock.
-   r.phase='ready';r.guard=null;r.connectGuard=null;r.config=null;clearTimeout(r.timer);r.timer=null;
+   r.phase='ready';r.guard=null;r.connectGuard=null;r.config=null;r.startupShell=null;r.startupPolicyReceipt=null;r.startupPolicy=null;clearTimeout(r.timer);r.timer=null;
    const finish=r.finish;r.finish=null;finish?.(success({ownerId:r.ownerId,sessionId:r.sessionId,channelId:r.channelId}));
   }catch{this.#fail(r);}finally{if(!r.connectUnknown)r.connectOriginal=null;r.pendingConnection=false;r.connectWorker=false;this.#finishActual(r);}
  }
  #fail(r){
-  if(r.failed||r.phase==='exited')return;return this.#frame(r,()=>{r.retired=true;r.failed=true;r.lease=null;r.config=null;if(r.timer!==null)clearTimeout(r.timer);r.timer=null;
+  if(r.failed||r.phase==='exited')return;return this.#frame(r,()=>{r.retired=true;r.failed=true;r.lease=null;r.config=null;r.startupShell=null;r.startupPolicyReceipt=null;r.startupPolicy=null;if(r.timer!==null)clearTimeout(r.timer);r.timer=null;
   const finish=r.finish;r.finish=null;finish?.(failure());if(r.ownerId)void this.#stop(r,98,this.#deadline);else if(!r.aggregateEntering)this.#releaseAggregate(r);});
  }
  #lose(){
@@ -298,7 +303,7 @@ export class TerminalProductionBackend {
   r.verified=true;r.phase='exited';r.lease=null;this.#releaseAggregate(r);return true;
  }
  #stop(r,code,deadlineMs){
-  if(r.stop)return this.#verifyFinal(r)?resolved(success({verifiedExited:true})):r.stop;r.retired=true;r.phase='stopping';r.lease=null;r.config=null;if(r.timer!==null)clearTimeout(r.timer);r.timer=null;const finish=r.finish;r.finish=null;finish?.(failure());
+  if(r.stop)return this.#verifyFinal(r)?resolved(success({verifiedExited:true})):r.stop;r.retired=true;r.phase='stopping';r.lease=null;r.config=null;r.startupShell=null;r.startupPolicyReceipt=null;r.startupPolicy=null;if(r.timer!==null)clearTimeout(r.timer);r.timer=null;const finish=r.finish;r.finish=null;finish?.(failure());
   // Reserve cleanup before any callback can reenter. Retain the actual provider
   // Promise; failed caller receipts never refund native or connection capacity.
   let resolve;const result=new NativePromise(yes=>resolve=yes);r.stop=result;

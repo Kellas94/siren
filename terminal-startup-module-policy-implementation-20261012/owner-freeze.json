@@ -1,0 +1,556 @@
+{
+  "author": "/root/session_native_failure_diagnosis",
+  "role": "IMPLEMENTER",
+  "scope": "CURRENT_SOURCE_STARTUP_MODULE_POLICY_SOURCE_ONLY",
+  "nativeAdmission": false,
+  "productActivation": false,
+  "sources": [
+    {
+      "path": "desktop/src/terminal/profiles.mjs",
+      "bytes": 13724,
+      "sha256": "9de16f71e82765922b4cd396b90ce260fdc89303da81531718b116b78a9f951a"
+    },
+    {
+      "path": "desktop/src/terminal/startup-protocol.mjs",
+      "bytes": 18190,
+      "sha256": "6db9983d2718b7745b2d1bf93abb471fee3a7d2bec47d409565ef589f760a329"
+    },
+    {
+      "path": "desktop/src/terminal/production-manager.mjs",
+      "bytes": 65701,
+      "sha256": "3e8335a0323d83fcade9e79be78ac9b65712fe22d6550c0e8a11dd2b84352e0e"
+    },
+    {
+      "path": "desktop/src/terminal/production-backend.mjs",
+      "bytes": 36217,
+      "sha256": "b6b8c09079966c359f7a6bf12312bc3f9599182f1f43f31795ee0e8b6525ca2e"
+    },
+    {
+      "path": "desktop/src/terminal/session-link.mjs",
+      "bytes": 15629,
+      "sha256": "afd063ca99a957e21e9e6d22bd9d868f8c95df5adc40559ba59e1478c927c518"
+    },
+    {
+      "path": "desktop/src/terminal/creator-startup.mjs",
+      "bytes": 14211,
+      "sha256": "6c11c4158427f7b3f62ae437c2d9219dde8ba7b6f27ab5877c456519add9cc5f"
+    },
+    {
+      "path": "desktop/tests/terminal-startup-module-policy.test.mjs",
+      "bytes": 15995,
+      "sha256": "fc078f66cf9d2e84c13ad766168bdf43e33166f9050d07d0b0c7b673bcff541c"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "desktop/src/navigation/contracts.mjs",
+      "bytes": 5410,
+      "sha256": "5a38a6e573cdff2df0f656ae997c5ec32c477f9a5c272513f3a6df220b1294f5"
+    },
+    {
+      "path": "desktop/src/navigation/entries.mjs",
+      "bytes": 1435,
+      "sha256": "defb1bd43bbf4753136bed28b48497776dbfdb6f7479deefbcce844ceb2fe7cd"
+    },
+    {
+      "path": "desktop/src/navigation/window-labels.mjs",
+      "bytes": 4864,
+      "sha256": "fe3fe2883649b92fc62f751bad0f1a7c786d5777e0226636bab63e270db51f74"
+    },
+    {
+      "path": "desktop/src/projects/budgets.mjs",
+      "bytes": 527,
+      "sha256": "daee49a88b2991356e54a9301fc121dc0b60b75ca5e870f1f9fdd2efe8bbbc1e"
+    },
+    {
+      "path": "desktop/src/projects/paths.mjs",
+      "bytes": 1219,
+      "sha256": "0f3fe81566b050f0a30f808960325cc2ca7d5027239cf65ed5ffb6a751724554"
+    },
+    {
+      "path": "desktop/src/terminal/command-protocol.mjs",
+      "bytes": 4575,
+      "sha256": "4cf4eb73fbc845f0bfea1da86d1f87224c1290a4e19fe29a25cf3c51996f86d6"
+    },
+    {
+      "path": "desktop/src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "desktop/src/terminal/creator-commands.mjs",
+      "bytes": 10677,
+      "sha256": "85c227db1866154c1f195b97f365d3e54b9b72dd813a2f76e8ec26c4d8b91349"
+    },
+    {
+      "path": "desktop/src/terminal/creator-session.mjs",
+      "bytes": 9732,
+      "sha256": "11746140801f68fcabeba9681a198393396e4345169259b00d7cd9e2cc881d96"
+    },
+    {
+      "path": "desktop/src/terminal/credits.mjs",
+      "bytes": 2678,
+      "sha256": "e739005886735bdf39faf0b62e60cb995a0718d1ec0755686220990d354b0f16"
+    },
+    {
+      "path": "desktop/src/terminal/cwd.mjs",
+      "bytes": 9610,
+      "sha256": "ba6532f1ec92e8eab9d4053897450904b6bf86a9375a73b950acec01731f3a28"
+    },
+    {
+      "path": "desktop/src/terminal/input-gate.mjs",
+      "bytes": 12473,
+      "sha256": "f49a56730f20fd25847d818bdc3168c58c918d99667bb6485f56fffb9a2e062f"
+    },
+    {
+      "path": "desktop/src/terminal/native-three-lane-stream.mjs",
+      "bytes": 9270,
+      "sha256": "d9794246e8e92123370863dfba4500f9fdeb6236961630c07a97c54a20f9e705"
+    },
+    {
+      "path": "desktop/src/terminal/output.mjs",
+      "bytes": 9161,
+      "sha256": "a72063934c63d554f3da69a584ea5d807902f67cac3efc08153bcccac94800d0"
+    },
+    {
+      "path": "desktop/src/terminal/policy.mjs",
+      "bytes": 2676,
+      "sha256": "dcb53dfb4586ba63ffe2a86cea2171ac6fe2aae2670af68de97981a9cc373115"
+    },
+    {
+      "path": "desktop/src/terminal/production-access-transitions.mjs",
+      "bytes": 22437,
+      "sha256": "42cffb942b3563a1877091419f35aa6f7c9418dee123b5b629a13b13d9c0e097"
+    },
+    {
+      "path": "desktop/src/terminal/production-aggregate-gate.mjs",
+      "bytes": 19215,
+      "sha256": "52b51708401a200b2effc83d0b671b1d65a9f4142aa2c9e043ab62610b1c0d07"
+    },
+    {
+      "path": "desktop/src/terminal/production-attachment-output.mjs",
+      "bytes": 15888,
+      "sha256": "35f5b62b30213886507eacf24895469d7c6f0c8092d783dbced703e62b366f25"
+    },
+    {
+      "path": "desktop/src/terminal/production-control-channel.mjs",
+      "bytes": 12332,
+      "sha256": "544d0bdc96fa21bdec6337250b308806c8a96770e68eae889c982f63e8b92791"
+    },
+    {
+      "path": "desktop/src/terminal/production-creator.mjs",
+      "bytes": 17385,
+      "sha256": "ce39f27f03d463e05c866aad65f51545798cdbf902add06a4ee67b461e7240d0"
+    },
+    {
+      "path": "desktop/src/terminal/production-gate-link.mjs",
+      "bytes": 7388,
+      "sha256": "8bae39d9e20a9a7a2259aac560b55ff13d1732e1c72c778c6b92b5b5c173cd92"
+    },
+    {
+      "path": "desktop/src/terminal/production-history-channel.mjs",
+      "bytes": 18436,
+      "sha256": "2b11a64ed82a9263fc06f6f514a54a8ad716194659d4e229abf53222de208211"
+    },
+    {
+      "path": "desktop/src/terminal/production-ownership.mjs",
+      "bytes": 40356,
+      "sha256": "d5147e8d95f3e1bcfd18fa40faa33edcb62a684c9e6af284a79a2b062ccec4cc"
+    },
+    {
+      "path": "desktop/src/terminal/production-remote-output.mjs",
+      "bytes": 12835,
+      "sha256": "3890318a6d70e2a836e9f1bc926499ec30b34ffdda12ca6344215cae79f22f51"
+    },
+    {
+      "path": "desktop/src/terminal/production-session-state.mjs",
+      "bytes": 12218,
+      "sha256": "c68025cbe753fa9d35db35cc56e637a3cc9b1635a090e6ea86fc580736bf3ba5"
+    },
+    {
+      "path": "desktop/src/terminal/profile-catalogue-owner.mjs",
+      "bytes": 8528,
+      "sha256": "3020ade5b72e942265185311ead57ea0f8dd66f73fc1051cd66d0f1e398c152d"
+    },
+    {
+      "path": "desktop/src/terminal/provider-lifetime.mjs",
+      "bytes": 6412,
+      "sha256": "533650c9f3332476252e733dd48145e5da220847a0955c51d9013616cdbe95c8"
+    },
+    {
+      "path": "desktop/src/terminal/remote-output.mjs",
+      "bytes": 9206,
+      "sha256": "d7e3217b45c8d7fac339b50d36eccdaf19d1d0674ecbbfac1fa778b72adcb953"
+    },
+    {
+      "path": "desktop/src/terminal/request-router.mjs",
+      "bytes": 14832,
+      "sha256": "10c52a6b77787bd4612e799dc15f757adac3b14bfd1df6cbd040451ec4fc76b4"
+    },
+    {
+      "path": "desktop/src/terminal/session-cleanup.mjs",
+      "bytes": 14413,
+      "sha256": "0a58270999cfec3e48e9e53358ad8db237991981afcaee55b69e675dc434df24"
+    },
+    {
+      "path": "desktop/src/terminal/session-command-channel.mjs",
+      "bytes": 16019,
+      "sha256": "a08a8822c56fbfff98f77c34517587c488d86cbf5a8145f942d42f2be589bcbf"
+    },
+    {
+      "path": "desktop/src/terminal/three-lane-bootstrap-codec.mjs",
+      "bytes": 4891,
+      "sha256": "082bf5610202826d61baffbccbf628cc12f80746028735d49b07255465b480a3"
+    },
+    {
+      "path": "desktop/src/windows/entities.mjs",
+      "bytes": 3975,
+      "sha256": "faf1f39f3d0c793e42867e15627a71b89f6027d1954617f8e91b97f88322ffe4"
+    },
+    {
+      "path": "desktop/src/windows/registry.mjs",
+      "bytes": 39159,
+      "sha256": "dc2991228dde34b504d8565c8d0d0b9d7d8a03a9d407ab1922c6e611eb525c96"
+    },
+    {
+      "path": "desktop/src/windows/surface.mjs",
+      "bytes": 7796,
+      "sha256": "f9932c6cfe52277c554e4d4df367d8fceccbb69df1a75a9f5c10596d25e9cc54"
+    },
+    {
+      "path": "desktop/tests/fixtures/terminal-production-inert.mjs",
+      "bytes": 17932,
+      "sha256": "3e41ee3100016d716b7055622408dd2bf22ee5aae23f025e6ede99dd6be16e2b"
+    },
+    {
+      "path": "desktop/tests/fixtures/terminal-production-manager-private.mjs",
+      "bytes": 5477,
+      "sha256": "674b16c47c9974d73b067520efa09c21fa3840de659dd44f1b7e8964e04d7683"
+    },
+    {
+      "path": "desktop/tests/terminal-creator-session.test.mjs",
+      "bytes": 8568,
+      "sha256": "1e96202c248152093ca70858e6337ef3021557b7c73480fbd06ba5a50676cb15"
+    },
+    {
+      "path": "desktop/tests/terminal-creator-startup.test.mjs",
+      "bytes": 16123,
+      "sha256": "8927f8af7c0de355f7fb7085823cb5a52486aa9a41aaba769944dbd2ac2cde82"
+    },
+    {
+      "path": "desktop/tests/terminal-production-access-transitions.test.mjs",
+      "bytes": 29098,
+      "sha256": "72d958e6782be5b88bd0b94a3ec419b5e72b75a565cd9f35b14913b35101e08d"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend-admission-regressions.test.mjs",
+      "bytes": 2340,
+      "sha256": "fe3449820ac0723604c3e4533facb4dde91373b9d78b8070dc770489716a27cf"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend-lease-epoch.test.mjs",
+      "bytes": 12817,
+      "sha256": "a5cad5abe186758c887921b323e49844919bbf621a42355d005309bd66dcfc58"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend-lease-refusal.test.mjs",
+      "bytes": 12972,
+      "sha256": "4a1083ea6b93808e44a1cae5154b5abae6f268dfc67ca6f50624c0ef2a3af1bc"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend-status.test.mjs",
+      "bytes": 16518,
+      "sha256": "68213f46407fb7c8791c972de98267ea6ded77f3be1d832059ebdf312c2dda5b"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend-stop-reentry.test.mjs",
+      "bytes": 2135,
+      "sha256": "17708eaf9f0c813aab3c9428e660406308d7733cf9f061245a34936d968bfc88"
+    },
+    {
+      "path": "desktop/tests/terminal-production-backend.test.mjs",
+      "bytes": 19468,
+      "sha256": "103b757171e8f9a8b8efad35ea4b4d5786b7d1dad09f9d89f0ebae6cd1103066"
+    },
+    {
+      "path": "desktop/tests/terminal-production-manager-attachment.test.mjs",
+      "bytes": 10678,
+      "sha256": "7ce171d1bbd1c852be21bc089be754b1ca780295ed4612a4f345c7bbd6772c5d"
+    },
+    {
+      "path": "desktop/tests/terminal-production-manager-delivery.test.mjs",
+      "bytes": 7916,
+      "sha256": "7230669ea21cf11818ca6873acc6c1acd8fd266e715470eaaf1938075c4ef5b9"
+    },
+    {
+      "path": "desktop/tests/terminal-production-manager-input.test.mjs",
+      "bytes": 11513,
+      "sha256": "9561af5679ce300cbdf01555ca229f56614d2c3c3d0d17397ac01dea78b26852"
+    },
+    {
+      "path": "desktop/tests/terminal-production-manager.test.mjs",
+      "bytes": 16828,
+      "sha256": "730edd09bc3a2c01e3f3182175d146c82c71a753a0f44dbf86fc8856d8a1e344"
+    },
+    {
+      "path": "desktop/tests/terminal-profiles.test.mjs",
+      "bytes": 16825,
+      "sha256": "56838cb1bb741905eeb087eb85c647c8f7a236321bfb842b7752beeaab04c257"
+    },
+    {
+      "path": "desktop/tests/terminal-session-command-channel.test.mjs",
+      "bytes": 24676,
+      "sha256": "8846edc8db9f576dde3b66bd93c2c7f1c0d737ab25eaea708de024d45d69132a"
+    },
+    {
+      "path": "desktop/tests/terminal-session-link.test.mjs",
+      "bytes": 18324,
+      "sha256": "f56e1b9cdd271b5aa3381382fc77538630e8e095b91b2f65865b7e3d9fb1809f"
+    },
+    {
+      "path": "desktop/tests/terminal-startup-protocol.test.mjs",
+      "bytes": 19504,
+      "sha256": "b69378e0acc3867bf7ecf3e88b921d6abb258c98d0e6a9142c593d4a7f4ff52a"
+    },
+    {
+      "path": "desktop/tests/terminal-system-seeded-profile.test.mjs",
+      "bytes": 9621,
+      "sha256": "a9a0e304190e31858a533477a75dfd4b4590c77dfaa91eda4b1666a4c60e02e7"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/creator-startup.mjs",
+      "bytes": 13927,
+      "sha256": "f722efa0e86dc1c2453e1dbb0ac3da48f6311fdc861769a2ad8cb841066a6ff2"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/production-backend.mjs",
+      "bytes": 35048,
+      "sha256": "8526a477e0ff31f8c7d835b81c4aacda000bce830adf5e5fb5ce4614ea605d2c"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/production-manager.mjs",
+      "bytes": 64978,
+      "sha256": "1cbcb5d09d5cfa73bec402907c7ca18b921a38195b1ddf572cfc680fba21ff6f"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/profiles.mjs",
+      "bytes": 12630,
+      "sha256": "1cca86ef7b933b392374ff8a3e5fcf38179b791d473d50e50cd1191006e073b5"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/session-link.mjs",
+      "bytes": 15207,
+      "sha256": "ed02213867341d953c60192c40a01741481ab1ed58800434f175dbc87985d063"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before/desktop/src/terminal/startup-protocol.mjs",
+      "bytes": 16374,
+      "sha256": "cd9dd768319221d38e3c6e73fae9c307b777dbd95a27afc7627ba32188479a80"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/before-pins.json",
+      "bytes": 1749,
+      "sha256": "ab1ee587b98ff2fa8c7f2d4d5373e0b9ca735f4859c0995cdeca0255c203b7b5"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/CONTRACT.md",
+      "bytes": 1786,
+      "sha256": "01083c6ef3a5ef16373ede53e19121064d73026105779e68e6e5f105ffc4ef00"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/final-selected.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/final-selected.log",
+      "bytes": 32691,
+      "sha256": "29377389f3fc39d18e497e97c4b65408f6c8aed82351f0d59b649eb2c51c8a90"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/finish-main-fence.py",
+      "bytes": 1326,
+      "sha256": "88507236d41dd8bb8de19df4bd2fc3ec1900e198d249fe4a7d15a25d072466ca"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/fix-final-oracle.py",
+      "bytes": 948,
+      "sha256": "c6ff1936bbd2c86d61b65d62755e1ecdea9633c69de366fea8527139af97f1af"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/freeze.py",
+      "bytes": 3532,
+      "sha256": "a381fb0a71e7a347aa4f3634d06bc14c5102690424ec4521fd8866392445567b"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-001.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-001.log",
+      "bytes": 450,
+      "sha256": "89b598a2f002feecd10454af1a13cd3c4ce6b89a4337d73b3be008d88b3067e7"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-002.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-002.log",
+      "bytes": 8704,
+      "sha256": "ac0d57b19900a24a6df76bdc1102bc2c8ef8367bdd3cd2cc17f4927b371c7145"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-003.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-003.log",
+      "bytes": 1995,
+      "sha256": "39c29472d6e920a778dbe1939fabfa2aa3cc402a7401f8a684b4564f5d9bdc22"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-004.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-004.log",
+      "bytes": 15075,
+      "sha256": "007ccc417026c23c6ffe1fec412e710cb30852607d9cbb6e9e53a6439ee9bcd5"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-005.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-005.log",
+      "bytes": 2326,
+      "sha256": "ea5d375409698c9887033d0922f7b24da0a83f9be404187e9afbca397348914a"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-main-publication.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/green-main-publication.log",
+      "bytes": 6881,
+      "sha256": "38e335803c85205704b9e18580fde067476e928fc4e972dd738c19d11b004a9a"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/implement.py",
+      "bytes": 10337,
+      "sha256": "da56c34cb4c8e98f0da5bf3e1ad1b2f2b5420c3f31fa878ffc50bad72a91ee52"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/manager-before-final-publication-fence.mjs.txt",
+      "bytes": 65579,
+      "sha256": "cf6d5edcf0e2c7dd24fbb0083237b669427a904d03342850fe962aa8368cba5a"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-001.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-001.log",
+      "bytes": 2888,
+      "sha256": "ba5639a986ceb1f516c5d16e16bd2f63fcde2b74b6843f35db4f1ee6e750f9e1"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-binding-001.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-binding-001.log",
+      "bytes": 2506,
+      "sha256": "54b7c9948410c3f961ebc51eac7356fa59f8f89431e87ab6c42be46498e25f74"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-main-publication.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/red-main-publication.log",
+      "bytes": 2106,
+      "sha256": "99c25a09665dc43e0e2f832dbb8b78e6dee5fce36df4bf5258e463b7e9d1d010"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/refine-tests.py",
+      "bytes": 2466,
+      "sha256": "c8ad7bdd4feec7a3e138a50f776ed1be5ebd6aee5b34b167a06d3c5aa7d0af8d"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/refine.py",
+      "bytes": 1953,
+      "sha256": "0dcf878de9af9f3d24b6b3e41e5776ec1909bf8f589f005b8957e722be4e5089"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/REPORT.md",
+      "bytes": 3641,
+      "sha256": "737518f0d4b606e187001e0c28eb0a9d2822e574a26cc1c1dc5ab0e3c737ed19"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/snapshot.py",
+      "bytes": 661,
+      "sha256": "69d7e502ac9dfa845d80772b3dea567a17881c623b3370c3b00693508e65f2f4"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/source-delta.json",
+      "bytes": 27759,
+      "sha256": "6e2a7ad401ec239909a849ab27cb53cfa8553b20630843054c7f9b91f05a69fe"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/source.diff.txt",
+      "bytes": 31083,
+      "sha256": "2f68df595e4e6fdde3095bf9796540c39287b77cff5ace6aef405b0fba5127d0"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/test-before-duplicate-begin-oracle-correction.mjs.txt",
+      "bytes": 15973,
+      "sha256": "187efd56a5a945683ccd2b0f28538bcc5f708c23426f4a67ed0547e649cc0da9"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/test-before-frame-fixture-correction.mjs.txt",
+      "bytes": 12420,
+      "sha256": "b8cd4134a79edd6aefc552bb2d9b0bc12d7de9f893f7b5c324f1d53744d88c66"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/test-before-oracle-setup-correction.mjs.txt",
+      "bytes": 10112,
+      "sha256": "88881879251ba6e91fd29ef0531967cbe24c604b0a8769a30e049761867dc60d"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/worker-bounds.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "terminal-startup-module-policy-implementation-20261012/worker-bounds.log",
+      "bytes": 1245,
+      "sha256": "a877611bd6a232e3686d2a2cdeca56e402653ffe01bfed60139deb153c060ec2"
+    }
+  ],
+  "finalSelected": {
+    "tests": 311,
+    "passCount": 310,
+    "failCount": 1,
+    "failure": "WorkerThreads permission refusal"
+  },
+  "separateWorker": {
+    "tests": 1,
+    "passCount": 1,
+    "failCount": 0
+  },
+  "oldMainPinEightUnchanged": true,
+  "sourceInverseExact": true
+}

@@ -2,7 +2,7 @@
 import {performance} from 'node:perf_hooks';
 import {types} from 'node:util';
 import {TerminalSessionCommandChannel} from './session-command-channel.mjs';
-import {STARTUP_LIMITS,validateStartupEnvelope,encodeStartupEnvelope,encodeStartupRequest,validateStartupReply} from './startup-protocol.mjs';
+import {STARTUP_LIMITS,validateStartupEnvelope,encodeStartupEnvelope,encodeStartupRequest,validateStartupReply,combineStartupPolicies,validateStartupModulePolicy} from './startup-protocol.mjs';
 import {encodeTerminalCommandRequest,decodeTerminalCommandRequest,validateTerminalCommandReply} from './command-protocol.mjs';
 
 const invoke=Reflect.apply,clock=performance.now.bind(performance),timer=setTimeout,cancel=clearTimeout;
@@ -80,14 +80,14 @@ export class TerminalSessionLink {
   const began=clock();if(!this.#deadlineCurrent())return reject('STARTUP_UNAVAILABLE');
   if(this.#phase==='preparing'||this.#phase==='starting')return reject('STARTUP_BUSY');
   if(this.#attempted||this.#phase!=='idle')return reject('STARTUP_REFUSED');
-  let config,encoded;
+  let config,encoded,capturedPolicy;
   try{
-   config=!extra.length&&validateStartupEnvelope(value,policy);
+   capturedPolicy=combineStartupPolicies(policy);config=!extra.length&&capturedPolicy&&validateStartupEnvelope(value,capturedPolicy);
    if(!config||config.sessionId!==this.#scope.sessionId||config.channelId!==this.#scope.channelId)return reject('STARTUP_REFUSED');
    encoded=encodeStartupEnvelope(config,policy);if(!encoded)return reject('STARTUP_REFUSED');
   }catch{return reject('STARTUP_REFUSED');}
   this.#attempted=true;this.#phase='preparing';this.#expires=began+this.#deadline;this.#body=encoded;
-  this.#begin=Object.freeze({type:'startup-begin',version:1,...this.#scope,startupId:encoded.startupId,totalBytes:encoded.totalBytes,chunkCount:encoded.chunkCount,sha256:encoded.sha256});
+  this.#begin=Object.freeze({type:'startup-begin',version:1,...this.#scope,startupId:encoded.startupId,totalBytes:encoded.totalBytes,chunkCount:encoded.chunkCount,sha256:encoded.sha256,...(capturedPolicy.expectedModuleDirectory?{startupPolicy:validateStartupModulePolicy({expectedExecutable:capturedPolicy.expectedExecutable,expectedModuleDirectory:capturedPolicy.expectedModuleDirectory})}:{})});
   this.#expected=Object.freeze({projectId:config.projectId,admissionEpoch:config.admissionEpoch,executable:config.shell.executable});
   this.#startup=Object.freeze({kind:'startup',phase:'authentication',...common(this.#begin),totalBytes:encoded.totalBytes,chunkCount:encoded.chunkCount});
   this.#startupTimer=timer(()=>this.#expireStartup(),Math.max(1,Math.ceil(this.#expires-clock())));
@@ -100,7 +100,7 @@ export class TerminalSessionLink {
    for(let index=0;index<this.#begin.chunkCount;index++){
     if(!this.#startupCurrent())throw error('STARTUP_UNAVAILABLE');
     const offset=index*STARTUP_LIMITS.chunkBytes,count=Math.min(STARTUP_LIMITS.chunkBytes,this.#begin.totalBytes-offset),bytes=alloc(count);
-    let pending;try{invoke(copy,this.#body.bytes,[bytes,0,offset,offset+count]);pending=this.#exchangeStartup({...this.#begin,type:'startup-chunk',index,data:bytes});}finally{invoke(fill,bytes,[0]);}
+    let pending;try{invoke(copy,this.#body.bytes,[bytes,0,offset,offset+count]);pending=this.#exchangeStartup({type:'startup-chunk',...common(this.#begin),totalBytes:this.#begin.totalBytes,chunkCount:this.#begin.chunkCount,index,data:bytes});}finally{invoke(fill,bytes,[0]);}
     await pending;
    }
    const result=await this.#exchangeStartup({type:'startup-seal',...common(this.#begin)});

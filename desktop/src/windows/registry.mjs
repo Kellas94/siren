@@ -53,6 +53,7 @@ export class WindowRegistry {
   #workspace = null;
   #closeTimeoutMs;
   #closedCallers = new WeakMap();
+  #deferredCloseEvents = new WeakMap();
   #captures = new WeakMap();
   #roster = null;
   #membershipGeneration = 0;
@@ -238,6 +239,7 @@ export class WindowRegistry {
   }
 
   #forget(entry) {
+    entry.deferredClose?.retire(false);
     entry.revoked = true;
     this.#retiredContents.add(entry.webContents);
     if (this.#views.get(entry.record.windowId) === entry) {this.#views.delete(entry.record.windowId);this.#membershipGeneration++;}
@@ -445,6 +447,37 @@ export class WindowRegistry {
     return true;
   }
 
+  // MAIN-only native close preparation. Neither IPC/preload nor a renderer
+  // event marker can reserve this exact native entry/event/promise lifetime.
+  // A successful preparation is not a close receipt: closeView still requires
+  // actual shell/contents destruction under its existing epoch/policy proof.
+  deferNativeClose(window,event,prepare) {
+    const entry=[...this.#views.values()].find(value=>value.window===window);
+    if(!entry||!['code','docs','diagram'].includes(entry.record.role)||!this.#live(entry)
+      ||!event||typeof event!=='object'||event.defaultPrevented!==true||typeof event.preventDefault!=='function'
+      ||typeof prepare!=='function'||entry.deferredClose||this.#deferredCloseEvents.has(event))return false;
+    const grant=this.capture({sender:entry.webContents,senderFrame:entry.mainFrame});
+    if(!grant)return false;
+    let resolve;
+    const promise=new Promise(done=>{resolve=done;});
+    const state={entry,event,promise,active:true,timer:null,retire:null};
+    const retire=value=>{
+      if(!state.active)return;
+      state.active=false;clearTimeout(state.timer);this.#deferredCloseEvents.delete(event);
+      if(entry.deferredClose===state)entry.deferredClose=null;
+      resolve(value===true);
+    };
+    state.retire=retire;
+    const current=()=>state.active&&this.#views.get(entry.record.windowId)===entry
+      &&!entry.closeInvalidated&&this.isCurrent(grant);
+    // Reserve before invoking even a synchronous/reentrant trusted callback.
+    entry.deferredClose=state;this.#deferredCloseEvents.set(event,state);
+    state.timer=setTimeout(()=>retire(false),this.#closeTimeoutMs);
+    try{Promise.resolve(prepare(Object.freeze({isCurrent:current}))).then(value=>retire(value===true),()=>retire(false));}
+    catch{retire(false);}
+    return true;
+  }
+
   closeView(windowId, { caller } = {}) {
     const entry = this.#views.get(windowId);
     if (!entry || !this.#live(entry)) return false;
@@ -474,6 +507,7 @@ export class WindowRegistry {
     const pending = new Promise((done, fail) => { resolve = done; reject = fail; });
     const finish = (closed, timedOut = false) => {
       if (settled) return; settled = true;
+      entry.deferredClose?.retire(false);
       clearTimeout(timer);
       entry.window.off('closed', onClosed); entry.window.off('close', onClose);
       entry.webContents.off('will-prevent-unload', onPreventUnload);
@@ -486,7 +520,9 @@ export class WindowRegistry {
     const onContentsDestroyed=()=>{if(destroyed())finish(true);};
     const onClose = event => {
       closeEvent = event;
-      queueMicrotask(() => { if (event.defaultPrevented === true && !entry.window.isDestroyed()) finish(false); });
+      const deferred=this.#deferredCloseEvents.get(event);
+      if(deferred?.entry===entry)deferred.promise.then(prepared=>{if(!prepared&&!entry.window.isDestroyed()&&this.#live(entry))finish(false);});
+      queueMicrotask(() => { if (event.defaultPrevented === true && deferred?.entry!==entry && !entry.window.isDestroyed()) finish(false); });
     };
     const onPreventUnload = event => {
       // Electron's preventDefault here permits unloading; an unoverridden
@@ -501,7 +537,7 @@ export class WindowRegistry {
     try { entry.window.close(); }
     catch (error) { finish(false); throw error; }
     if (destroyed()) { finish(true); return confirm(true); }
-    if (closeEvent?.defaultPrevented === true) { finish(false); return false; }
+    if (closeEvent?.defaultPrevented === true && this.#deferredCloseEvents.get(closeEvent)?.entry!==entry) { finish(false); return false; }
     return pending.then(confirm);
   }
 

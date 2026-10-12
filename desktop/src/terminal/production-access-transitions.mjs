@@ -13,6 +13,7 @@ import {TerminalProductionManager} from './production-manager.mjs';
 import {TerminalRequestRouter} from './request-router.mjs';
 import {WindowRegistry} from '../windows/registry.mjs';
 import {CwdAuthority} from './cwd.mjs';
+import {TerminalProfileCatalogueOwner,captureProfileCatalogueOwnerSettlement} from './profile-catalogue-owner.mjs';
 
 const NativePromise=Promise,then=Promise.prototype.then,promisePrototype=Promise.prototype;
 const species=Object.getOwnPropertyDescriptor(Promise,Symbol.species),apply=Reflect.apply;
@@ -22,7 +23,8 @@ const managerRequest=capture(TerminalProductionManager,'captureManagerRequestSet
 const routerStats=capture(TerminalRequestRouter,'stats'),routerRevoke=capture(TerminalRequestRouter,'revoke');
 const routerCapture=capture(TerminalRequestRouter,'captureRouterSettlement');
 const registryCapture=capture(WindowRegistry,'capture'),registryCurrent=capture(WindowRegistry,'isCurrent'),registryGuard=capture(WindowRegistry,'captureAdmissionGuard'),cwdRevoke=capture(CwdAuthority,'revoke');
-const routes=Object.freeze(Object.fromEntries(['create','list','attach','input','resize','ack','detach','stop'].map(key=>[key,capture(TerminalProductionManager,key)])));
+const routes=Object.freeze(Object.fromEntries(['pickCwd','listProfiles','create','list','attach','input','resize','ack','detach','stop'].map(key=>[key,capture(TerminalProductionManager,key)])));
+const catalogueInvalidate=capture(TerminalProfileCatalogueOwner,'invalidateAll');
 const positive=n=>Number.isSafeInteger(n)&&n>0;
 const callable=f=>typeof f==='function'&&!types.isProxy(f);
 const fail=code=>Object.freeze({ok:false,code});
@@ -43,6 +45,7 @@ function unsafeAsyncShape(value){
  for(let p=value;p;p=Object.getPrototypeOf(p)){if(types.isProxy(p))return true;const d=Object.getOwnPropertyDescriptor(p,'then');if(d)return !Object.hasOwn(d,'value')||typeof d.value==='function';}return false;
 }
 function catalogues(value){
+ if(captureProfileCatalogueOwnerSettlement(value))return Object.freeze([Object.freeze({object:value,revoke:catalogueInvalidate})]);
  if(!Array.isArray(value)||types.isProxy(value)||Object.getPrototypeOf(value)!==Array.prototype||value.length>8||Reflect.ownKeys(value).length!==value.length+1)throw TypeError('Explicit bounded catalogue set required');
  const rows=[],seen=new Set();for(let i=0;i<value.length;i++){
   const d=Object.getOwnPropertyDescriptor(value,String(i)),row=d&&Object.hasOwn(d,'value')?d.value:null;
@@ -207,7 +210,7 @@ export class TerminalProductionAccessTransitions {
  }
  #newRouter(){
   // Captured actual prototype methods keep own overrides out of later routes.
-  // Missing pickCwd/listProfiles remain genuinely unavailable; no fake adapter.
+  // Discovery uses the same genuine manager/policy/provider lifetimes as entry.
   const registry=Object.freeze({capture:e=>apply(registryCapture,this.#registry,[e]),isCurrent:g=>apply(registryCurrent,this.#registry,[g]),captureAdmissionGuard:g=>apply(registryGuard,this.#registry,[g])});
   const manager=Object.freeze(Object.fromEntries(Object.entries(routes).map(([key,fn])=>[key,(...args)=>apply(fn,this.#manager,args)])));
   if(this.#routerHandles.length>=32)throw TypeError('Bounded router history exhausted');

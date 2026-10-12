@@ -1,0 +1,424 @@
+// Hosted-only current-source original running-command Lock qualification.
+// Blank genuine Electron windows qualify MAIN dispatch, not renderer/UI/package.
+import assert from 'node:assert/strict';
+import {app,BrowserWindow,protocol,utilityProcess,session} from 'electron';
+import {readFile,writeFile,mkdir,open} from 'node:fs/promises';
+import {join,dirname} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {randomBytes,createHash} from 'node:crypto';
+import {spawn,execFile} from 'node:child_process';
+import {promisify,types} from 'node:util';
+import {setTimeout as delay} from 'node:timers/promises';
+import {createLockContinuationFixture as createSingleCmdletFixture} from './terminal-session-command.mjs';
+import {parseResolutionObservation} from './terminal-resolution-observation.mjs';
+import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
+import {receiveFreshParentPermit,consumeFreshParentPermitBootstrap} from './terminal-fresh-parent-permit.mjs';
+// FRESH_WORKER_DIAGNOSTIC_BEGIN
+const diagnosticData=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+const diagnosticPick=(value,allowed)=>typeof value==='string'&&allowed.includes(value)?value:null;
+const workerPhases=['setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','running-command-lock','locked-command-release','unlock-history','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup'],workerMilestones=['actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-input','running-before-lock','lock-and-input-refusal','same-session-after-lock','same-session-completed-while-locked','completed-while-locked','post-unlock-current-discovery','fresh-lease-history','cleanup-observation','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins'],workerCategories=['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE'];
+function freshWorkerFailure(error,phase,lastMilestone){
+ const message=diagnosticData(error,'message'),code=diagnosticData(error,'code');let category='UNCLASSIFIED';
+ if(typeof message==='string'&&workerCategories.includes(message)&&!['UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FIXTURE_FILE_DEADLINE'].includes(message))category=message;
+ else if(typeof message==='string'&&message.startsWith('FIXTURE_FILE_DEADLINE:'))category='FIXTURE_FILE_DEADLINE';
+ else if(code==='ERR_ASSERTION')category='ASSERTION_REFUSED';else if(code==='ENOENT')category='FILESYSTEM_NOT_FOUND';else if(code==='EACCES'||code==='EPERM')category='FILESYSTEM_REFUSED';
+ return Object.freeze({category,phase:diagnosticPick(phase,workerPhases),lastMilestone:diagnosticPick(lastMilestone,workerMilestones)});
+}
+// FRESH_WORKER_DIAGNOSTIC_END
+function argsToCommandLine(file, args) {
+    if (isCommandLine(args)) {
+        if (args.length === 0) {
+            return file;
+        }
+        return argsToCommandLine(file, []) + " " + args;
+    }
+    var argv = [file];
+    Array.prototype.push.apply(argv, args);
+    var result = '';
+    for (var argIndex = 0; argIndex < argv.length; argIndex++) {
+        if (argIndex > 0) {
+            result += ' ';
+        }
+        var arg = argv[argIndex];
+        // if it is empty or it contains whitespace and is not already quoted
+        var hasLopsidedEnclosingQuote = xOr((arg[0] !== '"'), (arg[arg.length - 1] !== '"'));
+        var hasNoEnclosingQuotes = ((arg[0] !== '"') && (arg[arg.length - 1] !== '"'));
+        var quote = arg === '' ||
+            (arg.indexOf(' ') !== -1 ||
+                arg.indexOf('\t') !== -1) &&
+                ((arg.length > 1) &&
+                    (hasLopsidedEnclosingQuote || hasNoEnclosingQuotes));
+        if (quote) {
+            result += '\"';
+        }
+        var bsCount = 0;
+        for (var i = 0; i < arg.length; i++) {
+            var p = arg[i];
+            if (p === '\\') {
+                bsCount++;
+            }
+            else if (p === '"') {
+                result += repeatText('\\', bsCount * 2 + 1);
+                result += '"';
+                bsCount = 0;
+            }
+            else {
+                result += repeatText('\\', bsCount);
+                bsCount = 0;
+                result += p;
+            }
+        }
+        if (quote) {
+            result += repeatText('\\', bsCount * 2);
+            result += '\"';
+        }
+        else {
+            result += repeatText('\\', bsCount);
+        }
+    }
+    return result;
+}
+
+function isCommandLine(args) {
+    return typeof args === 'string';
+}
+function repeatText(text, count) {
+    var result = '';
+    for (var i = 0; i < count; i++) {
+        result += text;
+    }
+    return result;
+}
+function xOr(arg1, arg2) {
+    return ((arg1 && !arg2) || (!arg1 && arg2));
+}
+
+
+// FRESH_BOUNDARY_HELPERS_BEGIN
+// FRESH_RAW_BINDING_DIAGNOSTIC_BEGIN
+let rawBindingFailure=null;
+const bindingFailures=['RAW_RECORD_OK','RAW_SCHEMA','RAW_BOUNDARY','RAW_ARGUMENT_COUNT','RAW_CREATOR_IDENTITY','RAW_SHELL_IDENTITY','RAW_CALL_COUNT','RAW_DUPLICATE','RAW_PHASE','RAW_RETURN_STATUS','RAW_PID_ASSIGNMENT','RAW_ARGUMENTS_UNCHANGED','RAW_CAPTURE_CODES','RAW_CLOCK_DOMAIN','RAW_CLOCK_ORDER','RAW_SNAPSHOT_STABILITY','RAW_CONPTY_FLAG','RAW_ENVIRONMENT','RAW_CWD_HASH','RAW_CWD_BYTES','RAW_COMMAND_HASH','RAW_COMMAND_BYTES','RAW_FILE_ARGUMENT_REFUSED','RAW_FILE_PATH_REFUSED','RAW_FILE_SIZE_REFUSED','RAW_FILE_IDENTITY_CHANGED','RAW_FILE_READ_REFUSED','RAW_FILE_JSON_REFUSED','RAW_FILE_UNAVAILABLE'];
+function rawRecordFailure(record){
+ if(!record||typeof record!=='object'||types.isProxy(record))return 'RAW_RECORD_OK';
+ const ok=Object.getOwnPropertyDescriptor(record,'ok'),code=Object.getOwnPropertyDescriptor(record,'code');
+ return ok&&Object.hasOwn(ok,'value')&&ok.value===false&&code&&Object.hasOwn(code,'value')&&typeof code.value==='string'&&bindingFailures.slice(22).includes(code.value)?code.value:'RAW_RECORD_OK';
+}
+// FRESH_RAW_BINDING_DIAGNOSTIC_END
+function freshEnvironmentRows(environment){
+ const rows=[];for(const [key,value]of Object.entries(environment)){
+  assert.equal(typeof value,'string');assert.ok(value.isWellFormed()&&!value.includes('\0')&&Buffer.byteLength(value)<=32768);
+  rows.push({key,bytes:Buffer.byteLength(value),sha256:createHash('sha256').update(value).digest('hex')});
+ }return rows.sort((a,b)=>a.key<b.key?-1:a.key>b.key?1:0);
+}
+function assertFreshBoundary(record,expected){
+ rawBindingFailure=rawRecordFailure(record);assert.equal(record.ok,true);const r=record.decoded.observation;
+ rawBindingFailure='RAW_SCHEMA';assert.equal(r.schema,1);rawBindingFailure='RAW_BOUNDARY';assert.equal(r.boundary,'JS_NATIVE_CONNECT_ARGUMENTS');rawBindingFailure='RAW_ARGUMENT_COUNT';assert.equal(r.argumentCount,6);
+ rawBindingFailure='RAW_CREATOR_IDENTITY';assert.equal(r.creatorPid,expected.creatorPid);rawBindingFailure='RAW_SHELL_IDENTITY';assert.equal(r.returnedPid,expected.shellPid);
+ rawBindingFailure='RAW_CALL_COUNT';assert.equal(r.count,1);rawBindingFailure='RAW_DUPLICATE';assert.equal(r.duplicate,false);rawBindingFailure='RAW_PHASE';assert.equal(r.phase,'RETURNED');rawBindingFailure='RAW_RETURN_STATUS';assert.equal(r.returnStatus,'RETURNED');
+ rawBindingFailure='RAW_PID_ASSIGNMENT';assert.equal(r.pidAssignment,'ASSIGNED');rawBindingFailure='RAW_ARGUMENTS_UNCHANGED';assert.equal(r.argumentsUnchanged,true);rawBindingFailure='RAW_CAPTURE_CODES';assert.deepEqual(r.captureCodes,[]);
+ rawBindingFailure='RAW_CLOCK_DOMAIN';assert.equal(r.clock,'PROCESS_MONOTONIC');rawBindingFailure='RAW_CLOCK_ORDER';assert.ok(Number.isFinite(r.beforeConnectMs)&&r.beforeConnectMs>=0&&Number.isFinite(r.afterConnectMs)&&r.afterConnectMs>=r.beforeConnectMs);
+ rawBindingFailure='RAW_SNAPSHOT_STABILITY';assert.deepEqual(r.before,r.after);rawBindingFailure='RAW_CONPTY_FLAG';assert.equal(r.before.useConptyDll,false);
+ rawBindingFailure='RAW_ENVIRONMENT';assert.deepEqual(r.before.env,expected.env);
+ rawBindingFailure='RAW_CWD_HASH';assert.equal(r.before.cwdSha256,createHash('sha256').update(expected.cwd).digest('hex'));
+ rawBindingFailure='RAW_CWD_BYTES';assert.equal(r.before.cwdBytes,Buffer.byteLength(expected.cwd));
+ rawBindingFailure='RAW_COMMAND_HASH';assert.equal(r.before.commandLineSha256,createHash('sha256').update(expected.commandLine).digest('hex'));
+ rawBindingFailure='RAW_COMMAND_BYTES';assert.equal(r.before.commandLineBytes,Buffer.byteLength(expected.commandLine));rawBindingFailure=null;return r;
+}
+async function freshParentPermit(challenge,TerminalControlChannel,bootstrap){
+ return await receiveFreshParentPermit({TerminalControlChannel,bootstrap,challenge});
+}
+// FRESH_BOUNDARY_HELPERS_END
+
+
+// INERT_HELPERS_BEGIN
+function assertFixedControl(control){
+ assert.ok(control==='start-sleep'||control==='write-output','FIXED_CMDLET_CONTROL_REQUIRED');return control;
+}
+function requireCmdletCompletion(fixture,proof){
+ assertFixedControl(fixture.control);assert.equal(proof.started,fixture.expected,'CMDLET_STARTED_TOKEN');
+ assert.equal(proof.stage,'after-'+fixture.control,'CMDLET_AFTER_STAGE');assert.equal(proof.completed,fixture.expected,'CMDLET_COMPLETED_TOKEN');
+}
+function requireHistoryMarkers(fixture,output){
+ assertFixedControl(fixture.control);assert.equal(typeof output,'string');
+ assert.equal(fixture.expectedConsole,'SIREN_CMDLET_COMPLETE_'+fixture.expected);
+ assert.equal(fixture.expectedPipeline,fixture.control==='write-output'?'SIREN_PIPELINE_CONTROL':null);
+ const markers=fixture.expectedPipeline?[fixture.expectedPipeline,fixture.expectedConsole]:[fixture.expectedConsole];
+ for(const marker of markers){assert.ok(!fixture.input.includes(marker),'INPUT_ECHO_CANNOT_QUALIFY');assert.ok(output.includes(marker),'CMDLET_HISTORY_MARKER_MISSING:'+marker);}
+ return markers;
+}
+function createReadyLineConsumer(resolve,reject){
+ let pending='',settled=false;
+ return chunk=>{
+  if(settled)return;
+  if(typeof chunk!=='string'){settled=true;reject(Error('OBSERVER_READY_UTF8_REQUIRED'));return;}
+  pending+=chunk;if(Buffer.byteLength(pending,'utf8')>262144){settled=true;reject(Error('OBSERVER_READY_OVERFLOW'));return;}
+  const lines=pending.split(/\r?\n/);pending=lines.pop();
+  for(const line of lines){if(!line.startsWith('{'))continue;settled=true;try{resolve(JSON.parse(line));}catch{reject(Error('OBSERVER_READY_JSON'));}return;}
+ };
+}
+function identityKey(value){
+ assert.ok(value&&Number.isInteger(value.pid)&&value.pid>0&&value.pid<=0xffffffff);
+ assert.ok(typeof value.image==='string'&&/^[A-Za-z]:\\/.test(value.image));
+ assert.ok(typeof value.createdFileTime==='string'&&/^[1-9][0-9]*$/.test(value.createdFileTime));
+ return JSON.stringify([value.pid,value.image,value.createdFileTime]);
+}
+function assertIdentityRows(expected,rows){
+ assert.ok(Array.isArray(expected)&&Array.isArray(rows));assert.equal(rows.length,expected.length);
+ const keys=new Set(expected.map(identityKey)),actual=new Set(rows.map(identityKey));
+ assert.equal(keys.size,expected.length);assert.equal(actual.size,rows.length);
+ assert.equal(new Set(expected.map(p=>p.pid)).size,expected.length);assert.equal(new Set(rows.map(p=>p.pid)).size,rows.length);
+ for(const key of actual)assert.ok(keys.has(key),'HELD_IDENTITY_MISMATCH');
+}
+function assertReadyIdentities(expected,ready){
+ assert.equal(expected.length,4,'EXACT_FOUR_HELD_IDENTITIES_REQUIRED');assert.equal(ready.status,'READY');assertIdentityRows(expected,ready.identities);
+ for(const p of ready.identities){assert.equal(p.wait,258,'OBSERVER_READY_NOT_LIVE');assert.equal(p.exitCode,259);}
+}
+function assertSessionClosed(before,receipt,code){
+ assert.ok(code===77||code===98);assert.equal(receipt.closed,true);const snapshot=receipt.snapshot;
+ assert.equal(snapshot.active,0);assert.equal(identityKey(snapshot.root),identityKey(before.root));assert.equal(identityKey(snapshot.shell),identityKey(before.shell));
+ assertIdentityRows(before.held,snapshot.held);
+ for(const p of [snapshot.root,snapshot.shell,...snapshot.held]){assert.equal(p.alive,false,'SESSION_MEMBER_STILL_ALIVE');assert.equal(p.exitCode,code);}
+}
+function assertExternalJoin(expected,external,externalExit,code){
+ assert.equal(expected.length,4);assert.equal(external.status,'EXACT_HELD_PROCESSES_EXITED');assert.equal(externalExit.code,0);assert.equal(externalExit.signal,null);
+ assertIdentityRows(expected,external.before);assertIdentityRows(expected,external.after);
+ for(const p of external.before){assert.equal(p.wait,258);assert.equal(p.exitCode,259);}
+ for(const p of external.after){assert.equal(p.wait,0);assert.equal(p.exitCode,code);}
+}
+function assertCleanupObservation(observation){
+ const {code,graph,beforeSession,sessionReceipts,hostReceipt,checked,expected,external,externalExit,utilityExit}=observation;
+ assert.ok(code===77||code===98);assert.equal(graph.actualSettled,true);assert.equal(graph.unknown,false);
+ assert.equal(graph.hostNativeJoined,false);assert.equal(graph.sessionCleanupJoined,false);
+ assert.ok(Array.isArray(sessionReceipts));assert.equal(sessionReceipts.length,1);assertSessionClosed(beforeSession,sessionReceipts[0],code);
+ assert.equal(checked.ok,true);assert.equal(checked.actualSettlementEstablished,false);
+ assert.equal(hostReceipt.closed,true);assert.equal(hostReceipt.code,code);assert.equal(hostReceipt.snapshot.active,0);
+ assert.equal(identityKey(hostReceipt.snapshot.root),identityKey(expected[0]));assertIdentityRows([expected[0]],hostReceipt.snapshot.held);
+ for(const p of [hostReceipt.snapshot.root,...hostReceipt.snapshot.held]){assert.equal(p.alive,false);assert.equal(p.exitCode,code);}
+ assertExternalJoin(expected,external,externalExit,code);assert.equal(utilityExit,code);
+}
+// INERT_HELPERS_END
+
+// FRESH_FAILURE_RESOLUTION_CAPTURE_BEGIN
+// Private post-failure DATA only: exact genuine fixture path, no input authority.
+async function captureFailureResolutionObservation(observationPath,token,pid){
+ let handle,raw=null,code='RESOLUTION_CAPTURE_READ_REFUSED',closeCode=null;
+ try{
+  const buffer=Buffer.alloc(32769);let total=0,complete=false;
+  handle=await open(observationPath,'r');
+  while(total<buffer.length){
+   const reply=await handle.read(buffer,total,buffer.length-total,total),count=reply.bytesRead;
+   if(!Number.isInteger(count)||count<0||count>buffer.length-total)throw 0;
+   if(count===0){complete=true;break;}total+=count;
+  }
+  if(complete){const bytes=buffer.subarray(0,total);raw=Object.freeze({bytes:total,sha256:createHash('sha256').update(bytes).digest('hex'),base64:bytes.toString('base64')});code=null;}
+  else code='RESOLUTION_CAPTURE_LIMIT';
+ }catch{code='RESOLUTION_CAPTURE_READ_REFUSED';}
+ finally{if(handle)try{await handle.close();}catch{closeCode='RESOLUTION_CAPTURE_CLOSE_REFUSED';if(code===null)code=closeCode;}}
+ let parse=Object.freeze({status:'UNAVAILABLE',code:'RESOLUTION_OBSERVATION_UNAVAILABLE',observation:null});
+ if(raw)try{parse=Object.freeze({status:'VALID',code:null,observation:parseResolutionObservation(Buffer.from(raw.base64,'base64'),{token,pid})});}
+ catch{parse=Object.freeze({status:'INVALID',code:'RESOLUTION_OBSERVATION_INVALID',observation:null});}
+ return Object.freeze({status:code===null?'CAPTURED':'CAPTURE_REFUSED',code,closeCode,raw,parse});
+}
+// FRESH_FAILURE_RESOLUTION_CAPTURE_END
+// SYSTEM_SEEDED_OBSERVATION_BEGIN
+function systemSeededStartupObservation(observation,fixture,shellPid,engineFile){
+ const fields=observation?.parse?.observation?.fields;
+ if(observation?.status!=='CAPTURED'||observation.parse.status!=='VALID'||!fields||fields.token!==fixture.expected||observation.parse.observation.pid!==shellPid||fields.PID!==String(shellPid)||typeof fields.PSHOME!=='string'||fields.PSHOME.toUpperCase()!==dirname(engineFile.canonicalPath).toUpperCase()||typeof fields.effectiveModulePath!=='string')return Object.freeze({verified:false,classification:null});
+ const expected=join(fields.PSHOME,'Modules').toUpperCase(),segments=fields.effectiveModulePath.split(';');
+ if(!segments.length||segments.length>128||segments.some(p=>!p||!p.isWellFormed()||!/^[A-Za-z]:\\/.test(p)||/[\x00-\x1f\x7f<>"|?*;%]/.test(p)||p.slice(2).includes(':'))||!segments.some(p=>p.toUpperCase()===expected))return Object.freeze({verified:false,classification:null});
+ return Object.freeze({verified:true,classification:segments.length===1?'SYSTEM_ONLY':'STARTUP_EXPANDED'});
+}
+// SYSTEM_SEEDED_OBSERVATION_END
+
+export async function startRuntimeProbe(config){
+ const permitBootstrap=consumeFreshParentPermitBootstrap();
+ const {root,out,execution,electronExecutable,filesystemExecutable,observerExecutable,run,commit,control,armId,projectDirectory,fixtureDirectory,expectedBaseEnvironment,expectedEnvironment,retainedJobRoot,expectedFixture}=config;
+ assert.ok(armId==='pathext-omitted'||armId==='pathext-trusted');assert.equal(control,'write-output');
+ assertFixedControl(control);
+ assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.GITHUB_REPOSITORY,'Kellas94/siren');
+ assert.equal(process.env.GITHUB_REF,'refs/heads/probe/terminal-current-runtime-lock-20261012');assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
+ assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
+ assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
+ const result={scope:'HOSTED_CURRENT_RUNNING_LOCK_PATHEXT_ARM_NOT_PRODUCT_ADMISSION',status:'STARTED',control,run,commit,
+  nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
+  realSessions:0,commandCompleted:false,mandatoryMarkersObserved:false,externalProcessJoin:false,cleanupVerified:false,
+  milestones:[],helperCalls:[],nativeCalls:[],ownershipEvents:[],unavailable:[],verified:[]};
+ let locked=false;
+ const commandTiming={scope:'DIAGNOSTIC_MONOTONIC_INPUT_WAIT_V1',clockDomain:'worker-process-performance-now',run,commit,control,workerPid:process.pid,heldShellPid:null,fixtureVariant:null,token:null,commandInputSequence:0,nominalWaitMs:15000,pollCount:300,pollDelayMs:50,inputSubmittedMs:null,inputReturnedMs:null,inputAcceptedMs:null,waitStartedMs:null,nominalDeadlineMs:null,waitEndedMs:null,completionObserved:false,completionObservedMs:null,completionLate:null,completedWithinNominalDeadline:null};result.commandTiming=commandTiming;
+ const probeStarted=performance.now();let observationPhase='setup';
+ const save=(name,data)=>writeFile(join(out,name),JSON.stringify(data,(_,v)=>typeof v==='bigint'?v.toString():v,2)+'\n',{flag:'wx'});
+ const pin=async path=>{const bytes=await readFile(path);return{path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};};
+ const milestone=async(name,data={})=>{result.milestones.push({name,...data});await save(String(result.milestones.length).padStart(2,'0')+'-'+name+'.json',data);};
+ const bounded=async(promise,ms,label)=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>timer=setTimeout(()=>reject(Error(label+'_DEADLINE')),ms))]);}finally{clearTimeout(timer);}};
+ const waitFile=async(path,expected)=>{for(let i=0;i<300;i++){try{const value=await readFile(path,'utf8');assert.equal(value,expected);return value;}catch(e){if(e.code!=='ENOENT')throw e;}await delay(50);}throw Error('FIXTURE_FILE_DEADLINE:'+path);};
+ const absent=async path=>{try{await readFile(path);assert.fail('Unexpected pre-command execution:'+path);}catch(e){if(e.code!=='ENOENT')throw e;}};
+ const observeOwnership=(kind,value)=>{
+  result.ownershipEvents.push({kind,phase:observationPhase,elapsedMs:performance.now()-probeStarted,afterMilestone:result.milestones.at(-1)?.name??null,sessionOwnerId:value?.sessionOwnerId??null,sessionId:value?.sessionId??null,code:value?.code??null,stack:String(new Error('Ownership callback observation').stack).slice(0,4096)});
+  result[kind==='unavailable'?'unavailable':'verified'].push(kind==='unavailable'?'OWNERSHIP_UNAVAILABLE':'SESSION_VERIFIED');
+ };
+ const nativeState={host:null,sessions:[],hostStops:[],sessionStops:[]},windows=new Set();
+ let graph,members,native,fixture,workspace,workspaceGrant,sessionId,sessionOwnerId,beforeSession,beforeHost,expected,observerPath,
+  observer,observerExit,observerStdout='',observerStderr='',host,hostExit,hostOut='',hostErr='',validateHostAsyncReceipt,
+  op=0,helperCount=0,completedObservations=false,permitHandoff;
+ const exec=promisify(execFile),helperPin=await pin(filesystemExecutable),observerPin=await pin(observerExecutable);
+ const event=w=>({sender:w.webContents,senderFrame:w.webContents.mainFrame});
+ const importExecution=path=>import(pathToFileURL(join(execution,path)).href);
+ const {TerminalControlChannel}=await import(pathToFileURL(join(dirname(execution),'diagnostics','desktop/src/terminal/control-channel.mjs')).href);
+ const request=(grant,fields={})=>({operationId:'cmdlet_'+(++op),epoch:grant.epoch,...fields});
+ async function helper(mode,target){
+  assert.deepEqual(await pin(filesystemExecutable),helperPin);
+  const args=target===undefined?[mode]:[mode,target],row={mode,target:target??null,deadlineMs:10000},started=performance.now();
+  try{const reply=await exec(filesystemExecutable,args,{cwd:out,windowsHide:true,timeout:10000,maxBuffer:262144});Object.assign(row,{exit:0,stdout:reply.stdout,stderr:reply.stderr});assert.equal(reply.stderr.trim(),'');return JSON.parse(reply.stdout);}
+  catch(e){Object.assign(row,{exit:e.code??null,stdout:e.stdout??'',stderr:e.stderr??'',message:e.message});throw e;}
+  finally{row.elapsedMs=performance.now()-started;result.helperCalls.push(row);await save('filesystem-'+String(++helperCount).padStart(3,'0')+'.json',row);assert.deepEqual(await pin(filesystemExecutable),helperPin);}
+ }
+ async function windowAt(url){
+  const window=new BrowserWindow({show:false,width:640,height:480,webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});windows.add(window);
+  window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+  for(const name of ['will-navigate','will-redirect'])window.webContents.on(name,(e,target)=>{if(target!==url)e.preventDefault();});
+  await window.loadURL(url);assert.equal(window.webContents.getURL(),url);assert.equal(window.webContents.mainFrame.url,url);return window;
+ }
+ async function captureFailureEvidence(){
+  // Every observation is saved before cleanup; one read failure does not hide the others.
+  const record=async(name,fn)=>{try{await save(name,await fn());}catch(e){(result.failureObservationErrors??=[]).push({name,message:e.message});}};
+  if(fixture){
+   await record('failure-fixture-state.json',async()=>{
+    const state={};for(const [key,path]of Object.entries({started:fixture.startedPath,stage:fixture.stagePath,completed:fixture.completedPath}))try{state[key]={value:await readFile(path,'utf8')};}catch(e){state[key]={error:e.code??e.message};}return state;
+   });
+   // FRESH_FAILURE_RESOLUTION_SAVE_BEGIN
+   try{await save('failure-resolution-observation.json',await captureFailureResolutionObservation(fixture.observationPath,fixture.expected,beforeSession?.shell?.pid));}
+   catch{result.resolutionObservationCaptureCode='RESOLUTION_CAPTURE_SAVE_REFUSED';}
+   // FRESH_FAILURE_RESOLUTION_SAVE_END
+   await record('failure-script.json',async()=>({pin:await pin(fixture.scriptPath),body:await readFile(fixture.scriptPath,'utf8')}));
+  }
+  if(members){
+   let ownership;await record('failure-ownership.json',()=>{ownership=members.ownership.snapshot();return ownership;});
+   if(native&&nativeState.sessions.length)await record('failure-native-session.json',()=>native.snapshotSession(nativeState.sessions[0]));
+   const owner=ownership?.sessions.find(row=>row.sessionId===sessionId)??ownership?.sessions.find(row=>row.state==='running'),ownerId=owner?.sessionOwnerId??sessionOwnerId;
+   if(ownerId)await record('failure-history.json',()=>bounded(members.backend.readHistory({ownerId,fromSequence:0,maxBytes:32768}),2000,'FAILURE_HISTORY'));
+  }
+ }
+ async function collectCleanup(graphObservation,code,shutdownId){
+  const observation={code,graph:graphObservation,beforeSession,expected,verified:false};
+  const collect=async(key,fn)=>{try{observation[key]=await fn();}catch(e){(observation.errors??=[]).push({key,message:e.message});}};
+  await collect('sessionReceipts',()=>bounded(Promise.all(nativeState.sessionStops),10000,'SESSION_NATIVE_RECEIPTS'));
+  await collect('hostReceipt',async()=>{assert.equal(nativeState.hostStops.length,1);return bounded(nativeState.hostStops[0],10000,'HOST_NATIVE_RECEIPT');});
+  if(native&&nativeState.host&&validateHostAsyncReceipt)await collect('hostExpected',()=>native.captureHostShutdownExpectation(nativeState.host,shutdownId));
+  if(observation.hostExpected&&observation.hostReceipt)await collect('checked',()=>validateHostAsyncReceipt(observation.hostExpected,observation.hostReceipt));
+  if(observerExit)await collect('externalExit',()=>bounded(observerExit,10000,'EXTERNAL_JOIN'));
+  if(observerPath)await collect('external',async()=>JSON.parse(await readFile(observerPath,'utf8')));
+  if(hostExit)await collect('utilityExit',()=>bounded(hostExit,5000,'UTILITY_EXIT'));
+  observation.utilityOutput={stdout:hostOut,stderr:hostErr};
+  try{assertCleanupObservation(observation);assert.equal(observation.errors?.length??0,0);observation.verified=true;}catch(e){observation.verificationError=e.message;}
+  return observation;
+ }
+ try{
+  observationPhase='module-import';const {WindowRegistry}=await importExecution('desktop/src/windows/registry.mjs');
+  const {createTerminalShutdownGraph}=await importExecution('desktop/src/terminal/shutdown-graph.mjs');
+  const {discoverCurrentRuntimeLock,runCurrentRuntimeLockScenario}=await importExecution('desktop/tests/native/terminal-current-runtime-lock.mjs');
+  ({validateHostAsyncReceipt}=await importExecution('desktop/src/terminal/host-async-receipt-contract.mjs'));
+  protocol.handle('siren',request=>{
+   const url=new URL(request.url);assert.equal(url.host,'app');assert.ok(url.pathname==='/app.html'||url.pathname==='/windows/terminal.html');
+   return new Response('<!doctype html><meta charset="utf-8"><title>Contained single-cmdlet identity probe</title>',{headers:{'Content-Type':'text/html','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'; base-uri 'none'"}});
+  });
+  session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));session.defaultSession.setPermissionCheckHandler(()=>false);
+  observationPhase='fixture-preparation';const project=projectDirectory;assert.equal(project,join(retainedJobRoot,'..','project-Șiren-Δ'));
+  assert.equal(fixtureDirectory,join(project,armId));
+  fixture=createSingleCmdletFixture({projectDirectory:fixtureDirectory,token:expectedFixture.expected,control});assert.deepEqual(fixture,expectedFixture);result.fixtureVariant=fixture.variant;commandTiming.fixtureVariant=fixture.variant;commandTiming.token=fixture.expected;
+  assert.equal(await readFile(fixture.scriptPath,'utf8'),'\uFEFF'+fixture.script);await save('fixed-command-fixture.json',fixture);
+  observationPhase='window-registry';const routerGrants=new Map(),entities=[];
+  const registry=new WindowRegistry({terminalViews:true,authorize:()=>({projectId:'project1',mode:'normal',access:'write',entityIds:entities}),createWindow:options=>windowAt(options.mainFrameUrl)});
+  workspace=await windowAt('siren://app/app.html');registry.bindWorkspace(workspace);registry.activateWorkspace();workspaceGrant=registry.capture(event(workspace));assert.equal(workspaceGrant.role,'workspace');
+  observationPhase='native-loader';const addonPath=join(execution,'desktop/native/terminal-host-roster-candidate/build/Release/siren_terminal_host_roster_candidate.node');
+  native=createRequire(import.meta.url)(addonPath);const mark=native.mark(),facade=Object.create(null);
+  for(const [key,descriptor]of Object.entries(Object.getOwnPropertyDescriptors(native))){
+   assert.ok(Object.hasOwn(descriptor,'value'));if(typeof descriptor.value!=='function')continue;
+   facade[key]=(...args)=>{
+    const traced=['start','createPeerListeners','createPeerSession','snapshotSession','watchRoot','captureSession','assertPeerCurrent'].includes(key);
+    const row=traced&&result.nativeCalls.length<512?{method:key,elapsedFromStartMs:performance.now()-probeStarted}:null;if(row)result.nativeCalls.push(row);
+    try{const value=Reflect.apply(descriptor.value,native,args);if(row){row.returned=true;if(['snapshotSession','watchRoot','captureSession'].includes(key))row.observation=value;else if(key==='assertPeerCurrent')row.current=value;}
+     if(key==='start')nativeState.host=value;if(key==='createPeerSession')nativeState.sessions.push(value);if(key==='stopAndCloseHostAsync')nativeState.hostStops.push(value);if(key==='stopAndCloseSessionAsync')nativeState.sessionStops.push(value);return value;
+    }catch(e){if(row)row.error={code:e.code??null,message:e.message};throw e;}
+   };
+  }
+  observationPhase='utility-host-start';const hostEntry=join(out,'session-host.mjs');await writeFile(hostEntry,"setInterval(()=>{},1000);\nprocess.parentPort.postMessage({ready:true,electron:process.versions.electron,modules:process.versions.modules,napi:process.versions.napi});\n",{flag:'wx'});
+  host=utilityProcess.fork(hostEntry,[],{serviceName:'SIREN bounded single-cmdlet host',stdio:'pipe'});
+  hostExit=new Promise((resolve,reject)=>{host.once('exit',code=>resolve(code));host.once('error',reject);});hostExit.catch(()=>{});
+  host.stdout?.setEncoding('utf8');host.stderr?.setEncoding('utf8');host.stdout?.on('data',chunk=>hostOut+=chunk);host.stderr?.on('data',chunk=>hostErr+=chunk);
+  observationPhase='utility-host-ready';const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
+  const system=await helper('system'),systemRoot=dirname(system);
+  graph=createTerminalShutdownGraph({projectId:'project1',registry,native:facade,hostProcessIdentity:{pid:host.pid,image:process.execPath,since:mark},
+   ownership:{isCurrent:()=>true,onUnavailable:value=>observeOwnership('unavailable',value),onVerified:value=>observeOwnership('verified',value)},
+   creator:{executable:process.execPath,entry:join(execution,'desktop/src/terminal/diagnostic-creator-launcher.mjs'),directory:execution},
+   cwd:{pickDirectory:async()=>({canceled:false,filePaths:[project]}),protectedRoots:[execution],inspectDirectory:path=>helper('directory',path)},
+   profiles:{grants:[workspaceGrant],modulePathPolicy:'system-seeded',inspectModuleDirectory:path=>helper('directory',path),getSystemDirectory:async()=>system,inspectExecutable:path=>helper('file',path),readEnvironment:async()=>{const env={SystemRoot:systemRoot,PATH:system+';'+systemRoot};for(const key of ['USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','ProgramFiles','ProgramFiles(x86)','CommonProgramFiles','CommonProgramFiles(x86)','ProgramData','ComSpec','USERNAME','USERDOMAIN','HOMEDRIVE','HOMEPATH','SystemDrive','windir'])if(typeof process.env[key]==='string'&&process.env[key])env[key]=process.env[key];if(armId==='pathext-trusted'){assert.equal(typeof process.env.PATHEXT,'string');env.PATHEXT=process.env.PATHEXT;}else assert.equal(process.env.PATHEXT,undefined);assert.equal(process.env.PSModulePath,undefined);assert.deepEqual(freshEnvironmentRows(env),expectedBaseEnvironment);return env;},privateEnvironmentKeys:[]},
+   access:{prepareWorkspace:async()=>{},retireViews:async()=>{for(const window of windows)if(window!==workspace&&!window.isDestroyed())window.destroy();},rollbackWorkspace:async()=>{},isReady:()=>true},
+   policy:{isUnlocked:()=>!locked,getMode:()=> 'normal',canExecute:grant=>{routerGrants.set(grant.windowId,grant);return true;}},deadlineMs:5000});
+  observationPhase='host-start';assert.equal(graph.start().ok,true);members=graph.mainAuthorities();
+  await milestone('actual-native-host',{mainPid:process.pid,utilityPid:host.pid,before:native.capture(nativeState.host),versions:process.versions,workspaceGrant});
+  observationPhase='initial-access';assert.equal((await members.access.beginLock('initial closed gate before any session')).ok,true);assert.equal((await members.access.reopen(event(workspace))).ok,true);
+  observationPhase='profile-discovery';const router=members.access.currentRouter();assert.ok(router);const discovery=await discoverCurrentRuntimeLock({members,workspace:()=>({event:event(workspace),grant:registry.capture(event(workspace))})}),cwd=discovery.cwd;assert.equal(cwd.displayPath,project);
+  observationPhase='session-create';const created=await router.route({event:event(workspace),method:'terminalCreate',payload:request(workspaceGrant,{cwdId:cwd.cwdId,profileId:'powershell',cols:120,rows:40})});
+  await milestone('actual-session-create',{created,manager:members.manager.stats()});assert.equal(created.ok,true);assert.equal(nativeState.sessions.length,1);result.realSessions=1;
+  sessionId=created.value.sessionId;entities.push(sessionId);sessionOwnerId=members.ownership.snapshot().sessions.find(row=>row.sessionId===sessionId)?.sessionOwnerId;assert.ok(sessionOwnerId);
+  observationPhase='first-attach';
+  async function attach(){
+   const record=await registry.openView({role:'terminal',entityId:sessionId});const window=[...windows].find(w=>!w.isDestroyed()&&w.webContents.getURL()===`siren://app/windows/terminal.html?windowId=${record.windowId}`);assert.ok(window);
+   const grant=registry.capture(event(window));assert.equal(grant.role,'terminal');const router=members.access.currentRouter(),reply=await router.route({event:event(window),method:'terminalAttach',payload:request(grant,{sessionId})});assert.equal(reply.ok,true);
+   const canonicalGrant=routerGrants.get(record.windowId);assert.ok(canonicalGrant);return{w:window,caller:event(window),grant:canonicalGrant,router,lease:{sessionId,leaseId:reply.value.leaseId,generation:reply.value.generation}};
+  }
+  const first=await attach();await milestone('actual-terminal-attach',{grant:first.grant,lease:first.lease});
+  // These held capabilities are already captured by host/backend. Never recapture.
+  observationPhase='held-identities';beforeSession=native.snapshotSession(nativeState.sessions[0]);beforeHost=native.snapshot(nativeState.host);commandTiming.heldShellPid=beforeSession.shell.pid;
+  const expectedMap=new Map();for(const member of [beforeHost.root,...beforeHost.held,beforeSession.root,beforeSession.shell,...beforeSession.held])if(member){assert.equal(member.alive,true);const row={pid:member.pid,image:member.image,createdFileTime:member.createdFileTime};if(expectedMap.has(row.pid))assert.deepEqual(expectedMap.get(row.pid),row);expectedMap.set(row.pid,row);}
+  expected=[...expectedMap.values()];assert.equal(expected.length,4);
+  observationPhase='external-observer-start';const expectedPath=join(out,'expected-process-identities.json');observerPath=join(out,'external-process-exits.json');await save('expected-process-identities.json',expected);
+  assert.deepEqual(await pin(observerExecutable),observerPin);observer=spawn(observerExecutable,['capture',observerPath,expectedPath],{cwd:out,windowsHide:true,stdio:['ignore','pipe','pipe']});
+  observerExit=new Promise((resolve,reject)=>{observer.once('exit',(code,signal)=>resolve({code,signal}));observer.once('error',reject);});observerExit.catch(()=>{});
+  observer.stdout.setEncoding('utf8');observer.stderr.setEncoding('utf8');
+  const observerReady=new Promise((resolve,reject)=>{const consume=createReadyLineConsumer(resolve,reject);observer.stdout.on('data',chunk=>{observerStdout+=chunk;consume(chunk);});observer.stderr.on('data',chunk=>observerStderr+=chunk);observer.once('error',reject);});
+  observationPhase='external-observer-ready';const observed=await bounded(observerReady,5000,'OBSERVER_READY');assertReadyIdentities(expected,observed);
+  observationPhase='fixture-absence';await absent(fixture.startedPath);await absent(fixture.completedPath);
+  await milestone('before-command',{beforeSession,beforeHost,observer:observed,commandInputSequence:0,completionAbsent:true,runningCommandLock:false});
+  // Genuine held capabilities and fixed raw DATA must agree BEFORE pipe permit.
+  observationPhase='preinput-engine';const enginePath=join(system,'WindowsPowerShell','v1.0','powershell.exe');assert.equal(beforeSession.shell.image.toUpperCase(),enginePath.toUpperCase());
+  const engineFile=await helper('file',enginePath),enginePin=await pin(enginePath);assert.equal(engineFile.file,true);assert.equal(engineFile.reparse,false);
+  observationPhase='preinput-raw-read';const raw=await readTerminalConnectRawFile(retainedJobRoot,beforeSession.root.pid);await save('preinput-raw-file-data.json',raw);
+  observationPhase='preinput-raw-binding';const rawObservation=assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});
+  await save('preinput-native-raw-binding.json',{raw,engineFile,enginePin,beforeSession,beforeHost,externalReady:observed,modelStatus:'UNAVAILABLE_EXTERNAL_ENGINE_NOT_IN_RETAINED_RUNTIME',inputAuthorized:false});
+  const challenge={schema:1,type:'FRESH_PREINPUT_CHALLENGE',workerPid:process.pid,creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,armId,token:fixture.expected,nonce:randomBytes(16).toString('hex'),rawSha256:raw.rawSha256};
+  observationPhase='preinput-parent-permit';const handoff=permitHandoff=await freshParentPermit(challenge,TerminalControlChannel,permitBootstrap);await save('preinput-pipe-handoff.json',{challenge,...handoff,inputAuthorized:false});
+  observationPhase='preinput-held-recheck';assert.deepEqual(native.snapshotSession(nativeState.sessions[0]),beforeSession);assert.deepEqual(native.snapshot(nativeState.host),beforeHost);
+  assert.deepEqual(await pin(enginePath),enginePin);assert.deepEqual(await helper('file',enginePath),engineFile);
+  assertReadyIdentities(expected,observed);assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});assert.equal(handoff.isCurrent(),true,'FRESH_PIPE_REVOKED');
+  // The observer owns all four live handles before the one fixed input write.
+  observationPhase='running-command-lock';
+  result.lockResult=await runCurrentRuntimeLockScenario({members,workspace:()=>({event:event(workspace),grant:registry.capture(event(workspace))}),first,sessionId,projectDirectory:fixtureDirectory,token:fixture.expected,
+   beforeInput:async({fixture:actual})=>{assert.deepEqual(actual,fixture);assert.equal(handoff.isCurrent(),true,'FRESH_PIPE_REVOKED');assert.deepEqual(native.snapshotSession(nativeState.sessions[0]),beforeSession);assert.deepEqual(native.snapshot(nativeState.host),beforeHost);assert.deepEqual(await pin(enginePath),enginePin);assertReadyIdentities(expected,observed);return{inputAuthorized:true,isCurrent:()=>handoff.isCurrent(),beforeSession};},
+   observeRunning:async()=>({sessionId,sessionStopCalls:nativeState.sessionStops.length,hostStopCalls:nativeState.hostStops.length,session:native.snapshotSession(nativeState.sessions[0])}),setLocked:value=>{locked=value;},attach:async requested=>{assert.equal(requested,sessionId);return attach();},
+   io:{absent,waitFile,writeExclusive:(p,value)=>writeFile(p,value,{flag:'wx'}),delay,record:async(name,value)=>{if(name==='completed-while-locked')observationPhase='locked-command-release';else if(name==='post-unlock-current-discovery'||name==='fresh-lease-history')observationPhase='unlock-history';else if(name==='cleanup-observation')observationPhase='graph-shutdown';await save(name==='command-input'?'command-input-receipt.json':name+'.json',value);await milestone(name,value);}},
+   cleanup:async()=>{observationPhase='explicit-session-stop';assert.equal(nativeState.sessionStops.length,1);const sessionReceipt=await bounded(nativeState.sessionStops[0],10000,'SESSION_NATIVE_RECEIPT');assertSessionClosed(beforeSession,sessionReceipt,77);await milestone('session-stop-native-receipt',{receipt:sessionReceipt});observationPhase='graph-shutdown';const shutdownId='current_lock_'+run,joined=await bounded(graph.shutdown({code:77,deadlineMs:5000,shutdownId}),15000,'GRAPH_JOIN'),cleanup=await collectCleanup(joined,77,shutdownId);assert.equal(cleanup.verified,true,'ACTUAL_CLEANUP_UNKNOWN');await save('utility-output.json',{...cleanup.utilityOutput,exit:cleanup.utilityExit});await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt:cleanup.hostReceipt,hostExpected:cleanup.hostExpected,checked:cleanup.checked,external:cleanup.external,externalExit:cleanup.externalExit,utilityExit:cleanup.utilityExit});return cleanup;}
+  });
+  assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;
+ }catch(error){
+  result.bindingFailure=rawBindingFailure;result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
+  await captureFailureEvidence();observationPhase='failure-cleanup';let failureGraph;
+  const shutdownId='failure_'+run;
+  if(graph)try{failureGraph=await bounded(graph.shutdown({code:98,deadlineMs:5000,shutdownId}),15000,'FAILURE_SHUTDOWN');result.failureShutdown=failureGraph;}catch(e){result.failureShutdownError=e.message;}
+  result.failureCleanup=await collectCleanup(failureGraph,98,shutdownId);result.cleanupVerified=result.failureCleanup.verified===true;
+  await save('failure-cleanup-observation.json',result.failureCleanup);
+ }finally{
+  if(permitHandoff)try{assert.equal(await permitHandoff.dispose(),true);}catch{result.status='FAILED';result.cleanupVerified=false;completedObservations=false;}
+  if(commandTiming.completionObserved){commandTiming.completionLate=commandTiming.completionObservedMs>commandTiming.nominalDeadlineMs;commandTiming.completedWithinNominalDeadline=!commandTiming.completionLate;}
+  try{await save('command-timing.json',commandTiming);}catch(e){result.commandTimingError={message:e.message,code:e.code??null};result.status='FAILED';completedObservations=false;}
+  try{
+   if(observer){await save('observer-output.json',{stdout:observerStdout,stderr:observerStderr});assert.deepEqual(await pin(observerExecutable),observerPin);}
+   for(const window of windows)if(!window.isDestroyed())window.destroy();
+   await save('ownership-callback-observations.json',result.ownershipEvents);
+   if(completedObservations){assert.equal(result.unavailable.length,0,'LATE_OWNERSHIP_UNAVAILABLE');result.status='CURRENT_RUNNING_LOCK_DIAGNOSTIC_COMPLETE';result.commandCompleted=true;result.mandatoryMarkersObserved=true;result.externalProcessJoin=true;result.cleanupVerified=true;}
+  }catch(e){result.status='FAILED';result.finalizationError={message:e.message,code:e.code??null};result.commandCompleted=false;result.mandatoryMarkersObserved=false;result.externalProcessJoin=false;}
+  await save('worker-result.json',result);
+ }
+ return result;
+}

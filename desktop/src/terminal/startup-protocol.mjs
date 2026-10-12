@@ -60,11 +60,12 @@ function localPath(value){
 }
 function executable(value){const p=localPath(value);return p&&POWER_SHELL.test(p)?p:null;}
 function policyRecord(value){
- if(value===undefined)return {privateKeys:new Set(),expectedExecutable:null};
- const p=record(value,null,2);if(!p||!Object.hasOwn(p,'privateEnvironmentKeys')||Object.keys(p).some(k=>k!=='privateEnvironmentKeys'&&k!=='expectedExecutable'))return null;
+ if(value===undefined)return {privateKeys:new Set(),expectedExecutable:null,expectedModuleDirectory:null};
+ const p=record(value,null,3);if(!p||!Object.hasOwn(p,'privateEnvironmentKeys')||Object.keys(p).some(k=>k!=='privateEnvironmentKeys'&&k!=='expectedExecutable'&&k!=='expectedModuleDirectory'))return null;
  const keys=array(p.privateEnvironmentKeys,STARTUP_LIMITS.privateKeys);if(!keys||!keys.every(k=>typeof k==='string'&&KEY.test(k)))return null;
  let expected=null;if(Object.hasOwn(p,'expectedExecutable')){expected=executable(p.expectedExecutable);if(!expected)return null;}
- return {privateKeys:new Set(keys.map(k=>k.toUpperCase())),expectedExecutable:expected};
+ let modules=null;if(Object.hasOwn(p,'expectedModuleDirectory')){modules=localPath(p.expectedModuleDirectory);if(!expected||!modules||/[;%]/.test(modules)||modules.toLowerCase()!==(expected.slice(0,expected.lastIndexOf('\\')+1)+'Modules').toLowerCase())return null;}
+ return {privateKeys:new Set(keys.map(k=>k.toUpperCase())),expectedExecutable:expected,expectedModuleDirectory:modules};
 }
 // Counts UTF-8 without allocating a byte buffer. Inputs must be well formed.
 function utf8Bytes(value){
@@ -77,11 +78,11 @@ function environment(value,policy){
  for(const key of keys){
   const val=r[key],upper=key.toUpperCase();
   if(!KEY.test(key)||seen.has(upper)||!validString(val)||val.length>STARTUP_LIMITS.envValueUnits||val.includes('\0'))return null;
-  if(/^(?:NODE_|ELECTRON_|VSCODE_|SIREN_)/i.test(key)||upper==='CHROME_LOG_FILE'||upper==='PSMODULEPATH'||policy.privateKeys.has(upper))return null;
+  if(/^(?:NODE_|ELECTRON_|VSCODE_|SIREN_)/i.test(key)||upper==='CHROME_LOG_FILE'||policy.privateKeys.has(upper)||upper==='PSMODULEPATH'&&(key!=='PSModulePath'||!policy.expectedModuleDirectory||val!==policy.expectedModuleDirectory))return null;
   seen.add(upper);bytes+=utf8Bytes(key)+utf8Bytes(val)+2;if(bytes>STARTUP_LIMITS.envBytes)return null;
   if(upper==='PATH'&&val)path=true;if(upper==='SYSTEMROOT'&&val)root=true;result[key]=val;
  }
- return path&&root?frozen(result):null;
+ return path&&root&&(!policy.expectedModuleDirectory||result.PSModulePath===policy.expectedModuleDirectory)?frozen(result):null;
 }
 function envelopeRecord(value,policy){
  const r=record(value,ENVELOPE);if(!r||r.version!==1||!['sessionId','channelId','projectId','startupId'].every(k=>id(r[k]))||!positive(r.admissionEpoch)||r.profileId!=='powershell')return null;
@@ -129,13 +130,24 @@ function text(bytes,encoding){return Reflect.apply(bufferString,bytes,[encoding]
 function commonValid(r){return r.version===1&&['sessionId','channelId','startupId'].every(k=>id(r[k]))&&typeof r.sha256==='string'&&/^[a-f0-9]{64}$/.test(r.sha256);}
 function metaValid(r){return commonValid(r)&&positive(r.totalBytes)&&r.totalBytes<=STARTUP_LIMITS.totalBytes&&positive(r.chunkCount)&&r.chunkCount<=STARTUP_LIMITS.chunks&&r.chunkCount===Math.ceil(r.totalBytes/STARTUP_LIMITS.chunkBytes);}
 function scope(value){const r=record(value,['sessionId','channelId']);return r&&id(r.sessionId)&&id(r.channelId)?r:null;}
-function beginRecord(value){const r=record(value,['type',...META]);return r&&r.type==='startup-begin'&&metaValid(r)?r:null;}
+export function validateStartupModulePolicy(value){try{const p=record(value,['expectedExecutable','expectedModuleDirectory']),v=p&&policyRecord({privateEnvironmentKeys:[],...p});return v?frozen({expectedExecutable:v.expectedExecutable,expectedModuleDirectory:v.expectedModuleDirectory}):null;}catch{return null;}}
+export function combineStartupPolicies(base,seed){try{
+ const a=policyRecord(base),b=policyRecord(seed);if(!a||!b)return null;
+ if(a.expectedExecutable&&b.expectedExecutable&&a.expectedExecutable.toLowerCase()!==b.expectedExecutable.toLowerCase()||a.expectedModuleDirectory&&b.expectedModuleDirectory&&a.expectedModuleDirectory!==b.expectedModuleDirectory)return null;
+ const result={privateEnvironmentKeys:frozen([...new Set([...a.privateKeys,...b.privateKeys])])};
+ const expected=b.expectedExecutable??a.expectedExecutable,modules=b.expectedModuleDirectory??a.expectedModuleDirectory;
+ if(expected)result.expectedExecutable=expected;if(modules)result.expectedModuleDirectory=modules;
+ return policyRecord(result)?frozen(result):null;
+}catch{return null;}}
+function beginRecord(value){const r=packet(value,false);return r&&r.type==='startup-begin'?r:null;}
 function same(r,b,keys=COMMON){return keys.every(k=>r[k]===b[k]);}
 function packet(value,wire){
  if(!value||typeof value!=='object'||isProxy(value))return null;
  const d=Object.getOwnPropertyDescriptor(value,'type');if(!d?.enumerable||!Object.hasOwn(d,'value')||!REQUESTS.has(d.value))return null;
  const type=d.value,keys=type==='startup-begin'?META:type==='startup-chunk'?[...META,'index',wire?'dataBase64':'data']:type==='startup-start'?[...COMMON,'gateGeneration']:COMMON;
- const r=record(value,['type',...keys]);if(!r||!commonValid(r))return null;
+ const hasPolicy=type==='startup-begin'&&Object.hasOwn(value,'startupPolicy');
+ const r=record(value,['type',...keys,...(hasPolicy?['startupPolicy']:[])]);if(!r||!commonValid(r))return null;
+ if(hasPolicy){r.startupPolicy=validateStartupModulePolicy(r.startupPolicy);if(!r.startupPolicy)return null;}
  if((type==='startup-begin'||type==='startup-chunk')&&!metaValid(r))return null;
  if(type==='startup-start'&&!positive(r.gateGeneration))return null;
  if(type==='startup-chunk'&&(!Number.isSafeInteger(r.index)||r.index<0||r.index>=r.chunkCount))return null;
