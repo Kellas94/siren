@@ -2,7 +2,7 @@
 // Blank genuine Electron windows qualify MAIN dispatch, not renderer/UI/package.
 import assert from 'node:assert/strict';
 import {app,BrowserWindow,protocol,utilityProcess,session} from 'electron';
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,open} from 'node:fs/promises';
 import {join,dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
@@ -10,7 +10,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {spawn,execFile} from 'node:child_process';
 import {promisify,types} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createOriginalResolutionFixture as createSingleCmdletFixture} from './terminal-resolution-observation.mjs';
+import {createOriginalResolutionFixture as createSingleCmdletFixture,parseResolutionObservation} from './terminal-resolution-observation.mjs';
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
 import {receiveFreshParentPermit,consumeFreshParentPermitBootstrap} from './terminal-fresh-parent-permit.mjs';
 // FRESH_WORKER_DIAGNOSTIC_BEGIN
@@ -198,6 +198,28 @@ function assertCleanupObservation(observation){
 }
 // INERT_HELPERS_END
 
+// FRESH_FAILURE_RESOLUTION_CAPTURE_BEGIN
+// Private post-failure DATA only: exact genuine fixture path, no input authority.
+async function captureFailureResolutionObservation(observationPath,token,pid){
+ let handle,raw=null,code='RESOLUTION_CAPTURE_READ_REFUSED',closeCode=null;
+ try{
+  const buffer=Buffer.alloc(32769);let total=0,complete=false;
+  handle=await open(observationPath,'r');
+  while(total<buffer.length){
+   const reply=await handle.read(buffer,total,buffer.length-total,total),count=reply.bytesRead;
+   if(!Number.isInteger(count)||count<0||count>buffer.length-total)throw 0;
+   if(count===0){complete=true;break;}total+=count;
+  }
+  if(complete){const bytes=buffer.subarray(0,total);raw=Object.freeze({bytes:total,sha256:createHash('sha256').update(bytes).digest('hex'),base64:bytes.toString('base64')});code=null;}
+  else code='RESOLUTION_CAPTURE_LIMIT';
+ }catch{code='RESOLUTION_CAPTURE_READ_REFUSED';}
+ finally{if(handle)try{await handle.close();}catch{closeCode='RESOLUTION_CAPTURE_CLOSE_REFUSED';if(code===null)code=closeCode;}}
+ let parse=Object.freeze({status:'UNAVAILABLE',code:'RESOLUTION_OBSERVATION_UNAVAILABLE',observation:null});
+ if(raw)try{parse=Object.freeze({status:'VALID',code:null,observation:parseResolutionObservation(Buffer.from(raw.base64,'base64'),{token,pid})});}
+ catch{parse=Object.freeze({status:'INVALID',code:'RESOLUTION_OBSERVATION_INVALID',observation:null});}
+ return Object.freeze({status:code===null?'CAPTURED':'CAPTURE_REFUSED',code,closeCode,raw,parse});
+}
+// FRESH_FAILURE_RESOLUTION_CAPTURE_END
 export async function startRuntimeProbe(config){
  const permitBootstrap=consumeFreshParentPermitBootstrap();
  const {root,out,execution,electronExecutable,filesystemExecutable,observerExecutable,run,commit,control,armId,projectDirectory,fixtureDirectory,expectedEnvironment,retainedJobRoot,expectedFixture}=config;
@@ -252,6 +274,10 @@ export async function startRuntimeProbe(config){
    await record('failure-fixture-state.json',async()=>{
     const state={};for(const [key,path]of Object.entries({started:fixture.startedPath,stage:fixture.stagePath,completed:fixture.completedPath}))try{state[key]={value:await readFile(path,'utf8')};}catch(e){state[key]={error:e.code??e.message};}return state;
    });
+   // FRESH_FAILURE_RESOLUTION_SAVE_BEGIN
+   try{await save('failure-resolution-observation.json',await captureFailureResolutionObservation(fixture.observationPath,fixture.expected,beforeSession?.shell?.pid));}
+   catch{result.resolutionObservationCaptureCode='RESOLUTION_CAPTURE_SAVE_REFUSED';}
+   // FRESH_FAILURE_RESOLUTION_SAVE_END
    await record('failure-script.json',async()=>({pin:await pin(fixture.scriptPath),body:await readFile(fixture.scriptPath,'utf8')}));
   }
   if(members){

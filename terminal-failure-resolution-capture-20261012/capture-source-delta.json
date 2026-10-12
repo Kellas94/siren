@@ -1,0 +1,25 @@
+{
+  "scope": "POST_FAILURE_RESOLUTION_DATA_ONLY",
+  "replacements": [
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "import {readFile,writeFile,mkdir} from 'node:fs/promises';",
+      "after": "import {readFile,writeFile,mkdir,open} from 'node:fs/promises';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "import {createOriginalResolutionFixture as createSingleCmdletFixture} from './terminal-resolution-observation.mjs';",
+      "after": "import {createOriginalResolutionFixture as createSingleCmdletFixture,parseResolutionObservation} from './terminal-resolution-observation.mjs';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "export async function startRuntimeProbe(config){",
+      "after": "// FRESH_FAILURE_RESOLUTION_CAPTURE_BEGIN\n// Private post-failure DATA only: exact genuine fixture path, no input authority.\nasync function captureFailureResolutionObservation(observationPath,token,pid){\n let handle,raw=null,code='RESOLUTION_CAPTURE_READ_REFUSED',closeCode=null;\n try{\n  const buffer=Buffer.alloc(32769);let total=0,complete=false;\n  handle=await open(observationPath,'r');\n  while(total<buffer.length){\n   const reply=await handle.read(buffer,total,buffer.length-total,total),count=reply.bytesRead;\n   if(!Number.isInteger(count)||count<0||count>buffer.length-total)throw 0;\n   if(count===0){complete=true;break;}total+=count;\n  }\n  if(complete){const bytes=buffer.subarray(0,total);raw=Object.freeze({bytes:total,sha256:createHash('sha256').update(bytes).digest('hex'),base64:bytes.toString('base64')});code=null;}\n  else code='RESOLUTION_CAPTURE_LIMIT';\n }catch{code='RESOLUTION_CAPTURE_READ_REFUSED';}\n finally{if(handle)try{await handle.close();}catch{closeCode='RESOLUTION_CAPTURE_CLOSE_REFUSED';if(code===null)code=closeCode;}}\n let parse=Object.freeze({status:'UNAVAILABLE',code:'RESOLUTION_OBSERVATION_UNAVAILABLE',observation:null});\n if(raw)try{parse=Object.freeze({status:'VALID',code:null,observation:parseResolutionObservation(Buffer.from(raw.base64,'base64'),{token,pid})});}\n catch{parse=Object.freeze({status:'INVALID',code:'RESOLUTION_OBSERVATION_INVALID',observation:null});}\n return Object.freeze({status:code===null?'CAPTURED':'CAPTURE_REFUSED',code,closeCode,raw,parse});\n}\n// FRESH_FAILURE_RESOLUTION_CAPTURE_END\nexport async function startRuntimeProbe(config){"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "   await record('failure-script.json',",
+      "after": "   // FRESH_FAILURE_RESOLUTION_SAVE_BEGIN\n   try{await save('failure-resolution-observation.json',await captureFailureResolutionObservation(fixture.observationPath,fixture.expected,beforeSession?.shell?.pid));}\n   catch{result.resolutionObservationCaptureCode='RESOLUTION_CAPTURE_SAVE_REFUSED';}\n   // FRESH_FAILURE_RESOLUTION_SAVE_END\n   await record('failure-script.json',"
+    }
+  ]
+}

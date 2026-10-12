@@ -6,7 +6,9 @@ import {readFileSync} from 'node:fs';
 import {types} from 'node:util';
 import {createHash} from 'node:crypto';
 // Explicit retained-closure correction inverse; the sealed prior transport map stays unchanged.
-function restoreClosure(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-retained-closure-20261012/closure-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact retained closure delta '+path);text=text.replace(row.after,row.before);}return text;}
+// Prospective post-failure DATA observer inverse; all earlier sealed maps are unchanged.
+function restoreFailureCapture(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-failure-resolution-capture-20261012/capture-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact post-failure capture delta '+path);text=text.replace(row.after,row.before);}return text;}
+function restoreClosure(text,path){text=restoreFailureCapture(text,path);const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-retained-closure-20261012/closure-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact retained closure delta '+path);text=text.replace(row.after,row.before);}return text;}
 // Explicit historical observer controls: reverse only the separately tested literal transport delta.
 function restoreTransport(text,path){text=restoreClosure(text,path);const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-transport-20261012/transport-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact transport delta '+path);text=text.replace(row.after,row.before);}return text;}
 const root=new URL('../../../',import.meta.url),evidence='terminal-fresh-channel-observability-20261012/';
