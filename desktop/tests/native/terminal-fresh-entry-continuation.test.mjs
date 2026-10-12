@@ -70,7 +70,7 @@ test('conditional static link refusal rejects before the CLI continuation catch'
 test('actual VM linking refuses a missing named driver export before CLI evaluation',async()=>assert.rejects(cli({throwAt:'missing-export'}),/does not provide an export named 'runFreshTerminalPair'/));
 test('conditional unknown successful pair status remains adverse',async()=>assert.equal((await cli({mode:'pair',statusOverride:'UNKNOWN'})).process.exitCode,1));
 
-const pairNames=['terminal-fresh-runtime-provision','terminal-fresh-runtime-inventory','terminal-fresh-runtime-retention','terminal-connect-derivative','terminal-creator-transport-derivative','terminal-connect-raw-json','terminal-connect-raw-file','terminal-fresh-environment','terminal-fresh-pair-model','terminal-connect-comparison','terminal-fresh-pair-driver','terminal-fresh-pair-worker','terminal-resolution-observation','terminal-discovery-fixture','terminal-cmdlet-fixture','terminal-session-command','terminal-fresh-parent-permit'].map(n=>'desktop/tests/native/'+n+'.mjs');
+const pairNames=['terminal-fresh-runtime-provision','terminal-fresh-runtime-inventory','terminal-fresh-runtime-retention','terminal-connect-derivative','terminal-creator-transport-derivative','terminal-connect-raw-json','terminal-connect-raw-file','terminal-fresh-environment','terminal-fresh-pair-model','terminal-connect-comparison','terminal-fresh-pair-driver','terminal-fresh-pair-worker','terminal-resolution-observation','terminal-discovery-fixture','terminal-cmdlet-fixture','terminal-session-command','terminal-fresh-parent-permit'].map(n=>'desktop/tests/native/'+n+'.mjs').concat(['desktop/src/terminal/control-channel.mjs','desktop/src/terminal/contracts.mjs']);
 async function sourceManifest({pair=false,omit=null,omitDiagnostic=null,mode='fixed-pathext-pair'}={}){
  const original=JSON.parse(readFileSync(new URL('../../../terminal-fresh-entry-continuation-20261011/before/02-terminal-fresh-runtime-provision-inputs.json.txt',import.meta.url),'utf8'));
  const rows=new Map(original.inputs.map(r=>[r.path,r]));if(pair)for(const name of pairNames)if(!rows.has(name)){const b=readFileSync(new URL('../../../'+name,import.meta.url));rows.set(name,{path:name,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});}
@@ -82,13 +82,13 @@ async function sourceManifest({pair=false,omit=null,omitDiagnostic=null,mode='fi
 }
 test('literal manifest accepts the frozen build-only fixture in default mode',async()=>assert.ok(await sourceManifest({mode:'build'})));
 test('literal opt-in manifest refuses the frozen incomplete 20-input fixture before build',async()=>assert.rejects(sourceManifest(),/SOURCE_REFUSED/));
-test('actual opt-in manifest accepts complete fixed 17-file source closure',async()=>assert.ok(await sourceManifest({pair:true})));
-test('actual opt-in manifest refuses each of all17 missing diagnostic inputs',async()=>{const accepted=[];for(const omit of pairNames){try{await sourceManifest({pair:true,omit});accepted.push(omit);}catch(e){assert.match(e.message,/SOURCE_REFUSED/);}}assert.deepEqual(accepted,[]);});
-test('actual opt-in manifest refuses each of all17 unstaged pinned modules',async()=>{for(const omitDiagnostic of pairNames)await assert.rejects(sourceManifest({pair:true,omitDiagnostic}),/SOURCE_REFUSED/);});
+test('actual opt-in manifest accepts complete fixed 19-file source closure',async()=>assert.ok(await sourceManifest({pair:true})));
+test('actual opt-in manifest refuses each of all19 missing diagnostic inputs',async()=>{const accepted=[];for(const omit of pairNames){try{await sourceManifest({pair:true,omit});accepted.push(omit);}catch(e){assert.match(e.message,/SOURCE_REFUSED/);}}assert.deepEqual(accepted,[]);});
+test('actual opt-in manifest refuses each of all19 unstaged pinned modules',async()=>{for(const omitDiagnostic of pairNames)await assert.rejects(sourceManifest({pair:true,omitDiagnostic}),/SOURCE_REFUSED/);});
 
-test('current 27-input manifest pins every current retained diagnostic source exactly',()=>{
+test('current 29-input manifest pins every current retained diagnostic source exactly',()=>{
  const m=JSON.parse(readFileSync(new URL('./terminal-fresh-runtime-provision-inputs.json',import.meta.url),'utf8'));
- assert.equal(m.inputs.length,27);assert.equal(m.diagnostics.length,17);
+ assert.equal(m.inputs.length,29);assert.equal(m.diagnostics.length,19);
  assert.deepEqual(new Set(m.diagnostics),new Set(pairNames));
  for(const row of m.inputs){
   const b=readFileSync(new URL('../../../'+row.path,import.meta.url));

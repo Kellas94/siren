@@ -1,0 +1,35 @@
+{
+  "scope": "EXACT_SELECTED_HISTORICAL_PINS_DATA",
+  "originalOwnerFreeze": {
+    "path": "terminal-parent-permit-transport-20261012/owner-freeze.json",
+    "bytes": 26841,
+    "sha256": "1c20879fa8ff6db1d5481f8a6ce66b07dfa190607df8c154650cfe4e32e85b5d"
+  },
+  "rows": [
+    {
+      "path": "desktop/src/terminal/control-channel.mjs",
+      "bytes": 8186,
+      "sha256": "24da76d449c01a310f6dc67cc1e8c0a03cf1b7b7689fefcbadc1980d7f12d4f6"
+    },
+    {
+      "path": "desktop/src/terminal/contracts.mjs",
+      "bytes": 4172,
+      "sha256": "1637bc7b9b7687b988ea45b7bee5418727e0c4e00a284e966953d0a56efae79e"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-parent-permit.mjs",
+      "bytes": 8635,
+      "sha256": "c362970f5e3cfc6b643350aadf43151f8d2e58d29d23899099a7b36f568f1116"
+    },
+    {
+      "path": "terminal-fresh-provisioner-preparation-20261011/historical-source-mapping.json",
+      "bytes": 37600,
+      "sha256": "ad06aa0da323453bd6052a5248e17a1e3fae9f106c7fc31d1dbe73809590f712"
+    },
+    {
+      "path": "terminal-fresh-provisioner-preparation-20261011/historical-execution-mapping.json",
+      "bytes": 307168,
+      "sha256": "cc382522caa027c181383c9d52b60eace662521834169c7bb849be4fbe8c66ec"
+    }
+  ]
+}

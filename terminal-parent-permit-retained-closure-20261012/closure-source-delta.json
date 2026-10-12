@@ -1,0 +1,30 @@
+{
+  "scope": "EXPLICIT_SEPARATE_DIAGNOSTICS_CLASS_GRAPH_DELTA",
+  "replacements": [
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "path.join(execution,'desktop/src/terminal/control-channel.mjs')",
+      "after": "path.join(retained,'diagnostics','desktop/src/terminal/control-channel.mjs')"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "const controllerPins=[];for(const name of controllerNames){const source=await pin(path.join(provision.root,'desktop/tests/native',name)),copy=await pin(path.join(base,name));",
+      "after": "const controllerPaths=[...controllerNames.map(name=>'desktop/tests/native/'+name),'desktop/src/terminal/control-channel.mjs','desktop/src/terminal/contracts.mjs'];const controllerPins=[];for(const relative of controllerPaths){const source=await pin(path.join(provision.root,relative)),copy=await pin(path.join(retained,'diagnostics',relative));"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "const {TerminalControlChannel}=await importExecution('desktop/src/terminal/control-channel.mjs');",
+      "after": "const {TerminalControlChannel}=await import(pathToFileURL(join(dirname(execution),'diagnostics','desktop/src/terminal/control-channel.mjs')).href);"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-runtime-provision.mjs",
+      "before": "'terminal-fresh-parent-permit'].map(n=>'desktop/tests/native/'+n+'.mjs');",
+      "after": "'terminal-fresh-parent-permit'].map(n=>'desktop/tests/native/'+n+'.mjs').concat(['desktop/src/terminal/control-channel.mjs','desktop/src/terminal/contracts.mjs']);"
+    },
+    {
+      "path": ".github/workflows/terminal-fresh-runtime-pair.yml",
+      "before": "            desktop/tests/native/terminal-fresh-parent-permit.mjs\n",
+      "after": "            desktop/tests/native/terminal-fresh-parent-permit.mjs\n            desktop/src/terminal/control-channel.mjs\n            desktop/src/terminal/contracts.mjs\n"
+    }
+  ]
+}

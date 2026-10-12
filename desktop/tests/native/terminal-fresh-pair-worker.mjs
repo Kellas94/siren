@@ -230,7 +230,7 @@ export async function startRuntimeProbe(config){
  const exec=promisify(execFile),helperPin=await pin(filesystemExecutable),observerPin=await pin(observerExecutable);
  const event=w=>({sender:w.webContents,senderFrame:w.webContents.mainFrame});
  const importExecution=path=>import(pathToFileURL(join(execution,path)).href);
- const {TerminalControlChannel}=await importExecution('desktop/src/terminal/control-channel.mjs');
+ const {TerminalControlChannel}=await import(pathToFileURL(join(dirname(execution),'diagnostics','desktop/src/terminal/control-channel.mjs')).href);
  const request=(grant,fields={})=>({operationId:'cmdlet_'+(++op),epoch:grant.epoch,...fields});
  async function helper(mode,target){
   assert.deepEqual(await pin(filesystemExecutable),helperPin);

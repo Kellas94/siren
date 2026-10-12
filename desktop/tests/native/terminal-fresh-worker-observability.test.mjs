@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {types} from 'node:util';
+// Explicit retained-closure correction inverse; the sealed prior transport map stays unchanged.
+function restoreClosure(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-retained-closure-20261012/closure-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact retained closure delta '+path);text=text.replace(row.after,row.before);}return text;}
 // Explicit historical observer controls: reverse only the separately tested literal transport delta.
-function restoreTransport(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-transport-20261012/transport-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact transport delta '+path);text=text.replace(row.after,row.before);}return text;}
+function restoreTransport(text,path){text=restoreClosure(text,path);const map=JSON.parse(readFileSync(new URL('../../../terminal-parent-permit-transport-20261012/transport-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact transport delta '+path);text=text.replace(row.after,row.before);}return text;}
 const root=new URL('../../../',import.meta.url),read=p=>restoreTransport(readFileSync(new URL(p,root),'utf8'),p);
 const worker=read('desktop/tests/native/terminal-fresh-pair-worker.mjs'),driver=read('desktop/tests/native/terminal-fresh-pair-driver.mjs'),provision=read('desktop/tests/native/terminal-fresh-runtime-provision.mjs'),workflow=read('.github/workflows/terminal-fresh-runtime-pair.yml');
 function fragment(source,tag){const start=source.indexOf('// '+tag+'_BEGIN'),end=source.indexOf('// '+tag+'_END');assert.ok(start>0&&end>start,'Missing '+tag);return source.slice(start,end);}

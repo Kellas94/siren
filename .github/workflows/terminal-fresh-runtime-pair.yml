@@ -186,6 +186,8 @@ jobs:
             desktop/tests/native/terminal-fresh-pair-driver.mjs
             desktop/tests/native/terminal-fresh-pair-worker.mjs
             desktop/tests/native/terminal-fresh-parent-permit.mjs
+            desktop/src/terminal/control-channel.mjs
+            desktop/src/terminal/contracts.mjs
             desktop/tests/native/terminal-resolution-observation.mjs
             desktop/tests/native/terminal-discovery-fixture.mjs
             desktop/tests/native/terminal-cmdlet-fixture.mjs
