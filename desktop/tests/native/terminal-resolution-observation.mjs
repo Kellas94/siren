@@ -130,3 +130,12 @@ export function createOriginalResolutionFixture({projectDirectory,token,control}
 export function createQualifiedResolutionFixture({projectDirectory,token,control}={}){
  return createResolutionObservationFixture({projectDirectory,token,control,mode:'module-qualified'});
 }
+
+// Fixed diagnostic treatment only. Original factory exports retain their exact behavior.
+export function createBuiltinModulePathResolutionFixture({projectDirectory,token,control}={}){
+ const original=createOriginalResolutionFixture({projectDirectory,token,control});
+ const anchor="[IO.File]::WriteAllText($stage, 'observation-started')\r\n";
+ const assignment="[Environment]::SetEnvironmentVariable('PSModulePath', [IO.Path]::Combine([string]$PSHOME, 'Modules'), [EnvironmentVariableTarget]::Process)\r\n";
+ if(original.script.split(anchor).length!==2)throw Error('Fixed builtin-modulepath observation anchor changed');
+ return Object.freeze({...original,variant:original.variant+'_BUILTIN_MODULEPATH_DIAGNOSTIC_V1',script:original.script.replace(anchor,assignment+anchor)});
+}

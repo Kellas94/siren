@@ -1,0 +1,307 @@
+[
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-driver.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.test.mjs",
+      "bytes": 17307,
+      "sha256": "e85c840d2dfca88ffc7873c125c362f85e2c04f23251368fcc88263dcfe1a8b3"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.test.mjs",
+      "bytes": 17858,
+      "sha256": "06f71f67c90b214a8da66138ffed02869591e1ce56916337ce068be25b3cc59d"
+    },
+    "edits": [
+      {
+        "beforeStart": 534,
+        "beforeEnd": 534,
+        "afterStart": 534,
+        "afterEnd": 1044,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 576,
+        "beforeEnd": 576,
+        "afterStart": 1086,
+        "afterEnd": 1127,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-channel-observability.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-fresh-channel-observability.test.mjs",
+      "bytes": 10672,
+      "sha256": "06383f28d325705af2d65c5c62f4aa91019c6d450559f11cd9fad303c2869e89"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-fresh-channel-observability.test.mjs",
+      "bytes": 11944,
+      "sha256": "23f60b2b30820b1ebcd9383b5893101f87915ba770e84e9e74b3dab73abb3c86"
+    },
+    "edits": [
+      {
+        "beforeStart": 487,
+        "beforeEnd": 487,
+        "afterStart": 487,
+        "afterEnd": 1658,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\n// Only this historical manifest comparison reverses the new fixture pin; its live driver/worker pin checks remain current.\nfunction restoreBuiltinFixtureManifest(text){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));const rows=map.replacements.filter(r=>r.path==='desktop/tests/native/terminal-fresh-runtime-provision-inputs.json'&&JSON.parse(r.before).path==='desktop/tests/native/terminal-resolution-observation.mjs');assert.equal(rows.length,1);const row=rows[0];assert.equal(text.split(row.after).length,2);return text.replace(row.after,row.before);}\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 529,
+        "beforeEnd": 529,
+        "afterStart": 1700,
+        "afterEnd": 1741,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      },
+      {
+        "beforeStart": 9282,
+        "beforeEnd": 9282,
+        "afterStart": 10494,
+        "afterEnd": 10524,
+        "before": "",
+        "after": "storeBuiltinFixtureManifest(re"
+      },
+      {
+        "beforeStart": 9284,
+        "beforeEnd": 9284,
+        "afterStart": 10526,
+        "afterEnd": 10542,
+        "before": "",
+        "after": "FileSync(new URL"
+      },
+      {
+        "beforeStart": 9297,
+        "beforeEnd": 9297,
+        "afterStart": 10555,
+        "afterEnd": 10569,
+        "before": "",
+        "after": ",root),'utf8')"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-worker-observability.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-fresh-worker-observability.test.mjs",
+      "bytes": 14485,
+      "sha256": "f75c7ed3a125818d595fee49bb4b1b8880dfe7bf83d2d033f9b9f9645fc360fe"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-fresh-worker-observability.test.mjs",
+      "bytes": 15036,
+      "sha256": "674c1d0612f228301ace387f758237c3a2b91fe3f53b6b7cab14e33e8148980c"
+    },
+    "edits": [
+      {
+        "beforeStart": 433,
+        "beforeEnd": 433,
+        "afterStart": 433,
+        "afterEnd": 943,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 475,
+        "beforeEnd": 475,
+        "afterStart": 985,
+        "afterEnd": 1026,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-raw-binding-observability.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-raw-binding-observability.test.mjs",
+      "bytes": 13901,
+      "sha256": "a30d9f7b7c203722fb364c3bbee2d5bc5e46755535224295ab063baf413b2562"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-raw-binding-observability.test.mjs",
+      "bytes": 15173,
+      "sha256": "91afd55cf2855929504c365cdeb050e78c6d94cad2e1a24e67f0989c35fba78d"
+    },
+    "edits": [
+      {
+        "beforeStart": 486,
+        "beforeEnd": 486,
+        "afterStart": 486,
+        "afterEnd": 1657,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\n// Only this historical manifest comparison reverses the new fixture pin; its live driver/worker pin checks remain current.\nfunction restoreBuiltinFixtureManifest(text){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));const rows=map.replacements.filter(r=>r.path==='desktop/tests/native/terminal-fresh-runtime-provision-inputs.json'&&JSON.parse(r.before).path==='desktop/tests/native/terminal-resolution-observation.mjs');assert.equal(rows.length,1);const row=rows[0];assert.equal(text.split(row.after).length,2);return text.replace(row.after,row.before);}\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 528,
+        "beforeEnd": 528,
+        "afterStart": 1699,
+        "afterEnd": 1740,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      },
+      {
+        "beforeStart": 13040,
+        "beforeEnd": 13040,
+        "afterStart": 14252,
+        "afterEnd": 14282,
+        "before": "",
+        "after": "storeBuiltinFixtureManifest(re"
+      },
+      {
+        "beforeStart": 13042,
+        "beforeEnd": 13042,
+        "afterStart": 14284,
+        "afterEnd": 14300,
+        "before": "",
+        "after": "FileSync(new URL"
+      },
+      {
+        "beforeStart": 13047,
+        "beforeEnd": 13047,
+        "afterStart": 14305,
+        "afterEnd": 14319,
+        "before": "",
+        "after": ",root),'utf8')"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-parent-permit-integration.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-fresh-parent-permit-integration.test.mjs",
+      "bytes": 6085,
+      "sha256": "66065bd608d244f598773b94829f933fe32a8359c45e76260da2bc9f8f9b8573"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-fresh-parent-permit-integration.test.mjs",
+      "bytes": 6636,
+      "sha256": "d8b8a2b2ee3c0dfdb0b59d0bbe22e930aab05c94a0d0b27c3c136d66f98694fa"
+    },
+    "edits": [
+      {
+        "beforeStart": 783,
+        "beforeEnd": 783,
+        "afterStart": 783,
+        "afterEnd": 1293,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 825,
+        "beforeEnd": 825,
+        "afterStart": 1335,
+        "afterEnd": 1376,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-parent-permit-retained-closure.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-parent-permit-retained-closure.test.mjs",
+      "bytes": 7154,
+      "sha256": "fed562c617a3e80d3d8eae6b5c4744b36c80159c48d867611177a3b2def71b60"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-parent-permit-retained-closure.test.mjs",
+      "bytes": 7705,
+      "sha256": "545f5b91065e78198c4983a4cbeda93fd03ad8b37683090ff63141dd0ef67927"
+    },
+    "edits": [
+      {
+        "beforeStart": 5609,
+        "beforeEnd": 5609,
+        "afterStart": 5609,
+        "afterEnd": 6119,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 5651,
+        "beforeEnd": 5651,
+        "afterStart": 6161,
+        "afterEnd": 6202,
+        "before": "",
+        "after": "text=restoreBuiltinModulePath(text,path);"
+      }
+    ]
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-resolution-capture.test.mjs",
+    "before": {
+      "path": "desktop/tests/native/terminal-fresh-resolution-capture.test.mjs",
+      "bytes": 9531,
+      "sha256": "8c28b90df45931abce7496d0a2e119f3fa05356b8941a4c3a58e3ab8a58e4577"
+    },
+    "after": {
+      "path": "desktop/tests/native/terminal-fresh-resolution-capture.test.mjs",
+      "bytes": 10229,
+      "sha256": "c86f6f4ac16ee41dd2a30c51044ae725953506e8c470d91908b879a0c59dfd64"
+    },
+    "edits": [
+      {
+        "beforeStart": 8188,
+        "beforeEnd": 8188,
+        "afterStart": 8188,
+        "afterEnd": 8698,
+        "before": "",
+        "after": "// Fixed builtin-modulepath diagnostic inverse; every earlier sealed map remains unchanged.\nfunction restoreBuiltinModulePath(text,path){const map=JSON.parse(readFileSync(new URL('../../../terminal-builtin-modulepath-diagnostic-20261012/builtin-source-delta.json',import.meta.url),'utf8'));for(const row of map.replacements.filter(r=>r.path===path).reverse()){assert.equal(text.split(row.after).length,2,'Exact builtin-modulepath diagnostic delta '+path);text=text.replace(row.after,row.before);}return text;}\n"
+      },
+      {
+        "beforeStart": 8511,
+        "beforeEnd": 8511,
+        "afterStart": 9021,
+        "afterEnd": 9046,
+        "before": "",
+        "after": "restoreBuiltinModulePath("
+      },
+      {
+        "beforeStart": 8518,
+        "beforeEnd": 8518,
+        "afterStart": 9053,
+        "afterEnd": 9108,
+        "before": "",
+        "after": "),'desktop/tests/native/terminal-fresh-pair-worker.mjs'"
+      },
+      {
+        "beforeStart": 8913,
+        "beforeEnd": 8913,
+        "afterStart": 9503,
+        "afterEnd": 9528,
+        "before": "",
+        "after": "storeBuiltinModulePath(re"
+      },
+      {
+        "beforeStart": 8916,
+        "beforeEnd": 8916,
+        "afterStart": 9531,
+        "afterEnd": 9534,
+        "before": "",
+        "after": "p),"
+      },
+      {
+        "beforeStart": 9392,
+        "beforeEnd": 9392,
+        "afterStart": 10010,
+        "afterEnd": 10035,
+        "before": "",
+        "after": "restoreBuiltinModulePath("
+      },
+      {
+        "beforeStart": 9399,
+        "beforeEnd": 9399,
+        "afterStart": 10042,
+        "afterEnd": 10097,
+        "before": "",
+        "after": "),'desktop/tests/native/terminal-fresh-pair-worker.mjs'"
+      }
+    ]
+  }
+]

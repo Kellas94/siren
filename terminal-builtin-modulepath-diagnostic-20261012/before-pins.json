@@ -1,0 +1,57 @@
+[
+  {
+    "path": "desktop/tests/native/terminal-resolution-observation.mjs",
+    "bytes": 8217,
+    "sha256": "677dd6f9097e217b1c4b5b5f04abdac851d1ea2677e6e4240eb7c6a75f23c6e0"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+    "bytes": 27139,
+    "sha256": "cbe15e84f75b36d817fea162b4bf3402990afc66f153a8782d30add3b2554103"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+    "bytes": 43828,
+    "sha256": "054918483a9012c56b695b029bee351860f7ea9cc3e2c3f1d2bca43ac569b798"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-runtime-provision-inputs.json",
+    "bytes": 5841,
+    "sha256": "47ed1f9ae306922e6512852c7f26b8589d91e51c1278ad87f90a6b6ade7e6e00"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-driver.test.mjs",
+    "bytes": 17307,
+    "sha256": "e85c840d2dfca88ffc7873c125c362f85e2c04f23251368fcc88263dcfe1a8b3"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-channel-observability.test.mjs",
+    "bytes": 10672,
+    "sha256": "06383f28d325705af2d65c5c62f4aa91019c6d450559f11cd9fad303c2869e89"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-worker-observability.test.mjs",
+    "bytes": 14485,
+    "sha256": "f75c7ed3a125818d595fee49bb4b1b8880dfe7bf83d2d033f9b9f9645fc360fe"
+  },
+  {
+    "path": "desktop/tests/native/terminal-raw-binding-observability.test.mjs",
+    "bytes": 13901,
+    "sha256": "a30d9f7b7c203722fb364c3bbee2d5bc5e46755535224295ab063baf413b2562"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-parent-permit-integration.test.mjs",
+    "bytes": 6085,
+    "sha256": "66065bd608d244f598773b94829f933fe32a8359c45e76260da2bc9f8f9b8573"
+  },
+  {
+    "path": "desktop/tests/native/terminal-parent-permit-retained-closure.test.mjs",
+    "bytes": 7154,
+    "sha256": "fed562c617a3e80d3d8eae6b5c4744b36c80159c48d867611177a3b2def71b60"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-resolution-capture.test.mjs",
+    "bytes": 9531,
+    "sha256": "8c28b90df45931abce7496d0a2e119f3fa05356b8941a4c3a58e3ab8a58e4577"
+  }
+]

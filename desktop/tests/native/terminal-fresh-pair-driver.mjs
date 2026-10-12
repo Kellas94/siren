@@ -10,7 +10,7 @@ import {recheckProvisionedFreshRuntime} from './terminal-fresh-runtime-provision
 import {captureFreshPairLaunchEnvironment} from './terminal-fresh-environment.mjs';
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
 import {createFreshParentPermitServer} from './terminal-fresh-parent-permit.mjs';
-import {createOriginalResolutionFixture} from './terminal-resolution-observation.mjs';
+import {createBuiltinModulePathResolutionFixture as createOriginalResolutionFixture} from './terminal-resolution-observation.mjs';
 
 // FRESH_DRIVER_WORKER_DIAGNOSTIC_BEGIN
 const diagnosticData=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
@@ -139,7 +139,7 @@ function classifyFreshCommand(observed,expected){
 
 export async function runFreshTerminalPair(provision,...extra){
  if(consumed)return freeze({ok:false,status:'FRESH_PAIR_REFUSED',code:'ATTEMPT_CONSUMED',failureStage:'ATTEMPT_CONSUMED',...flags});consumed=true;
- const result={ok:false,status:'FRESH_PAIR_STARTED_NOT_ADMITTED',scope:'WITHIN_JOB_PATHEXT_SINGLE_VARIABLE_ORIGINAL_WRITE_OUTPUT',arms:[],failureStage:null,nativeHelperCalls:[],modelStatus:'UNAVAILABLE_EXTERNAL_ENGINE_NOT_IN_RETAINED_RUNTIME',...flags};let out,save,activePermit,stage='ARGUMENTS';
+ const result={ok:false,status:'FRESH_PAIR_STARTED_NOT_ADMITTED',scope:'WITHIN_JOB_BUILTIN_MODULEPATH_DIAGNOSTIC_PATHEXT_PAIR_UNQUALIFIED_WRITE_OUTPUT',arms:[],failureStage:null,nativeHelperCalls:[],modelStatus:'UNAVAILABLE_EXTERNAL_ENGINE_NOT_IN_RETAINED_RUNTIME',...flags};let out,save,activePermit,stage='ARGUMENTS';
  try{
   assert.equal(extra.length,0);stage='PRIVATE_RETENTION';assert.equal(await recheckProvisionedFreshRuntime(provision),true,'GENUINE_PRIVATE_RETENTION_REQUIRED');
   stage='HOSTED_CONTEXT';assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.versions.node,'24.16.0');
@@ -190,7 +190,10 @@ export async function runFreshTerminalPair(provision,...extra){
    stage='ARM_EXIT_CHANNEL';stage='ARM_EXIT_CODE';assert.equal(exited.code,0);stage='ARM_EXIT_SIGNAL';assert.equal(exited.signal,null);stage='ARM_PIPE_INTEGRITY';assert.equal(pipeFailed,false);stage='ARM_CHALLENGE_COUNT';assert.equal(challenges,1);stage='ARM_PERMIT_STATUS';assert.equal(launch.pipeStatus,'PERMIT_WRITTEN');stage='ARM_FRAME_REMAINDER';assert.equal(pending.trim(),'');stage='ARM_RUN_IDENTITY';assert.equal(observed.run,provision.run);stage='ARM_COMMIT_IDENTITY';assert.equal(observed.commit,provision.commit);stage='ARM_CLEANUP_VERIFIED';assert.equal(observed.cleanupVerified,true);stage='ARM_UNAVAILABLE_CALLBACKS';assert.deepEqual(observed.unavailable,[]);
    stage='ARM_INPUT_RECEIPT';const input=JSON.parse(await readFile(path.join(armOut,'command-input-receipt.json'),'utf8'));assert.equal(input.ok,true);
    stage='ARM_HELD_IDENTITY';assert.equal(cleanup.beforeSession.root.pid,launch.preinput.creatorPid);assert.equal(cleanup.beforeSession.shell.pid,launch.preinput.shellPid);
-   stage='ARM_COMMAND_CLASSIFICATION';launch.commandStatus=classifyFreshCommand(observed,{workerPid:child.pid,shellPid:launch.preinput.shellPid,token:fixture.expected});if(launch.commandStatus==='BOUNDED_TARGET_ADVERSE')result.hasAdverseArm=true;
+   stage='ARM_COMMAND_CLASSIFICATION';// FRESH_BUILTIN_MODULEPATH_PARENT_BEGIN
+   assert.equal(observed.builtinModulePathObservationVerified,true,'BUILTIN_MODULEPATH_OBSERVATION_REQUIRED');
+   // FRESH_BUILTIN_MODULEPATH_PARENT_END
+   launch.commandStatus=classifyFreshCommand(observed,{workerPid:child.pid,shellPid:launch.preinput.shellPid,token:fixture.expected});if(launch.commandStatus==='BOUNDED_TARGET_ADVERSE')result.hasAdverseArm=true;
   }
   result.ok=true;result.status=result.hasAdverseArm?'FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED':'FRESH_PAIR_OBSERVED_NOT_ADMITTED';
  }catch{result.ok=false;result.status='FRESH_PAIR_FAILED_NOT_ADMITTED';result.code='FIXED_PAIR_GATE_UNAVAILABLE';result.failureStage=stage;}

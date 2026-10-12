@@ -1,0 +1,55 @@
+{
+  "scope": "FIXED_BUILTIN_MODULEPATH_DIAGNOSTIC_PATHEXT_PAIR",
+  "replacements": [
+    {
+      "path": "desktop/tests/native/terminal-resolution-observation.mjs",
+      "before": "export function createQualifiedResolutionFixture({projectDirectory,token,control}={}){\n return createResolutionObservationFixture({projectDirectory,token,control,mode:'module-qualified'});\n}\n",
+      "after": "export function createQualifiedResolutionFixture({projectDirectory,token,control}={}){\n return createResolutionObservationFixture({projectDirectory,token,control,mode:'module-qualified'});\n}\n\n// Fixed diagnostic treatment only. Original factory exports retain their exact behavior.\nexport function createBuiltinModulePathResolutionFixture({projectDirectory,token,control}={}){\n const original=createOriginalResolutionFixture({projectDirectory,token,control});\n const anchor=\"[IO.File]::WriteAllText($stage, 'observation-started')\\r\\n\";\n const assignment=\"[Environment]::SetEnvironmentVariable('PSModulePath', [IO.Path]::Combine([string]$PSHOME, 'Modules'), [EnvironmentVariableTarget]::Process)\\r\\n\";\n if(original.script.split(anchor).length!==2)throw Error('Fixed builtin-modulepath observation anchor changed');\n return Object.freeze({...original,variant:original.variant+'_BUILTIN_MODULEPATH_DIAGNOSTIC_V1',script:original.script.replace(anchor,assignment+anchor)});\n}\n"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "import {createOriginalResolutionFixture} from './terminal-resolution-observation.mjs';",
+      "after": "import {createBuiltinModulePathResolutionFixture as createOriginalResolutionFixture} from './terminal-resolution-observation.mjs';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "scope:'WITHIN_JOB_PATHEXT_SINGLE_VARIABLE_ORIGINAL_WRITE_OUTPUT'",
+      "after": "scope:'WITHIN_JOB_BUILTIN_MODULEPATH_DIAGNOSTIC_PATHEXT_PAIR_UNQUALIFIED_WRITE_OUTPUT'"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "launch.commandStatus=classifyFreshCommand(observed,",
+      "after": "// FRESH_BUILTIN_MODULEPATH_PARENT_BEGIN\n   assert.equal(observed.builtinModulePathObservationVerified,true,'BUILTIN_MODULEPATH_OBSERVATION_REQUIRED');\n   // FRESH_BUILTIN_MODULEPATH_PARENT_END\n   launch.commandStatus=classifyFreshCommand(observed,"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "import {createOriginalResolutionFixture as createSingleCmdletFixture,parseResolutionObservation}",
+      "after": "import {createBuiltinModulePathResolutionFixture as createSingleCmdletFixture,parseResolutionObservation}"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "scope:'HOSTED_FRESH_PATHEXT_PAIR_ARM_NOT_SESSION_ADMISSION'",
+      "after": "scope:'HOSTED_BUILTIN_MODULEPATH_DIAGNOSTIC_PATHEXT_ARM_NOT_SESSION_ADMISSION'"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "  assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;",
+      "after": "  assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;\n  // FRESH_BUILTIN_MODULEPATH_SUCCESS_BEGIN\n  result.builtinModulePathObservationVerified=false;\n  try{\n   const observation=await captureFailureResolutionObservation(fixture.observationPath,fixture.expected,beforeSession.shell.pid);\n   await save('success-resolution-observation.json',observation);\n   const fields=observation.parse.observation?.fields;\n   result.builtinModulePathObservationVerified=observation.status==='CAPTURED'&&observation.parse.status==='VALID'&&\n    fields.token===fixture.expected&&observation.parse.observation.pid===beforeSession.shell.pid&&fields.PID===String(beforeSession.shell.pid)&&\n    fields.effectiveModulePath===join(fields.PSHOME,'Modules')&&fields.PSHOME.toUpperCase()===dirname(engineFile.canonicalPath).toUpperCase();\n   if(!result.builtinModulePathObservationVerified)result.builtinModulePathObservationCode='BUILTIN_MODULEPATH_STATE_INVALID';\n  }catch{result.builtinModulePathObservationVerified=false;result.builtinModulePathObservationCode='BUILTIN_MODULEPATH_STATE_SAVE_REFUSED';}\n  // FRESH_BUILTIN_MODULEPATH_SUCCESS_END"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-runtime-provision-inputs.json",
+      "before": "{\"path\":\"desktop/tests/native/terminal-fresh-pair-driver.mjs\",\"bytes\":27139,\"sha256\":\"cbe15e84f75b36d817fea162b4bf3402990afc66f153a8782d30add3b2554103\"}",
+      "after": "{\"path\":\"desktop/tests/native/terminal-fresh-pair-driver.mjs\",\"bytes\":27402,\"sha256\":\"0c351f1aba2a7d867d01eec96af0226a1e73b301c6c06300ff470aa534d21f83\"}"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-runtime-provision-inputs.json",
+      "before": "{\"path\":\"desktop/tests/native/terminal-fresh-pair-worker.mjs\",\"bytes\":43828,\"sha256\":\"054918483a9012c56b695b029bee351860f7ea9cc3e2c3f1d2bca43ac569b798\"}",
+      "after": "{\"path\":\"desktop/tests/native/terminal-fresh-pair-worker.mjs\",\"bytes\":44926,\"sha256\":\"90bfa4017d8ed36972e512a2d0151531ceaaf14b8a148c782f0fc1d3cf6c4ebd\"}"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-runtime-provision-inputs.json",
+      "before": "{\"path\":\"desktop/tests/native/terminal-resolution-observation.mjs\",\"bytes\":8217,\"sha256\":\"677dd6f9097e217b1c4b5b5f04abdac851d1ea2677e6e4240eb7c6a75f23c6e0\"}",
+      "after": "{\"path\":\"desktop/tests/native/terminal-resolution-observation.mjs\",\"bytes\":8998,\"sha256\":\"f19fb143c6cc99181f52fba1e9523616f1750db5c7f37d0b92bf0126177b0126\"}"
+    }
+  ]
+}

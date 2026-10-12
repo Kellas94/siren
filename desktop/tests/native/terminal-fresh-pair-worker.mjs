@@ -10,7 +10,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {spawn,execFile} from 'node:child_process';
 import {promisify,types} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createOriginalResolutionFixture as createSingleCmdletFixture,parseResolutionObservation} from './terminal-resolution-observation.mjs';
+import {createBuiltinModulePathResolutionFixture as createSingleCmdletFixture,parseResolutionObservation} from './terminal-resolution-observation.mjs';
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
 import {receiveFreshParentPermit,consumeFreshParentPermitBootstrap} from './terminal-fresh-parent-permit.mjs';
 // FRESH_WORKER_DIAGNOSTIC_BEGIN
@@ -229,7 +229,7 @@ export async function startRuntimeProbe(config){
  assert.equal(process.env.GITHUB_REF,'refs/heads/probe/terminal-session-20261010');assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
  assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
- const result={scope:'HOSTED_FRESH_PATHEXT_PAIR_ARM_NOT_SESSION_ADMISSION',status:'STARTED',control,run,commit,
+ const result={scope:'HOSTED_BUILTIN_MODULEPATH_DIAGNOSTIC_PATHEXT_ARM_NOT_SESSION_ADMISSION',status:'STARTED',control,run,commit,
   nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
   realSessions:0,commandCompleted:false,mandatoryMarkersObserved:false,externalProcessJoin:false,cleanupVerified:false,
   milestones:[],helperCalls:[],nativeCalls:[],ownershipEvents:[],unavailable:[],verified:[]};
@@ -408,6 +408,18 @@ export async function startRuntimeProbe(config){
   await save('utility-output.json',{...cleanup.utilityOutput,exit:cleanup.utilityExit});
   await milestone('shutdown-separate-native-and-external-joins',{graph:joined,hostReceipt:cleanup.hostReceipt,hostExpected:cleanup.hostExpected,checked:cleanup.checked,external:cleanup.external,externalExit:cleanup.externalExit,utilityExit:cleanup.utilityExit});
   assert.equal(result.unavailable.length,0,'OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED');completedObservations=true;
+  // FRESH_BUILTIN_MODULEPATH_SUCCESS_BEGIN
+  result.builtinModulePathObservationVerified=false;
+  try{
+   const observation=await captureFailureResolutionObservation(fixture.observationPath,fixture.expected,beforeSession.shell.pid);
+   await save('success-resolution-observation.json',observation);
+   const fields=observation.parse.observation?.fields;
+   result.builtinModulePathObservationVerified=observation.status==='CAPTURED'&&observation.parse.status==='VALID'&&
+    fields.token===fixture.expected&&observation.parse.observation.pid===beforeSession.shell.pid&&fields.PID===String(beforeSession.shell.pid)&&
+    fields.effectiveModulePath===join(fields.PSHOME,'Modules')&&fields.PSHOME.toUpperCase()===dirname(engineFile.canonicalPath).toUpperCase();
+   if(!result.builtinModulePathObservationVerified)result.builtinModulePathObservationCode='BUILTIN_MODULEPATH_STATE_INVALID';
+  }catch{result.builtinModulePathObservationVerified=false;result.builtinModulePathObservationCode='BUILTIN_MODULEPATH_STATE_SAVE_REFUSED';}
+  // FRESH_BUILTIN_MODULEPATH_SUCCESS_END
  }catch(error){
   result.bindingFailure=rawBindingFailure;result.failureDiagnostic=freshWorkerFailure(error,observationPhase,result.milestones.at(-1)?.name??null);observationPhase='failure-observation';result.status='FAILED';result.error={message:error.message,code:error.code??null,stack:error.stack};
   await captureFailureEvidence();observationPhase='failure-cleanup';let failureGraph;
