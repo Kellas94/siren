@@ -1,0 +1,68 @@
+[
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-pair-driver.mjs",
+    "bytes": 26320,
+    "sha256": "061f851fd29670a02f272d53bc61d198366d8db18ebe71e340c2c49a682af0f9"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-pair-worker.mjs",
+    "bytes": 42356,
+    "sha256": "f805c022540d83f22f1521063cc94a2553e406b3a0df3b3651245d6ff003219d"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-runtime-provision.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-runtime-provision.mjs",
+    "bytes": 36107,
+    "sha256": "7249a7e03a2a014bc06546d5c9d70a8d17d7a8642e3ac9d988410338a1bc1377"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-runtime-provision-inputs.json",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-runtime-provision-inputs.json",
+    "bytes": 5275,
+    "sha256": "ee4c71b132daa73a0b4d4bbbdc0d5ac428ab59569a0d499dccec51c0a1aca9bb"
+  },
+  {
+    "path": ".github/workflows/terminal-fresh-runtime-pair.yml",
+    "copy": "terminal-parent-permit-transport-20261012/before/.github__workflows__terminal-fresh-runtime-pair.yml",
+    "bytes": 17433,
+    "sha256": "f7b521613786f2af755a263f9fef0349a335ba0d0b4b9bcbb4ccbd97b9488e0b"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-pair-driver.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-pair-driver.test.mjs",
+    "bytes": 15699,
+    "sha256": "eaf793a3ecf38a16ed9855af8be4e258a3adfba204ea0eca9bbc33349a7dd2ab"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-channel-observability.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-channel-observability.test.mjs",
+    "bytes": 8688,
+    "sha256": "6305d9a866cb034abe8ac9dbd8d79dcade10b8576a06627929b43d0683089ca0"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-worker-observability.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-worker-observability.test.mjs",
+    "bytes": 12922,
+    "sha256": "f475eac238ec7f956ce2c95070e71663c318186156aa73b88b5da51e4c6c0852"
+  },
+  {
+    "path": "desktop/tests/native/terminal-raw-binding-observability.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-raw-binding-observability.test.mjs",
+    "bytes": 11906,
+    "sha256": "a69ea9eda0f943f3422c16d966a0eafd625b7ce80d7ed62e4a0901cbdd9216a6"
+  },
+  {
+    "path": "desktop/tests/native/terminal-startup-environment-order.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-startup-environment-order.test.mjs",
+    "bytes": 7480,
+    "sha256": "db2aa6336089e4d87952cbf10662eab4681a6af7c2316d0a33fdc63e8346900c"
+  },
+  {
+    "path": "desktop/tests/native/terminal-fresh-entry-continuation.test.mjs",
+    "copy": "terminal-parent-permit-transport-20261012/before/desktop__tests__native__terminal-fresh-entry-continuation.test.mjs",
+    "bytes": 12610,
+    "sha256": "94758559a6a8d26f3044c725aa3f16c226ec3e66139c729205bf2d2e159400f6"
+  }
+]

@@ -1,0 +1,193 @@
+name: Fresh Terminal original-command pair (diagnostic only)
+on:
+  push:
+    branches: ['probe/terminal-session-20261010']
+    paths: ['.github/workflows/terminal-fresh-runtime-pair.yml', 'desktop/tests/native/terminal-fresh-environment.mjs', 'desktop/tests/native/terminal-fresh-pair-driver.mjs', 'desktop/tests/native/terminal-fresh-pair-worker.mjs']
+permissions:
+  contents: read
+concurrency:
+  group: terminal-fresh-runtime-pair-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    # Explicit fixed diagnostic on the test branch; never product admission.
+    if: github.repository == 'Kellas94/siren' && github.ref == 'refs/heads/probe/terminal-session-20261010' && github.run_attempt == 1
+    runs-on: windows-2025
+    # Step caps total 63 minutes, leaving three minutes for job overhead.
+    # Build has a separate cap so archive/upload still have reserved time.
+    timeout-minutes: 66
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        timeout-minutes: 2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        timeout-minutes: 3
+        with:
+          node-version: '24.16.0'
+      - name: Record owned launch evidence and select existing Python
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_REPOSITORY -cne 'Kellas94/siren' -or $env:GITHUB_REF -cne 'refs/heads/probe/terminal-session-20261010') { throw 'Unexpected hosted context' }
+          $launchEvidence = Join-Path $env:RUNNER_TEMP 'siren-fresh-build-launch'
+          New-Item -ItemType Directory -Path $launchEvidence -ErrorAction Stop | Out-Null
+          $pythonCommand = Get-Command python.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1
+          if (@($pythonCommand).Count -ne 1) { throw 'Ambiguous Python executable' }
+          $env:pythonLocation = [System.IO.Path]::GetDirectoryName($pythonCommand.Source)
+          & $pythonCommand.Source -I -c 'import sys; assert sys.version_info >= (3, 12); print(sys.version)' > (Join-Path $launchEvidence 'python-version.txt')
+          if ($LASTEXITCODE -ne 0) { throw 'Python 3.12 or later is required' }
+          "pythonLocation=$env:pythonLocation" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Get-FileHash -LiteralPath $pythonCommand.Source -Algorithm SHA256 | ConvertTo-Json -Compress | Set-Content -LiteralPath (Join-Path $launchEvidence 'python-executable.json') -Encoding utf8
+      - name: Build once with static CLI continuation and compare the two fixed original-command arms
+        timeout-minutes: 31
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $launchEvidence = Join-Path $env:RUNNER_TEMP 'siren-fresh-build-launch'
+          & node desktop/tests/native/terminal-fresh-runtime-provision.mjs --fixed-pathext-pair > (Join-Path $launchEvidence 'build.stdout.txt') 2> (Join-Path $launchEvidence 'build.stderr.txt')
+          $buildExit = $LASTEXITCODE
+          $buildExit | Set-Content -LiteralPath (Join-Path $launchEvidence 'build.exit.txt') -Encoding ascii
+          # Produce only bounded, allowlisted scalar DATA; never upload raw logs here.
+          # Diagnostic preparation cannot replace the original process exit status.
+          $diagnosticBody = '{"schema":1,"status":"DIAGNOSTIC_UNAVAILABLE","records":[]}'
+          try {
+            $stdoutPath = Join-Path $launchEvidence 'build.stdout.txt'
+            $length = (Get-Item -LiteralPath $stdoutPath).Length
+            if ($length -le 0 -or $length -gt 32768) { throw 'Diagnostic input bound' }
+            $lines = [System.IO.File]::ReadAllLines($stdoutPath, [System.Text.UTF8Encoding]::new($false, $true))
+            if ($lines.Count -lt 1 -or $lines.Count -gt 2) { throw 'Diagnostic record bound' }
+            $stages = @('ATTEMPT_CONSUMED','ARGUMENTS','PRIVATE_RETENTION','HOSTED_CONTEXT','RESULT_DIRECTORY','RETAINED_INPUT_PINS','CONTROLLER_PINS','HOST_RECEIPT_MODULE','WORKER_WAIT_CONTRACT','ENGINE_IDENTITY','COMMON_ENVIRONMENT','COMMON_PROJECT','FIXTURE_PREPARATION','PLAN_RETENTION','PRE_ARM_RECHECK','ARM_ENTRY_RETENTION','ARM_CHILD_LAUNCH','ARM_CHANNEL_HANDSHAKE','ARM_WORKER_RESULT','ARM_CLEANUP','POST_ARM_RECHECK','ARM_EXIT_CHANNEL','ARM_INPUT_RECEIPT','ARM_HELD_IDENTITY','ARM_COMMAND_CLASSIFICATION','PAIR_RESULT_RETENTION','ARM_EXIT_CODE','ARM_EXIT_SIGNAL','ARM_PIPE_INTEGRITY','ARM_CHALLENGE_COUNT','ARM_PERMIT_STATUS','ARM_FRAME_REMAINDER','ARM_RUN_IDENTITY','ARM_COMMIT_IDENTITY','ARM_CLEANUP_VERIFIED','ARM_UNAVAILABLE_CALLBACKS')
+            $statuses = @('STARTED','FAILED_NOT_SESSION_ADMISSION','FRESH_RUNTIME_BUILT_RETAINED_NOT_SESSION_ADMISSION','FRESH_PAIR_STARTED_NOT_ADMITTED','FRESH_PAIR_REFUSED','FRESH_PAIR_FAILED_NOT_ADMITTED','FRESH_PAIR_COMPLETE_WITH_ADVERSE_ARM_NOT_ADMITTED','FRESH_PAIR_OBSERVED_NOT_ADMITTED','FRESH_PAIR_CONTINUATION_UNAVAILABLE','DIAGNOSTIC_UNAVAILABLE')
+            $codes = @('ATTEMPT_CONSUMED','CONTEXT_REFUSED','SOURCE_REFUSED','SOURCE_CHANGED','PATH_REFUSED','TARGET_EXISTS','BUILD_PHASE_FAILED','BUILD_UNAVAILABLE','TOOL_CHANGED','RESULT_RETENTION_FAILED','FIXED_PAIR_GATE_UNAVAILABLE','PAIR_RESULT_RETENTION_FAILED')
+            $names = @('historical-source-stage','locked-electron-packages','electron-distribution','locked-provider-packages','compiler-discovery','terminal-host-roster-candidate-configure','terminal-host-roster-candidate-compile','terminal-creator-three-lane-configure','terminal-creator-three-lane-compile','filesystem-evidence-compile','process-observer-compile','pathext-omitted','pathext-trusted')
+            $workerCategories = @('UNCLASSIFIED','ASSERTION_REFUSED','FILESYSTEM_NOT_FOUND','FILESYSTEM_REFUSED','FRESH_PREINPUT_PIPE_REFUSED','FRESH_PREINPUT_PIPE_DEADLINE','FIXTURE_FILE_DEADLINE','OWNERSHIP_UNAVAILABLE_CALLBACK_UNRESOLVED','LATE_OWNERSHIP_UNAVAILABLE','FRESH_PIPE_REVOKED','UTILITY_READY_DEADLINE','OBSERVER_READY_DEADLINE','SESSION_NATIVE_RECEIPT_DEADLINE','GRAPH_JOIN_DEADLINE')
+            $workerPhases = @('setup','module-import','fixture-preparation','window-registry','native-loader','utility-host-start','utility-host-ready','host-start','initial-access','profile-discovery','session-create','first-attach','held-identities','external-observer-start','external-observer-ready','fixture-absence','preinput-engine','preinput-raw-read','preinput-raw-binding','preinput-parent-permit','preinput-held-recheck','single-cmdlet-command','backend-history','explicit-session-stop','graph-shutdown','failure-observation','failure-cleanup')
+            $workerMilestones = @('actual-native-host','actual-session-create','actual-terminal-attach','before-command','command-completed','backend-history','session-stop-native-receipt','shutdown-separate-native-and-external-joins')
+            $bindingFailures = @('RAW_RECORD_OK','RAW_SCHEMA','RAW_BOUNDARY','RAW_ARGUMENT_COUNT','RAW_CREATOR_IDENTITY','RAW_SHELL_IDENTITY','RAW_CALL_COUNT','RAW_DUPLICATE','RAW_PHASE','RAW_RETURN_STATUS','RAW_PID_ASSIGNMENT','RAW_ARGUMENTS_UNCHANGED','RAW_CAPTURE_CODES','RAW_CLOCK_DOMAIN','RAW_CLOCK_ORDER','RAW_SNAPSHOT_STABILITY','RAW_CONPTY_FLAG','RAW_ENVIRONMENT','RAW_CWD_HASH','RAW_CWD_BYTES','RAW_COMMAND_HASH','RAW_COMMAND_BYTES','RAW_FILE_ARGUMENT_REFUSED','RAW_FILE_PATH_REFUSED','RAW_FILE_SIZE_REFUSED','RAW_FILE_IDENTITY_CHANGED','RAW_FILE_READ_REFUSED','RAW_FILE_JSON_REFUSED','RAW_FILE_UNAVAILABLE')
+            $diagnosticKeys = @('errorCategory','observationPhase','lastMilestone','challengeCount','cleanupVerified','unavailableCount','bindingFailure')
+            $records = @()
+            foreach ($line in $lines) {
+              $outer = ConvertFrom-Json -InputObject $line -AsHashtable -Depth 8
+              $d = $outer['diagnostic']
+              if ($d -isnot [System.Collections.IDictionary] -or $d.Count -ne 8) { throw 'Diagnostic shape' }
+              foreach ($key in @('schema','kind','ok','status','code','failureStage','actualSessions','phases')) { if (-not $d.Contains($key)) { throw 'Diagnostic key' } }
+              if ($d.schema -cne 1 -or @('build','pair') -cnotcontains $d.kind -or $statuses -cnotcontains $d.status) { throw 'Diagnostic label' }
+              if ($null -ne $d.ok -and $d.ok -isnot [bool]) { throw 'Diagnostic boolean' }
+              if ($null -ne $d.code -and $codes -cnotcontains $d.code) { throw 'Diagnostic code' }
+              if ($null -ne $d.failureStage -and $stages -cnotcontains $d.failureStage) { throw 'Diagnostic stage' }
+              if ($null -ne $d.actualSessions -and (($d.actualSessions -isnot [long] -and $d.actualSessions -isnot [int]) -or $d.actualSessions -lt 0 -or $d.actualSessions -gt 2)) { throw 'Diagnostic session count' }
+              $cap = if ($d.kind -ceq 'build') { 11 } else { 2 }
+              if ($d.phases -isnot [System.Array] -or $d.phases.Count -gt $cap) { throw 'Diagnostic phase bound' }
+              foreach ($phase in $d.phases) {
+                $rowSize = if ($d.kind -ceq 'build') { 3 } else { 4 }
+                if ($phase -isnot [System.Collections.IDictionary] -or $phase.Count -ne $rowSize -or -not $phase.Contains('name') -or -not $phase.Contains('exit') -or -not $phase.Contains('status')) { throw 'Diagnostic phase shape' }
+                if ($names -cnotcontains $phase.name -or @('EXITED','PENDING','STARTED','FAILED','SINGLE_CMDLET_DIAGNOSTIC_COMPLETE') -cnotcontains $phase.status) { throw 'Diagnostic phase label' }
+                if ($null -ne $phase.exit -and (($phase.exit -isnot [long] -and $phase.exit -isnot [int]) -or $phase.exit -lt -2147483648 -or $phase.exit -gt 4294967295)) { throw 'Diagnostic exit bound' }
+                if ($d.kind -ceq 'pair') {
+                  if (-not $phase.Contains('workerDiagnostic')) { throw 'Worker diagnostic missing' }
+                  $workerDiagnostic = $phase.workerDiagnostic
+                  if ($workerDiagnostic -isnot [System.Collections.IDictionary] -or $workerDiagnostic.Count -ne 7) { throw 'Worker diagnostic shape' }
+                  foreach ($key in $diagnosticKeys) { if (-not $workerDiagnostic.Contains($key)) { throw 'Worker diagnostic key' } }
+                  if ($null -ne $workerDiagnostic.errorCategory -and ($workerDiagnostic.errorCategory -isnot [string] -or $workerCategories -cnotcontains $workerDiagnostic.errorCategory)) { throw 'Worker diagnostic category' }
+                  if ($null -ne $workerDiagnostic.observationPhase -and ($workerDiagnostic.observationPhase -isnot [string] -or $workerPhases -cnotcontains $workerDiagnostic.observationPhase)) { throw 'Worker diagnostic phase' }
+                  if ($null -ne $workerDiagnostic.lastMilestone -and ($workerDiagnostic.lastMilestone -isnot [string] -or $workerMilestones -cnotcontains $workerDiagnostic.lastMilestone)) { throw 'Worker diagnostic milestone' }
+                  if ($null -ne $workerDiagnostic.bindingFailure -and ($workerDiagnostic.bindingFailure -isnot [string] -or $bindingFailures -cnotcontains $workerDiagnostic.bindingFailure)) { throw 'Worker diagnostic raw binding' }
+                  if ($null -ne $workerDiagnostic.challengeCount -and (($workerDiagnostic.challengeCount -isnot [long] -and $workerDiagnostic.challengeCount -isnot [int]) -or $workerDiagnostic.challengeCount -lt 0 -or $workerDiagnostic.challengeCount -gt 65535)) { throw 'Worker diagnostic challenges' }
+                  if ($null -ne $workerDiagnostic.cleanupVerified -and $workerDiagnostic.cleanupVerified -isnot [bool]) { throw 'Worker diagnostic cleanup' }
+                  if ($null -ne $workerDiagnostic.unavailableCount -and (($workerDiagnostic.unavailableCount -isnot [long] -and $workerDiagnostic.unavailableCount -isnot [int]) -or $workerDiagnostic.unavailableCount -lt 0 -or $workerDiagnostic.unavailableCount -gt 128)) { throw 'Worker diagnostic callbacks' }
+                }
+              }
+              $records += $d
+            }
+            $candidate = ConvertTo-Json -InputObject ([ordered]@{schema=1;status='BOUNDED_DIAGNOSTIC_DATA_ONLY';records=$records}) -Depth 6 -Compress
+            if ([System.Text.Encoding]::UTF8.GetByteCount($candidate) -gt 16384) { throw 'Diagnostic output bound' }
+            $diagnosticBody = $candidate
+          } catch { }
+          try {
+            $diagnosticBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($diagnosticBody)
+            $diagnosticFile = [System.IO.File]::Open((Join-Path $launchEvidence 'diagnostic-summary.json'), [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+            try { $diagnosticFile.Write($diagnosticBytes, 0, $diagnosticBytes.Length) } finally { $diagnosticFile.Dispose() }
+          } catch { }
+          exit $buildExit
+      - name: Retain small sanitized diagnostic summary separately
+        timeout-minutes: 1
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-fresh-runtime-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: warn
+          compression-level: 6
+          path: ${{ runner.temp }}/siren-fresh-build-launch/diagnostic-summary.json
+      - name: Archive every owned job tree including hidden files and empty directories
+        timeout-minutes: 8
+        id: archive
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archivePython = Join-Path $env:pythonLocation 'python.exe'
+          & $archivePython -I desktop/tests/native/terminal_fresh_build_archive.py
+          exit $LASTEXITCODE
+      - name: Retain complete archives and pinned build inputs on every outcome
+        timeout-minutes: 8
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-fresh-runtime-pair-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 6
+          path: |
+            ${{ runner.temp }}/siren-fresh-build-launch/**
+            desktop/tests/native/.gitattributes
+            desktop/tests/native/terminal-fresh-runtime-provision-inputs.json
+            desktop/tests/native/terminal-fresh-runtime-provision.mjs
+            desktop/tests/native/terminal-fresh-runtime-provision.test.mjs
+            desktop/tests/native/terminal-fresh-entry-import-cycle.test.mjs
+            desktop/tests/native/terminal-fresh-entry-continuation.test.mjs
+            desktop/tests/native/terminal-fresh-failure-observability.test.mjs
+            desktop/tests/native/terminal_historical_source_stage.py
+            desktop/tests/native/terminal_fresh_build_archive.py
+            desktop/tests/native/terminal-fresh-runtime-inventory.mjs
+            desktop/tests/native/terminal-fresh-runtime-retention.mjs
+            desktop/tests/native/terminal-connect-derivative.mjs
+            desktop/tests/native/terminal-creator-transport-derivative.mjs
+            desktop/tests/native/terminal-connect-raw-json.mjs
+            desktop/tests/native/terminal-connect-raw-file.mjs
+            desktop/tests/native/terminal-connect-comparison.mjs
+            desktop/tests/native/terminal-fresh-environment.mjs
+            desktop/tests/native/terminal-fresh-pair-model.mjs
+            terminal-fresh-provisioner-preparation-20261011/pins.json
+            terminal-fresh-provisioner-preparation-20261011/historical-source-mapping.json
+            terminal-fresh-provisioner-preparation-20261011/historical-execution-mapping.json
+            terminal-fresh-provisioner-preparation-20261011/resource-manifest-design.json
+            terminal-fresh-provisioner-preparation-20261011/source-snapshots/012-package.json.txt
+            terminal-fresh-provisioner-preparation-20261011/source-snapshots/011-package-lock.json.txt
+            terminal-fresh-provisioner-preparation-20261011/source-snapshots/062-terminal-filesystem-evidence.cs.txt
+            terminal-fresh-provisioner-preparation-20261011/source-snapshots/063-terminal-session-process-observer.cs.txt
+            terminal-resolution-observation-20261011/hosted-v1.zip
+            desktop/tests/native/terminal-fresh-pair-driver.mjs
+            desktop/tests/native/terminal-fresh-pair-worker.mjs
+            desktop/tests/native/terminal-resolution-observation.mjs
+            desktop/tests/native/terminal-discovery-fixture.mjs
+            desktop/tests/native/terminal-cmdlet-fixture.mjs
+            desktop/tests/native/terminal-session-command.mjs
+            .github/workflows/terminal-fresh-runtime-build.yml
+            .github/workflows/terminal-fresh-runtime-pair.yml
+      - name: Preserve readable partial raw trees if complete archival failed
+        timeout-minutes: 8
+        if: ${{ always() && steps.archive.outcome != 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-fresh-runtime-partial-raw-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: warn
+          include-hidden-files: true
+          compression-level: 6
+          path: ${{ runner.temp }}/siren-fresh-runtime-*/**

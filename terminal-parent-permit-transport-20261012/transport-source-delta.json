@@ -1,0 +1,115 @@
+{
+  "scope": "EXPLICIT_PROSPECTIVE_TRANSPORT_DELTA",
+  "replacements": [
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';",
+      "after": "import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';\nimport {receiveFreshParentPermit,consumeFreshParentPermitBootstrap} from './terminal-fresh-parent-permit.mjs';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "async function freshParentPermit(challenge){\n const started=performance.now();let pending='',seen=false,timer,invalid=false;\n try{return await new Promise((resolve,reject)=>{\n  const bad=()=>{invalid=true;reject(Error('FRESH_PREINPUT_PIPE_REFUSED'));};\n  const consume=chunk=>{try{pending+=chunk;if(Buffer.byteLength(pending)>4096)throw 0;const i=pending.indexOf('\\n');if(i<0)return;\n   assert.equal(seen,false);seen=true;assert.equal(pending.slice(i+1),'');const value=JSON.parse(pending.slice(0,i));\n   assert.equal(JSON.stringify(value)+'\\n',pending);assert.deepEqual(value,{schema:1,type:'FRESH_PREINPUT_PERMIT',workerPid:process.pid,armId:challenge.armId,token:challenge.token,nonce:challenge.nonce,rawSha256:challenge.rawSha256});\n   resolve({startedMs:started,endedMs:performance.now(),isCurrent:()=>!invalid});\n  }catch{bad();}};\n  process.stdin.setEncoding('utf8');process.stdin.on('data',consume);process.stdin.once('end',bad);process.stdin.once('error',bad);\n  timer=setTimeout(()=>reject(Error('FRESH_PREINPUT_PIPE_DEADLINE')),5000);\n  process.stdout.write('SIREN_FRESH_PREINPUT '+JSON.stringify(challenge)+'\\n');\n });}finally{clearTimeout(timer);}\n}",
+      "after": "async function freshParentPermit(challenge,TerminalControlChannel,bootstrap){\n return await receiveFreshParentPermit({TerminalControlChannel,bootstrap,challenge});\n}"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "export async function startRuntimeProbe(config){",
+      "after": "export async function startRuntimeProbe(config){\n const permitBootstrap=consumeFreshParentPermitBootstrap();"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "  op=0,helperCount=0,completedObservations=false;",
+      "after": "  op=0,helperCount=0,completedObservations=false,permitHandoff;"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": " const importExecution=path=>import(pathToFileURL(join(execution,path)).href);",
+      "after": " const importExecution=path=>import(pathToFileURL(join(execution,path)).href);\n const {TerminalControlChannel}=await importExecution('desktop/src/terminal/control-channel.mjs');"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": "const handoff=await freshParentPermit(challenge);",
+      "after": "const handoff=permitHandoff=await freshParentPermit(challenge,TerminalControlChannel,permitBootstrap);"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-worker.mjs",
+      "before": " }finally{\n  if(commandTiming.completionObserved)",
+      "after": " }finally{\n  if(permitHandoff)try{assert.equal(await permitHandoff.dispose(),true);}catch{result.status='FAILED';result.cleanupVerified=false;completedObservations=false;}\n  if(commandTiming.completionObserved)"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';",
+      "after": "import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';\r\nimport {createFreshParentPermitServer} from './terminal-fresh-parent-permit.mjs';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "let out,save,stage='ARGUMENTS';",
+      "after": "let out,save,activePermit,stage='ARGUMENTS';"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "'terminal-session-command.mjs'];",
+      "after": "'terminal-session-command.mjs','terminal-fresh-parent-permit.mjs'];"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "stage='HOST_RECEIPT_MODULE';const {validateHostAsyncReceipt}=await import(pathToFileURL(path.join(execution,'desktop/src/terminal/host-async-receipt-contract.mjs')).href);",
+      "after": "stage='HOST_RECEIPT_MODULE';const {validateHostAsyncReceipt}=await import(pathToFileURL(path.join(execution,'desktop/src/terminal/host-async-receipt-contract.mjs')).href);const {TerminalControlChannel}=await import(pathToFileURL(path.join(execution,'desktop/src/terminal/control-channel.mjs')).href);"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "   stage='ARM_ENTRY_RETENTION';const entry=",
+      "after": "   activePermit=await createFreshParentPermitServer({TerminalControlChannel});\r\n   stage='ARM_ENTRY_RETENTION';const entry="
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "GITHUB_SHA:provision.commit});\r\n   stage='ARM_CHILD_LAUNCH'",
+      "after": "GITHUB_SHA:provision.commit,SIREN_FRESH_PERMIT_PIPE:activePermit.bootstrap.pipeName,SIREN_FRESH_PERMIT_SECRET:activePermit.bootstrap.secretHex});\r\n   stage='ARM_CHILD_LAUNCH'"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "const failPipe=()=>{pipeFailed=true;launch.pipeStatus='REFUSED';try{child.stdin.end();}catch{}};",
+      "after": "const failPipe=()=>{pipeFailed=true;launch.pipeStatus='REFUSED';activePermit?.revoke();};"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "startedMs=performance.now();assert.equal(await recheckProvisionedFreshRuntime(provision),true);",
+      "after": "startedMs=performance.now();activePermit.begin(c);assert.equal(await recheckProvisionedFreshRuntime(provision),true);"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "   child.stderr.on('data',chunk=>{launch.stderr+=chunk;if(Buffer.byteLength(launch.stderr)>1048576){launch.stderr=launch.stderr.slice(0,1048576);failPipe();}});child.stdin.on('error',failPipe);",
+      "after": "   child.stderr.on('data',chunk=>{launch.stderr+=chunk;if(Buffer.byteLength(launch.stderr)>1048576){launch.stderr=launch.stderr.slice(0,1048576);failPipe();}});"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "clearTimeout(timer);await challengeTask;launch.partialFrame=pending;",
+      "after": "clearTimeout(timer);await challengeTask;if(activePermit.hasRefusal())failPipe();assert.equal(await activePermit.dispose(),true);activePermit=null;launch.partialFrame=pending;"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": " }catch{result.ok=false;result.status='FRESH_PAIR_FAILED_NOT_ADMITTED';result.code='FIXED_PAIR_GATE_UNAVAILABLE';result.failureStage=stage;}\n if(save)",
+      "after": " }catch{result.ok=false;result.status='FRESH_PAIR_FAILED_NOT_ADMITTED';result.code='FIXED_PAIR_GATE_UNAVAILABLE';result.failureStage=stage;}\n finally{if(activePermit)try{result.permitCleanupVerified=await activePermit.dispose();}catch{result.permitCleanupVerified=false;}}\n if(save)"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-runtime-provision.mjs",
+      "before": "'terminal-session-command'].map",
+      "after": "'terminal-session-command','terminal-fresh-parent-permit'].map"
+    },
+    {
+      "path": ".github/workflows/terminal-fresh-runtime-pair.yml",
+      "before": "            desktop/tests/native/terminal-fresh-pair-worker.mjs\n",
+      "after": "            desktop/tests/native/terminal-fresh-pair-worker.mjs\n            desktop/tests/native/terminal-fresh-parent-permit.mjs\n"
+    },
+    {
+      "path": ".github/workflows/terminal-fresh-runtime-pair.yml",
+      "before": "      - name: Archive every owned job tree including hidden files and empty directories\n",
+      "after": "      - name: Retain bounded native DATA evidence for independent inspection\n        timeout-minutes: 1\n        if: always()\n        continue-on-error: true\n        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a\n        with:\n          name: terminal-fresh-native-evidence-${{ github.run_id }}-${{ github.run_attempt }}\n          retention-days: 1\n          if-no-files-found: warn\n          compression-level: 6\n          path: ${{ runner.temp }}/siren-fresh-runtime-*/fresh-evidence/fresh-pair/**\n      - name: Archive every owned job tree including hidden files and empty directories\n"
+    },
+    {
+      "path": "desktop/tests/native/terminal-fresh-pair-driver.mjs",
+      "before": "    const permit={schema:1,type:'FRESH_PREINPUT_PERMIT',workerPid:child.pid,armId,token:fixture.expected,nonce:c.nonce,rawSha256:raw.rawSha256};await save(armId+'-parent-preinput.json',{challenge:c,raw,startedMs,endedMs:performance.now(),...flags});launch.preinput=c;child.stdin.write(JSON.stringify(permit)+'\\n');launch.pipeStatus='PERMIT_WRITTEN';",
+      "after": "    await save(armId+'-parent-preinput.json',{challenge:c,raw,startedMs,endedMs:performance.now(),...flags});await activePermit.authorize();await save(armId+'-parent-permit-ack.json',{startedMs,endedMs:performance.now(),streamContinuityOnly:true,...flags});launch.preinput=c;launch.pipeStatus='PERMIT_WRITTEN';"
+    }
+  ]
+}

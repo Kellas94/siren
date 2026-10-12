@@ -12,6 +12,7 @@ import {promisify,types} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
 import {createOriginalResolutionFixture as createSingleCmdletFixture} from './terminal-resolution-observation.mjs';
 import {readTerminalConnectRawFile} from './terminal-connect-raw-file.mjs';
+import {receiveFreshParentPermit,consumeFreshParentPermitBootstrap} from './terminal-fresh-parent-permit.mjs';
 // FRESH_WORKER_DIAGNOSTIC_BEGIN
 const diagnosticData=(object,key)=>{if(!object||typeof object!=='object'||types.isProxy(object))return undefined;const d=Object.getOwnPropertyDescriptor(object,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
 const diagnosticPick=(value,allowed)=>typeof value==='string'&&allowed.includes(value)?value:null;
@@ -123,19 +124,8 @@ function assertFreshBoundary(record,expected){
  rawBindingFailure='RAW_COMMAND_HASH';assert.equal(r.before.commandLineSha256,createHash('sha256').update(expected.commandLine).digest('hex'));
  rawBindingFailure='RAW_COMMAND_BYTES';assert.equal(r.before.commandLineBytes,Buffer.byteLength(expected.commandLine));rawBindingFailure=null;return r;
 }
-async function freshParentPermit(challenge){
- const started=performance.now();let pending='',seen=false,timer,invalid=false;
- try{return await new Promise((resolve,reject)=>{
-  const bad=()=>{invalid=true;reject(Error('FRESH_PREINPUT_PIPE_REFUSED'));};
-  const consume=chunk=>{try{pending+=chunk;if(Buffer.byteLength(pending)>4096)throw 0;const i=pending.indexOf('\n');if(i<0)return;
-   assert.equal(seen,false);seen=true;assert.equal(pending.slice(i+1),'');const value=JSON.parse(pending.slice(0,i));
-   assert.equal(JSON.stringify(value)+'\n',pending);assert.deepEqual(value,{schema:1,type:'FRESH_PREINPUT_PERMIT',workerPid:process.pid,armId:challenge.armId,token:challenge.token,nonce:challenge.nonce,rawSha256:challenge.rawSha256});
-   resolve({startedMs:started,endedMs:performance.now(),isCurrent:()=>!invalid});
-  }catch{bad();}};
-  process.stdin.setEncoding('utf8');process.stdin.on('data',consume);process.stdin.once('end',bad);process.stdin.once('error',bad);
-  timer=setTimeout(()=>reject(Error('FRESH_PREINPUT_PIPE_DEADLINE')),5000);
-  process.stdout.write('SIREN_FRESH_PREINPUT '+JSON.stringify(challenge)+'\n');
- });}finally{clearTimeout(timer);}
+async function freshParentPermit(challenge,TerminalControlChannel,bootstrap){
+ return await receiveFreshParentPermit({TerminalControlChannel,bootstrap,challenge});
 }
 // FRESH_BOUNDARY_HELPERS_END
 
@@ -209,6 +199,7 @@ function assertCleanupObservation(observation){
 // INERT_HELPERS_END
 
 export async function startRuntimeProbe(config){
+ const permitBootstrap=consumeFreshParentPermitBootstrap();
  const {root,out,execution,electronExecutable,filesystemExecutable,observerExecutable,run,commit,control,armId,projectDirectory,fixtureDirectory,expectedEnvironment,retainedJobRoot,expectedFixture}=config;
  assert.ok(armId==='pathext-omitted'||armId==='pathext-trusted');assert.equal(control,'write-output');
  assertFixedControl(control);
@@ -235,10 +226,11 @@ export async function startRuntimeProbe(config){
  const nativeState={host:null,sessions:[],hostStops:[],sessionStops:[]},windows=new Set();
  let graph,members,native,fixture,workspace,workspaceGrant,sessionId,sessionOwnerId,beforeSession,beforeHost,expected,observerPath,
   observer,observerExit,observerStdout='',observerStderr='',host,hostExit,hostOut='',hostErr='',validateHostAsyncReceipt,
-  op=0,helperCount=0,completedObservations=false;
+  op=0,helperCount=0,completedObservations=false,permitHandoff;
  const exec=promisify(execFile),helperPin=await pin(filesystemExecutable),observerPin=await pin(observerExecutable);
  const event=w=>({sender:w.webContents,senderFrame:w.webContents.mainFrame});
  const importExecution=path=>import(pathToFileURL(join(execution,path)).href);
+ const {TerminalControlChannel}=await importExecution('desktop/src/terminal/control-channel.mjs');
  const request=(grant,fields={})=>({operationId:'cmdlet_'+(++op),epoch:grant.epoch,...fields});
  async function helper(mode,target){
   assert.deepEqual(await pin(filesystemExecutable),helperPin);
@@ -357,7 +349,7 @@ export async function startRuntimeProbe(config){
   observationPhase='preinput-raw-binding';const rawObservation=assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});
   await save('preinput-native-raw-binding.json',{raw,engineFile,enginePin,beforeSession,beforeHost,externalReady:observed,modelStatus:'UNAVAILABLE_EXTERNAL_ENGINE_NOT_IN_RETAINED_RUNTIME',inputAuthorized:false});
   const challenge={schema:1,type:'FRESH_PREINPUT_CHALLENGE',workerPid:process.pid,creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,armId,token:fixture.expected,nonce:randomBytes(16).toString('hex'),rawSha256:raw.rawSha256};
-  observationPhase='preinput-parent-permit';const handoff=await freshParentPermit(challenge);await save('preinput-pipe-handoff.json',{challenge,...handoff,inputAuthorized:false});
+  observationPhase='preinput-parent-permit';const handoff=permitHandoff=await freshParentPermit(challenge,TerminalControlChannel,permitBootstrap);await save('preinput-pipe-handoff.json',{challenge,...handoff,inputAuthorized:false});
   observationPhase='preinput-held-recheck';assert.deepEqual(native.snapshotSession(nativeState.sessions[0]),beforeSession);assert.deepEqual(native.snapshot(nativeState.host),beforeHost);
   assert.deepEqual(await pin(enginePath),enginePin);assert.deepEqual(await helper('file',enginePath),engineFile);
   assertReadyIdentities(expected,observed);assertFreshBoundary(raw,{creatorPid:beforeSession.root.pid,shellPid:beforeSession.shell.pid,env:expectedEnvironment,cwd:project,commandLine:argsToCommandLine(engineFile.canonicalPath,['-NoLogo','-NoProfile'])});assert.equal(handoff.isCurrent(),true,'FRESH_PIPE_REVOKED');
@@ -398,6 +390,7 @@ export async function startRuntimeProbe(config){
   result.failureCleanup=await collectCleanup(failureGraph,98,shutdownId);result.cleanupVerified=result.failureCleanup.verified===true;
   await save('failure-cleanup-observation.json',result.failureCleanup);
  }finally{
+  if(permitHandoff)try{assert.equal(await permitHandoff.dispose(),true);}catch{result.status='FAILED';result.cleanupVerified=false;completedObservations=false;}
   if(commandTiming.completionObserved){commandTiming.completionLate=commandTiming.completionObservedMs>commandTiming.nominalDeadlineMs;commandTiming.completedWithinNominalDeadline=!commandTiming.completionLate;}
   try{await save('command-timing.json',commandTiming);}catch(e){result.commandTimingError={message:e.message,code:e.code??null};result.status='FAILED';completedObservations=false;}
   try{

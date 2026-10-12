@@ -123,6 +123,17 @@ jobs:
           if-no-files-found: warn
           compression-level: 6
           path: ${{ runner.temp }}/siren-fresh-build-launch/diagnostic-summary.json
+      - name: Retain bounded native DATA evidence for independent inspection
+        timeout-minutes: 1
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: terminal-fresh-native-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 1
+          if-no-files-found: warn
+          compression-level: 6
+          path: ${{ runner.temp }}/siren-fresh-runtime-*/fresh-evidence/fresh-pair/**
       - name: Archive every owned job tree including hidden files and empty directories
         timeout-minutes: 8
         id: archive
@@ -174,6 +185,7 @@ jobs:
             terminal-resolution-observation-20261011/hosted-v1.zip
             desktop/tests/native/terminal-fresh-pair-driver.mjs
             desktop/tests/native/terminal-fresh-pair-worker.mjs
+            desktop/tests/native/terminal-fresh-parent-permit.mjs
             desktop/tests/native/terminal-resolution-observation.mjs
             desktop/tests/native/terminal-discovery-fixture.mjs
             desktop/tests/native/terminal-cmdlet-fixture.mjs
