@@ -2,7 +2,7 @@ name: Fresh Terminal original-command pair (diagnostic only)
 on:
   push:
     branches: ['probe/terminal-session-20261010']
-    paths: ['.github/workflows/terminal-fresh-runtime-pair.yml']
+    paths: ['.github/workflows/terminal-fresh-runtime-pair.yml', 'desktop/tests/native/terminal-fresh-environment.mjs', 'desktop/tests/native/terminal-fresh-pair-driver.mjs', 'desktop/tests/native/terminal-fresh-pair-worker.mjs']
 permissions:
   contents: read
 concurrency:
