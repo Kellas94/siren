@@ -107,7 +107,7 @@ function freshEnvironmentRows(environment){
  const rows=[];for(const [key,value]of Object.entries(environment)){
   assert.equal(typeof value,'string');assert.ok(value.isWellFormed()&&!value.includes('\0')&&Buffer.byteLength(value)<=32768);
   rows.push({key,bytes:Buffer.byteLength(value),sha256:createHash('sha256').update(value).digest('hex')});
- }return rows;
+ }return rows.sort((a,b)=>a.key<b.key?-1:a.key>b.key?1:0);
 }
 function assertFreshBoundary(record,expected){
  rawBindingFailure=rawRecordFailure(record);assert.equal(record.ok,true);const r=record.decoded.observation;

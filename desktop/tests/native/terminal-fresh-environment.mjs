@@ -28,7 +28,14 @@ function arm(environment){
   vector.push(pair);rows.push({key,bytes,sha256:digest(value)});
  }
  const hashed=hashFreshEnvironment(rows);if(!hashed.ok)fail();
- return Object.freeze({environment:Object.freeze(environment),vector:Object.freeze(vector),env:hashed.entries,envSha256:hashed.sha256,totalBytes,blockCodeUnits});
+ // The startup wire codec sorts exact key spelling before the creator receives
+ // the shell environment. Keep launch DATA unchanged and model that distinct
+ // boundary explicitly; raw native comparisons remain ordered and exact.
+ const startup=hashFreshEnvironment([...rows].sort((a,b)=>a.key<b.key?-1:a.key>b.key?1:0));if(!startup.ok)fail();
+ // Match the plain DATA records decoded from the raw JSON; the pure hashing
+ // model's internal null-prototype records are not the startup wire shape.
+ const startupEnv=Object.freeze(startup.entries.map(row=>Object.freeze({key:row.key,bytes:row.bytes,sha256:row.sha256})));
+ return Object.freeze({environment:Object.freeze(environment),vector:Object.freeze(vector),env:hashed.entries,envSha256:hashed.sha256,totalBytes,blockCodeUnits,startupEnv,startupEnvSha256:startup.sha256});
 }
 export function captureFreshPairLaunchEnvironment(systemDirectory,...extra){
  if(attempted)return refusal();attempted=true;
