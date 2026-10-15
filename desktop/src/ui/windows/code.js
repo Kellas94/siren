@@ -66,7 +66,10 @@
         document.body.dataset.sourceUnits=String(value.utf16Units);document.body.dataset.sourceLines=String(value.lines);
         sourceChanges.reconcile();analysis?.reconcile();
       });sourceChanges.reconcile();analysis?.reconcile();
-      if(restoreFocus)ownEditor.focus();return true;
+      // Loading may finish after the user has chosen another live control.
+      const active=document.activeElement;
+      const defaultFocusAvailable=!active||active===document.body||active===document.documentElement||!document.body.contains(active);
+      if(restoreFocus&&(preserve||defaultFocusAvailable))ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){
         if(preserve){const retained=previousEditor.getStatus();if(editor===previousEditor&&client===previousClient&&!retained.dirty&&!retained.pending&&!retained.saving&&!retained.fenced)status.textContent=previousStatus;}

@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
+import {setTimeout as delay} from 'node:timers/promises';
 import {ProjectStore} from '../../src/projects/store.mjs';
 import {SourceRepository} from '../../src/sources/repository.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
-import {observeNativeSourceOpen} from './docs-source-race-observer.mjs';
+import {observeNativeSourceOpen,classifyNativeSourceOpen} from './docs-source-race-observer.mjs';
 import {documentVersion} from '../../src/windows/docs.mjs';
 const evidence=resolve('evidence/docs-sources',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),packageAt=process.argv.indexOf('--package');let receipt=null,packageCopy=null;
@@ -44,31 +45,43 @@ try{
  const second=await openLinked(editor);assert.equal(await second.evaluate('document.body.dataset.sourceVersion'),'1');assert.equal(await editor.evaluate('document.getElementById("documentTitleInput").value'),'Local unsaved title');assert.equal(await editor.evaluate('document.body.dataset.documentDirty'),'true');assert.deepEqual(await projects.readProject(first.project.id),before);
  result.cases.push({name:'actual working Docs opens exact saved code in another window while retaining unsaved title and untouched manifest',ok:true});
  await editor.click('#saveDocument');await editor.waitFor('document.body.dataset.documentDirty==="false"');const saved=await projects.readProject(first.project.id);assert.equal(JSON.parse(saved.json).workpapers[0].title,'Local unsaved title');
- const viewsBeforeOpen=(await driver.evaluate('window.sirenWindow.listViews()')).views,count=viewsBeforeOpen.length;
+ const viewsBeforeOpen=(await driver.evaluate('window.sirenWindow.listViews()')).views;
  await doc.click('.document-source-preview-toggle');await doc.waitFor('document.querySelector(".document-preview-paging").textContent.includes("saved document changed")');assert.equal(await doc.evaluate('document.querySelector(".document-source-preview pre").textContent'),'');await doc.click('.document-source-preview-toggle');
  const oldDocumentVersion=documentVersion(before,'agent-doc'),savedDocumentVersion=documentVersion(saved,'agent-doc');
- const observed=await doc.send('Runtime.evaluate',{expression:'('+observeNativeSourceOpen.toString()+')()',awaitPromise:false,returnByValue:false});assert.equal(observed.exceptionDetails,undefined);const objectId=observed.result.objectId;assert.ok(objectId,'Native passive observer must be retained');
- result.sourceOpenAfterSave={oldDocumentVersion,savedDocumentVersion};
- const observation=async functionDeclaration=>{const reply=await doc.send('Runtime.callFunctionOn',{objectId,functionDeclaration,awaitPromise:true,returnByValue:true});assert.equal(reply.exceptionDetails,undefined);return reply.result.value;};
- try{
-  await doc.click('.document-source-open');const clicked=await observation('function(){return this.click;}');result.sourceOpenAfterSave.click=clicked;
-  assert.equal(clicked.trusted,true);assert.equal(clicked.connected,true);assert.equal(clicked.readonly,'true');
-  if(clicked.documentVersion===oldDocumentVersion){
-   const conflict=await observation('function(){return this.conflict;}');result.sourceOpenAfterSave.outcome='stale-refused';result.sourceOpenAfterSave.conflict=conflict;assert.ok(conflict.status.includes('saved document changed'));
-   assert.deepEqual((await driver.evaluate('window.sirenWindow.listViews()')).views.map(v=>v.windowId).sort(),viewsBeforeOpen.map(v=>v.windowId).sort());
-  }else{
-   assert.equal(clicked.documentVersion,savedDocumentVersion,'Only the exact refreshed saved document may admit Open in Code');
-   await driver.waitFor(`(async()=>{const r=await window.sirenWindow.listViews();return r.ok&&r.views.length===${count+1}})()`);
-   const views=(await driver.evaluate('window.sirenWindow.listViews()')).views,newViews=views.filter(v=>!viewsBeforeOpen.some(old=>old.windowId===v.windowId));assert.equal(newViews.length,1);assert.equal(newViews[0].role,'code');assert.ok(viewsBeforeOpen.every(old=>views.some(v=>v.windowId===old.windowId)));
-   const opened=await attachNativePage(driver,'siren://app/windows/code.html?windowId='+newViews[0].windowId);await opened.waitFor('document.body.dataset.sourceReady==="true"');
-   assert.equal(await opened.evaluate('document.body.dataset.sourceReadonly'),'true');assert.equal(await opened.evaluate('document.body.dataset.sourceVersion'),'1');assert.equal(await opened.evaluate('document.body.dataset.sourceId'),ref.sourceId);assert.equal(await opened.evaluate('document.body.dataset.sourceLines'),String(lineCount+1));assert.equal(await opened.evaluate('document.body.dataset.sourceSha256'),point.sha256);result.sourceOpenAfterSave.outcome='refreshed-exact-historical-open';result.sourceOpenAfterSave.windowId=newViews[0].windowId;
+ result.sourceOpenAfterSave={oldDocumentVersion,savedDocumentVersion,viewsBeforeOpen,attempts:[],pollBudgetMs:3000,maxAttempts:3};
+ const readViews=async()=>{const roster=await driver.evaluate('window.sirenWindow.listViews()');assert.equal(roster.ok,true);assert.ok(Array.isArray(roster.views));return roster.views;};
+ const settleSaved=async()=>{const until=Date.now()+3000;do{if(await doc.evaluate('document.body.dataset.documentReady==="true"&&document.body.dataset.documentReadonly==="true"&&document.body.dataset.documentVersion==='+JSON.stringify(savedDocumentVersion)+'&&document.getElementById("viewStatus").textContent.startsWith("Read only ·")'))return true;await delay(100);}while(Date.now()<until);return false;};
+ for(let number=1;number<=3&&!result.sourceOpenAfterSave.outcome;number++){
+  const attempt={number,snapshots:[]};result.sourceOpenAfterSave.attempts.push(attempt);
+  const observed=await doc.send('Runtime.evaluate',{expression:'('+observeNativeSourceOpen.toString()+')()',awaitPromise:false,returnByValue:false});assert.equal(observed.exceptionDetails,undefined);const objectId=observed.result.objectId;assert.ok(objectId,'Native passive observer must be retained');
+  try{
+   await doc.click('.document-source-open');const until=Date.now()+3000;
+   do{
+    // snapshot() is synchronous: suppressed/retired actions never leave CDP
+    // awaiting the legacy click/conflict Promises. The public roster supplies
+    // the independent native-window postcondition.
+    const reply=await doc.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){return this.snapshot();}',awaitPromise:false,returnByValue:true});assert.equal(reply.exceptionDetails,undefined);
+    const snapshot=reply.result.value,views=await readViews(),decision=classifyNativeSourceOpen({snapshot,viewsBefore:viewsBeforeOpen,views,oldDocumentVersion,savedDocumentVersion});attempt.snapshots.push({snapshot,views,decision});
+    assert.notEqual(decision.disposition,'adverse','Native source-open evidence rejected: '+decision.reason);
+    if(decision.disposition==='stale-refused'){result.sourceOpenAfterSave.outcome='stale-refused';result.sourceOpenAfterSave.click=snapshot.click;result.sourceOpenAfterSave.conflict=snapshot.actualConflict;break;}
+    if(decision.disposition==='verify-historical-code'){
+     const opened=await attachNativePage(driver,'siren://app/windows/code.html?windowId='+decision.windowId);await opened.waitFor('document.body.dataset.sourceReady==="true"');
+     assert.equal(await opened.evaluate('document.body.dataset.sourceReadonly'),'true');assert.equal(await opened.evaluate('document.body.dataset.sourceVersion'),'1');assert.equal(await opened.evaluate('document.body.dataset.sourceId'),ref.sourceId);assert.equal(await opened.evaluate('document.body.dataset.sourceLines'),String(lineCount+1));assert.equal(await opened.evaluate('document.body.dataset.sourceSha256'),point.sha256);
+     const finalViews=await readViews();assert.equal(classifyNativeSourceOpen({snapshot,viewsBefore:viewsBeforeOpen,views:finalViews,oldDocumentVersion,savedDocumentVersion}).disposition,'verify-historical-code');
+     result.sourceOpenAfterSave.outcome='refreshed-exact-historical-open';result.sourceOpenAfterSave.click=snapshot.click;result.sourceOpenAfterSave.windowId=decision.windowId;break;
+    }
+    await delay(100);
+   }while(Date.now()<until);
+   attempt.disposition=result.sourceOpenAfterSave.outcome??'nonqualifying';
+  }finally{
+   for(const [method,params]of [['Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){this.dispose();}',awaitPromise:false,returnByValue:true}],['Runtime.releaseObject',{objectId}]])try{const r=await doc.send(method,params);assert.equal(r.exceptionDetails,undefined);}catch(e){(result.observerCleanupErrors??=[]).push(String(e.message));}
   }
- }finally{
-  for(const [method,params]of [['Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){this.dispose();}',returnByValue:true}],['Runtime.releaseObject',{objectId}]])try{const r=await doc.send(method,params);assert.equal(r.exceptionDetails,undefined);}catch(e){(result.observerCleanupErrors??=[]).push(String(e.message));}
+  if(!result.sourceOpenAfterSave.outcome&&number<3){attempt.savedSettlementObserved=await settleSaved();assert.equal(attempt.savedSettlementObserved,true,'A nonqualifying click must settle publicly at the exact saved document before a fresh observed retry');assert.deepEqual((await readViews()).map(v=>v.windowId).sort(),viewsBeforeOpen.map(v=>v.windowId).sort(),'A nonqualifying attempt may not leave an unaccounted native window');}
  }
+ assert.ok(result.sourceOpenAfterSave.outcome,'No qualifying native source-open outcome within three bounded attempts; retained receipts are nonqualifying');
  assert.equal(result.observerCleanupErrors,undefined);assert.equal(await code.evaluate('document.body.dataset.sourceReadonly'),'true');assert.equal(await code.evaluate('document.body.dataset.sourceId'),ref.sourceId);assert.equal(await code.evaluate('document.body.dataset.sourceSha256'),point.sha256);assert.equal(await code.evaluate('document.body.dataset.sourceVersion'),'1');assert.deepEqual(await projects.readProject(first.project.id),saved);
  await doc.click('#retryDocument');await doc.waitFor('document.body.dataset.documentReady==="true"&&document.body.dataset.documentReadonly==="true"&&document.body.dataset.documentVersion==='+JSON.stringify(savedDocumentVersion)+'&&document.getElementById("viewStatus").textContent.startsWith("Read only ·")&&document.getElementById("viewTitle").textContent==="Docs · Local unsaved title"');
- const third=await openLinked(doc);assert.equal(await third.evaluate('document.body.dataset.sourceVersion'),'1');assert.equal(await third.evaluate('document.body.dataset.sourceSha256'),point.sha256);result.cases.push({name:'actual stale preview refuses; click-time readonly version binds either stale source-open refusal or one exact refreshed historical Code, and explicit settled refresh preserves the original pointer',ok:true});
+ const third=await openLinked(doc);assert.equal(await third.evaluate('document.body.dataset.sourceVersion'),'1');assert.equal(await third.evaluate('document.body.dataset.sourceSha256'),point.sha256);result.cases.push({name:'actual stale preview refuses; bounded passive receipts qualify an observed stale source-open refusal or one exact refreshed historical Code; settled explicit refresh preserves the pointer',ok:true});
  await driver.waitFor('document.getElementById("homeLock")?.disabled===false');await driver.click('#homeLock');await driver.waitFor('window.sirenDesktopBootstrap.mode==="locked"');assert.equal((await driver.send('Target.getTargets')).targetInfos.some(target=>target.url.startsWith('siren://app/windows/')),false);assert.deepEqual(await projects.readProject(first.project.id),saved);assert.deepEqual(await sources.exportSource({projectId:first.project.id,...point}),Buffer.from(text));assert.equal((await sources.getMetrics({projectId:first.project.id,sourceId:ref.sourceId})).sha256,newer.sha256);result.cases.push({name:'actual shared Lock closes all Docs and pinned Code windows and preserves historical source, newer head, saved Docs and other agent',ok:true});result.status='COMPLETE';
 }catch(cause){result.error={message:cause.message,stack:cause.stack};try{await driver?.screenshot(join(evidence,'failure.png'));result.runtimeLog=driver?.logs().slice(-6000);if(activePage){await activePage.screenshot(join(evidence,'failure-active.png'));result.activeControls=await activePage.evaluate('(()=>{const e=document.querySelector(".document-source-preview-toggle"),r=e?.getBoundingClientRect(),h=r&&document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {width:innerWidth,height:innerHeight,ready:document.body.dataset.documentReady,inert:document.body.inert,rect:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null,cover:h?.id||h?.className||h?.tagName,outline:Array.from(document.querySelectorAll("#documentOutline button"),e=>({label:e.textContent,hidden:e.hidden}))};})()');}}catch{}}
 finally{await driver?.close();result.afterInputs=await capture();result.inputsUnchanged=JSON.stringify(inputs)===JSON.stringify(result.afterInputs);if(!result.inputsUnchanged)result.status='ADVERSE';await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;}

@@ -12,7 +12,7 @@ assert.ok(start>=0&&end>start,'Use actual final public API composition, not a ha
 const publicComposition=normalized.slice(start,end+'\n  });'.length);
 const held=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-async function fixture(){
+async function fixture({initialConnect=true}={}){
  const nodes=[],callbacks={},editors=[],clients=[];let document,nextReference=null,metricsRefusal=false,analysisUpdates=0,edits=0,sourceHooks=null,documentFocused=true;
  const noop=()=>{};
  class Node{constructor(){this.children=[];this.parentNode=null;this.dataset={};this.style={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.classList={toggle:noop};nodes.push(this);}append(...ns){for(const n of ns){n.remove();n.parentNode=this;this.children.push(n);}}contains(node){for(let value=node;value;value=value.parentNode)if(value===this)return true;return false;}replaceChildren(...ns){for(const n of this.children)n.parentNode=null;this.children=[];this.append(...ns);}get childNodes(){return this.children;}remove(){if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(n=>n!==this);this.parentNode=null;}addEventListener(k,fn){this.listeners[k]=fn;}removeEventListener(){}focus(){document.activeElement=this;}}
@@ -35,7 +35,7 @@ async function fixture(){
   const view=runInNewContext('(function(){'+publicComposition+'})()',context);editors.push({view,adapter,surface,root});return view;
  }};
  const window={SirenNativeViewIdentity:{clear:noop,set:noop},SirenNativeDocsLinks:{create:()=>({pause:noop,dispose:noop})},SirenNativeSourceChanges:{create:hooks=>{sourceHooks=hooks;return {reset:noop,reconcile:noop,pause:noop,resume:noop,dispose:noop};}},SirenNativeAnalysis:{create:()=>({reset:noop,reconcile:()=>analysisUpdates++,pause:noop,resume:noop,dispose:noop})},sirenSourceRead:{getReference:()=>nextReference?nextReference.promise:Promise.resolve(reference())},sirenSource:{},sirenSourceEdit:{onReferenceChanged:()=>noop},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn},addEventListener:noop,confirm:()=>true};
- runInNewContext(windowCode,{window,document,SirenCodeEditor:api,matchMedia:()=>({matches:false,addEventListener:noop,removeEventListener:noop})});assert.equal(await window.sirenNativeCodeView.connect(),true);
+ runInNewContext(windowCode,{window,document,SirenCodeEditor:api,matchMedia:()=>({matches:false,addEventListener:noop,removeEventListener:noop})});if(initialConnect)assert.equal(await window.sirenNativeCodeView.connect(),true);
  return {window,document,editors,clients,reference,callbacks,get sourceHooks(){return sourceHooks;},get edits(){return edits;},get analysisUpdates(){return analysisUpdates;},setDocumentFocus(value){documentFocused=value;},holdReference(){return nextReference=held();},releaseReference(){nextReference=null;},refuseMetrics(value=true){metricsRefusal=value;},refresh:()=>window.sirenNativeCodeView.connect({preserveCurrent:true})};
 }
 
@@ -121,4 +121,32 @@ test('failed candidate reference never changes installed source identity or work
  const f=await fixture(),old=f.editors[0],working=f.document.getElementById('openWorkingCopy');assert.equal(working.hidden,true);assert.equal(f.sourceHooks.sourceIdFor(),'source1');
  const gate=f.holdReference();f.refuseMetrics();const refresh=f.refresh();gate.resolve({...f.reference(),readonly:true,canEdit:true,sourceRef:{sourceId:'candidate2',version:1,sha256:'c'.repeat(64)}});
  assert.equal(await refresh,false);assert.equal(f.sourceHooks.sourceIdFor(),'source1');assert.equal(working.hidden,true);assert.equal(f.document.body.dataset.sourceId,'source1');assert.equal(old.adapter.getStatus().readonly,false);
+});
+
+// Initial/explicit-load focus intent is distinct from automatic refresh.
+for(const moment of ['before','during','blurred-during'])test('initial load retains a live external control '+moment,async()=>{
+ const f=await fixture({initialConnect:false}),control=f.document.createElement('select');control.id='sirenAppTheme';f.document.body.append(control);
+ const gate=f.holdReference();if(moment==='before')control.focus();const loading=f.window.sirenNativeCodeView.connect();
+ if(moment!=='before')control.focus();if(moment==='blurred-during')f.setDocumentFocus(false);
+ gate.resolve(f.reference());assert.equal(await loading,true);assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);
+ assert.equal(f.document.activeElement,control,'initial load must retain the live external focus owner');
+});
+test('initial load keeps ordinary default autofocus',async()=>{
+ const f=await fixture({initialConnect:false});assert.equal(await f.window.sirenNativeCodeView.connect(),true);assert.equal(f.document.activeElement,f.editors.at(-1).surface);
+});
+test('a disconnected former focus owner does not block initial autofocus',async()=>{
+ const f=await fixture({initialConnect:false}),control=f.document.createElement('button');f.document.body.append(control);control.focus();const gate=f.holdReference(),loading=f.window.sirenNativeCodeView.connect();control.remove();gate.resolve(f.reference());assert.equal(await loading,true);assert.equal(f.document.activeElement,f.editors.at(-1).surface);
+});
+test('explicit retry load retains a subsequently focused external control',async()=>{
+ const f=await fixture(),control=f.document.createElement('select');control.id='sirenAppTheme';f.document.body.append(control);const gate=f.holdReference();
+ f.document.getElementById('retrySource').listeners.click();control.focus();gate.resolve(f.reference());await tick();await tick();
+ assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);assert.equal(f.document.activeElement,control,'retry must retain a subsequent explicit control focus');
+});
+
+for(const route of ['initial','retry'])test('background '+route+' load keeps the default editor return-focus target',async()=>{
+ const f=await fixture({initialConnect:route==='retry'});f.document.activeElement=f.document.body;f.setDocumentFocus(false);
+ if(route==='initial')assert.equal(await f.window.sirenNativeCodeView.connect(),true);
+ else {f.document.getElementById('retrySource').listeners.click();await tick();await tick();}
+ assert.equal(f.document.activeElement,f.editors.at(-1).surface);
+ f.setDocumentFocus(true);assert.equal(f.document.activeElement,f.editors.at(-1).surface);
 });
