@@ -19,6 +19,33 @@ export function deriveAggregateFlowSources(input){
  d.host=once(d.host,'list->NumberOfProcessIdsInList>64','list->NumberOfProcessIdsInList>128');
  d.observerBase=once(d.observerBase,'count>=1&&count<=64','count>=1&&count<=128');
  let s=input.observerStage.replaceAll('\r\n','\n');
+ const oldMembers=`    static void SameFlowMembers(IntPtr safety,List<Held> held,string electron,string fixture,long created) {
+        var next=Hold(safety,electron,fixture,created);
+        try{
+            Require(next.Count==held.Count,"FLOW_MEMBERSHIP_CHANGED");
+            foreach(var p in next){var old=Find(held,p.pid);Require(old.image==p.image&&old.created==p.created,"FLOW_HELD_SET_CHANGED");}
+        }finally{foreach(var p in next)CloseHandle(p.handle);}
+    }`;
+ const observedMembers=`    static void SameFlowMembers(IntPtr safety,List<Held> held,string electron,string fixture,long created,Dictionary<string,object> result) {
+        List<Held> next=null;
+        try{
+            next=Hold(safety,electron,fixture,created);
+            try{
+                bool changed=next.Count!=held.Count;
+                foreach(var p in next){var old=held.Find(h=>h.pid==p.pid);if(old==null||old.image!=p.image||old.created!=p.created)changed=true;}
+                if(changed){
+                    var diagnostic=new Dictionary<string,object>{{"scope","PRE_CLEANUP_ADJACENT_NOT_ATOMIC"},{"expectedCount",held.Count},{"actualCount",next.Count}};
+                    diagnostic["expected"]=Observe(held);diagnostic["actual"]=Observe(next);diagnostic["adjacentActive"]=Active(safety);
+                    result["membershipFailure"]=diagnostic;
+                }
+            }catch(Exception diagnostic){result["membershipDiagnosticUnavailable"]=diagnostic.Message;}
+            Require(next.Count==held.Count,"FLOW_MEMBERSHIP_CHANGED");
+            foreach(var p in next){var old=Find(held,p.pid);Require(old.image==p.image&&old.created==p.created,"FLOW_HELD_SET_CHANGED");}
+        }catch{if(next==null)result["membershipDiagnosticUnavailable"]="LIVE_ROSTER_HOLD_FAILED";throw;}
+        finally{if(next!=null)foreach(var p in next)CloseHandle(p.handle);}
+    }`;
+ s=once(s,oldMembers,observedMembers);
+ const membersCall='SameFlowMembers(safety,held,electron,fixture,long.Parse(identity.created));';assert.equal(s.split(membersCall).length,3,'AGGREGATE_MEMBERSHIP_CALL_DRIFT');s=s.replaceAll(membersCall,'SameFlowMembers(safety,held,electron,fixture,long.Parse(identity.created),result);');
  const start=s.indexOf('    static List<uint> ValidateFlow('),end=s.indexOf('    static int Main(string[] args) {');assert.ok(start>=0&&end>start,'AGGREGATE_OBSERVER_ANCHOR_DRIFT');
  const validation=`    static List<uint> ValidateFlow(Dictionary<string,object> ready,List<Held> held,uint main,string electron,string fixture) {
         Require(Pid(ready["mainPid"])==main,"AGGREGATE_MAIN_IDENTITY");

@@ -1,7 +1,16 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {fixedShellFlowProbe} from './terminal-shell-flow-probe.mjs';
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 let probe,derive;try{({fixedAggregateFlowProbe:probe,deriveAggregateFlowSources:derive}=await import('./terminal-aggregate-flow-derive.mjs'));}catch(e){if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;}
+
+test('aggregate failure roster is captured before unchanged membership refusals without modifying historical fixture',async()=>{
+ const names={host:'terminal-host-guard/host.cc',fixture:'terminal-job-list.cs',extension:'terminal-session-composition.inc',observerBase:'terminal-main-owner-observer.cs',observerStage:'terminal-shell-flow-observer.cs'},input=Object.fromEntries(await Promise.all(Object.entries(names).map(async([key,path])=>[key,await readFile(new URL('../fixtures/'+path,import.meta.url),'utf8')]))),original={...input},d=derive(input),s=d.observerStage;
+ assert.deepEqual(input,original);assert.equal(createHash('sha256').update(input.observerStage).digest('hex'),'8532bc685672120197054613e4f1082ee396074c7b09296d7c8fa9c8c3f7629c');
+ assert.equal(s.split('SameFlowMembers(safety,held,electron,fixture,long.Parse(identity.created),result);').length-1,2);
+ const capture=s.indexOf('result["membershipFailure"]'),diagnosticCatch=s.indexOf('catch(Exception diagnostic)'),count=s.indexOf('Require(next.Count==held.Count,"FLOW_MEMBERSHIP_CHANGED")'),identity=s.indexOf('Require(old.image==p.image&&old.created==p.created,"FLOW_HELD_SET_CHANGED")');assert.ok(capture>=0&&diagnosticCatch>capture&&count>diagnosticCatch&&identity>count);
+ assert.match(s,/PRE_CLEANUP_ADJACENT_NOT_ATOMIC/);assert.match(s,/diagnostic\["expected"\]=Observe\(held\)/);assert.match(s,/diagnostic\["actual"\]=Observe\(next\)/);assert.match(s,/diagnostic\["adjacentActive"\]=Active\(safety\)/);assert.match(s,/if\(next==null\)result\["membershipDiagnosticUnavailable"\]="LIVE_ROSTER_HOLD_FAILED";throw;/);assert.match(s,/finally\{if\(next!=null\)foreach\(var p in next\)CloseHandle\(p.handle\);\}/);
+});
 
 test('staged diagnostic runner resolves readback absolutely and preserves causal refusal gates',async()=>{
  const m=await import('./terminal-aggregate-flow-derive.mjs'),desktop=new URL('../../',import.meta.url),input=await readFile(new URL('./terminal-shell-flow.mjs',import.meta.url),'utf8'),runner=m.deriveAggregateFlowRunner({runner:input,desktop});
