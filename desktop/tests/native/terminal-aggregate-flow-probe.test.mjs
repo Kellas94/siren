@@ -2,7 +2,15 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 import {fixedShellFlowProbe} from './terminal-shell-flow-probe.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {runAggregateFlowMain,preserveFirstFailure} from './terminal-aggregate-flow-main.mjs';
 let probe,derive;try{({fixedAggregateFlowProbe:probe,deriveAggregateFlowSources:derive}=await import('./terminal-aggregate-flow-derive.mjs'));}catch(e){if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;}
+test('serialized aggregate main receives durable error helper before cleanup and failure gates remain before qualification',async()=>{
+ const m=await import('./terminal-aggregate-flow-derive.mjs'),desktop=new URL('../../',import.meta.url),input=await readFile(new URL('./terminal-shell-flow.mjs',import.meta.url),'utf8'),runner=m.deriveAggregateFlowRunner({runner:input,desktop}),body=runAggregateFlowMain.toString();
+ assert.ok(runner.includes('import {runAggregateFlowMain,preserveFirstFailure}'));assert.ok(runner.includes('runAggregateFlowMain.toString()'));assert.ok(runner.includes('preserveFirstFailure.toString()'));
+ const original=body.indexOf('result.error='),persist=body.indexOf('await preserveFailure('),cleanup=body.indexOf('native.stopSession(s.session,98)'),finalResult=body.indexOf("'native-result.json'");assert.ok(original>=0&&persist>original&&cleanup>persist&&finalResult>cleanup);assert.ok(body.includes('result.failureReceiptError'));
+ const native=runner.indexOf('if(receipt.native?.error)'),primary=runner.indexOf('if(receipt.aggregateMainFailure)'),missing=runner.indexOf("assert.deepEqual(receipt.missingRecords,[],'FLOW_STAGE_RECORDS_MISSING')"),qualify=runner.indexOf('receipt.qualified=');assert.ok(native>=0&&primary>native&&missing>primary&&qualify>missing);
+ const serialized='void ('+body+')({},'+preserveFirstFailure.toString()+');',parse=spawnSync(process.execPath,['--input-type=module','--check'],{input:serialized,encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(parse.status,0,parse.stderr);
+});
 
 test('aggregate failure roster is captured before unchanged membership refusals without modifying historical fixture',async()=>{
  const names={host:'terminal-host-guard/host.cc',fixture:'terminal-job-list.cs',extension:'terminal-session-composition.inc',observerBase:'terminal-main-owner-observer.cs',observerStage:'terminal-shell-flow-observer.cs'},input=Object.fromEntries(await Promise.all(Object.entries(names).map(async([key,path])=>[key,await readFile(new URL('../fixtures/'+path,import.meta.url),'utf8')]))),original={...input},d=derive(input),s=d.observerStage;

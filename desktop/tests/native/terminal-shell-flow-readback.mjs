@@ -4,7 +4,18 @@ const message=e=>String(e?.message??e).slice(0,4096);
 export const readShellFlowRecords=args=>readFlowRecords(args,262144);
 // Eight sessions retain up to eight single-session native receipts. Companion
 // records and every ordinary single-session caller keep the original bound.
-export const readAggregateFlowRecords=args=>readFlowRecords(args,8*262144);
+export async function readAggregateFlowRecords(args){
+ const result=await readFlowRecords(args,8*262144),{fs,path}=args,file=path('flow-main-failure.json');let stat;
+ try{stat=await fs.lstat(file);}catch(cause){if(cause.code==='ENOENT')return result;throw cause;}
+ try{
+  assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.size<=8192);
+  const bytes=await fs.readFile(file);assert.ok(bytes.length<=8192);const record=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  const keys=['schema','admitted','status','scope','mainPid','phase','ageMs','error'];assert.ok(record&&typeof record==='object'&&!Array.isArray(record)&&Object.keys(record).length===keys.length&&keys.every(key=>Object.hasOwn(record,key)));
+  assert.ok(record.schema===1&&record.admitted===false&&record.status==='FAILED'&&record.scope==='AGGREGATE_MAIN_FIRST_FAILURE'&&Number.isSafeInteger(record.mainPid)&&record.mainPid>0&&Number.isFinite(record.ageMs)&&record.ageMs>=0&&typeof record.phase==='string'&&record.phase.length<=64&&record.phase.isWellFormed());
+  const e=record.error;assert.ok(e&&typeof e==='object'&&!Array.isArray(e)&&Object.keys(e).length===3&&['code','message','messageTruncated'].every(key=>Object.hasOwn(e,key))&&(e.code===null||(typeof e.code==='string'&&e.code.length<=64&&e.code.isWellFormed()))&&typeof e.message==='string'&&e.message.length<=512&&e.message.isWellFormed()&&typeof e.messageTruncated==='boolean'&&Buffer.byteLength(JSON.stringify(record))<=4096);
+  result.aggregateMainFailure=record;return result;
+ }catch(cause){throw Object.assign(Error('FLOW_MAIN_FAILURE_RECORD_REFUSED'),{cause});}
+}
 async function readFlowRecords({fs,path},nativeBudget){
  const result={missingRecords:[]};
  for(const [key,name] of [['observer','observer-result'],['native','native-result'],['ready','flow-first-ready'],['finish','flow-finish-ready']]){
