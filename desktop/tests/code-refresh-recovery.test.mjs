@@ -150,3 +150,14 @@ for(const route of ['initial','retry'])test('background '+route+' load keeps the
  assert.equal(f.document.activeElement,f.editors.at(-1).surface);
  f.setDocumentFocus(true);assert.equal(f.document.activeElement,f.editors.at(-1).surface);
 });
+
+
+// Hidden Retry may remain the connected active element until browser focus fixup.
+// This inert-DOM regression models that conditional state; native timing is separate.
+for(const focused of [true,false])test('genuine failed-load Retry retains default editor focus when hidden Retry is still active: '+focused,async()=>{
+ const f=await fixture({initialConnect:false});f.refuseMetrics();assert.equal(await f.window.sirenNativeCodeView.connect(),false);
+ const retry=f.document.getElementById('retrySource');assert.equal(retry.hidden,false);retry.focus();f.setDocumentFocus(focused);f.refuseMetrics(false);
+ const gate=f.holdReference();retry.listeners.click();assert.equal(retry.hidden,true);assert.equal(f.document.activeElement,retry);
+ gate.resolve(f.reference());await tick();await tick();assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);
+ assert.equal(f.document.activeElement,f.editors.at(-1).surface,'hidden Retry must not block default editor focus');
+});
