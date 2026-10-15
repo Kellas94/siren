@@ -1,0 +1,23 @@
+{
+  "author": "/root/session_native_failure_diagnosis",
+  "classification": "IMPLEMENTER_SOURCE_DERIVATION_NOT_INDEPENDENT_APPROVAL",
+  "originals": [
+    {
+      "path": "desktop/tests/native/terminal-cmdlet-runtime-worker.mjs",
+      "bytes": 28244,
+      "sha256": "26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33"
+    },
+    {
+      "path": "desktop/tests/native/terminal-discovery-runtime.mjs",
+      "bytes": 18315,
+      "sha256": "dc170bd03671de379299297e04b2c80364b784f35b86735083f8b3d4b3937c01"
+    },
+    {
+      "path": ".github/workflows/terminal-discovery-runtime.yml",
+      "bytes": 4225,
+      "sha256": "e1cd47555d3495114a7ec5b1464b9df5f7f0699678a36f53ff1d93b8d7576949"
+    }
+  ],
+  "nativeExecutionAdmitted": false,
+  "originalSourcesModified": false
+}

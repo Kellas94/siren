@@ -118,7 +118,7 @@ async function unchanged94(){
  // This historical peer-preparation baseline retains its original input fence
  // and package bytes. Current fence behavior and runner compatibility have
  // separate tests; neither fixture qualifies the evolving native application.
- for(const row of baseline.rows){const path=row.path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':row.path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':'../../'+row.path;const bytes=await readFile(new URL(path,import.meta.url));assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
+ for(const row of baseline.rows){const path=row.path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':row.path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':row.path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':'../../'+row.path;const bytes=await readFile(new URL(path,import.meta.url));assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
 }
 
 test('all 94 frozen peer inputs match the captured raw-byte baseline before preparation',unchanged94);

@@ -1,0 +1,83 @@
+{
+  "author": "/root",
+  "classification": "PREPARED_SOURCE_ONLY_NOT_EXECUTED",
+  "workerOriginalSha256": "26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33",
+  "driverOriginalSha256": "5a6cb54a2d1de6c5c0db00e1b2e310600a64c46ac19a080088d1f6144d108549",
+  "workerChange": "Only the fixed fixture import; native lifecycle, timers and graph unchanged.",
+  "driverLiteralReplacements": [
+    {
+      "before": "import {createSingleCmdletFixture} from './terminal-cmdlet-fixture.mjs';",
+      "after": "import {createComparedCmdletFixture,coldCmdletComparisonCases} from './terminal-discovery-fixture.mjs';"
+    },
+    {
+      "before": "value,{run,commit,control,fixture}",
+      "after": "value,{run,commit,control,mode,fixture}"
+    },
+    {
+      "before": "createSingleCmdletFixture({control,projectDirectory:dirname(fixture.scriptPath),token:fixture.expected})",
+      "after": "createComparedCmdletFixture({control,mode,projectDirectory:dirname(fixture.scriptPath),token:fixture.expected})"
+    },
+    {
+      "before": "out=join(root,'desktop/evidence/terminal-cmdlet-runtime',suffix)",
+      "after": "out=join(root,'desktop/evidence/terminal-discovery-runtime',suffix)"
+    },
+    {
+      "before": "scope:'HOSTED_COLD_SINGLE_CMDLET_DIAGNOSIS'",
+      "after": "scope:'HOSTED_COLD_CMDLET_RESOLUTION_COMPARISON'"
+    },
+    {
+      "before": "join(root,'desktop/tests/native/terminal-cmdlet-runtime-inputs.json')",
+      "after": "join(root,'desktop/tests/native/terminal-discovery-runtime-inputs.json')"
+    },
+    {
+      "before": "manifest.scope,'CMDLET_DIAGNOSTIC_SOURCE_PINS'",
+      "after": "manifest.scope,'CMDLET_COMPARISON_SOURCE_PINS'"
+    },
+    {
+      "before": "  for(const required of ['desktop/tests/native/terminal-cmdlet-runtime.mjs'",
+      "after": "  for(const required of ['desktop/tests/native/terminal-discovery-runtime.mjs','desktop/tests/native/terminal-discovery-worker.mjs','desktop/tests/native/terminal-discovery-fixture.mjs','desktop/tests/native/terminal-discovery-fixture.test.mjs','desktop/tests/terminal-discovery-runtime.test.mjs','desktop/tests/native/terminal-cmdlet-runtime.mjs'"
+    },
+    {
+      "before": "'.github/workflows/terminal-cmdlet-runtime.yml'])assert.ok",
+      "after": "'.github/workflows/terminal-discovery-runtime.yml'])assert.ok"
+    },
+    {
+      "before": "  for(const control of controls){",
+      "after": "  for(const {armId,control,mode} of coldCmdletComparisonCases){"
+    },
+    {
+      "before": "const armOut=join(out,control);",
+      "after": "const armOut=join(out,armId);"
+    },
+    {
+      "before": "const entryPath=join(armOut,'runtime-entry.mjs');await writeFile(entryPath,createCmdletRuntimeEntry(join(root,'desktop/tests/native/terminal-cmdlet-runtime-worker.mjs'),options),{flag:'wx'});",
+      "after": "const workerPath=join(root,'desktop/tests/native',mode==='original'?'terminal-cmdlet-runtime-worker.mjs':'terminal-discovery-worker.mjs');\r\n   const entryPath=join(armOut,'runtime-entry.mjs');await writeFile(entryPath,createCmdletRuntimeEntry(workerPath,options),{flag:'wx'});"
+    },
+    {
+      "before": "const arm={control,status:'STARTED'",
+      "after": "const arm={armId,mode,control,status:'STARTED'"
+    },
+    {
+      "before": "validateSingleCmdletResult(worker,{...context,control,fixture})",
+      "after": "validateSingleCmdletResult(worker,{...context,control,mode,fixture})"
+    },
+    {
+      "before": "assert.equal(worker.control,control);assert.equal(worker.cleanupVerified,true);",
+      "after": "assert.equal(worker.control,control);assert.equal(worker.fixtureVariant,createComparedCmdletFixture({control,mode,projectDirectory:join(armOut,'project \u021bar\u0103 \u65e5\u672c\u8a9e'),token:'a'.repeat(32)}).variant);assert.equal(worker.cleanupVerified,true);"
+    },
+    {
+      "before": "assert.deepEqual(receipt.arms.map(a=>a.control),controls);",
+      "after": "assert.deepEqual(receipt.arms.map(a=>a.armId),coldCmdletComparisonCases.map(a=>a.armId));"
+    },
+    {
+      "before": "'CMDLET_DIAGNOSTIC_ADVERSE'",
+      "after": "'CMDLET_COMPARISON_ADVERSE'"
+    },
+    {
+      "before": "'TWO_COLD_CMDLET_CONTROLS_OBSERVED_NOT_ORIGINAL_LOCK_QUALIFICATION'",
+      "after": "'FOUR_COLD_CMDLET_COMPARISON_ARMS_OBSERVED_NOT_ORIGINAL_LOCK_QUALIFICATION'"
+    }
+  ],
+  "originalSourcesModified": false,
+  "nativeExecutionAdmitted": false
+}
