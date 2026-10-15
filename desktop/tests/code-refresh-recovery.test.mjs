@@ -12,12 +12,13 @@ assert.ok(start>=0&&end>start,'Use actual final public API composition, not a ha
 const publicComposition=normalized.slice(start,end+'\n  });'.length);
 const held=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-async function fixture({initialConnect=true}={}){
- const nodes=[],callbacks={},editors=[],clients=[];let document,nextReference=null,metricsRefusal=false,analysisUpdates=0,edits=0,sourceHooks=null,documentFocused=true;
+async function fixture({initialConnect=true,realSourceChanges=false}={}){
+ const nodes=[],callbacks={},editors=[],clients=[];let document,nextReference=null,metricsRefusal=false,analysisUpdates=0,edits=0,sourceHooks=null,documentFocused=true,referenceChanged=null,confirmationCount=0,confirmationAllowed=true;
  const noop=()=>{};
  class Node{constructor(){this.children=[];this.parentNode=null;this.dataset={};this.style={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.classList={toggle:noop};nodes.push(this);}append(...ns){for(const n of ns){n.remove();n.parentNode=this;this.children.push(n);}}contains(node){for(let value=node;value;value=value.parentNode)if(value===this)return true;return false;}replaceChildren(...ns){for(const n of this.children)n.parentNode=null;this.children=[];this.append(...ns);}get childNodes(){return this.children;}remove(){if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(n=>n!==this);this.parentNode=null;}addEventListener(k,fn){this.listeners[k]=fn;}removeEventListener(){}focus(){document.activeElement=this;}}
  document={body:new Node(),documentElement:new Node(),getElementById:id=>nodes.find(n=>n.id===id),createElement:()=>new Node(),removeEventListener:noop,hasFocus:()=>documentFocused};
  for(const id of ['codeSurface','viewStatus','retrySource','codeTheme','openWorkingCopy','linkCodeDocs','sourceChangesNotice','sourceChangesMessage','reviewLatestSource','toggleAnalysis','compareSources','codeAnalysis','replaceLatestSource']){const n=new Node();n.id=id;document.body.append(n);}document.getElementById('codeTheme').value='light';
+ const notice=document.getElementById('sourceChangesNotice');notice.append(...['sourceChangesMessage','reviewLatestSource','replaceLatestSource'].map(id=>document.getElementById(id)));notice.hidden=true;
  const ref={sourceId:'source1',version:1,sha256:'a'.repeat(64)},text='saved code\n';
  const reference=()=>({ok:true,readonly:false,canEdit:true,sourceRef:{...ref},displayName:'Original.py',language:'python'});
  const sourceClient=({sourceRef})=>{
@@ -34,9 +35,10 @@ async function fixture({initialConnect=true}={}){
   const context={adapter,lifecycle,clearDiagnostic:noop,open:adapter.open,flush:adapter.flush,view:{contentDOM:surface,focus:()=>surface.focus(),get hasFocus(){return document.hasFocus()&&document.activeElement===surface;},dispatch:spec=>adapter.dispatch(spec),destroy:noop},disposed:false,unsubscribe:noop,document,root,surface,outside:noop,onContext:noop,menuKeys:noop,onSearchInput:noop,theme:'light',paintTheme:noop,colors:{reconfigure:()=>null},appearance:()=>null};
   const view=runInNewContext('(function(){'+publicComposition+'})()',context);editors.push({view,adapter,surface,root});return view;
  }};
- const window={SirenNativeViewIdentity:{clear:noop,set:noop},SirenNativeDocsLinks:{create:()=>({pause:noop,dispose:noop})},SirenNativeSourceChanges:{create:hooks=>{sourceHooks=hooks;return {reset:noop,reconcile:noop,pause:noop,resume:noop,dispose:noop};}},SirenNativeAnalysis:{create:()=>({reset:noop,reconcile:()=>analysisUpdates++,pause:noop,resume:noop,dispose:noop})},sirenSourceRead:{getReference:()=>nextReference?nextReference.promise:Promise.resolve(reference())},sirenSource:{},sirenSourceEdit:{onReferenceChanged:()=>noop},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn},addEventListener:noop,confirm:()=>true};
+ const window={SirenNativeViewIdentity:{clear:noop,set:noop},SirenNativeDocsLinks:{create:()=>({pause:noop,dispose:noop})},SirenNativeSourceChanges:{create:hooks=>{sourceHooks=hooks;return {reset:noop,reconcile:noop,pause:noop,resume:noop,dispose:noop};}},SirenNativeAnalysis:{create:()=>({reset:noop,reconcile:()=>analysisUpdates++,pause:noop,resume:noop,dispose:noop})},sirenSourceRead:{getReference:()=>nextReference?nextReference.promise:Promise.resolve(reference())},sirenSource:{},sirenSourceEdit:{onReferenceChanged:callback=>{referenceChanged=callback;return noop;}},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn},addEventListener:noop,confirm:()=>{confirmationCount++;return confirmationAllowed;}};
+ if(realSourceChanges){const code=await readFile(new URL('../src/ui/code/source-changes.js',import.meta.url),'utf8');runInNewContext(code,{window,setTimeout,clearTimeout});const actual=window.SirenNativeSourceChanges;window.SirenNativeSourceChanges={create:hooks=>{sourceHooks=hooks;return actual.create(hooks);}};}
  runInNewContext(windowCode,{window,document,SirenCodeEditor:api,matchMedia:()=>({matches:false,addEventListener:noop,removeEventListener:noop})});if(initialConnect)assert.equal(await window.sirenNativeCodeView.connect(),true);
- return {window,document,editors,clients,reference,callbacks,get sourceHooks(){return sourceHooks;},get edits(){return edits;},get analysisUpdates(){return analysisUpdates;},setDocumentFocus(value){documentFocused=value;},holdReference(){return nextReference=held();},releaseReference(){nextReference=null;},refuseMetrics(value=true){metricsRefusal=value;},refresh:()=>window.sirenNativeCodeView.connect({preserveCurrent:true})};
+ return {window,document,editors,clients,reference,callbacks,get sourceHooks(){return sourceHooks;},get confirmationCount(){return confirmationCount;},allowConfirmation(value){confirmationAllowed=value;},emitReference(value){assert.equal(typeof referenceChanged,'function');referenceChanged(value);},get edits(){return edits;},get analysisUpdates(){return analysisUpdates;},setDocumentFocus(value){documentFocused=value;},holdReference(){return nextReference=held();},releaseReference(){nextReference=null;},refuseMetrics(value=true){metricsRefusal=value;},refresh:()=>window.sirenNativeCodeView.connect({preserveCurrent:true})};
 }
 
 for(const route of ['direct','automatic'])for(const move of ['outside-before','outside-during','document-blur'])test('successful '+route+' refresh preserves focus intent: '+move,async()=>{
@@ -160,4 +162,36 @@ for(const focused of [true,false])test('genuine failed-load Retry retains defaul
  const gate=f.holdReference();retry.listeners.click();assert.equal(retry.hidden,true);assert.equal(f.document.activeElement,retry);
  gate.resolve(f.reference());await tick();await tick();assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);
  assert.equal(f.document.activeElement,f.editors.at(-1).surface,'hidden Retry must not block default editor focus');
+});
+
+
+// Actual source-changes controller supplies reset -> onClear; the inert DOM
+// retains the clicked connected active element to model the conditional interval.
+async function retainedReplaceFixture(){
+ const f=await fixture({realSourceChanges:true});
+ assert.equal(f.editors[0].adapter.dispatch({changes:{from:0,insert:'local '}}).ok,true);await tick();
+ f.emitReference({sourceId:'source1',version:99,sha256:'f'.repeat(64)});
+ assert.equal(f.document.getElementById('sourceChangesNotice').hidden,false);
+ assert.match(f.document.getElementById('sourceChangesMessage').textContent,/Version 99/);
+ return f;
+}
+for(const focused of [true,false])test('confirmed Replace defaults to editor when its hidden ancestor still owns focus: '+focused,async()=>{
+ const f=await retainedReplaceFixture(),notice=f.document.getElementById('sourceChangesNotice'),button=f.document.getElementById('replaceLatestSource');
+ assert.equal(notice.contains(button),true);button.focus();f.setDocumentFocus(focused);
+ const gate=f.holdReference();button.listeners.click();assert.equal(f.confirmationCount,1);
+ assert.equal(notice.hidden,true);assert.equal(f.document.body.contains(button),true);assert.equal(f.document.activeElement,button);
+ gate.resolve(f.reference());await tick();await tick();assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);
+ assert.equal(f.document.activeElement,f.editors.at(-1).surface,'hidden notice descendant must not block default editor focus');
+});
+test('cancelled Replace preserves its visible notice, local text and control focus',async()=>{
+ const f=await retainedReplaceFixture(),old=f.editors[0],before=old.adapter.getState().doc.toString(),button=f.document.getElementById('replaceLatestSource');
+ f.allowConfirmation(false);button.focus();button.listeners.click();await tick();assert.equal(f.confirmationCount,1);
+ assert.equal(f.editors.length,1);assert.equal(old.adapter.getStatus().disposed,false);assert.equal(old.adapter.getState().doc.toString(),before);
+ assert.equal(f.document.getElementById('sourceChangesNotice').hidden,false);assert.equal(f.document.activeElement,button);
+});
+test('confirmed Replace retains a different live control chosen during loading',async()=>{
+ const f=await retainedReplaceFixture(),button=f.document.getElementById('replaceLatestSource'),control=f.document.createElement('select');
+ control.id='sirenAppTheme';f.document.body.append(control);button.focus();const gate=f.holdReference();button.listeners.click();
+ assert.equal(f.document.getElementById('sourceChangesNotice').hidden,true);control.focus();gate.resolve(f.reference());await tick();await tick();
+ assert.equal(f.editors.at(-1).adapter.getStatus().ready,true);assert.equal(f.document.activeElement,control);
 });

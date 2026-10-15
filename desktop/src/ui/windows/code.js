@@ -68,7 +68,7 @@
       });sourceChanges.reconcile();analysis?.reconcile();
       // Loading may finish after the user has chosen another live control.
       const active=document.activeElement;
-      const defaultFocusAvailable=!active||active===document.body||active===document.documentElement||(active===retry&&retry.hidden)||!document.body.contains(active);
+      const defaultFocusAvailable=!active||active===document.body||active===document.documentElement||(active===retry&&retry.hidden)||(changeNotice.hidden&&changeNotice.contains(active))||!document.body.contains(active);
       if(restoreFocus&&(preserve||defaultFocusAvailable))ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){
