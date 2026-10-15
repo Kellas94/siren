@@ -29,6 +29,14 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
@@ -46,13 +54,13 @@ jobs:
           foreach ($identityFile in $identityFiles) {
             if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
           }
-          node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
+          node --expose-gc --experimental-vm-modules --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
           $identityExit = $LASTEXITCODE
           $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
             Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs', 'fixture-temp-alias.test.mjs') } |
             Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
           if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
-          node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
+          node --expose-gc --experimental-vm-modules --test --test-concurrency=4 --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
           $unitsExit = $LASTEXITCODE
           if ($identityExit -ne 0 -or $unitsExit -ne 0) { exit 1 }
           exit 0
@@ -259,6 +267,14 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
@@ -530,6 +546,14 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE

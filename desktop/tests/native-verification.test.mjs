@@ -6,7 +6,8 @@ const required=["shell","protected-storage","account-transition","code-windows",
 test('native identity is compiled before both original development groups and native unit tests',async()=>{
  const workflow=await readFile(new URL('../../.github/workflows/desktop-verify.yml',import.meta.url),'utf8');
  const windows=workflow.slice(workflow.indexOf('  windows:'),workflow.indexOf('  native_windows:'));
- assert.ok(windows.indexOf('node scripts/build-process-reader.mjs')<windows.indexOf('node --test --test-concurrency=1'));
+ const build=windows.indexOf('node scripts/build-process-reader.mjs'),unit=windows.indexOf('node --expose-gc --experimental-vm-modules --test --test-concurrency=1');
+ assert.ok(build>=0&&unit>=0&&build<unit,'native reader must be built before the GC/VM-enabled serial identity tests');
  const native=workflow.slice(workflow.indexOf('  native_windows:'),workflow.indexOf('  packaged_windows:'));
  assert.ok(native.indexOf('node scripts/build-process-reader.mjs')>=0);
  assert.ok(native.indexOf('node scripts/build-process-reader.mjs')<native.indexOf('node scripts/native-verification.mjs'));
