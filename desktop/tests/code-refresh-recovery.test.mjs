@@ -31,7 +31,7 @@ async function fixture(){
   // DOM EditorView/theme/menu collaborators are inert; real adapter/lifecycle
   // functions own all pause/resume/save behavior. This is not full editor DOM.
   root.append(surface);container.append(root);
-  const context={adapter,lifecycle,clearDiagnostic:noop,open:adapter.open,flush:adapter.flush,view:{focus:()=>surface.focus(),get hasFocus(){return document.hasFocus()&&document.activeElement===surface;},dispatch:spec=>adapter.dispatch(spec),destroy:noop},disposed:false,unsubscribe:noop,document,root,surface,outside:noop,onContext:noop,menuKeys:noop,onSearchInput:noop,theme:'light',paintTheme:noop,colors:{reconfigure:()=>null},appearance:()=>null};
+  const context={adapter,lifecycle,clearDiagnostic:noop,open:adapter.open,flush:adapter.flush,view:{contentDOM:surface,focus:()=>surface.focus(),get hasFocus(){return document.hasFocus()&&document.activeElement===surface;},dispatch:spec=>adapter.dispatch(spec),destroy:noop},disposed:false,unsubscribe:noop,document,root,surface,outside:noop,onContext:noop,menuKeys:noop,onSearchInput:noop,theme:'light',paintTheme:noop,colors:{reconfigure:()=>null},appearance:()=>null};
   const view=runInNewContext('(function(){'+publicComposition+'})()',context);editors.push({view,adapter,surface,root});return view;
  }};
  const window={SirenNativeViewIdentity:{clear:noop,set:noop},SirenNativeDocsLinks:{create:()=>({pause:noop,dispose:noop})},SirenNativeSourceChanges:{create:hooks=>{sourceHooks=hooks;return {reset:noop,reconcile:noop,pause:noop,resume:noop,dispose:noop};}},SirenNativeAnalysis:{create:()=>({reset:noop,reconcile:()=>analysisUpdates++,pause:noop,resume:noop,dispose:noop})},sirenSourceRead:{getReference:()=>nextReference?nextReference.promise:Promise.resolve(reference())},sirenSource:{},sirenSourceEdit:{onReferenceChanged:()=>noop},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn},addEventListener:noop,confirm:()=>true};
@@ -65,6 +65,21 @@ for(const controlName of ['find','toolbar'])for(const moment of ['before','durin
  if(moment==='during'){control.focus();gate.resolve(f.reference());}assert.equal(await refresh,false);
  assert.equal(f.document.activeElement,control);assert.equal(old.adapter.getStatus().disposed,false);
  assert.equal(old.adapter.getStatus().paused,false);assert.equal(f.editors.length,moment==='during'?2:1);
+ if(moment==='during')assert.equal(f.editors.at(-1).adapter.getStatus().disposed,true);
+});
+// Window blur retains Chromium's active element for focus restoration.
+// Refresh must retain that control, but may replace blurred content (above).
+for(const controlName of ['find','toolbar'])for(const moment of ['before','during'])test('automatic refresh retains a blurred editor '+controlName+' control '+moment,async()=>{
+ const f=await fixture(),old=f.editors[0],control=f.document.createElement(controlName==='find'?'input':'button');
+ old.root.append(control);control.value='retained query';const gate=moment==='during'?f.holdReference():null;
+ if(moment==='before'){control.focus();f.setDocumentFocus(false);}const refresh=f.sourceHooks.onReload();
+ if(moment==='during'){control.focus();f.setDocumentFocus(false);gate.resolve(f.reference());}
+ assert.equal(await refresh,false,'automatic refresh must defer while an editor control owns the retained active element');
+ assert.equal(f.document.body.contains(old.root),true);assert.equal(old.root.contains(control),true);
+ assert.equal(old.adapter.getStatus().disposed,false);assert.equal(old.adapter.getStatus().paused,false);
+ assert.equal(f.document.activeElement,control);assert.equal(control.value,'retained query');
+ f.setDocumentFocus(true);assert.equal(f.document.activeElement,control,'the same control remains the return-focus target');
+ assert.equal(f.editors.length,moment==='during'?2:1);
  if(moment==='during')assert.equal(f.editors.at(-1).adapter.getStatus().disposed,true);
 });
 for(const failure of ['reference','metrics'])test('failed '+failure+' refresh retains an editable exact old Code owner',async()=>{
