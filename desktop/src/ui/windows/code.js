@@ -12,9 +12,10 @@
     navigationLifetime++;
     const previousEditor=editor,previousClient=client,previousStatus=status.textContent;
     const preserve=preserveCurrent&&previousEditor?.getStatus().ready&&!previousEditor.getStatus().dirty&&!previousEditor.getStatus().pending&&!previousEditor.getStatus().saving&&!previousEditor.getStatus().fenced;
+    if(preserve&&previousEditor.hasControlFocus?.()===true)return false;
     if(preserve&&previousEditor.pauseView()?.ok!==true)return false;
     const token=++generation;if(!preserve)clear();retry.hidden=true;status.textContent=preserve?'Refreshing source from another window…':'Opening selected source…';paint();
-    let candidateEditor=null,candidateClient=null,staging=null;
+    let candidateEditor=null,candidateClient=null,staging=null,restoreFocus=!preserve;
     try{
       const context=await window.sirenSourceRead.getReference();if(token!==generation||disposed)return false;
       if(!context?.ok||typeof context.readonly!=='boolean')throw Error('Source reference unavailable');
@@ -37,6 +38,8 @@
         if(!current?.ok||current.readonly!==readonly||['sourceId','version','sha256'].some(key=>current.sourceRef[key]!==context.sourceRef[key]))throw Error('Source changed during refresh');
         const retained=previousEditor.getStatus();
         if(editor!==previousEditor||client!==previousClient||!retained.ready||!retained.paused||retained.disposed||retained.opening||retained.dirty||retained.pending||retained.saving||retained.fenced)throw Error('Retained editor changed during refresh');
+        if(previousEditor.hasControlFocus?.()===true)throw Error('Retained editor control has focus');
+        restoreFocus=previousEditor.hasFocus?.()===true;
         links.pause();unsubscribeEditor?.();previousEditor.dispose();previousClient.dispose();surface.replaceChildren(...staging.childNodes);
       }
       editor=candidateEditor;client=candidateClient;candidateEditor=null;candidateClient=null;
@@ -63,7 +66,7 @@
         document.body.dataset.sourceUnits=String(value.utf16Units);document.body.dataset.sourceLines=String(value.lines);
         sourceChanges.reconcile();analysis?.reconcile();
       });sourceChanges.reconcile();analysis?.reconcile();
-      ownEditor.focus();return true;
+      if(restoreFocus)ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){
         if(preserve){const retained=previousEditor.getStatus();if(editor===previousEditor&&client===previousClient&&!retained.dirty&&!retained.pending&&!retained.saving&&!retained.fenced)status.textContent=previousStatus;}
@@ -76,7 +79,7 @@
   links=window.SirenNativeDocsLinks.create({button:linkButton,editorFor:()=>editor,isCurrent:()=>!disposed&&!paused&&document.body.dataset.sourceReady==='true'&&document.body.dataset.sourceReadonly==='false',onStatus:text=>{status.textContent=text;}});
   sourceChanges=window.SirenNativeSourceChanges.create({subscribe:callback=>window.sirenSourceEdit.onReferenceChanged(callback),sourceIdFor:()=>nativeSourceId,stateFor:()=>editor?.getStatus(),isCurrent:()=>!disposed&&!paused&&nativeSourceId!==null&&document.body.dataset.sourceReadonly!=='true',onReload:async()=>{
     const selection=editor?.getState()?.selection?.main,cursor=selection?{anchor:selection.anchor,head:selection.head}:null;
-    const ok=await connect({preserveCurrent:true});if(ok&&cursor&&editor){const length=editor.getState().doc.length;editor.select(Math.min(cursor.anchor,length),Math.min(cursor.head,length));}return ok;
+    const ok=await connect({preserveCurrent:true});if(ok&&cursor&&editor){const length=editor.getState().doc.length;editor.select(Math.min(cursor.anchor,length),Math.min(cursor.head,length),{focus:false});}return ok;
   },onRetained:ref=>{changeNotice.hidden=false;changeMessage.textContent=`Version ${ref.version} was stored in another window. Your local text is retained.`;},onClear:()=>{changeNotice.hidden=true;}});
   const changed=()=>paint();theme.addEventListener('change',changed);media.addEventListener('change',changed);
   analysis=window.SirenNativeAnalysis.create({button:document.getElementById('toggleAnalysis'),compareButton:document.getElementById('compareSources'),panel:document.getElementById('codeAnalysis'),editorFor:()=>editor,bridge:window.sirenSourceAnalysis,languageFor:()=>document.body.dataset.sourceLanguage??'unknown',nameFor:()=>nativeSourceName});
