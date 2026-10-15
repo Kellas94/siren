@@ -1,0 +1,10 @@
+// Actual native QA target resolver with inert DOM seams; no native claim.
+import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFile} from 'node:fs/promises';
+const helpers=await Promise.all(['docs-edit','home-documents'].map(async name=>{const source=await readFile(new URL('./native/'+name+'.mjs',import.meta.url),'utf8'),begin=source.indexOf('function nativeAddTextSelector(){'),end=source.indexOf(name==='docs-edit'?'\nconst confirmClick=':'\ntry{',begin);assert.ok(begin>=0&&end>begin,'NATIVE_ADD_TEXT_RESOLVER_REQUIRED');return source.slice(begin,end);}));
+assert.equal(helpers[0].trim(),helpers[1].trim(),'Native text-target guards must stay identical in both probes');
+for(const [index,name]of ['docs-edit','home-documents'].entries()){
+function target(labels,disabled=false){const buttons=labels.map(textContent=>({textContent,disabled:disabled&&textContent==='Add text'})),actions={querySelectorAll:selector=>{assert.equal(selector,':scope > button');return buttons}};return vm.runInNewContext('('+helpers[index]+')',{document:{querySelectorAll:selector=>{assert.equal(selector,'#documentContent .document-block-actions');return [actions]}}})();}
+test(name+': optional diagram button cannot redirect text insertion to a heading',()=>{assert.equal(target(['Insert diagram…','Add heading','Add text','Add image']),'#documentContent .document-block-actions > button:nth-of-type(3)');});
+test(name+': text target follows its semantic action when optional buttons are absent or reordered',()=>{assert.equal(target(['Add heading','Add text','Add image']),'#documentContent .document-block-actions > button:nth-of-type(2)');assert.equal(target(['Add text','Add image','Add heading']),'#documentContent .document-block-actions > button:nth-of-type(1)');});
+test(name+': missing, duplicate and disabled text targets refuse instead of clicking a neighbor',()=>{for(const labels of [['Add heading'],['Add text','Add text']])assert.throws(()=>target(labels),/NATIVE_ADD_TEXT_TARGET_REQUIRED/);assert.throws(()=>target(['Add text'],true),/NATIVE_ADD_TEXT_TARGET_REQUIRED/);});
+}

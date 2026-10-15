@@ -48,8 +48,12 @@ export function deriveAggregateFlowSources(input){
  d.observerStage=once(s,'SHELL_FLOW_SAFETY_OBSERVED_NOT_ADMITTED','AGGREGATE_FLOW_SAFETY_OBSERVED_NOT_ADMITTED');return d;
 }
 export function deriveAggregateFlowRunner({runner,desktop}){
- assert.equal(sha(runner),'f00b6016188d2199cb0ca50c5563fb7d6f3a391a26046383e38941f32d4ad205','AGGREGATE_RUNNER_DRIFT');
+ const runnerSha=sha(runner),withReadback=runnerSha==='997d12125436573c15053fb11e41c08c32678cbbf8979eb78ca93043a135a49e';
+ // Keep the original immutable runner admitted; the reviewed diagnostic
+ // revision has one additional module import that must resolve after staging.
+ assert.ok(runnerSha==='f00b6016188d2199cb0ca50c5563fb7d6f3a391a26046383e38941f32d4ad205'||withReadback,'AGGREGATE_RUNNER_DRIFT');
  let s=once(runner,"new URL('../../',import.meta.url)",`new URL(${JSON.stringify(desktop.href)})`);
+ if(withReadback)s=once(s,"import {readShellFlowRecords} from './terminal-shell-flow-readback.mjs';",`import {readShellFlowRecords} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-readback.mjs',desktop).href)};`);
  const imports="import {deriveShellFlowSources} from './terminal-shell-flow-derive.mjs';import {fixedShellFlowProbe} from './terminal-shell-flow-probe.mjs';import {runShellFlowMain} from './terminal-shell-flow-main.mjs';import {isShellFlowObserved} from './terminal-shell-flow-verdict.mjs';";
  s=once(s,imports,`import {deriveAggregateFlowSources,fixedAggregateFlowProbe} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-derive.mjs',desktop).href)};import {runAggregateFlowMain} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-main.mjs',desktop).href)};import {isAggregateFlowObserved} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href)};`);
  s=once(s,"evidence/terminal-shell-flow'","evidence/terminal-aggregate-flow'");
@@ -76,7 +80,7 @@ export function deriveAggregateFlowBuilder({builder,desktop,runnerPath}){
  s=once(s,'import {isShellFlowObserved}','import {isAggregateFlowObserved}');
  s=once(s,new URL('tests/native/terminal-shell-flow-verdict.mjs',desktop).href,new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href);
  s=once(s,'isShellFlowObserved(r)','isAggregateFlowObserved(r)');
- s=once(s,'const names=[',"const names=['tests/native/terminal-aggregate-flow-derive.mjs','tests/native/terminal-aggregate-flow-main.mjs','tests/native/terminal-aggregate-flow-delivery.mjs','tests/native/terminal-aggregate-flow-verdict.mjs','tests/native/build-terminal-aggregate-flow.mjs','src/terminal/credits.mjs',");
+ s=once(s,'const names=[',"const names=['tests/native/terminal-aggregate-flow-derive.mjs','tests/native/terminal-aggregate-flow-main.mjs','tests/native/terminal-aggregate-flow-delivery.mjs','tests/native/terminal-aggregate-flow-verdict.mjs','tests/native/build-terminal-aggregate-flow.mjs','tests/native/terminal-shell-flow-readback.mjs','src/terminal/credits.mjs',");
  s=once(s,' const packagePath=join(desktop,'," for(const path of [fileURLToPath(import.meta.url),"+JSON.stringify(runnerPath)+"]){const bytes=await readFile(path);receipt.sources.push({path,bytes:bytes.length,sha256:hash(bytes)});}\n const packagePath=join(desktop,");
  s=once(s,"observerStage:await readFile(join(desktop,'tests/fixtures/terminal-session-composition-observer.cs')","observerStage:await readFile(join(desktop,'tests/fixtures/terminal-shell-flow-observer.cs')");
  s=once(s,"join(desktop,'tests/native/terminal-shell-flow.mjs')",JSON.stringify(runnerPath));
