@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {fixture,sourceBytes} from './helpers/code-edit-capacity-help.mjs';
+test('actual UTF8 capacity refuses one byte while Unicode UTF16 units remain far below that numeric cap',async()=>{
+ const symbol='😀';assert.equal(Buffer.byteLength(symbol),4);assert.equal(symbol.length,2);assert.equal(sourceBytes%4,0);let text=symbol.repeat(sourceBytes/4);assert.equal(Buffer.byteLength(text),sourceBytes);assert.equal(text.length,sourceBytes/2);const f=await fixture({text});text=null;
+ try{const raw=f.api.getSourceText(),status=f.api.getStatus();assert.equal(status.utf8Bytes,sourceBytes);assert.equal(status.utf16Units,sourceBytes/2);f.edit({changes:{from:0,insert:'!'}});assert.equal(f.api.getSourceText(),raw);assert.equal(f.api.getStatus().utf8Bytes,sourceBytes);assert.equal(f.api.getStatus().utf16Units,sourceBytes/2);assert.equal(f.api.getStatus().pending,0);assert.equal(f.api.getStatus().dirty,false);assert.equal(f.calls.length,0);assert.match(f.document.body.textContent,/Edit refused · SOURCE_TOO_LARGE · source unchanged/);assert.ok(raw.length+1<sourceBytes,'This fails bytes, not UTF16 source length');}
+ finally{await f.dispose();}
+});

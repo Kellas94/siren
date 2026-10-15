@@ -12,6 +12,8 @@ import {WorkspaceCoordinator} from '../src/windows/coordinator.mjs';
 import {NativeDocsReads} from '../src/windows/docs-reads.mjs';
 import {formatSavedDocument} from '../src/documents/export.mjs';
 import {exportClassAtOwnedFile} from './fixtures/export-await-phase.mjs';
+import {embedContext} from './fixtures/docs-diagram-embed-context.mjs';
+import {DiagramEmbedAssetStore} from '../src/documents/diagram-embed-assets.mjs';
 const module=await import('../src/windows/docs-export.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
 async function fixture(t,format,Service=module.NativeDocsExports){
  const document={id:'doc-a',title:'Exact saved context',blocks:[{id:'p',kind:'prompt',text:'print("Saved Ș😀")'},{id:'k',kind:'knowledge',rows:[{id:'r',name:'agent.py'}]}],opaque:{claim:'IMPORTED_NOT_APPROVED'}};
@@ -69,4 +71,10 @@ test('uncertain cleanup after real rename permanently fences exports and refuses
 test('Lock during final cleanup refuses stale Docs success, preserving the already retained file without receipt',async t=>{
  let f,triggered=false;const Service=await exportClassAtOwnedFile('docs',async path=>{if(!triggered&&path.endsWith('.tmp')){triggered=true;f.service.pause();f.owner.pause('Lock');}});f=await fixture(t,undefined,Service);
  const result=await f.call();assert.equal(triggered,true);assert.equal(result.ok,false,'No stale saved Docs success during final cleanup');await f.service.drain();assert.equal(f.service.isIdle(),true);const files=await readdir(join(await f.projects.directory(f.selected.project.id),'exports'));assert.equal(files.length,1);assert.match(files[0],/\.json$/);f.service.resume();f.owner.resume();assert.equal((await f.call('revealExport',{exportId:files[0].slice('document-'.length,-5)})).ok,false);
+});
+test('actual saved Docs service publishes frozen passive visuals and Markdown ZIP without foreign document data',async t=>{
+ const f=await fixture(t),embedded=await embedContext(t),assets=new DiagramEmbedAssetStore({projects:f.projects});for(const ref of embedded.metadata.diagramEmbedAssets.refs)await assets.put({projectId:f.selected.project.id,kind:ref.kind,bytes:await embedded.assets.read({projectId:embedded.snapshot.project.id,ref,isCurrent:()=>true}),isCurrent:()=>true});
+ const metadata=JSON.parse(f.selected.json);metadata.workpapers[0].blocks.push(embedded.block);metadata.diagramEmbedAssets=embedded.metadata.diagramEmbedAssets;assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId:f.selected.project.id,baseRevision:f.selected.revision,sourceRefs:f.selected.sourceRefs,metadata,operationId:'native-export-embed'})).ok,true);const next=await f.projects.readProject(f.selected.project.id);f.select(next);const saved=await f.reads.invoke({event:f.event(1),method:'getDocument'});assert.equal(saved.ok,true);
+ for(const format of ['html','markdown','json']){const result=await f.call('exportSaved',{format,expectedVersion:saved.version,expectedSha256:saved.sha256});assert.equal(result.ok,true,JSON.stringify(result));const bytes=await readFile(join(await f.projects.directory(next.project.id),'exports',result.filename));assert.equal(bytes.includes(Buffer.from('FOREIGN_DOC_SECRET')),false);if(format==='markdown'){assert.match(result.filename,/\.zip$/);assert.equal(bytes.readUInt32LE(0),0x04034b50);}else if(format==='html'){assert.match(bytes.toString(),/<img[^>]+data:image\/svg\+xml;base64,/);assert.doesNotMatch(bytes.toString(),/<svg/);}else assert.equal(JSON.parse(bytes).diagramAssets.length,2);}
+ assert.deepEqual(await f.projects.readProject(next.project.id),next);
 });

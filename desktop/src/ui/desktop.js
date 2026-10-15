@@ -3,6 +3,7 @@
   if (!bridge) return;
   let panel = null; let status = null; let updateState = null;
   let windowsPanel=null,windowsGeneration=0;
+  const windowRoleLabels=Object.freeze({code:'⌘ Code',docs:'Docs',diagram:'Diagrams',presenter:'Presenter',audience:'Audience',terminal:'Terminal'});
   const button = (parent, id, text, action) => {
     const element = document.createElement('button'); element.id = id; element.type = 'button'; element.className = 'btn ghost compact'; element.textContent = text;
     element.addEventListener('click', () => Promise.resolve(action()).catch(() => { if (status) status.textContent = 'The operation did not complete. Your local data was retained.'; }));
@@ -25,7 +26,7 @@
       open.replaceChildren();if(!result?.ok){note.textContent='Window list unavailable. Your work was retained.';return;}
       const rows=result.views.filter(item=>item.role!=='workspace');
       if(!rows.length){const empty=document.createElement('p');empty.textContent='No other windows are open.';open.append(empty);}
-      for(const row of rows){const control=button(open,'','',async()=>{try{const result=await window.sirenWindow.focusView({windowId:row.windowId});if(alive(token)){note.textContent=result?.ok?'Window restored.':'That window is no longer available.';await refreshViews();}}catch{if(alive(token))note.textContent='Window could not be restored. Your work was retained.';}});control.removeAttribute('id');control.dataset.windowId=row.windowId;control.textContent=`${row.role==='code'?'⌘ Code':row.role==='diagram'?'Diagrams':'Docs'} · ${row.entityId.slice(0,16)} · ${row.state==='minimized'?'Restore':'Show'}`;}
+      for(const row of rows){const control=button(open,'','',async()=>{try{const result=await window.sirenWindow.focusView({windowId:row.windowId});if(alive(token)){note.textContent=result?.ok?'Window restored.':'That window is no longer available.';await refreshViews();}}catch{if(alive(token))note.textContent='Window could not be restored. Your work was retained.';}});control.removeAttribute('id');control.dataset.windowId=row.windowId;control.textContent=`${windowRoleLabels[row.role]??'Window'} · ${row.entityId.slice(0,16)} · ${row.state==='minimized'?'Restore':'Show'}`;}
     };
     const more=button(footer,'desktopWindowsMore','More items',async()=>{await loadPage(false);});more.hidden=true;
     const loadPage=async(reset)=>{
@@ -200,7 +201,8 @@
     const label = document.createElement('span'); label.id = 'desktopProjectLabel'; label.textContent = `Local · ${boot?.snapshot?.project.label || 'Choose a project'} · Development build`; bar.append(label);
     if(typeof bridge.goHome==='function')button(bar,'desktopHome','Home',async()=>{const result=await bridge.goHome();if(result?.ok!==true&&status)status.textContent='Home could not open. Your live work was retained.';});
     if(typeof window.sirenWindow?.getCatalog==='function')button(bar,'desktopWindows','Windows',showWindows);
-    button(bar, 'desktopOptions', 'Desktop…', showDesktop); document.body.append(bar);
+    if(window.sirenTerminalLauncher){const control=button(bar,'desktopTerminal','Terminal',()=>window.sirenTerminalLauncher.open());control.hidden=true;void window.sirenTerminalLauncher.getCapability().then(r=>{control.hidden=r?.ok!==true;control.disabled=r?.available!==true;if(control.disabled)control.title='Terminal native runtime is not admitted in this candidate.';}).catch(()=>{});}
+      button(bar, 'desktopOptions', 'Desktop…', showDesktop); document.body.append(bar);
     bridge.onStatus(event => {
       if (event?.kind === 'updates') updateView(event.state);
       if (event?.kind === 'safety' && event.readonly === true) { window.sirenDesktopApplySafety?.(event); message(event.reason); }

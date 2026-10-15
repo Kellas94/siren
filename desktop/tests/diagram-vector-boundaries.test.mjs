@@ -8,6 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {mkdtemp} from './fixtures/temporary.mjs';
 import {renderDiagramVector} from '../src/windows/diagram-vector-render.mjs';
+import * as vector from '../src/windows/diagram-vector-render.mjs';
 const svg='<svg xmlns="http://www.w3.org/2000/svg"><text>Selected diagram</text></svg>';
 async function fixture(t,{load,execute,destroy}={}){
  const root=await mkdtemp(join(tmpdir(),'siren-vector-render-'));t.after(()=>rm(root,{recursive:true,force:true}));const entryPath=join(root,'entry.html'),bytes=Buffer.from('<html>owned renderer</html>');await writeFile(entryPath,bytes);const expected=pathToFileURL(entryPath).href,windows=[];
@@ -39,4 +40,10 @@ test('cancel/deadline reject late work and private/oversized output cannot becom
 });
 test('successful SVG render waits for separate webContents destruction',async t=>{
  const f=await fixture(t,{destroy:w=>{w.dead=true;w.emit('closed');setTimeout(()=>{w.webContents.dead=true;w.webContents.emit('destroyed');},30);}});assert.equal(await renderDiagramVector(f.options),svg);assert.equal(f.windows[0].webContents.dead,true);
+});
+test('dedicated embed utility projects passive SVG plus exact renderer/style identity and refuses extra output',async t=>{
+ assert.equal(typeof vector.renderDiagramEmbed,'function','Missing dedicated embed path');
+ const output={svg,rendererVersion:'mermaid@12.0.0/R78',styleHash:'a'.repeat(64)},f=await fixture(t,{execute:()=>output});
+ assert.deepEqual(await vector.renderDiagramEmbed(f.options),output);assert.equal(f.windows[0].webContents.code,'window.sirenRenderDiagramEmbed('+JSON.stringify(f.options.input)+')');assert.equal(f.windows[0].webContents.dead,true);
+ for(const result of [svg,{...output,styleHash:'bad'},{...output,privateNotes:'must not cross'},{...output,svg:'<svg '+ 'x'.repeat(2097152)+'</svg>'}]){const invalid=await fixture(t,{execute:()=>result});await assert.rejects(vector.renderDiagramEmbed(invalid.options),{code:'DIAGRAM_VECTOR_REFUSED'});assert.equal(invalid.windows[0].webContents.dead,true);}
 });

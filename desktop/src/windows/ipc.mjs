@@ -1,4 +1,4 @@
-const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience']);
+const roles = new Set(['workspace', 'docs', 'code', 'diagram', 'presenter', 'audience', 'terminal']);
 const methods = new Set(['getView', 'listViews', 'openView', 'focusView', 'closeView']);
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const messages = Object.freeze({
@@ -77,7 +77,7 @@ export async function invokeWindow({ event, method, payload, registry }) {
     const data = request(method, payload);
     if (method === 'getView') return { ok: true, view: initial };
     if (method === 'openView') {
-      if (initial.role !== 'workspace' || !['code', 'docs', 'diagram','presenter'].includes(data.role)
+      if (initial.role !== 'workspace' || !['code', 'docs', 'diagram','presenter','terminal'].includes(data.role)
         || !initial.entityIds.includes(data.entityId)) return failure('ACCESS_REFUSED');
       const opened = await registry.openView(data);
       const live = current();

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {buildDiagramEmbedContract} from '../build/diagram-embed-contract.mjs';
 
 // Unit tests exercise the adapter boundary with deliberately observable frozen
 // dependencies. Actual sanitizer/Mermaid coverage belongs to the native probe.
@@ -17,10 +18,30 @@ async function fixture({prepare,validate,stamp}={}){
   sanitizePresentation:value=>structuredClone(value),sanitizeAgentReleases:value=>structuredClone(value),sanitizeAgentMeta:value=>structuredClone(value),sanitizeGovernanceReview:value=>structuredClone(value),
   sanitizeWorkpaperHtml:value=>value,sanitizeMapCard:value=>structuredClone(value),
  });
- vm.runInContext(script,context);return {context,calls,run:async value=>JSON.parse(await context.window.sirenDesktopValidateBundleMetadata(JSON.stringify(value),'chosen.siren-backup'))};
+ vm.runInContext(await buildDiagramEmbedContract(),context);vm.runInContext(script,context);return {context,calls,run:async value=>JSON.parse(await context.window.sirenDesktopValidateBundleMetadata(JSON.stringify(value),'chosen.siren-backup'))};
 }
 const pointer={sourceId:'source-a',version:1,sha256:'a'.repeat(64)};
 const workspace=()=>({diagrams:[{id:'diagram-a',source:'flowchart TD\nA-->B'}],workpapers:[{id:'doc-a',title:'Sparse native',blocks:[],agent:null,releases:[]}],codeFiles:[]});
+const diagramEmbed=()=>({id:'embed-a',kind:'diagram-embed',schema:1,diagramId:'diagram-a',mode:'live',scope:'selection',nodeIds:['A','B'],caption:'Retained flow',display:{height:320,fit:'contain'},snapshot:{sourceHash:'a'.repeat(64),sourceVersion:2,sourceAsset:{kind:'diagram-source',bytes:210,sha256:'a'.repeat(64)},visualAsset:{kind:'svg',bytes:4100,sha256:'b'.repeat(64)},rendererVersion:'mermaid@12.0.0/R78',styleHash:'c'.repeat(64)},status:'missing',missingNodeIds:['B']});
+
+test('typed diagram embeds survive the source bundle metadata gate in current and historical blocks',async()=>{
+ const f=await fixture(),input=workspace(),block=diagramEmbed();
+ input.workpapers[0].blocks=[{id:'before',kind:'text',html:'<p>Context</p>'},block];
+ input.workpapers[0].revisions=[{at:'2026-10-11',author:'Original',blocks:[{...structuredClone(block),mode:'fixed',status:'current',missingNodeIds:[]}]}];
+ input.workpapers[0].future={preserve:'EXACT_UNKNOWN'};
+ assert.deepEqual(await f.run(input),input);
+ const projected=f.calls.find(c=>c[0]==='validate')[1].state.workpapers[0];
+ assert.deepEqual(projected.blocks,[input.workpapers[0].blocks[0],{id:'embed-a',kind:'text',html:''}]);
+ assert.deepEqual(projected.revisions[0].blocks,[{id:'embed-a',kind:'text',html:''}]);
+ assert.equal(input.workpapers[0].blocks[1].status,'missing');
+});
+
+test('typed metadata projection refuses malformed diagrams and requires the real browser contract',async()=>{
+ for(const mutate of [b=>{b.snapshot.visualAsset.bytes=0;},b=>{b.nodeIds=['A','A'];},b=>{b.snapshot.visualAsset.sha256='wrong';},b=>{b.display.height=79;},b=>{b.missingNodeIds=['other'];},b=>{b.unknownExecutable='ignored';}]){
+  const f=await fixture(),input=workspace(),b=diagramEmbed();mutate(b);input.workpapers[0].blocks=[b];await assert.rejects(f.run(input));assert.equal(f.calls.length,0);
+ }
+ const f=await fixture(),input=workspace();input.workpapers[0].blocks=[diagramEmbed()];delete f.context.window.SirenDiagramEmbedContract;await assert.rejects(f.run(input));assert.equal(f.calls.length,0);
+});
 
 test('dedicated gate preserves sparse native metadata and unknown opaque data',async()=>{
  const f=await fixture(),input={kind:'siren-desktop',schema:2,storage:{'t-industries-siren-v23-state':JSON.stringify(workspace()),other:'opaque'},opaque:{author:'file claim'}};

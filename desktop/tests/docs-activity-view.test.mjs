@@ -5,7 +5,7 @@ import {runInNewContext} from 'node:vm';
 import {createDocumentActivityContract} from '../src/documents/document-activity.mjs';
 const source=await readFile(new URL('../src/ui/docs/activity.js',import.meta.url),'utf8').catch(error=>{if(error.code!=='ENOENT')throw error;return '';});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture(value={}){
+function fixture(value={},{readonly=true}={}){
  const nodes=[];
  class Node{
   constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.dataset={};nodes.push(this);}
@@ -25,7 +25,7 @@ function fixture(value={}){
  let enabled=true,jump=async()=>({ok:true}),compare=async()=>({ok:true,identical:true,rows:[],counts:{}});const jumps=[],compares=[],messages=[];
  const view=window.SirenNativeDocsActivity.create({host,button,enabled:()=>enabled,onJump:id=>{jumps.push(id);return jump(id);},onCompare:request=>{compares.push(JSON.parse(JSON.stringify(request)));return compare(request);},onStatus:message=>messages.push(message)});
  const saved={id:'doc-a',blocks:[{id:'block-a',kind:'text',html:'<p>Saved</p>'}],comments:[{id:'c0',blockId:'block-a',text:'<script>secret()</script>',resolved:false},{id:'c1',blockId:'gone',text:'Resolved',resolved:true},{id:'c2',text:'Unsupported',resolved:'yes'}],revisions:[{at:'yesterday',blocks:[]}],review:{state:'approved',trail:[{action:'approved',who:'Recorded person',detail:'Recorded detail'}]},releases:[{seq:1,status:'approved',approvedBy:'Recorded person'}],signoffFromFile:{status:'approved',digestHeld:false},...value};
- const context={document:saved,version:'a'.repeat(64),sha256:'b'.repeat(64),dirty:false,readonly:true};view.setContext(context);
+ const context={document:saved,version:'a'.repeat(64),sha256:'b'.repeat(64),dirty:false,readonly};view.setContext(context);
  const live=()=>{const found=[];const walk=node=>{found.push(node);for(const child of node.children)walk(child);};walk(host);return found;};
  const byId=id=>live().find(node=>node.id===id),text=()=>live().map(node=>node.textContent).join('\n');
  return {view,host,button,editor,document,saved,context,byId,live,text,jumps,compares,messages,jump:fn=>jump=fn,compare:fn=>compare=fn,enabled:value=>enabled=value};
@@ -46,7 +46,7 @@ test('exact block jump callback is readonly-safe; failure says refused and canno
  const f=fixture(),before=JSON.stringify(f.saved);f.button.emit();f.jump(async()=>({ok:false,code:'BLOCK_MISSING'}));f.byId('documentActivityJump0').emit();await tick();assert.deepEqual(f.jumps,['block-a']);assert.match(f.messages.at(-1),/BLOCK_MISSING/);assert.equal(JSON.stringify(f.saved),before);
 });
 test('revision comparison explicitly selects saved or unsaved working target and paginates at most20 rows',async()=>{
- const f=fixture(),rows=Array.from({length:45},(_,i)=>({id:'b'+i,change:'changed',reordered:i===0,beforeIndex:i,afterIndex:i}));f.compare(async()=>({ok:true,identical:false,rows,counts:{changed:45}}));f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');f.byId('documentActivityCompare0').emit();await tick();assert.deepEqual(f.compares,[{position:0,against:'saved'}]);assert.equal(f.live().filter(node=>node.dataset.activityComparisonRow==='true').length,20);assert.match(f.text(),/Saved current/);f.byId('documentActivityCompareNext').emit();assert.match(f.text(),/b20/);assert.doesNotMatch(f.text(),/^b0$/m);
+ const f=fixture({},{readonly:false}),rows=Array.from({length:45},(_,i)=>({id:'b'+i,change:'changed',reordered:i===0,beforeIndex:i,afterIndex:i}));f.compare(async()=>({ok:true,identical:false,rows,counts:{changed:45}}));f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');f.byId('documentActivityCompare0').emit();await tick();assert.deepEqual(f.compares,[{position:0,against:'saved'}]);assert.equal(f.live().filter(node=>node.dataset.activityComparisonRow==='true').length,20);assert.match(f.text(),/Saved current/);f.byId('documentActivityCompareNext').emit();assert.match(f.text(),/b20/);assert.doesNotMatch(f.text(),/^b0$/m);
  f.view.updateState({dirty:true});assert.equal(f.byId('documentActivityCompareRows'),undefined);f.byId('documentActivityAgainst').value='working';f.byId('documentActivityAgainst').emit('change');f.byId('documentActivityCompare0').emit();await tick();assert.deepEqual(f.compares[1],{position:0,against:'working'});assert.match(f.text(),/Unsaved working/);assert.equal(f.live().filter(node=>node.dataset.activityComparisonRow==='true').length,20);
 });
 test('comparison refusal and malformed record containers expose explicit limited/unavailable state',async()=>{
@@ -63,10 +63,10 @@ test('pause, context replacement, invalidation and disposal fence late compariso
  }
 });
 test('disabled state refuses actions and dirty update invalidates a pending working comparison',async()=>{
- const f=fixture();f.enabled(false);f.view.updateState({dirty:false});f.button.emit();assert.equal(f.host.hidden,true);assert.equal(f.button.disabled,true);f.enabled(true);f.view.updateState({dirty:true});f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');f.byId('documentActivityAgainst').value='working';f.byId('documentActivityAgainst').emit('change');let release;f.compare(()=>new Promise(resolve=>release=resolve));f.byId('documentActivityCompare0').emit();await tick();f.view.updateState({dirty:true});release({ok:true,identical:true,rows:[],counts:{}});await tick();assert.equal(f.byId('documentActivityCompareRows'),undefined);assert.doesNotMatch(f.text(),/No differences/);
+ const f=fixture({},{readonly:false});f.enabled(false);f.view.updateState({dirty:false});f.button.emit();assert.equal(f.host.hidden,true);assert.equal(f.button.disabled,true);f.enabled(true);f.view.updateState({dirty:true});f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');f.byId('documentActivityAgainst').value='working';f.byId('documentActivityAgainst').emit('change');let release;f.compare(()=>new Promise(resolve=>release=resolve));f.byId('documentActivityCompare0').emit();await tick();f.view.updateState({dirty:true});release({ok:true,identical:true,rows:[],counts:{}});await tick();assert.equal(f.byId('documentActivityCompareRows'),undefined);assert.doesNotMatch(f.text(),/No differences/);
 });
 test('clean working comparison does not invent unsaved changes and native controls retain keyboard focus',async()=>{
- const f=fixture();f.button.emit();const section=f.byId('documentActivitySection');section.focus();section.value='revisions';section.emit('change');assert.equal(f.document.activeElement,f.byId('documentActivitySection'));
+ const f=fixture({},{readonly:false});f.button.emit();const section=f.byId('documentActivitySection');section.focus();section.value='revisions';section.emit('change');assert.equal(f.document.activeElement,f.byId('documentActivitySection'));
  f.byId('documentActivityAgainst').value='working';f.byId('documentActivityAgainst').emit('change');f.byId('documentActivityCompare0').emit();await tick();assert.match(f.text(),/Working current content · No unsaved edits/);assert.doesNotMatch(f.text(),/Unsaved working/);
 });
 test('one pending callback, throw/refusal and bounded excerpts never report a successful jump or equality',async()=>{
@@ -79,4 +79,20 @@ test('comparison maximum512 rows stays paged20 and context replacement retires a
 test('detached old controls cannot act on a newly admitted document or a replaced local page',async()=>{
  const f=fixture();f.button.emit();const old=f.byId('documentActivityJump0');f.view.setContext({...f.context,document:{id:'doc-b',comments:[{blockId:'other',resolved:false}]}});old.emit();await tick();assert.deepEqual(f.jumps,[]);
  const current=f.byId('documentActivityJump0');f.byId('documentActivityFilter').value='resolved';f.byId('documentActivityFilter').emit('change');current.emit();await tick();assert.deepEqual(f.jumps,[]);
+});
+
+test('readonly revisions offer the supported saved comparison and cannot dispatch a synthetic working choice',async()=>{
+ const f=fixture();f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');
+ const against=f.byId('documentActivityAgainst');assert.deepEqual(against.children.map(node=>node.value),['saved']);
+ against.value='working';against.emit('change');f.byId('documentActivityCompare0').emit();await tick();
+ assert.deepEqual(f.compares,[{position:0,against:'saved'}]);assert.match(f.text(),/Saved current content compared with Revision 1/);
+ assert.equal(f.byId('documentActivityCompare0').disabled,false);
+});
+
+test('admitting readonly activity resets an editable working selection to supported saved history',async()=>{
+ const f=fixture({},{readonly:false});f.button.emit();f.byId('documentActivitySection').value='revisions';f.byId('documentActivitySection').emit('change');
+ f.byId('documentActivityAgainst').value='working';f.byId('documentActivityAgainst').emit('change');
+ f.view.setContext({...f.context,readonly:true});assert.equal(f.byId('documentActivityAgainst').value,'saved');
+ f.byId('documentActivityCompare0').emit();await tick();assert.deepEqual(f.compares,[{position:0,against:'saved'}]);
+ assert.match(f.text(),/Saved current content compared with Revision 1/);
 });

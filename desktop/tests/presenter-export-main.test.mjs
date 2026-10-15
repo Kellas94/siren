@@ -12,11 +12,11 @@ test('actual Presenter export main handler tracks promise and refuses every tran
 });
 test('actual native barrier pauses/drains Presenter exports and refuses proof on uncertain cleanup',async()=>{
  const actions=[];let idle=true;const part=name=>({pause:()=>actions.push(name+':pause'),resume:()=>actions.push(name+':resume'),drain:async()=>actions.push(name+':drain'),isIdle:()=>name!=='notes'||idle});
- const owner={...part('owner'),captureQuiescence:()=>true,isQuiescent:()=>true},context={workspaceOwner:owner,presentationSession:part('session'),sourceAnalysis:part('analysis'),diagramExports:part('diagram'),docsExports:part('docs'),presenterExports:part('notes')};
+ const owner={...part('owner'),captureQuiescence:()=>true,isQuiescent:()=>true},context={workspaceOwner:owner,presentationSession:part('session'),sourceAnalysis:part('analysis'),diagramExports:part('diagram'),docsExports:part('docs'),docsDiagrams:part('docs-diagrams'),docsDiagramRefresh:part('docs-refresh'),presenterExports:part('notes')};
  const barrier=runInNewContext('(()=>{'+slice('  const capturedPresentation=presentationSession;','  workspaceBarrier=new NativeAllWorkspaceBarrier')+'return barrierOwner;})()',context);barrier.pause('Lock');assert.ok(actions.includes('notes:pause'));await barrier.drain();assert.ok(actions.includes('notes:drain'));assert.equal(barrier.captureQuiescence(),true);idle=false;assert.throws(()=>barrier.captureQuiescence());assert.equal(barrier.isQuiescent(true),false);barrier.resume();assert.ok(actions.includes('notes:resume'));
 });
 
 test('actual native retirement refuses uncertain Presenter export cleanup before session/view destruction',async()=>{
- let reached=false;const part={pause(){},isIdle:()=>true,resume(){}},context={diagramExports:part,docsExports:part,presenterExports:{...part,isIdle:()=>false},presentationSession:{dispose:()=>reached=true}};
+ let reached=false;const part={pause(){},isIdle:()=>true,resume(){}},context={diagramExports:part,docsExports:part,docsDiagrams:part,docsDiagramRefresh:part,presenterExports:{...part,isIdle:()=>false},presentationSession:{dispose:()=>reached=true}};
  const retire=runInNewContext(slice('const retireNativeViews = async () => {','  presentationSession.dispose();')+'presentationSession.dispose();};retireNativeViews;',context);await assert.rejects(retire(),/Presenter export not drained/);assert.equal(reached,false);
 });

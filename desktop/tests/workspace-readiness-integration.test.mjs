@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {createPinLifecycleServices} from '../src/account/pin-lifecycle.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { EventEmitter } from 'node:events';
@@ -8,6 +9,7 @@ import { invokeDesktop, failure } from '../src/ipc.mjs';
 const main = await readFile(new URL('../src/main.mjs', import.meta.url), 'utf8');
 const first = main.indexOf('  getPinState:'); const last = main.indexOf('  verifyCurrentPin:', first);
 assert.ok(first >= 0 && last > first);
+const pinLifecycleFactory=main.slice(main.indexOf('const pinLifecycleHooks='),main.indexOf('const services ='));
 class Contents extends EventEmitter {
   loading = true;
   isDestroyed() { return false; }
@@ -16,12 +18,13 @@ class Contents extends EventEmitter {
 }
 function fixture() {
   const contents = new Contents(); const mutations = [];
-  const context = vm.createContext({ window: { webContents: contents }, runAfterWorkspaceLoad:(contents,operation,options)=>runAfterWorkspaceLoad(contents,operation,structuredClone(options)), failure,
+  // Fixed MAIN config container remap only; real helper and readiness implementations.
+  const context = vm.createContext({ terminalRuntime:null, createPinLifecycleServices:options=>createPinLifecycleServices({...options}), window: { webContents: contents }, runAfterWorkspaceLoad:(contents,operation,options)=>runAfterWorkspaceLoad(contents,operation,structuredClone(options)), failure,
     prepareLocalWorkspace: async result => result,
     localPin: { state: () => ({ unlocked: false }), setup: async payload => { mutations.push(['setup', payload]); return { ok: true }; },
       unlock: async payload => { mutations.push(['unlock', payload]); return { ok: true }; } },
   });
-  vm.runInContext(`let pinTransition = false; globalThis.busy = () => { pinTransition = true; }; globalThis.services = {${main.slice(first, last)}};`, context);
+  vm.runInContext(`let pinTransition = false; globalThis.busy = () => { pinTransition = true; }; ${pinLifecycleFactory} globalThis.services = {${main.slice(first, last)}};`, context);
   return { context, contents, mutations };
 }
 for (const method of ['setupPin', 'unlockPin']) test(`actual ${method} waits for native load before mutation or successful ACK`, async () => {

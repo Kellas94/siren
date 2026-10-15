@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  if(!window.sirenWindowDock||!window.sirenWindow||window.sirenNativeShelf)return;
- let bar,tabs,active,notice,rows=[],pending=false,signature='',timer,disposed=false;
+ let bar,tabs,active,notice,rows=[],pending=false,signature='',timer,disposed=false,refreshSerial=0;
  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
  const button=(parent,text,action)=>{const node=make('button',parent,text);node.type='button';node.addEventListener('click',()=>void act(action));return node;};
  async function act(action){
@@ -11,7 +11,7 @@
   finally{pending=false;signature='';await refresh();}
  }
  function build(){
-  bar=make('nav',document.body);bar.id='nativeWindowShelf';bar.setAttribute('aria-label','Open Code, Docs and Diagrams views');
+  bar=make('nav',document.body);bar.id='nativeWindowShelf';bar.setAttribute('aria-label','Open Code, Docs, Diagrams and Terminal views');
   button(bar,'Workspace',()=>window.sirenWindowDock.showWorkspace()).title='Return to the main workspace · Ctrl+Alt+1';
   tabs=make('div',bar);tabs.className='native-shelf-tabs';tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Open views');
   active=button(bar,'Detach',()=>{const item=rows.find(row=>row.selected);return item?window.sirenWindowDock.detach({windowId:item.windowId}):Promise.resolve({ok:false});});
@@ -22,7 +22,7 @@
   rows=items;if(!bar)build();bar.hidden=items.length===0;
   document.body.classList.toggle('native-shelf-open',items.length>0);active.hidden=!items.some(item=>item.selected);
   const focused=document.activeElement?.dataset?.windowId;
-  tabs.replaceChildren();const counts={code:0,docs:0,diagram:0},labels={code:'⌘ Code',docs:'Docs',diagram:'Diagrams'};
+  tabs.replaceChildren();const counts={code:0,docs:0,diagram:0,terminal:0},labels={code:'⌘ Code',docs:'Docs',diagram:'Diagrams',terminal:'Terminal'};
   for(const item of items){
     const fallback=labels[item.role]+' '+(++counts[item.role]);
     const label=typeof item.label==='string'?item.label:fallback,dirty=label.endsWith(' · Unsaved'),min=item.state==='minimized';
@@ -38,10 +38,11 @@
  }
  async function refresh(){
   if(disposed)return;
-  try{const result=await window.sirenWindowDock.getShelf();if(disposed)return;
+  const request=++refreshSerial;
+  try{const result=await window.sirenWindowDock.getShelf();if(disposed||request!==refreshSerial)return;
     const items=result?.ok&&Array.isArray(result.items)?result.items:[],next=JSON.stringify(items);
     if(next!==signature){signature=next;paint(items);}
-  }catch{if(bar){bar.hidden=true;document.body.classList.remove('native-shelf-open');}}
+  }catch{if(!disposed&&request===refreshSerial){signature='';if(bar){bar.hidden=true;document.body.classList.remove('native-shelf-open');}}}
  }
  window.sirenNativeShelf=Object.freeze({refresh});
  const start=()=>{void refresh();timer=setInterval(()=>void refresh(),1200);};

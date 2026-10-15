@@ -7,9 +7,11 @@ import {readFile,writeFile,mkdir,readdir,lstat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {join,dirname,resolve,parse} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {isExpectedLifetimeRefusal,isLifetimeComplete} from './terminal-job-lifetime-verdict.mjs';
 const run=promisify(execFile),hash=b=>createHash('sha256').update(b).digest('hex');
 const desktop=fileURLToPath(new URL('../../',import.meta.url));
 const toolsPath=resolve(process.argv[2]??join(desktop,'evidence/terminal-build-tool-discovery.json'));
+const jobLifetime=process.argv.includes('--job-lifetime');
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
 // Require observed compiler/SDK inputs before network/header configuration.
 const tools=JSON.parse(await readFile(toolsPath,'utf8'));
@@ -50,7 +52,7 @@ try{
   for(const path of [join(sdk[0],'um/Windows.h'),join(sdk[0],'um/jobapi2.h'),join(sdk[0],'um/processthreadsapi.h'),join(sdk[0],'um/handleapi.h'),join(sdkRoot,'Lib/10.0.26100.0/um/x64/kernel32.lib'),join(msvcRoot,'lib/x64/delayimp.lib')]){
     const bytes=await readFile(path);receipt.sdkInputs.push({path,bytes:bytes.length,sha256:hash(bytes)});
   }
-  for(const name of ['binding.gyp','primitives.cc']){
+  for(const name of ['binding.gyp','primitives.cc','lifetime.cc']){
     const source=join(desktop,'tests/fixtures/terminal-ownership',name),bytes=await readFile(source);
     const copied=join(candidate,name);await writeFile(copied,bytes,{flag:'wx'});
     assert.deepEqual(await readFile(copied),bytes,'COPIED_SOURCE_IDENTITY_CHANGED');
@@ -64,6 +66,12 @@ try{
   const binary=join(candidate,'build/Release/terminal_ownership_probe.node'),bytes=await readFile(binary);
   assert.equal(bytes.subarray(0,2).toString(),'MZ');assert.equal(bytes.readUInt16LE(bytes.readUInt32LE(60)+4),0x8664);
   receipt.binary={path:binary,bytes:bytes.length,sha256:hash(bytes),machine:'x64'};
+  receipt.binaries=[receipt.binary];
+  for(const name of ['terminal_job_lifetime','terminal_job_lifetime_negative']){
+    const path=join(candidate,'build/Release',name+'.node'),b=await readFile(path);
+    assert.equal(b.subarray(0,2).toString(),'MZ');assert.equal(b.readUInt16LE(b.readUInt32LE(60)+4),0x8664);
+    receipt.binaries.push({name,path,bytes:b.length,sha256:hash(b),machine:'x64'});
+  }
   receipt.buildInputs=[];
   async function walk(root){for(const item of await readdir(root,{withFileTypes:true})){
     const path=join(root,item.name);if(item.isDirectory())await walk(path);else if(item.isFile()){
@@ -71,9 +79,26 @@ try{
     }else throw Error('LINKED_BUILD_INPUT');
   }}
   await walk(join(output,'headers'));
-  const probe=await phase('electron-probe',process.execPath,[join(desktop,'tests/native/terminal-ownership-addon.mjs'),binary],desktop,60000);
-  receipt.native=JSON.parse(probe.stdout.trim());assert.equal(receipt.native.status,'PREREQUISITE_PASSED');
-  assert.equal(hash(await readFile(binary)),receipt.binary.sha256);
-  receipt.status='ABI_PRIMITIVE_PASSED_TERMINAL_NOT_ADMITTED';
+  if(jobLifetime){
+    receipt.scope='Separate test-only named Job OS lifetime and deliberate retained-owner control; not global process-handle qualification or product guard';
+    receipt.originalGlobalHandleProbe='Not executed in this separate scope; no original failure is superseded';
+    const positive=receipt.binaries[1],negative=receipt.binaries[2],runner=join(desktop,'tests/native/terminal-job-lifetime.mjs');
+    try{await phase('job-lifetime-negative',process.execPath,[runner,negative.path,binary],desktop,60000);throw Error('NEGATIVE_CONTROL_UNEXPECTED_SUCCESS');}
+    catch(error){
+      assert.equal(error.code,1,'NEGATIVE_CONTROL_DID_NOT_REACH_EXPECTED_FAILURE');
+      receipt.negative=JSON.parse(error.stdout.trim());
+      assert.equal(isExpectedLifetimeRefusal(receipt.negative,{addonSha256:negative.sha256,metricsSha256:receipt.binary.sha256}),true,'NEGATIVE_CONTROL_WRONG_FAILURE');
+      receipt.phases.at(-1).expectedRefusalVerified=true;
+    }
+    const probe=await phase('job-lifetime-positive',process.execPath,[runner,positive.path,binary],desktop,60000);
+    receipt.native=JSON.parse(probe.stdout.trim());
+    assert.equal(isLifetimeComplete(receipt.native,{addonSha256:positive.sha256,metricsSha256:receipt.binary.sha256}),true,'JOB_LIFETIME_INCOMPLETE');
+    receipt.status='JOB_LIFETIME_CONTROL_VERIFIED_TERMINAL_NOT_ADMITTED';
+  }else{
+    const probe=await phase('electron-probe',process.execPath,[join(desktop,'tests/native/terminal-ownership-addon.mjs'),binary],desktop,60000);
+    receipt.native=JSON.parse(probe.stdout.trim());assert.equal(receipt.native.status,'PREREQUISITE_PASSED');
+    receipt.status='ABI_PRIMITIVE_PASSED_TERMINAL_NOT_ADMITTED';
+  }
+  for(const artifact of receipt.binaries)assert.equal(hash(await readFile(artifact.path)),artifact.sha256);
 }catch(error){receipt.status='FAILED';receipt.error={code:error.code,message:error.message};throw error;}
 finally {await save();console.log(JSON.stringify({status:receipt.status,output,binary:receipt.binary,admitted:false}));}

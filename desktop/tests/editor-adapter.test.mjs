@@ -121,12 +121,12 @@ check('readonly pause preserves selection without pretending to commit and dispo
   assert.equal(f.editor.pauseView().code, 'EDITOR_DISPOSED'); assert.equal(f.editor.resumeView().code, 'EDITOR_DISPOSED');
 });
 
-check('verified CM document and LF transaction parsing preserve BOM, literal CR and source offsets', async t => {
+check('explicit raw source Text and LF transaction parsing preserve BOM, literal CR and source offsets', async t => {
   const f = await fixture(t); assert.equal((await f.editor.open(f.ref)).ok, true);
-  assert.equal(f.editor.getState().doc.toString('\n'), f.text);
+  assert.equal(f.editor.getSourceText().toString('\n'), f.text);
   assert.equal(f.editor.dispatch({ changes: { from: 6, to: 7, insert: 'X\r\nY' } }).ok, true);
   const expected = '\ufeffa😀b\rX\r\nYc\nd\rbare';
-  assert.equal(f.editor.getState().doc.toString('\n'), expected);
+  assert.equal(f.editor.getSourceText().toString('\n'), expected);
   const saved = await f.editor.flush(); assert.equal(saved.ok, true); assert.equal(saved.durability, 'committed');
   assert.deepEqual(await f.export(saved.version), Buffer.from(expected));
 });

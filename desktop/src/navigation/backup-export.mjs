@@ -13,8 +13,10 @@ function preflight(snapshot){
   if(!Number.isSafeInteger(ref.utf8Bytes)||ref.utf8Bytes<0||ref.utf8Bytes>32*1024*1024)throw Error('Invalid source size');
   expanded+=4*Math.ceil(ref.utf8Bytes/3);if(expanded>wireLimit)budget();
  }
+ const assetRefs=JSON.parse(snapshot.json).diagramEmbedAssets?.refs??[];
+ for(const ref of assetRefs){if(!Number.isSafeInteger(ref.bytes)||ref.bytes<1||ref.bytes>2*1024*1024)throw Error('Invalid diagram asset size');expanded+=4*Math.ceil(ref.bytes/3);if(expanded>wireLimit)budget();}
  // Base64 requires no JSON escaping. Count metadata before reading source blobs.
- const skeleton=JSON.stringify({format:'siren-source-bundle',schema:2,snapshot,sources:snapshot.sourceRefs.map(ref=>({ref,base64:''}))});
+ const skeleton=JSON.stringify(assetRefs.length?{format:'siren-workspace-bundle',version:1,snapshot,sources:snapshot.sourceRefs.map(ref=>({ref,base64:''})),assets:assetRefs.map(ref=>({ref,base64:''}))}:{format:'siren-source-bundle',schema:2,snapshot,sources:snapshot.sourceRefs.map(ref=>({ref,base64:''}))});
  if(Buffer.byteLength(skeleton)+expanded>wireLimit)budget();
 }
 
@@ -39,7 +41,7 @@ export function createHomeBackupExporter({authority,projects,recovery,publish,re
    if(!isCurrent())return fail('ACCESS_REFUSED');
    if(snapshot.project.id!==grant.projectId)throw Error('Selected snapshot mismatch');
    preflight(snapshot);verifySnapshot(snapshot);
-   const bytes=snapshot.schema===2?await recovery.exportSourceSnapshot(snapshot):Buffer.from(snapshot.json);
+   const bytes=snapshot.schema===2?await recovery.exportSourceSnapshot(snapshot,{isCurrent}):Buffer.from(snapshot.json);
    if(!isCurrent())return fail('ACCESS_REFUSED');
    if(!Buffer.isBuffer(bytes))throw Error('Invalid backup bytes');
    if(bytes.length>wireLimit)budget();

@@ -57,12 +57,13 @@ function verifiedParts(snapshot,records,limit){
 }
 
 /** Native-only chosen-file parser. Legacy format validation remains at caller. */
-export function parseSourceBundle(bytes,{limits}={}){
+export function parseSourceBundle(bytes,{limits,allowDiagramAssets=false}={}){
  const limit=budgets(limits);if(!(bytes instanceof Uint8Array)||bytes.byteLength===0||bytes.byteLength>limit.wireBytes)throw refused('BUNDLE_WIRE_BUDGET');
  let value;try{value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}catch{throw refused('BUNDLE_JSON_INVALID');}
  if(value?.format!=='siren-source-bundle')return null;
  if(!keys(value,['format','schema','snapshot','sources'])||value.schema!==2)throw refused('BUNDLE_FORMAT_INVALID');
  snapshotParts(value.snapshot,limit);
+ if(!allowDiagramAssets&&(JSON.parse(value.snapshot.json).diagramEmbedAssets?.refs?.length??0)>0)throw refused('BUNDLE_DIAGRAM_ASSETS_REQUIRED');
  if(!Array.isArray(value.sources)||value.sources.length!==value.snapshot.sourceRefs.length||value.sources.length>limit.references)throw refused('BUNDLE_REFERENCES_INVALID');
  let total=0;
  for(const source of value.sources){

@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parse} from 'parse5';
+import {embedContext} from './fixtures/docs-diagram-embed-context.mjs';
+import {formatSavedDocument} from '../src/documents/export.mjs';
+import {documentVersion} from '../src/windows/docs.mjs';
+import {digest} from '../src/projects/atomic.mjs';
+const api=await import('../src/documents/diagram-embed-export.mjs').catch(e=>{if(e.code==='ERR_MODULE_NOT_FOUND')return {};throw e;});
+const collect=options=>{assert.equal(typeof api.collectDiagramEmbedAssets,'function','Missing verified embed asset collection');return api.collectDiagramEmbedAssets(options);};
+const nodes=n=>[n,...(n.childNodes??[]).flatMap(nodes)];
+const input=f=>({projectId:f.snapshot.project.id,document:f.metadata.workpapers[0],version:documentVersion(f.snapshot,'doc-a'),sha256:digest(Buffer.from(JSON.stringify(f.metadata.workpapers[0]))),projectRevision:f.snapshot.revision,exportedAt:'2026-10-10T12:00:00.000Z'});
+test('saved frozen snapshots with deleted source collect each owned asset once and refuse corruption or revocation',async t=>{
+ const f=await embedContext(t);let reads=0;const records=await collect({snapshot:f.snapshot,assets:{read:async r=>{reads++;return f.assets.read(r);}},isCurrent:()=>true});assert.equal(records.length,2);assert.equal(reads,2);assert.deepEqual(records.map(r=>r.ref.kind).sort(),['diagram-source','svg']);
+ await assert.rejects(collect({snapshot:f.snapshot,assets:{read:async()=>Buffer.from('wrong')},isCurrent:()=>true}),{code:'DIAGRAM_EMBED_ASSET_CORRUPT'});let live=true;await assert.rejects(collect({snapshot:f.snapshot,assets:{read:async r=>{const bytes=await f.assets.read(r);live=false;return bytes;}},isCurrent:()=>live}),{code:'ACCESS_REFUSED'});
+});
+test('standalone HTML contains passive saved visuals, exact captions and version/mode/scope while preserving unknown fields',async t=>{
+ const f=await embedContext(t),records=await collect({snapshot:f.snapshot,assets:f.assets,isCurrent:()=>true});const result=formatSavedDocument({...input(f),format:'html'},{diagramAssets:records}),html=result.bytes.toString(),tree=nodes(parse(html));assert.equal(result.extension,'html');assert.equal(tree.filter(n=>n.tagName==='img').length,2);assert.equal(tree.some(n=>['script','svg','iframe','object'].includes(n.tagName)),false);assert.match(html,/Fixed/);assert.match(html,/Version 3/);assert.match(html,/Whole/);assert.match(html,/missing/i);assert.match(html,/UNVERIFIED|exact/);assert.match(html,/img-src data:/);assert.match(html,/A &lt; B/);assert.equal(html.indexOf('Before')<html.indexOf('<figure'),true);assert.equal(html.indexOf('<figure')<html.indexOf('<h2>After'),true);
+ assert.throws(()=>formatSavedDocument({...input(f),format:'html'},{diagramAssets:[]}),{code:'DIAGRAM_EMBED_ASSET_UNKNOWN'});
+});
+test('Markdown exports a bounded ZIP with hash-only relative assets and no caller paths',async t=>{
+ const f=await embedContext(t),records=await collect({snapshot:f.snapshot,assets:f.assets,isCurrent:()=>true});const output=formatSavedDocument({...input(f),format:'markdown'},{diagramAssets:records});assert.equal(output.extension,'zip');const entries=new Map();let offset=0;while(output.bytes.readUInt32LE(offset)===0x04034b50){assert.equal(output.bytes.readUInt16LE(offset+8),0);const size=output.bytes.readUInt32LE(offset+18),nameLength=output.bytes.readUInt16LE(offset+26),extraLength=output.bytes.readUInt16LE(offset+28),name=output.bytes.subarray(offset+30,offset+30+nameLength).toString(),start=offset+30+nameLength+extraLength;entries.set(name,output.bytes.subarray(start,start+size));offset=start+size;}assert.equal(output.bytes.readUInt32LE(offset),0x02014b50);assert.equal(entries.has('document.md'),true);assert.equal([...entries.keys()].every(name=>name==='document.md'||/^assets\/[a-f0-9]{64}\.(svg|png|json)$/.test(name)),true);const path='assets/'+f.block.snapshot.visualAsset.sha256+'.svg';assert.ok(entries.get('document.md').toString().includes('('+path+')'));assert.equal(digest(entries.get(path)),f.block.snapshot.visualAsset.sha256);assert.equal([...entries.keys()].filter(n=>n===path).length,1);
+});
+test('HTML base64 preflight counts every repeated image, and extra foreign assets are refused',async t=>{
+ const f=await embedContext(t),records=await collect({snapshot:f.snapshot,assets:f.assets,isCurrent:()=>true});const extra=Buffer.from('foreign');assert.throws(()=>formatSavedDocument({...input(f),format:'html'},{diagramAssets:[...records,{ref:{kind:'svg',sha256:digest(extra),bytes:extra.length},bytes:extra}]}),{code:'DIAGRAM_EMBED_ASSET_UNKNOWN'});
+ const bytes=Buffer.alloc(1024*1024,120),ref={kind:'svg',sha256:digest(bytes),bytes:bytes.length},document={...f.metadata.workpapers[0],blocks:Array.from({length:32},(_,i)=>({...f.block,id:'repeat-'+i,snapshot:{...f.block.snapshot,visualAsset:ref}}))};const own={...input(f),document,sha256:digest(Buffer.from(JSON.stringify(document)))};const {documentContentVersion}=await import('../src/windows/docs.mjs');own.version=documentContentVersion(own.projectId,document);assert.throws(()=>formatSavedDocument({...own,format:'html'},{diagramAssets:[records.find(r=>r.ref.kind==='diagram-source'),{ref,bytes}]}),{code:'EXPORT_BUDGET'});
+});

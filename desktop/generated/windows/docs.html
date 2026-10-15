@@ -1,0 +1,1294 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-HUveKkdFJMC/BafI2nD3JkOYS5F9AX/39AMUCO4IW2Y=' 'sha256-kvz3v3m6Tw1TkvFOA2SentMXyobigPBN2yPKpNNVo+k=' siren://app/assets/shell.js; style-src 'unsafe-inline' siren://app/assets/shell.css; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none';"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SIREN — Docs</title><style>
+      .document-diagram{margin:22px 0;border:1px solid color-mix(in srgb,var(--desktop-accent,#648dff) 24%,transparent);border-radius:16px;background:var(--desktop-panel,light-dark(#fff,#22252d));overflow:hidden;box-shadow:0 5px 24px #00000006}
+.document-diagram-header{display:flex;align-items:center;gap:14px;padding:14px 18px}.document-diagram-header strong{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}.document-diagram-header select{font-size:12px;padding:4px 10px;border-radius:20px}
+.document-diagram-viewport{resize:none;overflow:auto;min-height:80px;max-height:1600px;padding:14px;box-sizing:border-box;background:color-mix(in srgb,var(--desktop-accent,#648dff) 3%,transparent)}.document-diagram-viewport img{display:block;margin:auto;object-fit:contain;min-width:0}.document-diagram-viewport:focus-visible{outline:2px solid var(--desktop-accent,#648dff);outline-offset:-3px}
+.document-diagram-status{margin:10px 18px!important;font-size:11px!important;line-height:1.5!important;opacity:.7}.document-diagram-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 14px 14px}.document-diagram-tools button{padding:5px 9px;font-size:12px}.document-diagram-tools [data-embed-action=zoom]{font-size:11px;min-width:36px;text-align:center}.document-diagram-tools button:disabled{opacity:.45;cursor:default}
+.document-diagram-picker,.document-diagram-expanded{box-sizing:border-box;width:min(820px,calc(100vw - 64px));max-height:calc(100vh - 64px);overflow:auto;border:1px solid #78859a55;border-radius:20px;background:var(--desktop-panel,light-dark(#fff,#22252d));color:inherit;padding:24px;box-shadow:0 28px 100px #0005}.document-diagram-picker::backdrop,.document-diagram-expanded::backdrop{background:#10162688;backdrop-filter:blur(9px)}.document-diagram-picker h2,.document-diagram-expanded h2{font-size:22px;letter-spacing:-.035em;margin:0 0 10px}.document-diagram-picker>p{font-size:13px}.document-diagram-picker>select,.document-diagram-picker>input{display:block;box-sizing:border-box;width:100%;margin:12px 0;border:1px solid #78859a55;border-radius:10px;padding:10px;background:var(--desktop-panel,light-dark(#fff,#22252d));color:inherit;font:inherit}.document-diagram-picker img{display:block;max-width:100%;max-height:420px;margin:18px auto}.document-diagram-expanded{width:calc(100vw - 64px)}.document-diagram-expanded img{display:block;max-width:100%;max-height:calc(100vh - 200px);margin:auto;object-fit:contain}.document-diagram-picker .document-diagram-tools{justify-content:flex-end;padding:18px 0 0}
+.document-diagram-selection{max-height:260px;overflow:auto;border:1px solid #78859a44;border-radius:12px;margin:16px 0;padding:12px}.document-diagram-selection legend{font-size:12px;opacity:.7}.document-diagram-selection label{display:flex;gap:10px;align-items:baseline;padding:7px;font-size:13px;overflow-wrap:anywhere}.document-diagram-selection input{accent-color:var(--desktop-accent,#648dff)}.document-diagram-selection[hidden]{display:none}
+
+.document-diagram-resize{display:block;width:100%;height:20px;padding:0!important;margin:0;border:0!important;border-radius:0!important;background:transparent!important;cursor:ns-resize;touch-action:none;box-shadow:none!important}.document-diagram-resize::after{content:"";display:block;width:36px;height:3px;border-radius:3px;margin:auto;background:currentColor;opacity:.3}.document-diagram-resize:hover::after,.document-diagram-resize:focus-visible::after{opacity:.85}.document-diagram-resize:focus-visible{outline:2px solid var(--desktop-accent,#648dff);outline-offset:-3px}
+
+.document-diagram-identity{margin:0 18px 10px!important;font-size:12px!important;line-height:1.5!important;opacity:.8;overflow-wrap:anywhere}
+
+      :root{color-scheme:light dark;font-family:Inter,system-ui,sans-serif;background:light-dark(#f7f8fc,#171719);color:light-dark(#20283a,#e9ebf3)}
+      .siren-context-sheet{width:min(650px,calc(100vw - 36px));max-height:calc(100vh - 36px);box-sizing:border-box;overflow:auto;border:1px solid #78859a55;border-radius:16px;padding:22px;background:var(--desktop-panel,light-dark(#fff,#22252d));color:inherit;box-shadow:0 20px 80px #0004}.siren-context-sheet::backdrop{background:#10162688;backdrop-filter:blur(7px)}.siren-context-sheet label{display:block;font-size:12px;margin:12px 0}.siren-context-sheet input,.siren-context-sheet select,.siren-context-sheet textarea{display:block;width:100%;box-sizing:border-box;margin:7px 0;padding:8px;min-width:0;border-radius:8px;border:1px solid #78859a55;background:var(--desktop-panel,light-dark(#fff,#22252d));color:inherit;font:inherit}.siren-context-sheet textarea{min-height:70px;resize:vertical}.siren-context-sheet details{margin:14px 0}.siren-context-sheet summary{cursor:pointer;font-weight:600}.context-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.context-reference,.context-actions{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}.context-reference span,.context-reference input{flex:1;overflow-wrap:anywhere;min-width:100px}.context-actions{justify-content:flex-end;position:sticky;bottom:-22px;padding:14px 0;background:var(--desktop-panel,light-dark(#fff,#22252d))}.siren-context-sheet h2{margin-top:0}.siren-context-sheet button{max-width:100%;overflow-wrap:anywhere}.siren-context-sheet [role=status]{font-size:12px;overflow-wrap:anywhere}@media(max-width:540px){.context-fields{grid-template-columns:1fr}.siren-context-sheet{padding:16px}}
+      .document-structured>summary{font-weight:600}.document-structured-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}.document-structured-actions>span{font-size:12px;opacity:.7;margin:0 auto}.document-table-grid{overflow:auto;max-width:100%;margin:16px 0}.document-table-row{display:grid;grid-template-columns:repeat(var(--document-columns),minmax(130px,1fr));gap:8px}.document-table-row label{font-size:10px!important;font-weight:400!important;opacity:.9}.document-table-row textarea{font-size:13px!important;padding:8px!important;margin:5px 0 10px!important;min-width:130px}.document-structured-row{min-width:0;border:1px solid #78859a33;border-radius:10px;margin:14px 0;padding:12px}.document-structured-row legend{font-size:12px}.document-structured input[type=checkbox]{display:inline-block;width:16px;margin:12px;vertical-align:middle;accent-color:#3b65df}.document-add-section{position:relative;align-self:flex-start;font-size:12px}.document-add-section summary{list-style:none;cursor:pointer;padding:6px 10px;border:1px solid light-dark(#d5dbea,#454958);border-radius:10px;background:light-dark(#fff,#26282f)}.document-add-section[open]{padding-bottom:6px;border:1px solid #78859a33;border-radius:10px;background:light-dark(#fff,#26282f)}.document-add-section button{display:block;margin:6px;width:calc(100% - 12px);text-align:left}.document-structured summary:focus-visible,.document-add-section summary:focus-visible{outline:3px solid #648dff;outline-offset:3px}
+      .document-image{margin:16px 0}.document-image img{display:block;max-width:100%;max-height:520px;object-fit:contain;border-radius:12px}.document-image figcaption{font-size:12px;overflow-wrap:anywhere;margin:10px 0}.document-knowledge{min-width:0;margin:12px 0;padding:14px;border:1px solid light-dark(#d5dbea,#454958);border-radius:12px}.document-knowledge legend{padding:0 6px;font-size:12px;overflow-wrap:anywhere}.document-knowledge label{display:block;margin:8px 0}
+      body{margin:0;min-height:100vh;display:grid;place-items:center}main{max-width:36rem;padding:3rem}h1{font-size:2rem;font-weight:600;letter-spacing:-.04em}p{line-height:1.6;opacity:.7}button,select{font:inherit;padding:.65rem 1rem;border:1px solid light-dark(#d5dbea,#454958);border-radius:.65rem;background:light-dark(#fff,#26282f);color:inherit;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #648dff;outline-offset:3px}
+      [hidden]{display:none!important}body[data-role=code]{height:100vh;min-height:0;display:block}body[data-role=code] main{box-sizing:border-box;width:100%;max-width:none;height:100%;padding:18px;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px}header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}header h1{font-size:20px;margin:0;flex:1;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}header button,header select{padding:6px 10px;font-size:13px}#viewStatus{margin:0;font-size:12px;overflow-wrap:anywhere}#codeSurface{min-height:0;height:100%}
+      .document-sources h2{font-size:18px;letter-spacing:-.025em;margin:24px 0 8px}.document-sources .document-caption{margin:0 0 12px}.document-source{display:flex;align-items:center;gap:12px;padding:14px 16px;margin:8px 0;border:1px solid #78859a33;border-radius:12px;background:light-dark(#fff,#22242b)}.document-source>div{min-width:0;flex:1}.document-source strong,.document-source span{display:block;overflow-wrap:anywhere}.document-source strong{font-size:14px;font-weight:550}.document-source span{font-size:12px;opacity:.65;margin-top:4px}.document-source button{flex:none}.document-source button:disabled{opacity:.5;cursor:default}.document-source-preview{margin:0 0 16px;padding:14px 16px;border:1px solid #78859a33;border-radius:12px;background:light-dark(#f7f9fc,#1b1d24)}.document-source-preview p{font-size:12px;opacity:.7;margin:0 0 10px}.document-source-preview pre{font:12px/1.7 ui-monospace,Consolas,monospace;white-space:pre;overflow:auto;max-height:260px;margin:0 0 14px;tab-size:4}.document-preview-paging{display:flex;align-items:center;gap:12px;justify-content:space-between}.document-preview-paging span{font-size:11px;opacity:.7;text-align:center}.document-preview-paging button:disabled{opacity:.5;cursor:default}
+      body[data-role=docs]{height:100vh;min-height:0;display:block}body[data-role=docs] main{box-sizing:border-box;width:100%;max-width:none;height:100%;padding:18px;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px}.document-layout{display:grid;grid-template-columns:180px minmax(0,1fr);min-height:0;gap:24px;border-top:1px solid #78859a33;padding-top:16px}#documentOutline{overflow:auto;display:flex;flex-direction:column;gap:4px;align-items:stretch}#documentOutline button{text-align:left;background:transparent;border:0;font-size:13px;padding:8px 10px;overflow-wrap:anywhere}#documentContent{overflow:auto;padding:0 28px 40px;scroll-behavior:smooth}#documentContent h1{font-size:30px;margin:12px 0 4px;overflow-wrap:anywhere}.document-caption{font-size:12px;margin-bottom:28px}.document-section{max-width:78ch;scroll-margin:16px;margin-bottom:20px}.document-field h3{font-size:14px;font-weight:600;margin:12px 0 8px}.document-text{font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.document-text button{display:block;margin-top:8px}.document-group{border:1px solid #78859a33;border-radius:10px;padding:12px;margin:8px 0}.document-group summary{cursor:pointer;font-size:14px;font-weight:500}.document-group>div{padding:8px 4px}.document-group button,#documentContent button{font-size:12px;padding:6px 10px}
+      body[data-role=code] main{grid-template-rows:auto auto auto minmax(0,1fr)}#codeSurface{grid-row:4}#sourceChangesNotice{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #78859a33;border-radius:10px;font-size:12px}#sourceChangesMessage{flex:1}#sourceChangesNotice button{font-size:12px;padding:6px 9px}
+      body[data-role=docs] main{grid-template-rows:auto auto auto minmax(0,1fr)}.document-layout{grid-row:4}#documentChangesNotice{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #78859a33;border-radius:10px;font-size:12px}#documentChangesMessage{flex:1}.document-editor label{display:block;font-size:12px;font-weight:600}.document-editor input,.document-editor textarea{box-sizing:border-box;display:block;width:100%;font:inherit;font-size:15px;font-weight:400;line-height:1.6;color:inherit;background:light-dark(#fff,#22242b);border:1px solid light-dark(#d5dbea,#454958);border-radius:10px;padding:12px;margin:8px 0 12px}.document-editor textarea{resize:vertical}.document-editor input:focus-visible,.document-editor textarea:focus-visible{outline:2px solid #648dff;outline-offset:2px}.document-block{padding:16px 0;border-bottom:1px solid #78859a33}.document-block-actions{display:flex;gap:8px;margin:20px 0}.document-edit:disabled{opacity:.6} #documentChangesNotice button{font-size:12px;padding:6px 9px}
+      .code-docs-dialog{box-sizing:border-box;width:min(520px,calc(100vw - 48px));max-height:calc(100vh - 48px);padding:24px;border:1px solid light-dark(#d5dbea,#454958);border-radius:18px;background:light-dark(#fafbfe,#202127);color:inherit;box-shadow:0 24px 80px #0005}.code-docs-dialog::backdrop{background:#10172588;backdrop-filter:blur(8px)}.code-docs-dialog h2{font-size:21px;letter-spacing:-.035em;margin:0 0 8px}.code-docs-dialog p{font-size:13px;margin:0 0 16px}.code-docs-targets{max-height:40vh;overflow:auto;display:grid;gap:8px}.code-docs-target{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #78859a33;border-radius:10px;cursor:pointer}.code-docs-target:has(input:checked){border-color:#648dff;background:#648dff15}.code-docs-target input{accent-color:#648dff}.code-docs-target strong,.code-docs-target span span{display:block;font-size:13px;overflow-wrap:anywhere}.code-docs-target span span{opacity:.7;margin-top:4px}.code-docs-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}.code-docs-actions button{font-size:13px;padding:8px 12px}.code-docs-actions button:last-child{background:#3b65df;color:#fff;border-color:#3b65df}.code-docs-dialog>label{display:grid;gap:7px;margin:14px 0;font-size:12px;font-weight:500}.code-docs-dialog>label input,.code-docs-dialog>label select{box-sizing:border-box;width:100%;font:inherit;font-size:13px;padding:10px 12px;border:1px solid light-dark(#d5dbea,#454958);border-radius:9px;background:light-dark(#fff,#26282f);color:inherit}.code-docs-dialog>label input:focus-visible{outline:3px solid #648dff;outline-offset:2px}.code-docs-dialog .code-docs-message{margin:12px 0 0;font-size:12px;opacity:1}
+      #analysisCompareWindow{max-width:100%;min-width:0;flex:1}#analysisIdentity{font-size:10px!important;white-space:pre-line;overflow-wrap:anywhere;opacity:.6}.analysis-hunk{margin:16px 0;padding:12px 0;border-top:1px solid #78859a33}.analysis-hunk strong{display:block;font-size:11px;font-weight:500}.analysis-hunk pre{font:11px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;padding:8px;border-radius:7px;background:#648dff0c;max-height:180px;overflow:auto}.analysis-hunk span{display:block;font-size:11px;opacity:.65;margin-bottom:8px}
+      .analysis-map-node{position:relative;display:flex;align-items:flex-start;gap:4px;margin:8px 0;padding:4px;border:1px solid #78859a33;border-left:3px solid #78859a77;border-radius:9px;background:light-dark(#f1f4fb,#222831)}.analysis-map-node[data-map-kind=function],.analysis-map-node[data-map-kind=class]{border-left-color:#8b75d8}.analysis-map-node[data-map-kind=loop],.analysis-map-node[data-map-kind=branch]{border-left-color:#c89335}.analysis-map-node[data-map-kind=call]{border-left-color:#448ba8}.analysis-map-node[data-map-kind=return],.analysis-map-node[data-map-kind=yield]{border-left-color:#6e9c78}.analysis-map-node[data-map-depth="1"]{margin-left:12px}.analysis-map-node[data-map-depth="2"]{margin-left:24px}.analysis-map-node[data-map-depth="3"]{margin-left:36px}.analysis-map-node[data-map-depth="4"]{margin-left:48px}.analysis-map-node[data-map-depth="5"]{margin-left:60px}.analysis-map-node[data-map-depth="6"]{margin-left:72px}.analysis-map-node:not([data-map-depth="0"]):before{content:"";position:absolute;left:-11px;top:-8px;width:7px;height:24px;border-left:1px solid #78859a55;border-bottom:1px solid #78859a55;border-radius:0 0 0 5px}.analysis-map-select{flex:1;min-width:0;text-align:left;border:0!important;background:transparent!important;padding:5px!important}.analysis-map-select strong,.analysis-map-select span{display:block}.analysis-map-select strong{font:11px/1.5 ui-monospace,Consolas,monospace;overflow-wrap:anywhere;font-weight:500}.analysis-map-select span{font-size:10px;opacity:.65;margin-top:3px}.analysis-map-fold{border:0!important;background:transparent!important;padding:4px!important;flex:none;min-width:19px}
+      #codeLayout{grid-row:4;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}#codeLayout.has-analysis{gap:8px;grid-template-columns:minmax(0,1fr) 6px minmax(0,var(--code-analysis-width,clamp(240px,28vw,360px)))}#codeAnalysisSplitter{align-self:stretch;position:relative;cursor:col-resize;touch-action:none;border-radius:6px;outline-offset:2px}#codeAnalysisSplitter::before{content:"";position:absolute;inset:0 -7px}#codeAnalysisSplitter::after{content:"";position:absolute;inset:0 2px;border-radius:2px;background:var(--siren-line,#78859a33);pointer-events:none}#codeAnalysisSplitter:hover::after,#codeAnalysisSplitter:focus-visible::after,.is-resizing-analysis #codeAnalysisSplitter::after{background:var(--siren-focus,#648dff)}#codeAnalysisSplitter:focus-visible{outline:2px solid var(--siren-focus,#648dff)}#codeAnalysisSplitter[hidden],#codeAnalysis[hidden]{display:none}.is-resizing-analysis{cursor:col-resize;user-select:none}#codeLayout #codeSurface{grid-row:auto;min-width:0}#codeAnalysis{box-sizing:border-box;min-width:0;min-height:0;overflow:auto}#codeAnalysis h2{font-size:16px;letter-spacing:-.025em;margin:4px 0 8px}#codeAnalysis p{font-size:12px;line-height:1.6;margin:8px 0 16px}#codeAnalysis button,#codeAnalysis select{font-size:12px;padding:6px 9px}.analysis-controls,.analysis-paging{display:flex;gap:6px;flex-wrap:wrap}.analysis-paging{margin-top:12px;justify-content:space-between}#analysisFilter{box-sizing:border-box;width:100%;font:inherit;font-size:12px;margin:0 0 12px;padding:8px;border:1px solid #78859a55;border-radius:8px;background:light-dark(#fff,#26282f);color:inherit}.analysis-definition{display:block;text-align:left;width:100%;margin:2px 0;border:0;background:transparent!important;border-radius:8px!important;overflow-wrap:anywhere}.analysis-definition:hover{background:#648dff18!important}.analysis-definition strong,.analysis-definition span{display:block}.analysis-definition strong{font-weight:500}.analysis-definition span{font-size:11px;opacity:.65;margin-top:3px}#codeAnalysis button:disabled{opacity:.5;cursor:default}
+      .document-activity{position:absolute;z-index:40;right:18px;top:112px;box-sizing:border-box;width:min(560px,calc(100% - 36px));max-height:calc(100% - 138px);overflow:auto;padding:18px;border:1px solid var(--siren-line,#78859a44);border-radius:16px;background:var(--siren-panel,Canvas);color:var(--siren-ink,CanvasText);box-shadow:0 14px 48px #00000024;overscroll-behavior:contain}.document-activity[hidden]{display:none}.document-activity .code-docs-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.document-activity label{display:flex;gap:6px;align-items:center;font-size:12px}.document-activity select{min-width:0;max-width:100%;color:inherit;background:var(--siren-input,Canvas);border:1px solid var(--siren-line,#78859a44);border-radius:8px;padding:6px}.document-activity h3{font-size:14px;margin:18px 0 8px}.document-activity .document-caption{font-size:12px;line-height:1.5;margin:8px 0;color:var(--siren-muted,GrayText);overflow-wrap:anywhere}.document-activity dl{display:grid;grid-template-columns:minmax(80px,.35fr) minmax(0,1fr);gap:5px 12px;font-size:12px;line-height:1.5}.document-activity dt{color:var(--siren-muted,GrayText);overflow-wrap:anywhere}.document-activity dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.document-activity dl .document-caption{grid-column:1/-1}.document-activity [data-activity-position]{border-top:1px solid var(--siren-line,#78859a33);padding-bottom:12px}.document-activity :focus-visible{outline:2px solid var(--siren-focus,#648dff);outline-offset:2px}
+    /* Shared desktop chrome; content rendering, native bounds and grants stay local. */
+:root{--siren-bg:light-dark(#f4efe7,#0a0f16);--siren-panel:light-dark(#fffdf8,#111923);--siren-alt:light-dark(#f7f1e8,#151f2b);--siren-input:light-dark(#ffffff,#0d151f);--siren-ink:light-dark(#2f2924,#f4f7fb);--siren-muted:light-dark(#665e56,#a9b7c8);--siren-line:light-dark(#d8cec1,#2c3a4b);--siren-accent:light-dark(#9a4c2e,#2563eb);--siren-focus:light-dark(#b95f38,#93c5fd);--siren-radius:12px;--siren-font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+/* Classic retains all existing named palettes. */
+:root{--siren-radius-xl:22px;--siren-radius-lg:16px;--siren-radius-md:12px;--siren-radius-sm:9px;--siren-radius:var(--siren-radius-md);--siren-shadow:0 18px 55px #00000047;--siren-shadow-soft:0 8px 26px #0000002e}
+:root[data-theme],body[data-theme]{--siren-bg:var(--app-bg);--siren-panel:var(--panel-bg);--siren-alt:var(--panel-alt);--siren-input:var(--input-bg);--siren-ink:var(--text);--siren-muted:var(--muted);--siren-line:var(--border);--siren-accent:var(--primary);--siren-focus:var(--focus-ring)}
+:root:has(#homeRoot){--home-bg:var(--siren-bg);--home-panel:var(--siren-panel);--home-ink:var(--siren-ink);--home-muted:var(--siren-muted);--home-line:var(--siren-line);--home-accent:var(--siren-accent)}
+.home-resume:after{background:radial-gradient(ellipse at 100% 50%,color-mix(in srgb,var(--siren-accent) 14%,var(--siren-panel)),transparent 75%)}
+.home-primary{color:var(--siren-accent-ink,#fff)}
+/* The retained editor creates an inline fixed radius; native chrome owns shape. */
+body[data-role=code] .siren-code-editor{border-color:var(--siren-line)!important;border-radius:var(--siren-radius-md)!important}
+body[data-role=code] .siren-code-editor button{border-color:var(--siren-line)!important;border-radius:var(--siren-radius-sm)!important}
+body[data-role]{background:var(--siren-bg);color:var(--siren-ink);font-family:var(--siren-font)}
+body[data-role] button,body[data-role] select{font-family:var(--siren-font);font-size:12px;line-height:1.35;min-height:32px;padding:7px 11px;border:1px solid var(--siren-line);border-radius:9px;background:var(--siren-panel);color:var(--siren-ink);transition:background .12s,border-color .12s}
+body[data-role] button:hover:not(:disabled){background:var(--siren-alt);border-color:var(--siren-muted)}
+body[data-role] button:disabled{cursor:default;opacity:.5}
+body[data-role] :is(button,select,input,textarea,summary):focus-visible{outline:2px solid var(--siren-focus);outline-offset:3px}
+body[data-role] :is(main>header,body>header){gap:8px;padding:0 0 14px;border-bottom:1px solid var(--siren-line)}
+body[data-role] header h1{font-family:var(--siren-font);font-size:20px;font-weight:600;letter-spacing:-.035em}
+body[data-role] #viewStatus{color:var(--siren-muted);opacity:1;line-height:1.5;min-height:18px}
+body[data-role] #closeView{background:transparent}
+body[data-role] #transferView{background:var(--siren-alt)}
+body[data-role] :is(#saveDiagram,#saveDocument){background:var(--siren-accent);color:var(--siren-accent-ink,#fff);border-color:transparent}
+body[data-role] :is(#diagramSource,#diagramViewport,#diagramGuided,#diagramStylePanel,#diagramBuildPanel,#codeAnalysis,.document-group,.document-knowledge,.document-source,.document-source-preview,.document-structured-row){border-color:var(--siren-line);border-radius:var(--siren-radius);background:var(--siren-panel)}
+body[data-role] :is(#diagramSource,.document-editor input,.document-editor textarea,.document-field input,.document-field textarea,#analysisFilter){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line)}
+body[data-role] :is(.diagram-note,.diagram-source-panel label,.document-caption){color:var(--siren-muted);opacity:1}
+body[data-role] :is(#documentOutline,#slideList){padding:10px;background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius)}
+body[data-role] #documentContent{background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius);padding:20px 28px 40px}
+body[data-role] .document-layout{border-top:0;padding-top:0;gap:14px}
+body[data-role] .notes{border-color:var(--siren-line);color:var(--siren-ink)}
+body[data-role] :is(#slideList button[aria-current=true],.diagram-editor-modes button[aria-pressed=true]){background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel));border-color:var(--siren-accent)}
+/* Public slide pixels remain immutable. */
+body[data-role=presenter] #publicSlide{background:var(--siren-panel);border-color:var(--siren-line);border-radius:var(--siren-radius)}
+#nativeWindowShelf{font-family:var(--siren-font);background:var(--siren-panel);color:var(--siren-ink);border-color:var(--siren-line)}
+#nativeWindowShelf button:focus-visible{outline-color:var(--siren-focus)}
+#nativeWindowShelf button[aria-pressed=true]{border-color:var(--siren-accent);background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel))}
+#desktopBar,.desktop-windows-panel,.desktop-recovery-panel{font-family:var(--siren-font)}
+/* One scale of controls and surfaces follows each original named theme. */
+body[data-role] :is(button,select),.home-topbar button,.home-section-heading>button,.home-create-actions button{border-radius:var(--siren-radius-sm)}
+body[data-role] :is(.document-editor input,.document-editor textarea,#analysisFilter),body[data-role] #diagramSource{border-radius:var(--siren-radius-md)}
+body[data-role=diagram] :is(#diagramStylePanel input:not([type=color]),#diagramStylePanel select,#diagramBuildPanel input){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-sm);font-family:var(--siren-font)}
+body[data-role] :is(#documentContent,#diagramViewport,.siren-code-editor),.home-resume,.home-module{box-shadow:var(--siren-shadow-soft)}
+.home-resume{border-radius:var(--siren-radius-xl)}.home-module{border-radius:var(--siren-radius-lg)}
+.home-module:not(:disabled):hover{box-shadow:var(--siren-shadow)}
+.home-resume button,.home-project-row:not(:disabled):hover,.home-warning,.home-create input,.home-create select,.home-library-search button{border-radius:var(--siren-radius-md)}
+.home-create,.code-docs-dialog{border-radius:var(--siren-radius-xl);box-shadow:var(--siren-shadow)}
+body[data-role] main{overflow:auto;overscroll-behavior:contain}
+body[data-role] :is(header h1,#codeLayout,.document-layout,.diagram-layout){min-width:0}
+@media(max-width:700px){
+ body[data-role] main>header h1,body[data-role=presenter]>header h1{flex-basis:100%;min-width:0}
+ body[data-role=code] #codeLayout.has-analysis{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,1fr) minmax(110px,1fr)}
+ body[data-role=code] #codeAnalysis{border-left:0;padding:10px;border-top:1px solid var(--siren-line)}
+}
+@media(max-width:700px) and (max-height:500px){
+ /* Keep content visible in a small desktop window. Tab naturally scrolls
+    the actual command strip; all original handlers remain on their buttons. */
+ body[data-role] main>header,body[data-role=presenter]>header{flex-wrap:nowrap;overflow-x:auto;min-height:40px;padding-bottom:5px;scroll-padding-inline:5px}
+ body[data-role] main>header h1,body[data-role=presenter]>header h1{flex:0 0 92px;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body[data-role] header :is(button,select){flex-shrink:0}
+ body[data-role] #viewStatus{max-height:36px;overflow:auto;font-size:11px}
+ body[data-role=diagram] .diagram-layout{grid-template-columns:minmax(120px,var(--source-width,32%)) 10px minmax(0,1fr)}
+ body[data-role=diagram] .diagram-layout[data-source-hidden=true]{grid-template-columns:minmax(0,1fr)}
+ body[data-role=diagram] :is(.diagram-source-panel,.diagram-preview-panel){min-width:0}
+ body[data-role=diagram] .diagram-toolbar{flex-wrap:nowrap;overflow-x:auto;min-width:0;min-height:36px}
+ body[data-role=diagram] .diagram-toolbar>*{flex-shrink:0}
+ body[data-role=diagram] .diagram-toolbar .diagram-note{display:none}
+ body[data-role=docs] #documentOutline{max-height:40px;padding:4px}
+}
+@media(max-height:500px){body[data-role] :is(#codeLayout,.document-layout,.diagram-layout){min-height:120px}body[data-role=presenter] main{min-height:120px}}
+.home-topbar .home-current{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-topbar-tools{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){body[data-role] button,body[data-role] select{transition:none}}
+</style><link rel="stylesheet" href="siren://app/assets/shell.css" integrity="sha384-1ACOOgs56D0suaeWAeWKnEIU4XbV3IM/Omlu1zQZXRAPmEyjvxcI8B7otUxCUgWJ" crossorigin="anonymous"></head><body data-role="docs"><main><header><h1 id="viewTitle">Docs</h1><select id="documentTheme" aria-label="Document appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select><button id="openWorkingDocument" type="button" hidden>Edit working copy</button><button id="documentContext" type="button">Context</button><button id="documentActivity" type="button" disabled aria-expanded="false" aria-controls="documentActivityPanel">Activity</button><button id="saveDocument" type="button" hidden>Save document</button><button id="exportDocument" type="button" disabled title="Export saved document · Ctrl+Shift+E">Export saved…</button><button id="revealDocumentExport" type="button" hidden title="Show last exported file">Show file</button><button id="retryDocument" type="button" hidden>Retry</button><button id="closeView" type="button">Close window</button></header><p id="viewStatus" role="status">Waiting for the workspace…</p><div id="documentChangesNotice" role="status" hidden><span id="documentChangesMessage"></span><button id="reviewLatestDocument" type="button">Open saved separately</button><button id="replaceLatestDocument" type="button">Reload…</button></div><section id="documentActivityPanel" hidden aria-label="Document activity"></section><div class="document-layout"><nav id="documentOutline" aria-label="Document sections"></nav><article id="documentContent" aria-label="Selected document"></article></div></main><script>(() => {
+ 'use strict';
+ const make=(tag,parent,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;parent?.append(n);return n;};
+ const visualUri=visual=>{if(!visual||!['svg','png'].includes(visual.kind)||typeof visual.base64!=='string'||visual.base64.length>2796204||visual.base64.length%4||!/^[A-Za-z0-9+/]+={0,2}$/.test(visual.base64))throw Error('Invalid visual');return 'data:image/'+(visual.kind==='svg'?'svg+xml':'png')+';base64,'+visual.base64;};
+ window.createDiagramEmbedView=({api,getContext=()=>({}),onChanged=()=>{},onStatus=()=>{}})=>{
+  let generation=0,paused=false,disposed=false,tail=Promise.resolve(),picker=null;const pending=new Set(),cards=new Set(),expanded=new Set(),explanationSerial=new WeakMap();
+  const alive=token=>!paused&&!disposed&&token===generation;
+
+  function captureExplanation(c,target){
+   if(!target?.card||!target.host)return null;const {card,host}=target,serial=(explanationSerial.get(card)??0)+1;explanationSerial.set(card,serial);
+   for(const child of [...(host.children??[])])if(child.className==='siren-help-error')child.remove();
+   try{const owner=window.SirenHelpWorkspace;if(typeof owner?.capture!=='function'||typeof owner.isCurrent!=='function'||typeof owner.explain!=='function')return null;const context=owner.capture();if(owner.isCurrent(context)!==true)return null;return {owner,context,card,host,serial,generation,documentId:c.documentId,version:c.version};}catch{return null;}
+  }
+  function showExplanation(host,record,operation,reply){
+   try{if(!record||host!==record.host||!alive(record.generation)||!cards.has(record.card)||record.card.isConnected!==true||explanationSerial.get(record.card)!==record.serial||window.SirenHelpWorkspace!==record.owner||record.owner.isCurrent(record.context)!==true)return;
+    const current=getContext();if(current.documentId!==record.documentId||current.version!==record.version)return;
+    const ok=Object.getOwnPropertyDescriptor(reply,'ok'),code=Object.getOwnPropertyDescriptor(reply,'code');if(!ok||!Object.hasOwn(ok,'value')||ok.value!==false||!code||!Object.hasOwn(code,'value')||typeof code.value!=='string'||!/^[A-Z][A-Z0-9_]{0,95}$/.test(code.value))return;
+    record.owner.explain(host,Object.freeze({namespace:'docs-diagram',operation,code:code.value}),record.context);
+   }catch{/* Optional reference help cannot change the operation receipt or saved document. */}
+  }
+  const action=(node,name,id)=>{node.dataset.embedAction=name;if(id)node.dataset.embedId=id;return node;};
+  const button=(parent,title,name,id)=>{const n=action(make('button',parent,title),name,id);n.type='button';return n;};
+  const enqueue=work=>{
+   const token=generation,operation=tail.catch(()=>{}).then(()=>alive(token)?work(token):undefined).catch(()=>{if(alive(token))onStatus('Diagram operation could not finish. Your document is retained.');});
+   pending.add(operation);tail=operation;operation.finally(()=>pending.delete(operation));return operation;
+  };
+  const editable=()=>{const c=getContext();if(c.readonly||c.dirty||c.pending||c.paused||c.fenced||c.disposed){onStatus(c.dirty?'Save your document before inserting or updating a diagram.':'This document is not ready for diagram changes.');return null;}return c;};
+  const stillEditable=c=>{const latest=editable();if(!latest)return false;if(latest.documentId!==c.documentId||latest.version!==c.version){onStatus('The saved document changed. Your local work is retained.');return false;}return true;};
+  function previewLive(block,c,target){
+   return enqueue(async token=>{
+    if(!stillEditable(c))return;const result=await api.preview({diagramId:block.diagramId,scope:block.scope,nodeIds:[...(block.nodeIds??[])]});if(!alive(token)||!stillEditable(c))return;if(result?.ok!==true||typeof result.previewId!=='string'){onStatus('The current diagram could not be previewed. Its saved version is retained.');return;}
+    const dialog=make('dialog',document.body);dialog.className='document-diagram-expanded';expanded.add(dialog);make('h2',dialog,'Use the current diagram with Live');make('p',dialog,'Review saved source version '+result.sourceVersion+'. Live will follow future saved changes.');const image=make('img',dialog);image.src=visualUri(result.visual);image.alt=block.caption||'Current saved diagram';const confirm=button(dialog,'Use this version · Live','confirm-live',block.id),cancel=button(dialog,'Cancel','cancel-live',block.id);
+    const close=()=>{dialog.close();dialog.remove();expanded.delete(dialog);};cancel.addEventListener('click',close);dialog.addEventListener('close',()=>{dialog.remove();expanded.delete(dialog);});confirm.addEventListener('click',()=>{if(confirm.disabled||!alive(token))return;confirm.disabled=true;const explanation=captureExplanation(c,target);void enqueue(async next=>{if(!stillEditable(c)||!dialog.isConnected)return;const published=await api.setMode({blockId:block.id,mode:'live',previewId:result.previewId,expectedDocumentVersion:c.version,operationId:crypto.randomUUID()});if(!alive(next))return;if(published?.ok!==true){onStatus('The saved diagram or document changed. Preview again; your document is retained.');showExplanation(target?.host,explanation,'set-mode',published);close();return;}close();onChanged(published);});});dialog.showModal();return {awaitingChoice:true};
+   });
+  }
+  async function command(method,block,extra={},target=null){
+   if(paused||disposed)return;const c=['setMode','update'].includes(method)?editable():getContext();if(!c)return;
+   const explanation=captureExplanation(c,target);
+   if(method==='setMode'&&extra.mode==='live')return previewLive(block,c,target);
+   return enqueue(async token=>{if(method!=='openSource'&&!stillEditable(c))return;const result=await api[method]({blockId:block.id,expectedDocumentVersion:c.version,...extra,...(method==='openSource'?{}:{operationId:crypto.randomUUID()})});if(!alive(token))return;if(result?.ok!==true){onStatus(result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Your local work is retained.':'Diagram could not be updated. The last saved visual is retained.'+(/^[A-Z][A-Z0-9_]{2,63}$/.test(result?.code??'')?' ('+result.code+')':''));if(method==='setMode'||method==='update')showExplanation(target?.host,explanation,method==='setMode'?'set-mode':'update',result);return;}if(method!=='openSource')onChanged(result);return result;});
+  }
+  function render(block){
+   const card=make('figure');card.className='document-diagram';card.dataset.embedId=block.id;cards.add(card);
+   const header=make('div',card);header.className='document-diagram-header';make('strong',header,block.caption||'Diagram context');
+   const identity=action(make('p',card),'identity',block.id);identity.className='document-diagram-identity';
+   const describe=name=>{identity.textContent=(typeof name==='string'&&name.trim()?name.trim().slice(0,160)+' · ':'')+block.diagramId+' · '+(block.scope==='selection'?'Selected steps: '+(block.nodeIds??[]).join(', '):'Whole diagram')+' · Version '+block.snapshot.sourceVersion;};describe();
+   const mode=action(make('select',header),'mode',block.id);mode.setAttribute('aria-label','Diagram update mode');for(const [value,title]of [['live','Live'],['fixed','Fixed']]){const o=make('option',mode,title);o.value=value;}mode.value=block.mode;mode.disabled=getContext().readonly===true;mode.addEventListener('change',()=>{mode.disabled=true;void command('setMode',block,{mode:mode.value},{card,host:status}).then(result=>{if(result?.ok!==true)mode.value=block.mode;mode.disabled=getContext().readonly===true;});});
+   const viewport=action(make('div',card),'viewport',block.id);viewport.className='document-diagram-viewport';viewport.tabIndex=0;viewport.setAttribute('aria-label','Diagram · Plus and minus zoom, zero to fit');viewport.style.height=Math.min(1600,Math.max(80,block.display?.height??320))+'px';
+   const img=make('img',viewport);img.alt=block.caption||'Saved diagram';img.loading='lazy';img.decoding='async';
+   const resize=button(card,'','resize',block.id);resize.className='document-diagram-resize';resize.setAttribute('role','separator');resize.setAttribute('aria-orientation','horizontal');resize.setAttribute('aria-label','Resize diagram height · Up and down arrows');resize.setAttribute('aria-valuemin','80');resize.setAttribute('aria-valuemax','1600');let drag=null;const resizeGeneration=generation;
+   const resizeCurrent=()=>alive(resizeGeneration)&&card.isConnected!==false;
+   const setHeight=value=>{const height=Math.min(1600,Math.max(80,Math.round(value)));viewport.style.height=height+'px';resize.setAttribute('aria-valuenow',String(height));};setHeight(block.display?.height??320);
+   const stopResize=()=>{const previous=drag;drag=null;if(previous)try{resize.releasePointerCapture(previous.id);}catch{/* Capture may already have retired. */}};
+   resize.addEventListener('pointerdown',event=>{if(!resizeCurrent()||event.button!==0||!Number.isFinite(event.clientY))return;event.preventDefault();resize.focus({preventScroll:true});stopResize();drag={id:event.pointerId,y:event.clientY,height:viewport.getBoundingClientRect().height};try{resize.setPointerCapture(event.pointerId);}catch{drag=null;}});
+   resize.addEventListener('pointermove',event=>{if(!resizeCurrent()||!drag||event.pointerId!==drag.id||!Number.isFinite(event.clientY))return;event.preventDefault();setHeight(drag.height+event.clientY-drag.y);});
+   for(const name of ['pointerup','pointercancel','lostpointercapture'])resize.addEventListener(name,event=>{if(drag?.id===event.pointerId)stopResize();});
+   resize.addEventListener('keydown',event=>{if(!resizeCurrent()||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;event.preventDefault();stopResize();setHeight(event.key==='Home'?80:event.key==='End'?1600:parseInt(viewport.style.height)+(event.key==='ArrowUp'?-1:1)*(event.shiftKey?100:20));});
+   const status=action(make('p',card,block.status==='missing'?'Missing source or steps'+(block.missingNodeIds?.length?' · Missing: '+block.missingNodeIds.join(', '):'')+' · Last saved visual retained':block.status==='render-error'?'Update failed · Last saved visual retained':block.status==='pending'?'Update pending · Last saved visual retained':'Saved source · Version '+block.snapshot.sourceVersion),'status',block.id);status.className='document-diagram-status';status.setAttribute('role','status');
+   const tools=make('div',card);tools.className='document-diagram-tools';tools.setAttribute('role','toolbar');tools.setAttribute('aria-label','Diagram controls');let zoom=1,source=null,observer;
+   const fit=button(tools,'Fit','fit',block.id),minus=button(tools,'−','zoom-out',block.id),readout=action(make('span',tools,'Fit'),'zoom',block.id),plus=button(tools,'+','zoom-in',block.id),expand=button(tools,'Expand','expand',block.id),open=button(tools,'Open source','open-source',block.id),update=button(tools,'Update','update',block.id),load=button(tools,'Load diagram','load',block.id);
+   const resume=button(tools,'Resume Live','resume-live',block.id);resume.hidden=true;resume.disabled=getContext().readonly===true;resume.addEventListener('click',()=>{void command('setMode',block,{mode:'live'},{card,host:status});});
+   minus.setAttribute('aria-label','Zoom out');plus.setAttribute('aria-label','Zoom in');update.disabled=getContext().readonly===true;expand.disabled=true;
+   function setZoom(value,fit=false){zoom=Math.max(.25,Math.min(4,value));img.style.maxWidth=fit?'100%':'none';img.style.width=fit?'100%':Math.round(zoom*100)+'%';img.style.maxHeight=fit?'100%':'none';readout.textContent=fit?'Fit':Math.round(zoom*100)+'%';}
+   fit.addEventListener('click',()=>setZoom(1,true));minus.addEventListener('click',()=>setZoom(zoom-.25));plus.addEventListener('click',()=>setZoom(zoom+.25));
+   viewport.addEventListener('keydown',event=>{if(paused||disposed)return;if(['+','=','-','0'].includes(event.key)){event.preventDefault();setZoom(event.key==='-'?zoom-.25:event.key==='0'?1:zoom+.25,event.key==='0');}});
+   expand.addEventListener('click',()=>{if(!source||paused||disposed)return;const dialog=make('dialog',document.body);dialog.className='document-diagram-expanded';expanded.add(dialog);make('h2',dialog,block.caption||'Diagram context');const image=make('img',dialog);image.src=source;image.alt=img.alt;const close=button(dialog,'Close','close-expanded',block.id);close.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{expanded.delete(dialog);dialog.remove();if(!paused&&!disposed&&card.isConnected)expand.focus({preventScroll:true});});dialog.showModal();});
+   open.addEventListener('click',()=>{void command('openSource',block);});update.addEventListener('click',()=>{void command('update',block,{},{card,host:status});});
+   let requested=false;
+   function read(){
+    if(requested||paused||disposed||card.isConnected===false)return;requested=true;load.disabled=true;observer?.unobserve(card);
+    const c=getContext(),explanation=captureExplanation(c,{card,host:status});void enqueue(async token=>{let failure=null;try{const result=await api.readEmbed({blockId:block.id,expectedDocumentVersion:c.version});if(!alive(token)||card.isConnected===false)return;if(result?.ok!==true||result.block?.id!==block.id){failure=result;throw Error('Visual unavailable');}describe(result.sourceName);source=visualUri(result.visual);img.src=source;load.hidden=true;expand.disabled=false;if(result.refreshSuspended===true){status.textContent='Live paused after Undo · Resume Live or Update when ready';resume.hidden=false;}setZoom(1,true);}
+     catch{if(alive(token)&&card.isConnected!==false){status.textContent='Diagram unavailable · Saved caption and reference retained';showExplanation(status,explanation,'read-embed',failure);load.textContent='Retry diagram';requested=false;load.disabled=false;}}});
+   }
+   load.addEventListener('click',read);
+   if(typeof IntersectionObserver==='function'){observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===card&&e.isIntersecting))read();},{rootMargin:'160px'});observer.observe(card);}card._diagramDispose=()=>{observer?.disconnect();stopResize();};return card;
+  }
+  function insert({afterBlockId=null,proposal=null}={}){
+   if(paused||disposed||!editable())return;
+   picker?.remove();const own=picker=make('dialog',document.body);own.className='document-diagram-picker';make('h2',own,'Bring the flow into your document');make('p',own,'Insert a saved diagram. Live keeps it connected; Fixed preserves the version you reviewed.');
+   const search=action(make('input',own),'search-diagrams');search.placeholder='Find a saved diagram…';search.maxLength=160;search.setAttribute('aria-label','Search saved diagrams');
+   const select=action(make('select',own),'choose-diagram');select.setAttribute('aria-label','Saved diagram');const more=button(own,'More diagrams','more-diagrams');more.hidden=true;const position=action(make('select',own),'choose-position');position.setAttribute('aria-label','Insert after');const context=getContext();const end=make('option',position,'End of document');end.value='';for(const b of context.blocks??[]){const o=make('option',position,'After '+(b.kind==='heading'?b.text:b.caption||b.kind||'section'));o.value=b.id;}position.value=afterBlockId??'';
+   const scope=action(make('select',own),'choose-scope');scope.setAttribute('aria-label','Diagram content');for(const [value,text]of [['whole','Whole diagram'],['selection','Selected steps']]){const o=make('option',scope,text);o.value=value;}scope.value='whole';const selectionList=make('fieldset',own);selectionList.className='document-diagram-selection';selectionList.hidden=true;const selectedIds=new Set();
+   const reviewSelection=button(own,'Use reviewed selection','review-selection');reviewSelection.hidden=true;
+   const caption=action(make('input',own),'caption');caption.placeholder='Caption (optional)';caption.maxLength=1000;caption.setAttribute('aria-label','Diagram caption');const image=make('img',own);image.hidden=true;image.alt='Diagram preview';const message=make('p',own);message.setAttribute('role','status');const actions=make('div',own);actions.className='document-diagram-tools';const preview=button(actions,'Preview','preview'),confirm=button(actions,'Insert diagram','confirm-insert'),cancel=button(actions,'Cancel','cancel-insert');confirm.disabled=true;let receipt=null,selectionRevision=0,selectionReviewRequired=false,missingIds=[],missingInputs=[];
+   const remainingSelection=()=>[...selectedIds].filter(id=>!missingIds.includes(id));
+   const updateSelection=()=>{preview.disabled=selectionReviewRequired||!selectedIds.size;reviewSelection.disabled=!remainingSelection().length;};
+   const resetSelection=()=>{selectedIds.clear();missingIds=[];missingInputs=[];selectionReviewRequired=false;reviewSelection.hidden=true;selectionList.replaceChildren();selectionList.hidden=true;scope.value='whole';};
+   function chooseScope(){
+    const revision=++selectionRevision,choice=select.value;receipt=null;confirm.disabled=true;image.hidden=true;selectedIds.clear();missingIds=[];missingInputs=[];selectionReviewRequired=false;reviewSelection.hidden=true;selectionList.replaceChildren();selectionList.hidden=scope.value!=='selection';
+    if(scope.value!=='selection'||!choice){preview.disabled=!choice;return;}
+    preview.disabled=true;message.textContent='Checking saved steps…';
+    void enqueue(async token=>{
+     const result=await api.inspectSelection({diagramId:choice});if(!alive(token)||picker!==own||revision!==selectionRevision||select.value!==choice)return;
+     if(result?.ok!==true){resetSelection();preview.disabled=false;message.textContent='This syntax supports the whole diagram. Selected steps are not yet qualified.';return;}
+     const proposed=proposal?.diagramId===choice&&proposal.scope==='selection'?proposal.nodeIds:[],nodes=result.nodes??[],present=new Set(nodes.map(node=>node.id));
+     for(const id of proposed)selectedIds.add(id);
+     missingIds=proposed.filter(id=>!present.has(id));
+     const changedSource=typeof proposal?.sourceHash==='string'&&typeof result.sourceHash==='string'&&proposal.sourceHash!==result.sourceHash&&proposed.length>0;
+     selectionReviewRequired=missingIds.length>0||changedSource;reviewSelection.hidden=!selectionReviewRequired;
+     make('legend',selectionList,'Choose steps to include');
+     for(const n of nodes){
+      const label=make('label',selectionList),input=action(make('input',label),'select-node',n.id);input.type='checkbox';input.checked=selectedIds.has(n.id);input.setAttribute('aria-label',n.id+' · '+n.label);make('span',label,n.id+' · '+n.label);
+      input.addEventListener('change',()=>{if(paused||disposed||picker!==own||scope.value!=='selection')return;if(input.checked)selectedIds.add(n.id);else selectedIds.delete(n.id);selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;updateSelection();});
+     }
+     for(const id of missingIds){const label=make('label',selectionList),input=action(make('input',label),'missing-node',id);input.type='checkbox';input.checked=true;input.disabled=true;input.setAttribute('aria-label',id+' · Missing from the saved diagram');make('span',label,id+' · Missing from the saved diagram');missingInputs.push(input);}
+     updateSelection();message.textContent=selectionReviewRequired?'The saved diagram changed.'+(missingIds.length?' Missing steps: '+missingIds.join(', ')+'.':'')+' Requested steps: '+proposed.join(', ')+'. Review your choices and use the reviewed selection, or choose the whole diagram.':'Select at least one step. Connections outside the selection are reported in preview.';
+    });
+   }
+   reviewSelection.addEventListener('click',()=>{
+    if(paused||disposed||picker!==own||own.isConnected===false||!selectionReviewRequired||scope.value!=='selection'||!remainingSelection().length)return;
+    const omitted=missingIds.slice();for(const id of omitted)selectedIds.delete(id);for(const input of missingInputs)input.checked=false;
+    selectionReviewRequired=false;reviewSelection.hidden=true;selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;updateSelection();
+    message.textContent='Reviewed steps: '+[...selectedIds].join(', ')+'.'+(omitted.length?' Missing steps excluded by your choice: '+omitted.join(', ')+'.':'')+' Preview before insertion.';preview.focus({preventScroll:true});
+   });
+   scope.addEventListener('change',chooseScope);
+   const retire=()=>{if(picker===own)picker=null;own.remove();};const close=()=>{if(picker===own)picker=null;own.close();own.remove();};cancel.addEventListener('click',close);own.addEventListener('cancel',event=>{event.preventDefault();close();});own.addEventListener('close',retire);select.addEventListener('change',()=>{selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;resetSelection();preview.disabled=false;});
+   preview.addEventListener('click',()=>{if(paused||disposed||picker!==own||!select.value||own.isConnected===false||scope.value==='selection'&&(selectionReviewRequired||!selectedIds.size))return;const choice=select.value,revision=++selectionRevision,selectedScope=scope.value,nodeIds=selectedScope==='selection'?[...selectedIds]:[];receipt=null;confirm.disabled=preview.disabled=true;void enqueue(async token=>{try{const result=await api.preview({diagramId:choice,scope:selectedScope,nodeIds});if(!alive(token)||picker!==own||revision!==selectionRevision||select.value!==choice)return;if(result?.ok!==true||typeof result.previewId!=='string')throw Error('Preview unavailable');image.src=visualUri(result.visual);image.hidden=false;receipt=result.previewId;confirm.disabled=false;message.textContent='Saved diagram · Live by default'+(selectedScope==='selection'?' · '+(result.boundary??[]).length+' connection(s) cross this selection. Open source to review the full flow.':'');}catch{if(alive(token)&&picker===own&&revision===selectionRevision&&select.value===choice)message.textContent='Preview unavailable. The diagram and document are retained.';}finally{if(alive(token)&&picker===own&&revision===selectionRevision&&select.value===choice)preview.disabled=scope.value==='selection'&&(selectionReviewRequired||!selectedIds.size);}});});
+   confirm.addEventListener('click',()=>{if(!receipt||paused||disposed||confirm.disabled||picker!==own)return;const c=editable();if(!c)return;confirm.disabled=true;const request={previewId:receipt,afterBlockId:position.value||null,caption:caption.value||'',expectedDocumentVersion:c.version,operationId:crypto.randomUUID()};void enqueue(async token=>{if(!stillEditable(c)||picker!==own||own.isConnected===false||own.open===false)return;const result=await api.insert(request);if(!alive(token)||picker!==own)return;if(result?.ok!==true){const code=typeof result?.code==='string'&&/^[A-Z][A-Z0-9_]{0,95}$/.test(result.code)?result.code:null;message.textContent='Insertion could not be confirmed'+(code?' · '+code:'')+'. Inspect the saved document before retrying.';receipt=null;image.hidden=true;if(code)window.SirenHelpWorkspace?.explain?.(message,{namespace:'docs-diagram',operation:'insert',code});return;}close();onChanged(result);});});
+   let catalogueRevision=0,nextCursor=0;
+   function loadPage(reset=false){
+    const revision=reset?++catalogueRevision:catalogueRevision,query=search.value||'',cursor=reset?0:nextCursor;more.disabled=true;
+    if(reset){selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;resetSelection();preview.disabled=false;select.replaceChildren();select.value='';}
+    void enqueue(async token=>{if(revision!==catalogueRevision)return;const result=await api.listDiagrams(cursor||query?{cursor,query}:{});if(!alive(token)||picker!==own||revision!==catalogueRevision)return;if(result?.ok!==true){message.textContent='Saved diagrams could not be listed.';return;}for(const item of result.items??[]){const o=make('option',select,item.label);o.value=item.id;}if(reset&&proposal){if(!(result.items??[]).some(n=>n.id===proposal.diagramId)){const o=make('option',select,'Shared diagram');o.value=proposal.diagramId;}select.value=proposal.diagramId;scope.value=proposal.scope;chooseScope();}nextCursor=result.nextCursor??cursor+(result.items??[]).length;more.hidden=!result.hasMore;more.disabled=false;message.textContent=(result.items??[]).length?'Choose a diagram and preview it before insertion.':'No saved diagrams match this search.';});
+   }
+   search.addEventListener('input',()=>loadPage(true));more.addEventListener('click',()=>{if(!more.disabled&&!more.hidden)loadPage();});own.showModal();loadPage(true);
+  }
+  const offerProposal=()=>enqueue(async token=>{const c=getContext();if(!api.getProposal||c.dirty||c.pending||c.fenced)return;const result=await api.getProposal({});if(!alive(token)||!result?.ok||!result.proposal)return;if(getContext().readonly){onStatus('A diagram is ready to insert. Open this document’s working copy to preview it.');return;}if(!stillEditable(c))return;insert({proposal:result.proposal});});
+  const clear=()=>{generation++;for(const card of cards)card._diagramDispose?.();cards.clear();for(const dialog of [...expanded]){dialog.close();dialog.remove();}expanded.clear();picker?.close();picker?.remove();picker=null;};
+  const drain=async()=>{while(pending.size)await Promise.all([...pending]);};
+  return Object.freeze({render,insert,offerProposal,clear,drain,pause:async()=>{paused=true;clear();await drain();},resume:()=>{if(!disposed){paused=false;generation++;}},dispose:()=>{disposed=true;paused=true;clear();}});
+ };
+})();
+
+window.SirenDocumentActivity=(function createDocumentActivityContract(){
+ const limits=Object.freeze({scalarChars:4096,rowChars:16384,pageChars:131072,pageRows:20,scanRows:256,compareBlocks:256,compareBytes:1048576,compareNodes:32768,compareDepth:32,lookupBlocks:4096,idChars:200});
+ const own=(value,key)=>value!==null&&typeof value==='object'?Object.getOwnPropertyDescriptor(value,key):undefined;
+ const get=(value,key)=>{const d=own(value,key);return d&&Object.hasOwn(d,'value')?d.value:undefined;};
+ const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+ const validId=value=>typeof value==='string'&&value.length>0&&value.length<=limits.idChars&&value.isWellFormed();
+ const failure=code=>({ok:false,code});
+ function locate(blocks,id){
+  if(!validId(id))return failure('BLOCK_ID_INVALID');
+  if(!Array.isArray(blocks))return failure('BLOCKS_INVALID');
+  const length=get(blocks,'length');if(length>limits.lookupBlocks)return failure('BLOCK_LOOKUP_LIMIT');
+  let index=-1;for(let i=0;i<length;i++)if(get(get(blocks,String(i)),'id')===id){if(index!==-1)return failure('BLOCK_AMBIGUOUS');index=i;}
+  return index<0?failure('BLOCK_MISSING'):{ok:true,index};
+ }
+ function page(document,options={}){
+  const {section='comments',filter='all',cursor=0,limit=20}=options;
+  if(!['comments','revisions','review'].includes(section)||!['all','open','resolved'].includes(filter)||!Number.isSafeInteger(cursor)||cursor<0||!Number.isSafeInteger(limit)||limit<1||limit>limits.pageRows)return failure('ACTIVITY_OPTIONS_INVALID');
+  if(!record(document))return failure('DOCUMENT_INVALID');
+  const review=get(document,'review'),arrayField=(value,key)=>{const d=own(value,key);if(!d)return[];return Object.hasOwn(d,'value')&&Array.isArray(d.value)?d.value:null;};
+  const values=section==='comments'?arrayField(document,'comments'):section==='revisions'?arrayField(document,'revisions'):null;
+  const trail=section==='review'?arrayField(review,'trail'):[],releases=section==='review'?arrayField(document,'releases'):[];
+  if(section==='review'&&(trail===null||releases===null)||section!=='review'&&values===null)return failure('ACTIVITY_RECORDS_INVALID');
+  const trailLength=trail?.length??0,total=section==='review'?1+trailLength+releases.length:values.length;
+  const rows=[];let position=Math.min(cursor,total),scanned=0,chars=0,limited=false;
+  const scalar=value=>typeof value==='string'?value:value===null?'null':typeof value==='boolean'||typeof value==='number'&&Number.isFinite(value)?String(value):'[Unsupported recorded value; see Preserved fields]';
+  while(position<total&&scanned<limits.scanRows&&rows.length<limit){
+   const sourcePosition=position;let kind=section==='comments'?'comment':section==='revisions'?'revision':'review';
+   const value=section!=='review'?get(values,String(position)):position===0?document:position<=trailLength?(kind='trail',get(trail,String(position-1))):(kind='release',get(releases,String(position-1-trailLength)));
+   const resolution=get(value,'resolved'),state=resolution===true?'resolved':resolution===false?'open':'unsupported';
+   if(section==='comments'&&filter!=='all'&&state!==filter){position++;scanned++;continue;}
+   const fields=[];let rowChars=0;
+   function add(owner,key,label=key){const descriptor=own(owner,key);if(!descriptor)return;const raw=Object.hasOwn(descriptor,'value')?scalar(descriptor.value):'[Unsupported recorded accessor]';const max=Math.min(limits.scalarChars,limits.rowChars-rowChars);if(max<=0){limited=true;return;}const text=raw.slice(0,max),truncated=text.length<raw.length;fields.push({key:label,text,truncated});rowChars+=text.length;if(truncated)limited=true;}
+   const keys=kind==='comment'?['id','author','kind','text','at','blockId','resolved','resolvedAt','resolvedBy']:kind==='revision'?['id','label','title','at','by','author','note']:kind==='trail'?['state','action','at','by','who','author','note','detail','digest']:kind==='release'?['id','seq','sequence','version','status','createdAt','createdBy','approvedAt','approvedBy','notes','testing','testingRef','testReference','fingerprint','digest']:['status'];
+   for(const key of keys)add(value,key);
+   if(kind==='review'){
+    for(const key of ['state','submittedBy','submittedAt','decidedBy','decidedAt','approvedDigest','note','notes'])add(review,key,'review.'+key);
+    const provenance=get(document,'signoffFromFile');if(own(document,'signoffFromFile')){
+     if(record(provenance)){add(document,'signoffFromFile');for(const key of ['status','state','submittedBy','submittedAt','decidedBy','decidedAt','approvedDigest','digestHeld','trailRows','matchesAtImport','namesCutAtDoor','at'])add(provenance,key,'signoffFromFile.'+key);const last=get(provenance,'trailLast');for(const key of ['at','who','action','detail'])add(last,key,'signoffFromFile.trailLast.'+key);}
+     else add(document,'signoffFromFile');
+    }
+   }
+   if(kind==='release'){const fingerprint=get(value,'fingerprint');for(const key of ['package','prompt','knowledge','canon'])add(fingerprint,key,'fingerprint.'+key);}
+   if(!record(value)){const text='Unsupported recorded entry; see Preserved fields'.slice(0,limits.rowChars-rowChars);fields.push({key:'record',text,truncated:text.length<47});rowChars+=text.length;}
+   if(chars+rowChars>limits.pageChars&&rows.length){limited=true;break;}
+   const row={position:sourcePosition,kind,title:kind==='review'?'Recorded document review':(kind==='comment'?'Comment ':kind==='revision'?'Revision ':kind==='trail'?'Review event ':'Release ')+(kind==='trail'?sourcePosition:kind==='release'?sourcePosition-trailLength:sourcePosition+1),fields};
+   if(kind==='comment'){row.state=state;const id=get(value,'blockId');if(validId(id))row.blockId=id;}
+   if(kind==='revision'){const blocks=get(value,'blocks');row.canCompare=Array.isArray(blocks)&&blocks.length<=limits.compareBlocks;if(Array.isArray(blocks))row.blockCount=blocks.length;}
+   rows.push(row);chars+=rowChars;position++;scanned++;
+  }
+  if(position<total&&scanned>=limits.scanRows)limited=true;
+  return {ok:true,rows,nextCursor:position<total?position:null,total,scanned,limited};
+ }
+ function compare(beforeBlocks,afterBlocks){
+  const budget={nodes:0,bytes:0},active=new Set(),encoder=new TextEncoder();
+  const refuse=code=>{throw code;};
+  const charge=text=>{budget.bytes+=encoder.encode(text).length;if(budget.bytes>limits.compareBytes)refuse('COMPARISON_BYTE_LIMIT');return text;};
+  function string(value){if(!value.isWellFormed())refuse('COMPARISON_JSON_INVALID');if(value.length>limits.compareBytes-budget.bytes)refuse('COMPARISON_BYTE_LIMIT');return charge(JSON.stringify(value));}
+  function canonical(value,depth=0){
+   if(++budget.nodes>limits.compareNodes)refuse('COMPARISON_NODE_LIMIT');if(depth>limits.compareDepth)refuse('COMPARISON_DEPTH_LIMIT');
+   if(value===null)return charge('null');if(typeof value==='boolean')return charge(String(value));if(typeof value==='number'){if(!Number.isFinite(value))refuse('COMPARISON_JSON_INVALID');return charge(JSON.stringify(value));}if(typeof value==='string')return string(value);
+   if(!value||typeof value!=='object'||active.has(value))refuse('COMPARISON_JSON_INVALID');
+   const array=Array.isArray(value),prototype=Object.getPrototypeOf(value);if(array?prototype!==Array.prototype:prototype!==Object.prototype&&prototype!==null)refuse('COMPARISON_JSON_INVALID');
+   const keys=Reflect.ownKeys(value);if(keys.length>limits.compareNodes-budget.nodes+1)refuse('COMPARISON_NODE_LIMIT');if(keys.some(key=>typeof key!=='string'))refuse('COMPARISON_JSON_INVALID');
+   const descriptors=Object.getOwnPropertyDescriptors(value);active.add(value);let result;
+   if(array){const length=descriptors.length.value;if(keys.length!==length+1)refuse('COMPARISON_JSON_INVALID');const pieces=[];charge('[');for(let i=0;i<length;i++){const d=descriptors[i];if(!d||!d.enumerable||!Object.hasOwn(d,'value'))refuse('COMPARISON_JSON_INVALID');if(i)charge(',');pieces.push(canonical(d.value,depth+1));}charge(']');result='['+pieces.join(',')+']';}
+   else{const pieces=[];charge('{');for(const key of keys.sort()){const d=descriptors[key];if(!d.enumerable||!Object.hasOwn(d,'value'))refuse('COMPARISON_JSON_INVALID');if(pieces.length)charge(',');pieces.push(string(key)+charge(':')+canonical(d.value,depth+1));}charge('}');result='{'+pieces.join(',')+'}';}
+   active.delete(value);return result;
+  }
+  try{
+   if(!Array.isArray(beforeBlocks)||!Array.isArray(afterBlocks))return failure('COMPARISON_BLOCKS_INVALID');
+   if(beforeBlocks.length>limits.compareBlocks||afterBlocks.length>limits.compareBlocks)return failure('COMPARISON_BLOCK_LIMIT');
+   // Validate array containers too, not just the visible block values.
+   const beforeJson=canonical(beforeBlocks),afterJson=canonical(afterBlocks);
+   const index=blocks=>{const map=new Map();for(let i=0;i<blocks.length;i++){const id=get(blocks[i],'id');if(!validId(id))refuse('COMPARISON_ID_INVALID');if(map.has(id))refuse('COMPARISON_ID_AMBIGUOUS');map.set(id,i);}return map;};
+   const before=index(beforeBlocks),after=index(afterBlocks),rows=[],counts={added:0,removed:0,changed:0,unchanged:0,reordered:0};
+   // Already validated JSON is bounded; parse once to compare canonical block strings without re-charging the input budget.
+   const left=JSON.parse(beforeJson),right=JSON.parse(afterJson);
+   for(const [id,beforeIndex] of before){const afterIndex=after.get(id),change=afterIndex===undefined?'removed':JSON.stringify(left[beforeIndex])===JSON.stringify(right[afterIndex])?'unchanged':'changed',reordered=afterIndex!==undefined&&beforeIndex!==afterIndex;rows.push({id,change,reordered,beforeIndex,afterIndex:afterIndex??null});counts[change]++;if(reordered)counts.reordered++;}
+   for(const [id,afterIndex]of after)if(!before.has(id)){rows.push({id,change:'added',reordered:false,beforeIndex:null,afterIndex});counts.added++;}
+   return {ok:true,identical:beforeJson===afterJson,rows,counts};
+  }catch(code){return failure(typeof code==='string'?code:'COMPARISON_JSON_INVALID');}
+ }
+ return Object.freeze({limits,page,compare,locate});
+})();
+(() => {
+ 'use strict';
+ const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
+ const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
+ const code=value=>typeof value==='string'&&/^[A-Z0-9_]{1,80}$/.test(value)?value:'ACTIVITY_UNAVAILABLE';
+ window.SirenNativeDocsActivity=Object.freeze({create({host,button,enabled=()=>true,onJump,onCompare,onStatus=()=>{}}){
+  const model=window.SirenDocumentActivity;
+  let context=null,section='comments',filter='all',cursor=0,previous=[],opened=false,paused=false,disposed=false,generation=0,pending=null,comparison=null,comparePage=0,against='saved';
+  const ready=()=>{try{return !paused&&!disposed&&context!==null&&enabled()===true;}catch{return false;}};
+  const say=text=>{if(ready())onStatus(text);};
+  host.id=host.id||'documentActivity';host.className+=' document-section document-activity';host.setAttribute('role','region');host.setAttribute('aria-label','Document activity');
+  button.type='button';button.setAttribute('aria-controls',host.id);button.setAttribute('aria-expanded','false');
+  const clear=()=>{host.replaceChildren();host.hidden=true;button.setAttribute('aria-expanded','false');};
+  const retire=()=>{generation++;pending=null;comparison=null;comparePage=0;};
+  const preserve=event=>{if(event.button===0)event.preventDefault();};
+  const action=(parent,id,title,run)=>{const token=generation,own=context,node=make('button',parent,title);node.id=id;node.type='button';node.disabled=!ready()||!!pending;node.addEventListener('pointerdown',preserve);node.addEventListener('click',()=>{if(ready()&&!pending&&generation===token&&context===own&&host.contains(node)&&!node.disabled)run();});return node;};
+  const select=(parent,id,label,options,value,run)=>{const token=generation,own=context,field=make('label',parent,label),node=make('select',field);node.id=id;node.setAttribute('aria-label',label);node.disabled=!ready()||!!pending;for(const [key,title]of options){const option=make('option',node,title);option.value=key;}node.value=value;node.addEventListener('change',()=>{if(ready()&&!pending&&generation===token&&context===own&&host.contains(node)&&options.some(([key])=>key===node.value))run(node.value);});return node;};
+  const resetPage=()=>{cursor=0;previous=[];retire();};
+  const notice=(parent,text,id)=>{const node=make('p',parent,text);node.className='document-caption';if(id)node.id=id;return node;};
+  const changeSection=value=>{section=value;resetPage();paint();};
+  const changeFilter=value=>{filter=value;resetPage();paint();};
+  function perform(kind,request){
+   if(!ready()||pending)return;
+   const token=generation,own=context;
+   const task=Promise.resolve().then(async()=>{
+    if(!ready()||generation!==token||context!==own)return;
+    try{
+     const result=await (kind==='jump'?onJump(request):onCompare(request));
+     if(!ready()||generation!==token||context!==own)return;
+     if(kind==='jump'){if(result?.ok!==true)say('Block jump refused · '+code(result?.code)+' · Document and local edits retained.');}
+     else{
+      comparison=result?.ok===true&&Array.isArray(result.rows)&&result.rows.length<=512?{...result,against:request.against,position:request.position,dirty:own.dirty}:{ok:false,code:code(result?.code)};comparePage=0;
+      if(comparison.ok!==true)say('Comparison unavailable · '+comparison.code+' · Recorded data and local edits retained.');
+     }
+    }catch{
+     if(ready()&&generation===token&&context===own){if(kind==='compare')comparison={ok:false,code:'ACTIVITY_UNAVAILABLE'};say((kind==='jump'?'Block jump refused':'Comparison unavailable')+' · Recorded data and local edits retained.');}
+    }finally{if(pending===task){pending=null;if(ready()&&generation===token&&context===own&&opened)paint();}}
+   });pending=task;paint();
+  }
+  function paintComparison(){
+   if(!comparison)return;
+   const area=make('section',host);area.setAttribute('aria-label','Revision comparison');
+   if(comparison.ok!==true){notice(area,'Comparison unavailable · '+code(comparison.code)+' · No equality was established.');return;}
+   make('h3',area,comparison.against==='working'?(comparison.dirty?'Unsaved working content':'Working current content · No unsaved edits')+' compared with Revision '+(comparison.position+1):'Saved current content compared with Revision '+(comparison.position+1)).setAttribute('aria-live','polite');
+   notice(area,'Complete block values within the comparison budget · Source references compare pointers, not executed code, source bytes or test results.');
+   notice(area,comparison.identical===true?'No differences in the compared block values.':'Differences in the compared block values.');
+   const rows=make('div',area);rows.id='documentActivityCompareRows';const start=comparePage*20,end=Math.min(start+20,comparison.rows.length);
+   for(let at=start;at<end;at++){
+    const item=comparison.rows[at],row=make('div',rows);row.dataset.activityComparisonRow='true';
+    make('strong',row,typeof item?.id==='string'?item.id.slice(0,200):'Unsupported block identity');
+    notice(row,(['added','removed','changed','unchanged'].includes(item?.change)?item.change:'unsupported change')+(item?.reordered===true?' · reordered':'')+' · Archived index '+(Number.isSafeInteger(item?.beforeIndex)?item.beforeIndex+1:'—')+' · Current index '+(Number.isSafeInteger(item?.afterIndex)?item.afterIndex+1:'—'));
+   }
+   const nav=make('div',area);nav.className='code-docs-actions';
+   action(nav,'documentActivityComparePrevious','Previous comparison rows',()=>{comparePage--;paint();}).disabled=!!pending||comparePage===0;
+   notice(nav,(comparison.rows.length?start+1:0)+'–'+end+' of '+comparison.rows.length+' comparison rows');
+   action(nav,'documentActivityCompareNext','Next comparison rows',()=>{comparePage++;paint();}).disabled=!!pending||end===comparison.rows.length;
+  }
+  function paint(){
+   button.disabled=!ready();button.setAttribute('aria-expanded',String(opened&&ready()));
+   if(!opened||!ready()){clear();return;}
+   const active=document.activeElement,focusId=host.contains?.(active)?active.id:null;
+   host.replaceChildren();host.hidden=false;
+   const toolbar=make('div',host);toolbar.className='code-docs-actions';
+   select(toolbar,'documentActivitySection','Activity section',[['comments','Comments'],['revisions','Changes'],['review','Review & releases']],section,changeSection);
+   if(section==='comments')select(toolbar,'documentActivityFilter','Comment filter',[['all','All'],['open','Open'],['resolved','Resolved']],filter,changeFilter);
+   if(section==='revisions'){if(context.readonly)against='saved';select(toolbar,'documentActivityAgainst','Compare revision against',[['saved','Saved current content'],...(!context.readonly?[['working','Working content'+(context.dirty?' · Unsaved':' · No unsaved edits')]]:[])],against,value=>{against=value;retire();paint();});}
+   notice(host,'Recorded activity · '+(context.readonly?'Read only':'Working window')+' · Saved version '+context.version.slice(0,12)+'…'+(context.dirty?' · Unsaved changes remain in this window.':' · No unsaved changes reported.'),'documentActivityContext');
+   notice(host,'Review, release, author, timestamp and fingerprint values are recorded claims, not independently verified approvals, signatures or tests. Unknown fields remain in Preserved fields and the exact archive.');
+   const page=model.page(context.document,{section,filter,cursor,limit:20});
+   if(page?.ok!==true){notice(host,'Activity unavailable · '+code(page?.code)+' · Original records remain in Preserved fields.','documentActivityPageNotice');return;}
+   const list=make('div',host);list.id='documentActivityRows';
+   for(const row of page.rows){
+    const card=make('section',list);card.dataset.activityPosition=String(row.position);card.dataset.activityKind=row.kind;
+    make('h3',card,row.title);if(row.kind==='comment')notice(card,'Recorded resolution: '+row.state);
+    if(row.kind==='revision'&&Number.isSafeInteger(row.blockCount))notice(card,row.blockCount+' captured blocks');
+    const fields=make('dl',card);for(const field of row.fields){make('dt',fields,field.key);make('dd',fields,field.text);if(field.truncated)notice(fields,'Shortened display · Full recorded value remains in Preserved fields.');}
+    if(row.kind==='comment'&&row.blockId)action(card,'documentActivityJump'+row.position,'Jump to block',()=>perform('jump',row.blockId));
+    if(row.kind==='revision'){const compare=action(card,'documentActivityCompare'+row.position,'Compare revision',()=>perform('compare',{position:row.position,against}));compare.disabled=!!pending||row.canCompare!==true;if(row.canCompare!==true)notice(card,'Comparison unavailable for this recorded block set or its block limit.');}
+   }
+   if(!page.rows.length)notice(host,'No matching records on this scanned page.');
+   notice(host,page.total+' source positions · Scanned '+page.scanned+' from position '+cursor+(page.limited?' · Display or scan limit reached; full records are retained.':''),'documentActivityPageNotice');
+   const nav=make('div',host);nav.className='code-docs-actions';
+   action(nav,'documentActivityPrevious','Previous records',()=>{cursor=previous.pop();retire();paint();}).disabled=!!pending||!previous.length;
+   action(nav,'documentActivityNext','Next records',()=>{previous.push(cursor);cursor=page.nextCursor;retire();paint();}).disabled=!!pending||page.nextCursor===null;
+   paintComparison();
+   if(focusId){const find=node=>node.id===focusId?node:Array.from(node.children).map(find).find(Boolean);find(host)?.focus({preventScroll:true});}
+  }
+  const toggle=()=>{if(!ready())return;opened=!opened;if(!opened)retire();paint();};
+  button.addEventListener('pointerdown',preserve);button.addEventListener('click',toggle);clear();button.disabled=true;
+  return Object.freeze({
+   setContext(value){if(disposed)return;retire();context=value?.document&&typeof value.document.id==='string'&&hash(value.version)&&hash(value.sha256)&&typeof value.dirty==='boolean'&&typeof value.readonly==='boolean'?{document:value.document,version:value.version,sha256:value.sha256,dirty:value.dirty,readonly:value.readonly}:null;cursor=0;previous=[];paint();},
+   updateState({dirty}={}){if(disposed)return;if(context&&typeof dirty==='boolean')context.dirty=dirty;retire();paint();},
+   invalidate(){if(disposed)return;retire();context=null;opened=false;clear();button.disabled=true;},
+   pause(){if(disposed)return;paused=true;retire();clear();button.disabled=true;},
+   resume(){if(disposed)return;paused=false;paint();},
+   dispose(){if(disposed)return;disposed=true;paused=true;retire();context=null;opened=false;clear();button.disabled=true;button.removeEventListener('pointerdown',preserve);button.removeEventListener('click',toggle);},
+  });
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value),uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(value);
+ const extensions={html:'html',markdown:'md',json:'json'};
+ window.SirenNativeDocsExportView=Object.freeze({create({button,revealButton,getContext,isReady,onStatus,bridge}){
+  let paused=false,disposed=false,pending=null,generation=0,receipt=null,picker=null,format=null,confirm=null,cancel=null,disclosure=null;
+  const context=()=>{const value=getContext();return value&&typeof value.documentId==='string'&&hash(value.version)&&hash(value.sha256)&&Number.isSafeInteger(value.projectRevision)&&value.projectRevision>=1?value:null;};
+  const available=()=>!paused&&!disposed&&!pending&&isReady()&&context();
+  const update=()=>{button.disabled=!available();revealButton.hidden=!receipt||paused||disposed;revealButton.disabled=!!pending||paused||disposed;};
+  const close=()=>{if(picker?.open)picker.close();};
+  const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
+  const say=text=>{if(!paused&&!disposed)onStatus(text);};
+  const valid=(value,own,selected)=>value?.ok===true&&uuid(value.exportId)&&(value.filename==='document-'+value.exportId+'.'+extensions[selected]||selected==='markdown'&&value.filename==='document-'+value.exportId+'.zip')&&value.format===selected&&value.entityId===own.documentId&&value.version===own.version&&value.entitySha256===own.sha256&&hash(value.sha256)&&Number.isSafeInteger(value.bytes)&&value.bytes>0&&value.bytes<=16*1024*1024&&Number.isSafeInteger(value.projectRevision)&&value.projectRevision>=own.projectRevision;
+  const submit=()=>{
+   if(!available()||!picker?.open||!Object.hasOwn(extensions,format.value))return;
+   const own=context(),selected=format.value,token=generation;close();receipt=null;say('Exporting the saved document · Unsaved changes stay in this window.');
+   const task=Promise.resolve().then(async()=>{try{
+    const result=await bridge.exportSaved({format:selected,expectedVersion:own.version,expectedSha256:own.sha256});
+    if(disposed||paused||generation!==token)return;
+    if(!valid(result,own,selected)){say(result?.code==='DOCUMENT_VERSION_CHANGED'?'The saved document changed. Refresh or save explicitly before exporting. Your local changes are retained.':result?.code==='EXPORT_BUDGET'||result?.code==='DOCUMENT_BUDGET'?'This document exceeds the export limit. Your data and local changes are retained.':'Export could not be confirmed. Your document and local changes are retained.');return;}
+    receipt={exportId:result.exportId};say('Saved document exported · '+selected.toUpperCase()+' · Saved diagram snapshots included when present; other links remain references.'+(own.dirty?' Unsaved changes remain here; save explicitly to include them.':''));
+   }catch{if(!disposed&&!paused&&generation===token)say('Export could not be confirmed. Your document and local changes are retained.');}
+   finally{if(pending===task)pending=null;update();}});pending=task;update();
+  };
+  const open=()=>{
+   if(!available())return false;
+   if(!picker){
+    picker=make('dialog',document.body);picker.id='documentExportPicker';picker.className='code-docs-dialog';picker.setAttribute('aria-labelledby','documentExportTitle');
+    make('h2',picker,'Export saved document').id='documentExportTitle';disclosure=make('p',picker);disclosure.id='documentExportDisclosure';
+    const label=make('label',picker,'Format');format=make('select',label);format.id='documentExportFormat';format.setAttribute('aria-label','Document export format');
+    for(const [value,title]of [['html','HTML · Standalone reading page'],['markdown','Markdown · ZIP with diagram assets when present'],['json','JSON · Exact document data']]){const option=make('option',format,title);option.value=value;}format.value='html';
+    make('p',picker,'All formats preserve the exact saved fields in an archive. Images are described and retained as data. PDF, Office and single-document reimport are not available in this export.');
+    const actions=make('div',picker);actions.className='code-docs-actions';cancel=make('button',actions,'Cancel');cancel.id='documentExportCancel';cancel.type='button';cancel.addEventListener('click',close);confirm=make('button',actions,'Export saved');confirm.id='documentExportConfirm';confirm.type='button';confirm.addEventListener('click',submit);
+   }
+   disclosure.textContent=(context().dirty?'Unsaved changes are open. This exports the saved version; save explicitly first to include your edits. ':'This exports the saved version. ')+'Inserted diagram snapshots are included. Other linked code, diagrams and documents remain references only. Use a project backup to include linked assets.';
+   picker.showModal();return true;
+  };
+  const reveal=()=>{
+   if(!available()||!receipt)return;const own=receipt,token=generation;
+   const task=Promise.resolve().then(async()=>{try{const result=await bridge.revealExport({exportId:own.exportId});if(disposed||paused||token!==generation)return;if(result?.ok!==true){receipt=null;say('The export is no longer available to this window, or its file changed. Your document is retained.');}}catch{if(!disposed&&!paused&&token===generation){receipt=null;say('The export could not be shown. Your document is retained.');}}finally{if(pending===task)pending=null;update();}});pending=task;update();
+  };
+  const key=event=>{if((event.ctrlKey||event.metaKey)&&event.shiftKey&&!event.altKey&&!event.isComposing&&event.key.toLowerCase()==='e'){event.preventDefault();if(!event.repeat)open();}};
+  button.addEventListener('click',open);revealButton.addEventListener('click',reveal);window.addEventListener?.('keydown',key);update();
+  return Object.freeze({open,update,reset(){generation++;receipt=null;close();update();},async pause(){paused=true;generation++;receipt=null;close();update();if(pending)await pending;},resume(){if(!disposed){paused=false;update();}},dispose(){disposed=true;paused=true;generation++;receipt=null;close();picker?.remove();button.removeEventListener('click',open);revealButton.removeEventListener('click',reveal);window.removeEventListener?.('keydown',key);update();}});
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const roles=Object.freeze({code:'⌘ Code',docs:'Docs',diagram:'Diagrams'});
+ const label=(value,fallback)=>{
+  if(typeof value!=='string')return fallback;
+  const cleaned=value.slice(0,1024).toWellFormed().replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,' ').replace(/\s+/g,' ').trim();
+  const short=cleaned.slice(0,120);return (/[\uD800-\uDBFF]$/.test(short)?short.slice(0,-1):short)||fallback;
+ };
+ function clear(role){const title=roles[role];if(!title)return;document.title='SIREN — '+title;const heading=document.getElementById('viewTitle');if(heading){heading.textContent=title;heading.title='';}}
+ function set({role,name,version,revision,readonly,dirty=false}){
+  const title=roles[role];if(!title)return;
+  const text=label(name,title),versionText=Number.isSafeInteger(version)&&version>0?' · v'+version:Number.isSafeInteger(revision)&&revision>0?' · r'+revision:'';
+  document.title='SIREN — '+title+' — '+text+versionText+' · '+(readonly?'Read only':'Working copy')+(dirty&&!readonly?' · Unsaved':'');
+  const heading=document.getElementById('viewTitle');if(heading){heading.textContent=title+' · '+text;heading.title=document.title;}
+ }
+ window.SirenNativeViewIdentity=Object.freeze({set,clear});
+})();
+
+(() => {
+  var __defProp = Object.defineProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+
+  // src/documents/context.mjs
+  var context_exports = {};
+  __export(context_exports, {
+    applyDocumentContext: () => applyDocumentContext,
+    dataFlags: () => dataFlags,
+    documentContextDelta: () => documentContextDelta,
+    documentTypes: () => documentTypes,
+    isWholeReference: () => isWholeReference,
+    normalizeDocumentContext: () => normalizeDocumentContext,
+    oversightModes: () => oversightModes
+  });
+  var refuse = (code) => {
+    throw Object.assign(Error(code), { code });
+  };
+  var documentTypes = Object.freeze(["agent-spec", "narrative", "control", "note"]);
+  var oversightModes = Object.freeze(["always", "conditional", "no", "unknown"]);
+  var dataFlags = Object.freeze(["yes", "no", "possible", "unknown"]);
+  var object = (v) => v && typeof v === "object" && !Array.isArray(v) && [Object.prototype, null].includes(Object.getPrototypeOf(v));
+  function fields(value, allowed) {
+    if (!object(value)) refuse("CONTEXT_REFUSED");
+    const descriptors = Object.getOwnPropertyDescriptors(value), keys = Reflect.ownKeys(descriptors);
+    if (!keys.length || keys.length > allowed.length || keys.some((k) => typeof k !== "string" || !allowed.includes(k) || !descriptors[k].enumerable || !Object.hasOwn(descriptors[k], "value"))) refuse("CONTEXT_REFUSED");
+    return Object.fromEntries(keys.map((k) => [k, descriptors[k].value]));
+  }
+  var text = (v, max, trim = false) => {
+    if (typeof v !== "string" || !v.isWellFormed() || v.length > max || trim && v !== v.trim()) refuse("CONTEXT_REFUSED");
+    return v;
+  };
+  function agentPatch(value) {
+    const result = fields(value, ["agentId", "agentVersion", "platform", "environment", "oversight", "data"]);
+    for (const [key, max] of [["agentId", 40], ["agentVersion", 40], ["platform", 80], ["environment", 120]]) if (Object.hasOwn(result, key)) text(result[key], max, ["agentId", "agentVersion"].includes(key));
+    for (const [group, allowed, enums] of [["oversight", ["mode", "how", "exceptions"], { mode: oversightModes }], ["data", ["types", "confidential", "personal", "sensitive", "restrictions"], { confidential: dataFlags, personal: dataFlags, sensitive: dataFlags }]]) if (Object.hasOwn(result, group)) {
+      result[group] = fields(result[group], allowed);
+      for (const [key, v] of Object.entries(result[group])) if (enums[key]) {
+        if (!enums[key].includes(v)) refuse("CONTEXT_REFUSED");
+      } else text(v, 2e3);
+    }
+    return result;
+  }
+  var referenceKey = (r) => r.kind + ":" + r.id;
+  function referenceOperations(value) {
+    const result = fields(value, ["add", "remove"]), seen = /* @__PURE__ */ new Set();
+    for (const operation of Object.keys(result)) {
+      const list = result[operation];
+      if (!Array.isArray(list) || Object.getPrototypeOf(list) !== Array.prototype || list.length > 60) refuse("CONTEXT_REFUSED");
+      result[operation] = Array.from({ length: list.length }, (_, i) => {
+        const d = Object.getOwnPropertyDescriptor(list, i);
+        if (!d || !Object.hasOwn(d, "value")) refuse("CONTEXT_REFUSED");
+        const ref = fields(d.value, ["kind", "id"]);
+        if (Object.keys(ref).length !== 2 || !["diagram", "document"].includes(ref.kind) || typeof ref.id !== "string" || !/^[A-Za-z0-9_-]{1,120}$/.test(ref.id) || seen.has(referenceKey(ref))) refuse("CONTEXT_REFUSED");
+        seen.add(referenceKey(ref));
+        return ref;
+      });
+    }
+    if (!Object.values(result).some((v) => v.length)) refuse("CONTEXT_REFUSED");
+    return result;
+  }
+  function normalizeDocumentContext(value) {
+    const result = fields(value, ["type", "owner", "agent", "references"]);
+    if (Object.hasOwn(result, "type") && !documentTypes.includes(result.type)) refuse("CONTEXT_REFUSED");
+    if (Object.hasOwn(result, "owner")) text(result.owner, 80);
+    if (Object.hasOwn(result, "agent")) result.agent = agentPatch(result.agent);
+    if (Object.hasOwn(result, "references")) result.references = referenceOperations(result.references);
+    return result;
+  }
+  function isWholeReference(link) {
+    return link && ["diagram", "document"].includes(link.kind) && (link.kind === "diagram" ? !link.nodeId : !link.blockId) && typeof (link.diagramId ?? link.documentId) === "string";
+  }
+  function applyDocumentContext(before, input, { targets } = {}) {
+    const patch = normalizeDocumentContext(input), next = structuredClone(before);
+    for (const key of ["type", "owner"]) if (Object.hasOwn(patch, key)) next[key] = patch[key];
+    if (patch.agent) {
+      if (before.agent != null && !object(before.agent)) refuse("CONTEXT_REFUSED");
+      const agent = next.agent ?? {};
+      for (const [key, value] of Object.entries(patch.agent)) if (["oversight", "data"].includes(key)) {
+        if (agent[key] != null && !object(agent[key])) refuse("CONTEXT_REFUSED");
+        agent[key] = { ...agent[key] ?? {}, ...value };
+      } else agent[key] = value;
+      const answered = Object.entries(patch.agent).flatMap(([key, v]) => ["oversight", "data"].includes(key) ? Object.keys(v).map((k) => key + "." + k) : [key]);
+      if (Array.isArray(agent.incompleteFields)) agent.incompleteFields = agent.incompleteFields.filter((k) => !answered.includes(k));
+      next.agent = agent;
+    }
+    if (patch.references) {
+      if (before.links !== void 0 && !Array.isArray(before.links)) refuse("CONTEXT_REFUSED");
+      let links = structuredClone(before.links ?? []);
+      for (const r of patch.references.remove ?? []) links = links.filter((link) => !(isWholeReference(link) && link.kind === r.kind && (link.diagramId ?? link.documentId) === r.id));
+      for (const r of patch.references.add ?? []) {
+        if (r.kind === "document" && r.id === before.id) refuse("REFERENCE_TARGET_REFUSED");
+        if (targets && (!Array.isArray(targets[r.kind === "diagram" ? "diagrams" : "workpapers"]) || targets[r.kind === "diagram" ? "diagrams" : "workpapers"].filter((t) => t?.id === r.id).length !== 1)) refuse("REFERENCE_TARGET_REFUSED");
+        if (links.some((link) => isWholeReference(link) && link.kind === r.kind && (link.diagramId ?? link.documentId) === r.id)) continue;
+        links.push(r.kind === "diagram" ? { kind: r.kind, diagramId: r.id, nodeId: "", label: "", dangling: false } : { kind: r.kind, documentId: r.id, blockId: "", label: "", dangling: false });
+      }
+      if (links.length > 60) refuse("REFERENCE_BUDGET");
+      next.links = links;
+    }
+    return next;
+  }
+  function documentContextDelta(before, next) {
+    const patch = {};
+    for (const key of ["type", "owner"]) if (next[key] !== before[key] && Object.hasOwn(next, key)) patch[key] = next[key];
+    const agent = {};
+    for (const key of ["agentId", "agentVersion", "platform", "environment", "oversight", "data"]) {
+      const previous = before.agent?.[key], value = next.agent?.[key];
+      if (["oversight", "data"].includes(key)) {
+        const group = {};
+        for (const name of key === "oversight" ? ["mode", "how", "exceptions"] : ["types", "confidential", "personal", "sensitive", "restrictions"]) if (value && Object.hasOwn(value, name) && (value[name] !== previous?.[name] || before.agent?.incompleteFields?.includes(key + "." + name) && !next.agent?.incompleteFields?.includes(key + "." + name))) group[name] = value[name];
+        if (Object.keys(group).length) agent[key] = group;
+      } else if (next.agent && Object.hasOwn(next.agent, key) && (value !== previous || before.agent?.incompleteFields?.includes(key) && !next.agent?.incompleteFields?.includes(key))) agent[key] = value;
+    }
+    if (Object.keys(agent).length) patch.agent = agent;
+    const entries = (v) => new Map((Array.isArray(v.links) ? v.links : []).filter(isWholeReference).map((link) => [link.kind + ":" + (link.diagramId ?? link.documentId), { kind: link.kind, id: link.diagramId ?? link.documentId }]));
+    const old = entries(before), current = entries(next), add = [...current].filter(([k]) => !old.has(k)).map(([, v]) => v), remove = [...old].filter(([k]) => !current.has(k)).map(([, v]) => v);
+    if (add.length || remove.length) patch.references = { ...add.length ? { add } : {}, ...remove.length ? { remove } : {} };
+    return patch;
+  }
+
+  // src/documents/images.mjs
+  var images_exports = {};
+  __export(images_exports, {
+    DOCUMENT_IMAGE_IMPORT_BYTES: () => DOCUMENT_IMAGE_IMPORT_BYTES,
+    editDocumentImage: () => editDocumentImage,
+    inspectDocumentImage: () => inspectDocumentImage
+  });
+  var DOCUMENT_IMAGE_IMPORT_BYTES = 512 * 1024;
+  function inspectDocumentImage(value, { maxBytes = 2 * 1024 * 1024 } = {}) {
+    const no = { ok: false };
+    if (typeof value !== "string" || value.length > Math.ceil(maxBytes / 3) * 4 + 80) return no;
+    const match = /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+    if (!match || match[2].length % 4) return no;
+    const payload = match[2], bytes = payload.length / 4 * 3 - (payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0);
+    if (bytes > maxBytes) return no;
+    try {
+      const head = atob(payload.slice(0, 32)), tail = atob(payload.slice(-32)), u = (i) => head.charCodeAt(i);
+      if (match[1] === "image/png") {
+        if (bytes < 33 || [137, 80, 78, 71, 13, 10, 26, 10].some((v, i) => u(i) !== v) || !tail.endsWith("IEND\xAEB`\x82")) return no;
+        const header = atob(payload.slice(0, 48)), n = (at) => header.charCodeAt(at) * 16777216 + header.charCodeAt(at + 1) * 65536 + header.charCodeAt(at + 2) * 256 + header.charCodeAt(at + 3), w = n(16), h = n(20);
+        if (header.slice(12, 16) !== "IHDR" || !w || !h || w * h > 16 * 1024 * 1024) return no;
+      } else {
+        if (bytes < 4 || u(0) !== 255 || u(1) !== 216 || u(2) !== 255 || !tail.endsWith("\xFF\xD9")) return no;
+        const raw = atob(payload), b = (i) => raw.charCodeAt(i);
+        let at = 2, found = false;
+        while (at + 3 < raw.length) {
+          if (b(at++) !== 255) return no;
+          while (b(at) === 255) at++;
+          const marker = b(at++);
+          if (marker === 217 || marker === 218) break;
+          if (marker === 1 || marker >= 208 && marker <= 215) continue;
+          const length = b(at) * 256 + b(at + 1);
+          if (length < 2 || at + length > raw.length) return no;
+          if ([192, 193, 194, 195, 197, 198, 199, 201, 202, 203, 205, 206, 207].includes(marker)) {
+            if (found || length < 8) return no;
+            const h = b(at + 3) * 256 + b(at + 4), w = b(at + 5) * 256 + b(at + 6);
+            if (!w || !h || w * h > 16 * 1024 * 1024) return no;
+            found = true;
+          }
+          at += length;
+        }
+        if (!found) return no;
+      }
+      return { ok: true, mime: match[1], bytes };
+    } catch {
+      return no;
+    }
+  }
+  function editDocumentImage(before, changes) {
+    const fail = () => {
+      throw Error("DOCUMENT_IMAGE_REFUSED");
+    };
+    if (!before || before.kind !== "image" || typeof before.id !== "string" || !changes || typeof changes !== "object" || Array.isArray(changes)) fail();
+    const descriptors = Object.getOwnPropertyDescriptors(changes), keys = Reflect.ownKeys(descriptors);
+    if (!keys.length || keys.some((k) => !["dataUri", "caption", "fileName"].includes(k) || !descriptors[k].enumerable || !Object.hasOwn(descriptors[k], "value"))) fail();
+    for (const key of keys) {
+      const v = descriptors[key].value;
+      if (typeof v !== "string" || !v.isWellFormed() || key === "dataUri" && !inspectDocumentImage(v).ok || key === "caption" && v.length > 1e3 || key === "fileName" && v.length > 160) fail();
+    }
+    return { ...structuredClone(before), ...Object.fromEntries(keys.map((k) => [k, descriptors[k].value])) };
+  }
+
+  // <stdin>
+  window.SirenDocumentImages = Object.freeze(images_exports);
+  window.SirenDocumentContext = Object.freeze(context_exports);
+})();
+
+(()=>{'use strict';
+ const make=(tag,parent,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;parent.append(n);return n;};let sheet=null;
+ window.SirenDocsContext=Object.freeze({close(){sheet?.close();},open({draft,canEdit,onChange}){
+  if(sheet?.open||!draft)return;const base=draft.getDocument(),baseVersion=draft.getStatus().version,dialog=make('dialog',document.body);sheet=dialog;dialog.className='siren-context-sheet';dialog.setAttribute('aria-labelledby','docsContextTitle');
+  make('h2',dialog,'Document context').id='docsContextTitle';make('p',dialog,'Describe the agent, its boundaries and its references. Apply to draft adds your changes; Save document commits them together. Closing or locking cancels unapplied changes. Saving context starts a new Undo history.').className='document-caption';
+  const form=make('form',dialog),fields=make('div',form);fields.className='context-fields';const patch={};
+  const savedCurrent=()=>draft.getStatus().version===baseVersion;
+  const allowed=()=>sheet===dialog&&dialog.open&&!draft.getStatus().disposed&&savedCurrent()&&canEdit();
+  const set=(path,v)=>{let p=patch;for(const k of path.slice(0,-1))p=p[k]??={};p[path.at(-1)]=v;};
+  const input=(parent,title,path,value,max,choices)=>{const label=make('label',parent,title),n=make(choices?'select':max>180?'textarea':'input',label);n.dataset.contextField=path.join('.');const initial=typeof value==='string'?value:'';
+   if(choices){if(initial&&!choices.includes(initial)){const option=make('option',n,initial+' · Imported');option.value=initial;option.disabled=true;}for(const v of choices){const o=make('option',n,v||'Not specified');o.value=v;}}
+   else n.maxLength=max;n.value=initial;n.disabled=!canEdit();n.addEventListener('input',()=>{if(allowed()&&(!choices||choices.includes(n.value)))set(path,['agentId','agentVersion'].includes(path.at(-1))?n.value.trim():n.value);});return n;};
+  input(fields,'Document type',['type'],base.type,20,window.SirenDocumentContext.documentTypes);input(fields,'Owner',['owner'],base.owner,80);
+  make('p',form,'Review status · '+(base.status??'Unknown')+' · Context edits do not approve this document.').className='document-caption';
+  const agent=make('details',form);agent.open=true;make('summary',agent,'Agent identity');const identity=make('div',agent);identity.className='context-fields';
+  for(const [key,title,max]of [['agentId','Agent ID',40],['agentVersion','Version',40],['platform','Platform',80],['environment','Environment',120]])input(identity,title,['agent',key],base.agent?.[key],max);
+  const oversight=make('details',form);make('summary',oversight,'Human oversight');input(oversight,'When review is needed',['agent','oversight','mode'],base.agent?.oversight?.mode??'unknown',20,window.SirenDocumentContext.oversightModes);for(const [k,title]of [['how','How review works'],['exceptions','Exceptions']])input(oversight,title,['agent','oversight',k],base.agent?.oversight?.[k],2000);
+  const data=make('details',form);make('summary',data,'Data and restrictions');input(data,'Data types',['agent','data','types'],base.agent?.data?.types,2000);for(const k of ['confidential','personal','sensitive'])input(data,k[0].toUpperCase()+k.slice(1)+' data',['agent','data',k],base.agent?.data?.[k]??'unknown',20,window.SirenDocumentContext.dataFlags);input(data,'Restrictions',['agent','data','restrictions'],base.agent?.data?.restrictions,2000);
+  const refs=make('details',form);make('summary',refs,'References');const list=make('div',refs),hint=make('p',refs);hint.setAttribute('role','status');let add=[],remove=[];
+  const renderLinks=()=>{list.replaceChildren();for(const [index,link]of (base.links??[]).entries()){const key={kind:link.kind,id:link.diagramId??link.documentId},row=make('div',list);row.className='context-reference';make('span',row,link.label||key.id||'Imported reference');const whole=window.SirenDocumentContext.isWholeReference(link);
+   if(whole){const open=make('button',row,'Open saved');open.type='button';open.disabled=draft.getStatus().dirty;open.title=open.disabled?'Save the document before opening its saved references':'';open.addEventListener('click',async()=>{if(sheet!==dialog||!dialog.open||draft.getStatus().dirty||draft.getStatus().paused||draft.getStatus().pending||draft.getStatus().disposed)return;if(!savedCurrent()){hint.textContent='Saved document changed. Close and reopen Context to use its current references. Your unapplied values are retained here.';return;}open.disabled=true;try{const result=await window.sirenDocsReferences.openReference({index,expectedDocumentVersion:baseVersion});if(sheet===dialog&&dialog.open)hint.textContent=result?.ok?'Opened in a separate window.':'Reference could not open. Refresh the saved document if it changed.';}catch{if(sheet===dialog&&dialog.open)hint.textContent='Reference could not open.';}finally{if(sheet===dialog&&dialog.open)open.disabled=draft.getStatus().dirty||draft.getStatus().paused;}});
+    const del=make('button',row,remove.some(v=>v.kind===key.kind&&v.id===key.id)?'Keep':'Remove');del.type='button';del.disabled=!canEdit();del.addEventListener('click',()=>{if(!allowed())return;const i=remove.findIndex(v=>v.kind===key.kind&&v.id===key.id);if(i>=0)remove.splice(i,1);else remove.push(key);renderLinks();});}
+   else make('small',row,'Imported block/node reference · Preserved');}
+   for(const ref of add){const row=make('div',list);row.className='context-reference';make('span',row,ref.id+' · New reference');const undo=make('button',row,'Remove');undo.type='button';undo.disabled=!canEdit();undo.addEventListener('click',()=>{if(allowed()){add=add.filter(v=>v!==ref);renderLinks();}});}};
+  renderLinks();let loading=false,cursor=0,searchGeneration=0,boundQuery=null,pendingSearch=false;const finder=make('div',refs);finder.className='context-reference';const query=make('input',finder);query.type='search';query.maxLength=160;query.placeholder='Find a document or diagram';query.setAttribute('aria-label','Reference target name');const find=make('button',finder,'Find'),more=make('button',finder,'More');find.type=more.type='button';more.hidden=true;find.disabled=query.disabled=!canEdit();const targets=make('div',refs);
+  const load=async(reset)=>{if(!allowed())return;if(loading){if(reset)pendingSearch=true;return;}const requestedQuery=query.value.trim();if(boundQuery!==requestedQuery)reset=true;const token=++searchGeneration;loading=true;pendingSearch=false;find.disabled=more.disabled=true;if(reset){cursor=0;boundQuery=null;more.hidden=true;targets.replaceChildren();}const current=()=>allowed()&&token===searchGeneration&&query.value.trim()===requestedQuery;try{const result=await window.sirenDocsReferences.getTargets({cursor,query:requestedQuery});if(!current())return;if(!result?.ok){hint.textContent='Targets could not load. Your changes are retained.';return;}if(result.version!==baseVersion){hint.textContent='Saved document changed. Save or refresh before adding references.';return;}
+    for(const item of result.items){const button=make('button',targets,item.label+' · '+item.kind);button.type='button';button.dataset.referenceTarget=item.id;button.addEventListener('click',()=>{if(!allowed())return;if(add.some(v=>v.id===item.id&&v.kind===item.kind)||(base.links??[]).some(v=>window.SirenDocumentContext.isWholeReference(v)&&v.kind===item.kind&&(v.diagramId??v.documentId)===item.id)){hint.textContent='This reference is already included.';return;}if((base.links??[]).length-remove.length+add.length>=60){hint.textContent='Up to 60 references can be saved.';return;}add.push({kind:item.kind,id:item.id});renderLinks();hint.textContent='Reference added to this draft.';});}
+    cursor=result.nextCursor;boundQuery=requestedQuery;more.hidden=!result.hasMore;hint.textContent=result.items.length?'Choose a reference.': 'No matching documents or diagrams.';
+   }catch{if(current())hint.textContent='Targets could not load.';}finally{loading=false;if(allowed()){find.disabled=more.disabled=false;if(pendingSearch)void load(true);}}};find.addEventListener('click',()=>void load(true));more.addEventListener('click',()=>void load(false));query.addEventListener('input',()=>{if(!allowed())return;searchGeneration++;cursor=0;boundQuery=null;more.hidden=true;targets.replaceChildren();hint.textContent='';if(loading)pendingSearch=true;});query.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();void load(true);}});
+  const actions=make('div',form);actions.className='context-actions';const done=make('button',actions,canEdit()?'Cancel':'Done');done.type='button';done.addEventListener('click',()=>dialog.close());if(canEdit()){const apply=make('button',actions,'Apply to draft');apply.type='submit';apply.id='applyDocumentContext';form.addEventListener('submit',e=>{e.preventDefault();if(!allowed()){if(!savedCurrent())hint.textContent='Saved document changed. Your unapplied values are retained here; close and reopen Context before applying changes.';return;}if(add.length||remove.length)patch.references={...(add.length?{add}:{}),...(remove.length?{remove}:{})};if(!Object.keys(patch).length){dialog.close();return;}const result=draft.setContext(patch);if(!result.ok){hint.textContent='Context refused. Check values; previous content is retained.';return;}dialog.close();onChange();});}else form.addEventListener('submit',e=>e.preventDefault());
+  dialog.addEventListener('close',()=>{if(sheet===dialog)sheet=null;dialog.remove();},{once:true});dialog.showModal();
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const tags=new Set('P BR STRONG B EM I U UL OL LI H1 H2 H3 SPAN DIV'.split(' '));
+ const classNames=new Set('wp-c-accent wp-c-muted wp-c-red wp-c-orange wp-c-amber wp-c-olive wp-c-green wp-c-teal wp-c-blue wp-c-indigo wp-c-purple wp-c-pink wp-c-brown wp-hl-yellow wp-hl-orange wp-hl-green wp-hl-teal wp-hl-blue wp-hl-purple wp-hl-pink wp-hl-grey'.split(' '));
+ const textClasses=value=>{if(typeof value!=='string'||!value)return null;const parts=value.split(' ');return parts.every(name=>classNames.has(name))?parts:null;};
+ const color=value=>typeof value==='string'&&/^(?:#[a-f0-9]{3}(?:[a-f0-9]{3})?|(?:rgb|rgba)\([\d.,%\s]+\)|black|white|red|green|blue|purple|orange|gray)$/i.test(value.trim())?value.trim():null;
+ const styleColor=value=>{const match=typeof value==='string'&&/^\s*color\s*:\s*([^;]+)\s*;?\s*$/i.exec(value);return match?color(match[1]):null;};
+ function inspect(value,doc=document){
+  if(typeof value!=='string'||value.length>131072||!value.isWellFormed())return {ok:false};
+  const template=doc.createElement('template');template.innerHTML=value;let nodes=0;
+  const safe=(node,depth)=>{
+   if(++nodes>4096||depth>32)return false;if(node.nodeType===3)return true;
+   if(node.nodeType!==1&&node.nodeType!==11)return false;
+   if(node.nodeType===1&&(!tags.has(node.nodeName)||Array.from(node.attributes).some(attr=>node.nodeName!=='SPAN'||attr.name!=='class'||!textClasses(attr.value))))return false;
+   return Array.from(node.childNodes).every(child=>safe(child,depth+1));
+  };
+  return safe(template.content,0)?{ok:true,html:template.innerHTML}:{ok:false};
+ }
+ const editable=block=>block?.kind==='text'&&typeof block.id==='string'&&Object.keys(block).every(key=>['id','kind','html','role'].includes(key))&&inspect(block.html).ok;
+ function render({parent,draft,index,canEdit,onRejected=()=>{}}){
+  const doc=parent.ownerDocument,original=draft.getContent().blocks[index];if(!editable(original))throw TypeError('Supported inert rich text required');
+  const make=(tag,holder,text)=>{const node=doc.createElement(tag);if(text!==undefined)node.textContent=text;holder.append(node);return node;};
+  const section=make('section',parent);section.className='document-rich';
+  const tools=make('div',section);tools.className='document-format-tools';tools.setAttribute('role','toolbar');tools.setAttribute('aria-label','Text formatting');
+  const editor=make('div',section);editor.className='document-rich-input';editor.dataset.richBlockId=original.id;editor.dataset.blockIndex=String(index);editor.setAttribute('role','textbox');editor.setAttribute('aria-label','Document text');editor.setAttribute('aria-multiline','true');editor.contentEditable='true';editor.innerHTML=original.html;let accepted=original.html;
+  const target=()=>{const state=draft.getStatus();if(!section.isConnected||!canEdit()||state.readonly||state.pending||state.paused||state.fenced||state.disposed)return null;const next=draft.getContent();return next.blocks[index]?.id===original.id?next:null;};
+  const commit=(group=true)=>{
+   const next=target(),checked=inspect(editor.innerHTML,doc);if(!next||!checked.ok){editor.innerHTML=accepted;onRejected();return false;}
+   next.blocks[index]={...next.blocks[index],html:checked.html};if(!draft.setContent(next,{historyGroup:group?'rich:'+original.id:null}).ok){editor.innerHTML=accepted;return false;}accepted=checked.html;return true;
+  };
+  const selection=()=>{const s=doc.getSelection();if(!s?.rangeCount)return null;const r=s.getRangeAt(0);return editor.contains(r.startContainer)&&editor.contains(r.endContainer)?{s,r}:null;};
+  const format=(tag,ink=null)=>{
+   if(!target())return;const selected=selection();if(!selected||selected.r.collapsed){onRejected('Select text to format.');return;}
+   const wrapper=doc.createElement(tag);if(ink)wrapper.className=ink;
+   const fragment=selected.r.extractContents();if(tag==='ul'||tag==='ol'){const item=doc.createElement('li');item.append(fragment);wrapper.append(item);}else wrapper.append(fragment);
+   selected.r.insertNode(wrapper);selected.r.selectNodeContents(wrapper);if(commit(false)){editor.focus({preventScroll:true});selected.s.removeAllRanges();selected.s.addRange(selected.r);}
+  };
+  for(const [label,tag,title] of [['B','strong','Bold · Ctrl+B'],['I','em','Italic · Ctrl+I'],['U','u','Underline · Ctrl+U'],['• List','ul','Bulleted list'],['1. List','ol','Numbered list']]){
+   const button=make('button',tools,label);button.type='button';button.className='document-edit';button.dataset.format=tag;button.title=title;button.setAttribute('aria-label',title);button.addEventListener('pointerdown',event=>event.preventDefault());button.addEventListener('click',()=>format(tag));
+  }
+  const clear=make('button',tools,'Clear block formatting');clear.type='button';clear.className='document-edit';clear.dataset.clearBlockFormatting=original.id;clear.title='Remove emphasis and colours from this text block; keep paragraphs, headings and lists';clear.addEventListener('pointerdown',event=>event.preventDefault());clear.addEventListener('click',()=>{if(!target())return;const checked=inspect(editor.innerHTML,doc);if(!checked.ok){onRejected('Formatting could not be removed. Previous text retained.');return;}const marks=Array.from(editor.querySelectorAll('strong,b,em,i,u,span'));if(!marks.length)return;for(const mark of marks.reverse())mark.replaceWith(...mark.childNodes);if(commit(false))editor.focus({preventScroll:true});});
+  const colors=make('details',tools),colourToggle=make('summary',colors,'Colour');colourToggle.addEventListener('pointerdown',event=>event.preventDefault());const palette=make('div',colors);palette.className='document-colour-options';
+  for(const name of ['accent','muted','red','orange','amber','olive','green','teal','blue','indigo','purple','pink','brown']){const ink='wp-c-'+name,button=make('button',palette,name[0].toUpperCase()+name.slice(1));button.type='button';button.className='document-edit';button.dataset.textColour=ink;button.addEventListener('pointerdown',event=>event.preventDefault());button.addEventListener('click',()=>{format('span',ink);colors.open=false;});}
+  editor.addEventListener('beforeinput',event=>{if(!target()||['insertFromPaste','insertFromDrop'].includes(event.inputType))event.preventDefault();});
+  editor.addEventListener('input',()=>commit());
+  editor.addEventListener('paste',event=>{event.preventDefault();if(!target())return;const value=event.clipboardData?.getData('text/plain');if(typeof value!=='string'||!value.isWellFormed()){onRejected('Paste contains invalid text. Previous content retained.');return;}if(value.length>131072){onRejected('Paste is too large for inline formatting. Use a plain text block or paste a smaller section.');return;}const selected=selection();if(!selected){onRejected('Place the cursor in this text block before pasting.');return;}selected.r.deleteContents();const node=doc.createTextNode(value);selected.r.insertNode(node);selected.r.setStartAfter(node);selected.r.collapse(true);selected.s.removeAllRanges();selected.s.addRange(selected.r);commit(false);});
+  editor.addEventListener('drop',event=>event.preventDefault());
+  editor.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey&&!event.isComposing){const tag={b:'strong',i:'em',u:'u'}[event.key.toLowerCase()];if(tag){event.preventDefault();if(!event.repeat)format(tag);}}});
+  return editor;
+ }
+ window.SirenNativeDocsRichText=Object.freeze({inspect,editable,render,color,styleColor,textClasses});
+})();
+
+(()=>{'use strict';const make=(tag,parent,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;parent.append(n);return n;};
+ window.SirenNativeDocsImages=Object.freeze({renderEditor({parent,draft,index,canEdit,onRejected,onRemove}){
+  const block=draft.getContent().blocks[index],guard=()=>{const s=draft.getStatus();return parent.isConnected&&canEdit()&&!s.pending&&!s.paused&&!s.fenced&&!s.disposed;};
+  const preview=make('figure',parent);preview.className='document-image';const img=make('img',preview);img.alt=block.caption||block.fileName||'Document image';const caption=make('figcaption',preview,block.fileName||'Image evidence');
+  const paint=value=>{const info=window.SirenDocumentImages.inspectDocumentImage(value);if(info.ok){img.src=value;img.hidden=false;}else{img.removeAttribute('src');img.hidden=true;caption.textContent='Image unavailable · Original fields retained';}};paint(block.dataUri);
+  const describe=()=>{const current=draft.getContent().blocks[index];img.alt=current.caption||current.fileName||'Document image';};
+  const write=changes=>{if(!guard())return false;try{const next=draft.getContent();if(next.blocks[index]?.id!==block.id)return false;next.blocks[index]=window.SirenDocumentImages.editDocumentImage(next.blocks[index],changes);if(new TextEncoder().encode(JSON.stringify(next)).length>2*1024*1024)throw Error('Document budget');const result=draft.setContent(next,{historyGroup:'image:'+block.id+':'+Object.keys(changes).join(',')});if(result?.ok===false)throw Error('Edit refused');return true;}catch{onRejected('Image edit refused. Previous content retained. PNG/JPEG imports: 512 KiB; complete document: 2 MiB.');return false;}};
+  const label=make('label',parent,'Image caption'),input=make('textarea',label);input.className='document-edit';input.maxLength=1000;input.rows=2;input.value=block.caption??'';input.dataset.imageCaption=block.id;input.addEventListener('input',()=>{if(write({caption:input.value}))describe();else input.value=draft.getContent().blocks[index]?.caption??'';});
+  const file=make('input',parent);file.type='file';file.accept='image/png,image/jpeg';file.className='document-edit';file.dataset.imageFile=block.id;file.setAttribute('aria-label','Replace image evidence');let serial=0;
+  file.addEventListener('change',async()=>{const selected=file.files?.[0],ticket=++serial,original=JSON.stringify(draft.getContent().blocks[index]);if(!selected||!guard())return;try{if(selected.size>window.SirenDocumentImages.DOCUMENT_IMAGE_IMPORT_BYTES)throw Error('Image too large');const bytes=new Uint8Array(await selected.arrayBuffer());if(bytes.length!==selected.size)throw Error('Incomplete image');let binary='';for(let at=0;at<bytes.length;at+=8192)binary+=String.fromCharCode(...bytes.subarray(at,at+8192));const png=bytes[0]===137,uri='data:image/'+(png?'png':'jpeg')+';base64,'+btoa(binary);if(!window.SirenDocumentImages.inspectDocumentImage(uri,{maxBytes:window.SirenDocumentImages.DOCUMENT_IMAGE_IMPORT_BYTES}).ok)throw Error('Invalid raster');const decoded=await createImageBitmap(new Blob([bytes]));const pixels=decoded.width*decoded.height;decoded.close();if(pixels>16*1024*1024)throw Error('Image dimensions');if(ticket!==serial||!guard()||JSON.stringify(draft.getContent().blocks[index])!==original)return;if(write({dataUri:uri,fileName:selected.name.slice(0,160)})){paint(uri);describe();caption.textContent=selected.name.slice(0,160);}}catch{if(ticket===serial&&guard())onRejected('Could not import image. Use a valid PNG/JPEG up to 512 KiB and 16 megapixels. Previous evidence retained.');}finally{if(file.isConnected)file.value='';}});
+  const remove=make('button',parent,'Remove image…');remove.type='button';remove.className='document-edit';remove.dataset.removeImage=block.id;remove.addEventListener('click',()=>{if(guard())onRemove();});
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const tags=new Set('P BR STRONG B EM I U S UL OL LI BLOCKQUOTE PRE CODE H1 H2 H3 H4 H5 H6 SPAN DIV'.split(' '));
+ const forbidden=new Set('SCRIPT STYLE IFRAME OBJECT EMBED LINK META SVG MATH FORM INPUT BUTTON VIDEO AUDIO'.split(' '));
+ const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
+ function html(parent,value){
+  if(value.length>131072){const plain=make('pre',parent,value.slice(0,24576));plain.className='document-reader-code';make('p',parent,'Large rich block · The exact saved content remains available in Preserved fields.').className='document-caption';return;}
+  const template=document.createElement('template');template.innerHTML=value;let count=0,truncated=false;
+  const copy=(node,target,depth)=>{
+   if(++count>4096||depth>32){truncated=true;return;}
+   if(node.nodeType===3){target.append(document.createTextNode(node.textContent));return;}
+   if(node.nodeType!==1&&node.nodeType!==11)return;
+   if(forbidden.has(node.nodeName))return;
+   const next=tags.has(node.nodeName)?make(node.nodeName.toLowerCase(),target):target;
+   const ink=window.SirenNativeDocsRichText?.styleColor(node.getAttribute?.('style'));if(next!==target&&ink)next.style.color=ink;
+   const classes=node.nodeName==='SPAN'?window.SirenNativeDocsRichText?.textClasses(node.getAttribute?.('class')):null;if(next!==target&&classes)next.className=classes.join(' ');
+   for(const child of node.childNodes)copy(child,next,depth+1);
+  };copy(template.content,parent,0);
+  if(truncated)make('p',parent,'Complex rich block · Display limited; saved content is unchanged.').className='document-caption';
+ }
+ function renderBlock(parent,block,diagramView){
+  const card=make('section',parent);card.className='document-reader-block';card.dataset.blockId=typeof block?.id==='string'?block.id:'';
+  if(block?.kind==='diagram-embed'&&diagramView){card.append(diagramView.render(block));return true;}
+  if(block?.kind==='heading'&&typeof block.text==='string'){make('h'+Math.max(2,Math.min(6,Number.isSafeInteger(block.level)?block.level:2)),card,block.text);return true;}
+  if(block?.kind==='text'&&typeof block.html==='string'){html(card,block.html);return true;}
+  if(block?.kind==='image'){
+   const figure=make('figure',card);figure.className='document-image';if(window.SirenDocumentImages?.inspectDocumentImage(block.dataUri).ok){const image=make('img',figure);image.src=block.dataUri;image.alt=block.caption||block.fileName||'Document image';image.loading='lazy';image.decoding='async';}else make('p',figure,'Image unavailable · Original evidence retained');if(block.caption||block.fileName)make('figcaption',figure,block.caption||block.fileName);return true;
+  }
+  if(block?.kind==='table'&&Array.isArray(block.rows)){
+   const table=make('table',card);table.className='document-reader-table';const body=make('tbody',table);let at=0;
+   const more=make('button',card,'More rows');more.type='button';
+   const extend=()=>{const end=Math.min(at+20,block.rows.length);for(let i=at;i<end;i++){const row=make('tr',body);for(const cell of (Array.isArray(block.rows[i])?block.rows[i]:[]).slice(0,32))make(i===0&&block.headerRow?'th':'td',row,typeof cell==='string'?cell:String(cell??''));}at=end;more.hidden=at===block.rows.length;};more.addEventListener('click',extend);extend();return true;
+  }
+  if(block?.kind==='checklist'&&Array.isArray(block.items)){
+   const list=make('ul',card);list.className='document-reader-checklist';for(const item of block.items.slice(0,40)){if(typeof item?.text!=='string')continue;const row=make('li',list);make('span',row,item.done?'✓':'○').setAttribute('aria-label',item.done?'Completed':'Open');make('span',row,item.text);}
+   if(block.items.length>40)make('p',card,'Additional checklist items are available in Preserved fields.').className='document-caption';return true;
+  }
+  if(block?.kind==='prompt'&&typeof block.text==='string'){
+   make('h3',card,block.label||'Agent instructions');const pre=make('pre',card);pre.className='document-reader-code';
+   const notice=make('p',card);notice.className='document-caption';const more=make('button',card,'More instructions');more.type='button';let end=0;
+   const extend=()=>{end=Math.min(end+24576,block.text.length);pre.textContent=block.text.slice(0,end);more.hidden=end===block.text.length;notice.textContent='Documented instructions · Not executed'+(more.hidden?'':' · Excerpt: '+end.toLocaleString()+' of '+block.text.length.toLocaleString()+' characters');};
+   more.addEventListener('click',extend);extend();return true;
+  }
+  make('h3',card,'Preserved block');make('p',card,'This block is retained exactly. Its original fields are available in Preserved fields.').className='document-caption';return true;
+ }
+ window.SirenNativeDocsReader=Object.freeze({render({parent,outline,blocks,diagramView}){
+  const cards=new Map();let page,holder,more,at=0;
+  function start(){if(page)return;page=make('section',parent);page.className='document-reader';page.setAttribute('aria-label','Document content');
+  const nav=make('button',outline,'Contents');nav.type='button';nav.addEventListener('click',()=>page.scrollIntoView({block:'start'}));
+  holder=make('div',page);more=make('button',page,'More document blocks');more.type='button';more.addEventListener('click',()=>extend());}
+  function extend(target=-1){start();const end=Math.min(Math.max(at+40,target+1),blocks.length);for(let index=at;index<end;index++){
+   const block=blocks[index];if(renderBlock(holder,block,diagramView)){const section=holder.lastElementChild;cards.set(index,section);if(block?.kind==='heading'){section.id='document-reading-'+index;const link=make('button',outline,block.text||'Untitled section');link.type='button';link.className='document-reader-outline';link.addEventListener('click',()=>section.scrollIntoView({block:'start'}));}}
+  }at=end;more.hidden=at===blocks.length;}
+  const handle=Object.freeze({reveal(id){const result=window.SirenDocumentActivity?.locate(blocks,id);if(result?.ok!==true)return result??{ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(parent.isConnected===false)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};if(result.index>=at)extend(result.index);const card=cards.get(result.index);if(!card)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};card.tabIndex=-1;card.scrollIntoView({block:'center'});card.focus({preventScroll:true});return {ok:true,index:result.index};}});
+  if(Array.isArray(blocks)&&blocks.some(block=>['heading','text','table','checklist','prompt','image',...(diagramView?['diagram-embed']:[])].includes(block?.kind)))extend();
+  return handle;
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const fail=code=>Object.freeze({ok:false,code}),hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
+ const fingerprint=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value)))),byte=>byte.toString(16).padStart(2,'0')).join('');
+ window.SirenNativeDocsDraft=Object.freeze({create({context,bridge,onChange=()=>{},operationId=()=>crypto.randomUUID()}){
+  if(context?.ok!==true||typeof context.readonly!=='boolean'||!context.document?.id||!hash(context.version)||!hash(context.sha256))throw TypeError('Exact native document required');
+  let document=structuredClone(context.document),version=context.version,sha256=context.sha256,projectRevision=context.projectRevision??0;
+  let content={title:document.title??'',blocks:structuredClone(document.blocks??[])},dirty=false,paused=false,fenced=false,disposed=false,pending=null;
+  let undo=[],redo=[],group=null,groupAt=0,historyLimited=false,prepareLifetime=0;
+  const editable=()=>!disposed&&!paused&&!pending&&!fenced&&!context.readonly;
+  const actualDocument=()=>({...((content.context&&window.SirenDocumentContext)?window.SirenDocumentContext.applyDocumentContext(document,content.context):document),title:content.title,blocks:content.blocks});
+  const resetHistory=()=>{undo=[];redo=[];group=null;groupAt=0;historyLimited=false;};
+  const trimHistory=()=>{while(undo.length+redo.length>60||[...undo,...redo].reduce((n,s)=>n+s.length*2,0)>4*1024*1024){if(undo.length)undo.shift();else redo.shift();}};
+  const updateDirty=()=>{dirty=JSON.stringify(content)!==JSON.stringify({title:document.title??'',blocks:document.blocks??[]});};
+  const status=()=>Object.freeze({documentId:document.id,version,sha256,projectRevision,dirty,paused,fenced,disposed,pending:pending!==null,readonly:context.readonly,canUndo:editable()&&undo.length>0,canRedo:editable()&&redo.length>0,historyLimited});
+  const changed=()=>{try{onChange(status());}catch{/* View observers cannot change save acceptance. */}};
+  const moveHistory=(from,to)=>{if(!editable()||!from.length)return fail('DOCUMENT_HISTORY_UNAVAILABLE');const previous=JSON.stringify(content),next=from.pop();to.push(previous);trimHistory();content=JSON.parse(next);group=null;updateDirty();changed();return Object.freeze({ok:true});};
+  async function accepted(value,request,applying,expected){
+   return value?.ok===true&&value.domain==='docs'&&value.entityId===document.id&&hash(value.version)&&hash(value.sha256)&&Number.isSafeInteger(value.projectRevision)&&value.projectRevision>=projectRevision&&['committed','recovery-degraded'].includes(value.durability)&&
+    (applying?value.operationId===request.operationId&&value.version!==request.expectedVersion:value.version===request.expectedVersion)&&value.sha256===await fingerprint(expected);
+  }
+  async function save(prepare=false){
+   if(disposed||context.readonly||fenced||paused&&!prepare)return fail(fenced?'DOCUMENT_FENCED':'ACCESS_REFUSED');
+   if(pending)return pending;if(!dirty){
+    if(prepare||typeof bridge.flushDocument!=='function')return Object.freeze({ok:true,unchanged:true});
+    const request={entityId:document.id,expectedVersion:version},expected=structuredClone(document),own=Promise.resolve().then(async()=>{let result;try{result=await bridge.flushDocument(request);if(disposed)return fail('VIEW_DISPOSED');if(!await accepted(result,request,false,expected))return fail(result?.code??'DOCUMENT_RESULT_REFUSED');return result;}catch{return fail('DOCUMENT_FLUSH_FAILED');}});pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
+   }
+   group=null;
+   const payload=structuredClone(content),request={operationId:operationId(),documentId:document.id,expectedVersion:version,action:content.context?'replace-context-content':'replace-content',payload},expected=actualDocument();
+   const own=(async()=>{
+    let receipt;try{receipt=await bridge.applyDocument(request);}catch{fenced=true;return fail('DOCUMENT_SAVE_FAILED');}
+    if(disposed)return fail('VIEW_DISPOSED');
+    if(receipt?.ok===false&&['DOMAIN_VALIDATION_FAILED','REFERENCE_TARGET_REFUSED','REFERENCE_BUDGET','CONTEXT_REFUSED'].includes(receipt.code))return fail(receipt.code);
+    let verified=false;try{verified=await accepted(receipt,request,true,expected);}catch{/* Unknown commit cannot grant retry authority. */}
+    if(!verified){fenced=true;return fail(receipt?.ok===false&&typeof receipt.code==='string'?receipt.code:'DOCUMENT_RESULT_REFUSED');}
+    if(disposed)return fail('VIEW_DISPOSED');document=expected;content={title:document.title??'',blocks:structuredClone(document.blocks??[])};version=receipt.version;sha256=receipt.sha256;projectRevision=receipt.projectRevision;dirty=false;if(payload.context)resetHistory();return receipt;
+   })();pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
+  }
+  return Object.freeze({
+   getStatus:status,getContent:()=>structuredClone(content),getDocument:()=>structuredClone(actualDocument()),
+   async adoptSaved(next){
+    if(disposed||paused||pending||dirty||fenced)return fail('DOCUMENT_NOT_EDITABLE');const previous=JSON.stringify(content),baseline=version;
+    try{if(next?.readonly!==context.readonly||next.document?.id!==document.id||!hash(next.version)||!hash(next.sha256)||!Number.isSafeInteger(next.projectRevision)||next.projectRevision<projectRevision||next.sha256!==await fingerprint(next.document))return fail('DOCUMENT_REFRESH_REFUSED');}catch{return fail('DOCUMENT_REFRESH_REFUSED');}
+    if(disposed||paused||pending||dirty||fenced||version!==baseline||JSON.stringify(content)!==previous)return fail('DOCUMENT_NOT_EDITABLE');const contentNext={title:next.document.title??'',blocks:structuredClone(next.document.blocks??[])},serialized=JSON.stringify(contentNext);
+    if(serialized!==previous){if(Math.max(serialized.length,previous.length)*2>4*1024*1024){resetHistory();historyLimited=true;}else{undo.push(previous);redo=[];trimHistory();}}
+    document=structuredClone(next.document);content=contentNext;version=next.version;sha256=next.sha256;projectRevision=next.projectRevision;group=null;dirty=false;changed();return Object.freeze({ok:true});
+   },
+   setContext(patch){
+    if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let delta;try{delta=window.SirenDocumentContext.documentContextDelta(document,window.SirenDocumentContext.applyDocumentContext(actualDocument(),patch));}catch{return fail('INVALID_CONTEXT');}
+    const next=structuredClone(content);if(Object.keys(delta).length)next.context=delta;else delete next.context;return this.setContent(next,{historyGroup:'context:'+Object.keys(patch).join(',')});
+   },
+   setContent(value,{historyGroup=null}={}){
+    if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let next,nextJSON;try{next=structuredClone(value);nextJSON=JSON.stringify(next);}catch{return fail('INVALID_CONTENT');}
+    const previous=JSON.stringify(content);if(previous===nextJSON)return Object.freeze({ok:true});
+    const key=typeof historyGroup==='string'&&historyGroup.length<=160?historyGroup:null,now=Date.now();
+    if(Math.max(previous.length,nextJSON.length)*2>4*1024*1024){resetHistory();historyLimited=true;}else{historyLimited=false;redo=[];if(!key||group!==key||now-groupAt>1000)undo.push(previous);trimHistory();group=key;groupAt=now;}
+    content=next;updateDirty();changed();return Object.freeze({ok:true});
+   },
+   undo:()=>moveHistory(undo,redo),redo:()=>moveHistory(redo,undo),
+   save:()=>save(),
+   async flushView(){
+    if(disposed||context.readonly)return fail('ACCESS_REFUSED');
+    const lifetime=++prepareLifetime,current=()=>!disposed&&paused&&prepareLifetime===lifetime;
+    const retired=()=>fail(disposed?'VIEW_DISPOSED':'DOCUMENT_NOT_EDITABLE');
+    paused=true;changed();if(pending)await pending;
+    if(!current())return retired();
+    if(fenced)return fail('DOCUMENT_FENCED');if(dirty){const saved=await save(true);if(!current())return retired();if(!saved.ok)return saved;}
+    for(let attempt=0;attempt<2;attempt++){
+     if(!current())return retired();
+     if(typeof bridge.getDocument==='function'){
+      // A rollback retires this preparation even if the returned read was valid.
+      // Never replace the hidden draft after the view has accepted new edits.
+      let latest;
+      try{
+       latest=await bridge.getDocument();if(!current())return retired();
+       if(latest?.ok===false&&typeof latest.code==='string')return fail(latest.code);
+       if(latest?.ok!==true||latest.readonly!==false||latest.document?.id!==document.id||!hash(latest.version)||!hash(latest.sha256)||!Number.isSafeInteger(latest.projectRevision)||latest.projectRevision<projectRevision||latest.sha256!==await fingerprint(latest.document))throw Error('Invalid native document');
+      }catch{return current()?fail('DOCUMENT_REFRESH_REFUSED'):retired();}
+      if(!current())return retired();
+      const next={title:latest.document.title??'',blocks:structuredClone(latest.document.blocks??[])};if(JSON.stringify(next)!==JSON.stringify(content))resetHistory();document=structuredClone(latest.document);content=next;version=latest.version;sha256=latest.sha256;projectRevision=latest.projectRevision;changed();
+     }
+     if(!current())return retired();
+     const request={entityId:document.id,expectedVersion:version};let receipt;
+     try{receipt=await bridge.flushDocument(request);}catch{return current()?fail('DOCUMENT_FLUSH_FAILED'):retired();}
+     if(!current())return retired();
+     if(receipt?.ok===false&&receipt.code==='DOCUMENT_CONFLICT'&&typeof bridge.getDocument==='function'){if(attempt===0)continue;return fail(receipt.code);}
+     let verified=false;try{verified=await accepted(receipt,request,false,document);}catch{/* Refuse unverified durability. */}
+     if(!current())return retired();
+     if(!verified)return fail(receipt?.ok===false?receipt.code:'DOCUMENT_RESULT_REFUSED');return receipt;
+    }
+   },
+   resumeView(){if(disposed)return fail('VIEW_DISPOSED');prepareLifetime++;paused=false;changed();return Object.freeze({ok:true});},
+   dispose(){prepareLifetime++;disposed=true;paused=true;resetHistory();changed();},
+  });
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const names={table:'Table',checklist:'Checklist',prompt:'Agent instructions',settings:'Settings'};
+ const defaults={table:{headerRow:true,rows:[['Column 1','Column 2'],['','']]},checklist:{items:[{text:'',done:false}]},prompt:{label:'Agent instructions',model:'',text:'',reasoningEffort:'',updatedAt:'',copiedAt:'',history:[]},settings:{rows:[{key:'Model',value:''},{key:'Temperature',value:''},{key:'Tools / plugins',value:''},{key:'Knowledge sources',value:''},{key:'Trigger',value:''}]}};
+ const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+ const exact=(value,keys)=>record(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
+ const string=(value,max)=>typeof value==='string'&&value.length<=max&&value.isWellFormed();
+ function createBlock(kind){if(!Object.hasOwn(defaults,kind))throw TypeError('Unsupported structured section');return {id:crypto.randomUUID(),kind,...structuredClone(defaults[kind])};}
+ function isEditableBlock(block){
+  if(!record(block)||!Object.hasOwn(defaults,block.kind)||!string(block.id,2000)||!block.id)return false;
+  const keys=['id','kind',...Object.keys(defaults[block.kind])];
+  if(Object.hasOwn(block,'role')){if(!['purpose','boundaries','capabilities','test-cases'].includes(block.role))return false;keys.push('role');}
+  if(!exact(block,keys))return false;
+  if(block.kind==='table')return typeof block.headerRow==='boolean'&&Array.isArray(block.rows)&&block.rows.length>0&&block.rows.length<=500&&Array.isArray(block.rows[0])&&block.rows[0].length>0&&block.rows[0].length<=12&&block.rows.every(row=>Array.isArray(row)&&row.length===block.rows[0].length&&row.every(cell=>string(cell,8000)));
+  if(block.kind==='checklist')return Array.isArray(block.items)&&block.items.length>0&&block.items.length<=200&&block.items.every(item=>exact(item,['text','done'])&&string(item.text,500)&&typeof item.done==='boolean');
+  if(block.kind==='settings')return Array.isArray(block.rows)&&block.rows.length>0&&block.rows.length<=80&&block.rows.every(row=>exact(row,['key','value'])&&string(row.key,80)&&string(row.value,4000));
+  return string(block.label,120)&&!!block.label&&string(block.model,80)&&string(block.text,200000)&&string(block.reasoningEffort,400)&&typeof block.updatedAt==='string'&&typeof block.copiedAt==='string'&&Array.isArray(block.history)&&block.history.length<=60&&block.history.every(entry=>exact(entry,['at','text'])&&typeof entry.at==='string'&&string(entry.text,200000));
+ }
+ function renderEditor({parent,draft,index,canEdit,onRemove,onOpen,preserved,focus=false,focusField=null}){
+  const original=draft.getContent().blocks[index];if(!isEditableBlock(original))throw TypeError('Exact structured block required');
+  const doc=parent.ownerDocument,make=(tag,holder,text)=>{const node=doc.createElement(tag);if(text!==undefined)node.textContent=text;holder.append(node);return node;};
+  const details=make('details',parent);details.className='document-group document-structured';details.dataset.structuredId=original.id;
+  const summary=make('summary',details,names[original.kind]);summary.dataset.structuredSummary=original.id;const body=make('div',details);const row=typeof focusField==='string'?/^(?:cell:|done:|text:|key:|value:)(\d+)/.exec(focusField):null;let page=row?Math.floor(Number(row[1])/20):0;
+  const target=()=>{const state=draft.getStatus();if(!details.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed||state.readonly)return null;const next=draft.getContent(),block=next.blocks[index];return block?.id===original.id&&block.kind===original.kind&&isEditableBlock(block)?{next,block}:null;};
+  const write=(node,mutate)=>{if(!node.isConnected)return false;const own=target();if(!own)return false;mutate(own.block);if(!isEditableBlock(own.block))return false;return draft.setContent(own.next,{historyGroup:node.dataset.structuredField?'structured:'+original.id+':'+node.dataset.structuredField:null})?.ok===true;};
+  const button=(holder,title,action,handler,limited=false)=>{const node=make('button',holder,title);node.type='button';node.className='document-edit';node.dataset.structuredAction=action;node.dataset.documentAtLimit=String(limited);node.disabled=limited;node.addEventListener('click',()=>{if(!node.isConnected||limited||!target())return;handler(node);});return node;};
+  const input=(holder,title,value,max,key,apply,{area=false,check=false}={})=>{
+   const label=make('label',holder,title),node=make(area?'textarea':'input',label);node.className='document-edit';node.dataset.structuredField=key;node.setAttribute('aria-label',title);
+   if(check){node.type='checkbox';node.checked=value;}else{node.value=value;node.maxLength=max;if(area)node.rows=key==='text'?10:2;}
+   let accepted=value;node.addEventListener(check?'change':'input',()=>{const value=check?node.checked:node.value;if(write(node,block=>apply(block,value)))accepted=value;else if(check)node.checked=accepted;else node.value=accepted;});return node;
+  };
+  function paint(){
+   const active=doc.activeElement,focusedAction=active&&body.contains(active)?active.dataset.structuredAction:null;
+   body.replaceChildren();const block=draft.getContent().blocks[index];if(block?.id!==original.id||!isEditableBlock(block))return;
+   make('p',body,'Local document section · Save document when ready.').className='document-caption';
+   if(block.kind==='prompt'){
+    make('p',body,'Instructions are documentation. Editing here does not execute code or activate AI.').className='document-caption';
+    for(const [key,title,max,area]of [['label','Section label',120,false],['model','Model',80,false],['text','Instructions',200000,true],['reasoningEffort','Reasoning notes',400,true]])input(body,title,block[key],max,key,(b,value)=>{b[key]=value;},{area});
+    if(block.updatedAt||block.copiedAt||block.history.length)preserved(body,'Saved history and dates',{updatedAt:block.updatedAt,copiedAt:block.copiedAt,history:block.history},0);
+   }else{
+    const table=block.kind==='table',key=block.kind==='checklist'?'items':'rows',rows=block[key],limit=table?500:block.kind==='checklist'?200:80;
+    page=Math.min(page,Math.floor((rows.length-1)/20));const start=page*20,end=Math.min(start+20,rows.length);
+    if(table)input(body,'First row is a header',block.headerRow,0,'headerRow',(b,value)=>{b.headerRow=value;},{check:true});
+    const paging=make('div',body);paging.className='document-structured-actions';button(paging,'Previous','previous',()=>{page--;paint();},page===0);make('span',paging,`${start+1}–${end} of ${rows.length} rows`).setAttribute('aria-live','polite');button(paging,'Next','next',()=>{page++;paint();},end===rows.length);
+    const grid=make('div',body);grid.className=table?'document-table-grid':'document-structured-rows';
+    // Grid width is bounded by the frozen 12-column schema. Controls stay lazy.
+    if(table)grid.setAttribute('style','--document-columns:'+rows[0].length);
+    for(let row=start;row<end;row++){
+     const group=make(table?'div':'fieldset',grid);group.className=table?'document-table-row':'document-structured-row';if(!table)make('legend',group,(block.kind==='checklist'?'Item ':'Setting ')+(row+1));
+     if(table){for(let column=0;column<rows[row].length;column++){const node=input(group,`Row ${row+1}, column ${column+1}`,rows[row][column],8000,`cell:${row}:${column}`,(b,value)=>{b.rows[row][column]=value;},{area:true});node.dataset.structuredCell=`${row}:${column}`;}}
+     else if(block.kind==='checklist'){input(group,'Completed item '+(row+1),rows[row].done,0,'done:'+row,(b,value)=>{b.items[row].done=value;},{check:true});input(group,'Item '+(row+1),rows[row].text,500,'text:'+row,(b,value)=>{b.items[row].text=value;},{area:true});}
+     else{input(group,'Setting name '+(row+1),rows[row].key,80,'key:'+row,(b,value)=>{b.rows[row].key=value;});input(group,'Setting value '+(row+1),rows[row].value,4000,'value:'+row,(b,value)=>{b.rows[row].value=value;},{area:true});}
+    }
+    const actions=make('div',body);actions.className='document-structured-actions';
+    button(actions,'Add row','add-row',node=>{if(write(node,b=>{b[key].push(table?Array(b.rows[0].length).fill(''):block.kind==='checklist'?{text:'',done:false}:{key:'',value:''});})){page=Math.floor(rows.length/20);paint();}},rows.length>=limit);
+    button(actions,'Remove last row…','remove-row',node=>{if(!doc.defaultView.confirm('Remove the last row from this local section? Save document to commit the change.'))return;if(write(node,b=>{b[key].pop();}))paint();},rows.length<=1);
+    if(table){button(actions,'Add column','add-column',node=>{if(write(node,b=>{for(const row of b.rows)row.push('');}))paint();},rows[0].length>=12);button(actions,'Remove last column…','remove-column',node=>{if(!doc.defaultView.confirm('Remove the last column from this local table? Save document to commit the change.'))return;if(write(node,b=>{for(const row of b.rows)row.pop();}))paint();},rows[0].length<=1);}
+   }
+   const actions=make('div',body);actions.className='document-structured-actions';button(actions,'Remove section…','remove-section',()=>onRemove());
+   if(focusedAction){const replacement=Array.from(body.querySelectorAll('[data-structured-action]')).find(node=>node.dataset.structuredAction===focusedAction);(replacement&&!replacement.disabled?replacement:body.querySelector('input,textarea'))?.focus({preventScroll:true});}
+  }
+  details.addEventListener('toggle',()=>{if(!details.open){body.replaceChildren();return;}if(!details.isConnected)return;onOpen(details);if(!body.children.length)paint();});
+  if(focus){details.open=true;onOpen(details);paint();const first=body.querySelector?.('input,textarea');first?.focus();}
+  return details;
+ }
+ window.SirenStructuredDocs=Object.freeze({createBlock,isEditableBlock,renderEditor,names:Object.freeze(names)});
+})();
+
+(() => {
+ 'use strict';
+ const content=document.getElementById('documentContent'),outline=document.getElementById('documentOutline'),status=document.getElementById('viewStatus'),heading=document.getElementById('viewTitle'),retry=document.getElementById('retryDocument'),theme=document.getElementById('documentTheme');
+ let generation=0,prepareLifetime=0,openActionLifetime=0,openAction=null,draftChangeRevision=0,disposed=false,paused=false,pending=null,draft=null,readonly=true,latest=null,diagramPending=null,refreshTimer=null,sourceOpening=null,savedContext=null,blockReveal=null;const media=matchMedia('(prefers-color-scheme: dark)');
+ const working=document.getElementById('openWorkingDocument'),save=document.getElementById('saveDocument'),notice=document.getElementById('documentChangesNotice'),noticeMessage=document.getElementById('documentChangesMessage');
+ const diagramView=window.createDiagramEmbedView?.({api:window.sirenDocsDiagrams,getContext:()=>({...draft?.getStatus(),readonly,blocks:draft?.getContent().blocks??[]}),onStatus:text=>status.textContent=text,onChanged:result=>{
+  if(paused||disposed||!draft)return;const state=draft.getStatus();if(state.dirty||state.pending||state.fenced){latest={documentId:state.documentId,version:result.version,projectRevision:result.projectRevision};notice.hidden=false;noticeMessage.textContent='The diagram was saved. Your local document edits are retained; review the latest document before saving.';return;}
+  const scroll=content.scrollTop,active=document.activeElement,action=active?.dataset.embedAction,embedId=active?.dataset.embedId;
+  void connect().then(ok=>{if(!ok||paused||disposed)return;content.scrollTop=scroll;if(action&&embedId)Array.from(content.querySelectorAll('[data-embed-action]')).find(n=>n.dataset.embedAction===action&&n.dataset.embedId===embedId)?.focus({preventScroll:true});});
+ }});
+ const exportView=window.SirenNativeDocsExportView.create({button:document.getElementById('exportDocument'),revealButton:document.getElementById('revealDocumentExport'),getContext:()=>draft?.getStatus(),isReady:()=>!paused&&!disposed&&!pending&&!draft?.getStatus().pending&&document.body.dataset.documentReady==='true',onStatus:text=>status.textContent=text,bridge:window.sirenDocsExport});
+ const activity=window.SirenNativeDocsActivity.create({host:document.getElementById('documentActivityPanel'),button:document.getElementById('documentActivity'),enabled:()=>!paused&&!disposed&&!pending&&!!draft&&!draft.getStatus().pending,onStatus:text=>status.textContent=text,
+  onJump:id=>{if(paused||disposed||pending||draft?.getStatus().pending)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};return blockReveal?.reveal(id)??{ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};},
+  onCompare:({position,against})=>{
+   if(paused||disposed||pending||!draft||draft.getStatus().pending||!savedContext||!Number.isSafeInteger(position)||position<0||!['saved','working'].includes(against)||against==='working'&&readonly)return {ok:false,code:'COMPARISON_UNAVAILABLE'};
+   const revision=savedContext.document.revisions?.[position];if(!revision)return {ok:false,code:'COMPARISON_UNAVAILABLE'};
+   return window.SirenDocumentActivity.compare(revision.blocks,against==='working'?draft.getContent().blocks:savedContext.document.blocks);
+  }});
+ function admitActivity(value){const state=draft.getStatus();savedContext={document:value,version:state.version,sha256:state.sha256,readonly,dirty:state.dirty};activity.setContext(savedContext);}
+ function refreshActivitySaved(restore=false){if(!draft||!savedContext)return;const state=draft.getStatus();if(state.version!==savedContext.version)admitActivity(draft.getDocument());else if(restore)activity.setContext({...savedContext,dirty:state.dirty});}
+ const contextButton=document.getElementById('documentContext');contextButton.addEventListener('click',()=>{if(paused||disposed||pending||!draft)return;const own=draft;window.SirenDocsContext.open({draft:own,canEdit:()=>draft===own&&!readonly&&!paused&&!disposed&&!own.getStatus().paused&&!own.getStatus().pending&&!own.getStatus().fenced,onChange:()=>{if(draft===own&&!paused&&!disposed){paint(own.getDocument());updateState();}}});});
+ const make=(tag,parent,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;parent.append(node);return node;};
+ const label=value=>value.replace(/([a-z])([A-Z])/g,'$1 $2').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
+ const appearance=()=>{document.documentElement.style.colorScheme=theme.value==='system'?(media.matches?'dark':'light'):theme.value;};
+ const clear=()=>{diagramView?.clear();blockReveal=null;window.SirenNativeViewIdentity.clear('docs');content.replaceChildren();outline.replaceChildren();document.body.dataset.documentReady='false';for(const key of ['documentId','documentVersion','documentSha256'])delete document.body.dataset[key];};
+ function text(parent,value){
+  const block=make('div',parent);block.className='document-text';let end=0;const span=make('span',block),more=make('button',block,'Show more');more.type='button';
+  const extend=()=>{const next=Math.min(end+24576,value.length);span.append(document.createTextNode(value.slice(end,next)));end=next;more.hidden=end===value.length;};
+  more.addEventListener('click',extend);extend();
+ }
+ function items(parent,value,depth){
+  const entries=Array.isArray(value)?value.map((item,index)=>[String(index+1),item]):Object.entries(value);let end=0;
+  const holder=make('div',parent),more=make('button',parent,'Show more items');more.type='button';
+  const extend=()=>{const next=Math.min(end+40,entries.length);for(const [name,item] of entries.slice(end,next))field(holder,name,item,depth+1);end=next;more.hidden=end===entries.length;};
+  more.addEventListener('click',extend);extend();
+ }
+ function field(parent,name,value,depth){
+  if(value===null||typeof value!=='object'){
+   const row=make('div',parent);row.className='document-field';make('h3',row,label(name));text(row,value===null?'—':String(value));return;
+  }
+  const details=make('details',parent),summary=make('summary',details);details.className='document-group';
+  summary.textContent=label(name)+(Array.isArray(value)?` · ${value.length} items`:'');let rendered=false;
+  details.addEventListener('toggle',()=>{if(!details.open||rendered||disposed)return;rendered=true;if(depth>=32){text(details,JSON.stringify(value,null,2));return;}items(details,value,depth);});
+ }
+ function paint(value,focusBlock=null,focusContext=null){
+  clear();heading.textContent=value.title||'Docs';make('h1',content,value.title||'Untitled document');
+  make('p',content,readonly?'Document · Read only':'Working document · Edit sections and linked-code context. Save when ready.').className='document-caption';
+  if(!readonly)paintEditor(focusBlock,focusContext);
+  else blockReveal=window.SirenNativeDocsReader.render({parent:content,outline,blocks:value.blocks,diagramView});
+  paintSources(value);
+  const entries=Object.entries(value).filter(([key,item])=>!(readonly?['id','title']:['id','title','blocks']).includes(key)&&
+    !(key==='agent'&&item===null||key==='releases'&&Array.isArray(item)&&item.length===0));let end=0,section=0;
+  const more=make('button',outline,'More sections');more.type='button';
+  const extend=()=>{const next=Math.min(end+40,entries.length);for(const [name,item] of entries.slice(end,next)){
+   const node=make('section',content);node.id='document-section-'+(++section);node.className='document-section';
+   const link=make('button',outline,label(name));link.type='button';outline.insertBefore(link,more);link.addEventListener('click',()=>node.scrollIntoView({block:'start'}));
+   field(node,name,item,0);
+  }end=next;more.hidden=end===entries.length;};more.addEventListener('click',extend);extend();
+  if(!entries.length&&readonly)make('p',content,'This document has no additional sections.');
+ }
+ function paintSources(value){
+  if(!Array.isArray(value.blocks)||value.blocks.length>4096)return;
+  const links=[];let scanned=0;
+  for(const block of value.blocks){
+   if(block?.kind!=='knowledge'||typeof block.id!=='string'||!Array.isArray(block.rows))continue;
+   scanned+=block.rows.length;if(scanned>65536)return;
+   for(const row of block.rows){const ref=row?.sourceRef;
+    if(typeof row?.id==='string'&&typeof ref?.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256))links.push({blockId:block.id,rowId:row.id,name:typeof(row.name??row.title)==='string'?(row.name??row.title).slice(0,200):'Linked source',sourceId:ref.sourceId,version:ref.version,sha256:ref.sha256});
+   }
+  }
+  if(!links.length)return;
+  const section=make('section',content);section.className='document-section document-sources';section.id='document-linked-sources';make('h2',section,'Linked code');make('p',section,'Preview the saved code here, or open its exact version in Code. Local document edits stay here.').className='document-caption';
+  const nav=make('button',outline,'Linked code');nav.type='button';nav.addEventListener('click',()=>section.scrollIntoView({block:'start'}));
+  const holder=make('div',section),more=make('button',section,'More linked sources');more.type='button';let end=0;
+  const extend=()=>{const next=Math.min(end+40,links.length);for(const link of links.slice(end,next)){
+   const card=make('div',holder);card.className='document-source';const text=make('div',card);make('strong',text,link.name);make('span',text,'Saved version '+link.version);
+   const toggle=make('button',card,'Preview');toggle.type='button';toggle.className='document-source-preview-toggle';toggle.setAttribute('aria-expanded','false');
+   const button=make('button',card,'Open in Code');button.type='button';button.className='document-source-open';button.dataset.blockId=link.blockId;button.dataset.rowId=link.rowId;
+   const preview=make('section',holder);preview.className='document-source-preview';preview.hidden=true;preview.setAttribute('aria-label',link.name+' · Saved code preview');
+   const caption=make('p',preview,'Saved version '+link.version+' · Plain text preview');
+   const paging=make('div',preview);paging.className='document-preview-paging';const previous=make('button',paging,'Previous'),range=make('span',paging),nextPage=make('button',paging,'Next');previous.type=nextPage.type='button';previous.className='document-preview-previous';nextPage.className='document-preview-next';range.setAttribute('aria-live','polite');
+   const code=make('pre',preview);code.tabIndex=0;code.setAttribute('aria-label','Saved source text');
+   let page=null,history=[];
+   const readPage=(start,move)=>{
+    if(paused||disposed||pending||sourceOpening||draft?.getStatus().pending)return;
+    const token=generation,expectedDocumentVersion=draft?.getStatus().version;toggle.disabled=previous.disabled=nextPage.disabled=true;preview.dataset.previewReady='false';range.textContent='Loading saved code…';
+    const own=Promise.resolve().then(async()=>{try{
+     const result=await window.sirenDocsSources.previewLinkedSource({blockId:link.blockId,rowId:link.rowId,expectedDocumentVersion,start});
+     if(disposed||paused||token!==generation)return;
+     if(result?.ok!==true){range.textContent=result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Refresh to preview it.':'Preview could not load. Your work is retained.';return;}
+     if(result.sourceRef?.sourceId!==link.sourceId||result.sourceRef.version!==link.version||result.sourceRef.sha256!==link.sha256||result.start!==start||!Number.isSafeInteger(result.end)||!Number.isSafeInteger(result.totalUnits)||result.end<start||result.end>result.totalUnits||result.end-start>8192||typeof result.text!=='string'||result.text.length!==result.end-start||!result.text.isWellFormed())throw Error('Invalid saved preview');
+     if(move==='next'&&page){history.push(page.start);if(history.length>128)history.shift();}else if(move==='previous')history.pop();else if(move==='start')history=[];
+     page={start:result.start,end:result.end,total:result.totalUnits};code.textContent=result.text;caption.textContent='Saved version '+link.version+' · Plain text preview';range.textContent=result.totalUnits?`${(result.start+1).toLocaleString()}–${result.end.toLocaleString()} of ${result.totalUnits.toLocaleString()} characters`:'Empty source';preview.dataset.previewStart=String(result.start);preview.dataset.previewEnd=String(result.end);preview.dataset.previewTotal=String(result.totalUnits);preview.dataset.previewReady='true';
+    }catch{if(!disposed&&!paused&&token===generation)range.textContent='Preview could not load. Your work is retained.';}
+    finally{if(sourceOpening===own)sourceOpening=null;if(!disposed&&!paused&&token===generation){toggle.disabled=false;previous.disabled=!history.length;nextPage.disabled=!page||page.end>=page.total||preview.dataset.previewReady!=='true';}}});sourceOpening=own;
+   };
+   toggle.addEventListener('click',()=>{if(paused||disposed||sourceOpening)return;if(!preview.hidden){preview.hidden=true;toggle.textContent='Preview';toggle.setAttribute('aria-expanded','false');code.textContent='';page=null;history=[];return;}preview.hidden=false;toggle.textContent='Hide preview';toggle.setAttribute('aria-expanded','true');readPage(0,'start');});previous.addEventListener('click',()=>{if(history.length)readPage(history.at(-1),'previous');});nextPage.addEventListener('click',()=>{if(page&&page.end<page.total)readPage(page.end,'next');});
+   button.addEventListener('click',()=>{
+    if(paused||disposed||pending||sourceOpening||draft?.getStatus().pending)return;
+    const token=generation,expectedDocumentVersion=draft?.getStatus().version;button.disabled=true;status.textContent='Opening saved code version '+link.version+'…';
+    const own=Promise.resolve().then(async()=>{try{
+     const result=await window.sirenDocsSources.openLinkedSource({blockId:link.blockId,rowId:link.rowId,expectedDocumentVersion});
+     if(disposed||paused||token!==generation)return;
+     status.textContent=result?.ok?'Saved code version '+link.version+' opened · Your document changes are retained':result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Refresh or open the saved document separately; your local changes are retained.':'Linked code could not be opened. Your document and source are unchanged.';
+    }catch{if(!disposed&&!paused&&token===generation)status.textContent='Linked code could not be opened. Your document changes are retained.';}finally{if(sourceOpening===own)sourceOpening=null;if(!disposed&&!paused&&token===generation)button.disabled=false;}});sourceOpening=own;
+   });
+  }end=next;more.hidden=end===links.length;};more.addEventListener('click',extend);extend();
+ }
+ const escapeText=value=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+ const plainText=block=>{
+  if(block?.kind!=='text'||Object.keys(block).some(key=>!['id','kind','html'].includes(key))||typeof block.html!=='string'||!block.html.startsWith('<p>')||!block.html.endsWith('</p>'))return null;
+  const body=block.html.slice(3,-4),decoded=body.replace(/&(amp|lt|gt);/g,(_match,code)=>({amp:'&',lt:'<',gt:'>'})[code]);return escapeText(decoded)===body?decoded:null;
+ };
+ function updateState(){
+  if(!draft||disposed)return;const state=draft.getStatus();
+  exportView.update();
+  activity.updateState({dirty:state.dirty});
+  contextButton.disabled=paused||state.pending||state.paused||state.fenced||state.disposed;if(paused||state.paused||state.disposed)window.SirenDocsContext.close();
+  if(!paused){const name=draft.getDocument().title;heading.textContent=name||'Docs';window.SirenNativeViewIdentity.set({role:'docs',name,revision:state.projectRevision,readonly,dirty:state.dirty});const title=content.querySelector(':scope > h1');if(title)title.textContent=name||'Untitled document';}
+  if(!paused&&!state.disposed){document.body.dataset.documentReady='true';document.body.dataset.documentId=state.documentId;}
+  const historyNotice=content.querySelector('[data-document-history-limit]');if(historyNotice)historyNotice.hidden=!state.historyLimited;
+  save.hidden=readonly;save.disabled=readonly||state.pending||state.paused||state.fenced||(!state.dirty&&!diagramPending);
+  for(const [action,enabled]of [['undo',state.canUndo],['redo',state.canRedo]]){const button=content.querySelector('[data-document-history="'+action+'"]');if(button)button.disabled=paused||!enabled;}
+  for(const element of content.querySelectorAll('.document-edit'))element.disabled=state.pending||state.paused||state.fenced||element.dataset.documentAtLimit==='true';
+  for(const element of content.querySelectorAll('.document-rich-input'))element.contentEditable=String(!paused&&!state.pending&&!state.paused&&!state.fenced&&!state.disposed);
+  document.body.dataset.documentDirty=String(state.dirty);document.body.dataset.documentVersion=state.version;document.body.dataset.documentSha256=state.sha256;
+  status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':state.pending?'Saving document…':state.fenced?'Save was refused. Your local changes are retained.':state.dirty?'Unsaved changes · Save document or close to save':'Document saved · Other agent sections and source links retained';
+ }
+ function paintEditor(focusBlock,focusContext){
+  const section=make('section',content);section.className='document-section document-editor';const value=draft.getContent();
+  const history=make('div',section);history.className='document-history-tools';history.setAttribute('role','toolbar');history.setAttribute('aria-label','Document history');
+  for(const [action,title]of [['undo','Undo'],['redo','Redo']]){const button=make('button',history,title);button.type='button';button.dataset.documentHistory=action;button.title=action==='undo'?'Undo · Ctrl+Z':'Redo · Ctrl+Shift+Z';button.addEventListener('pointerdown',event=>event.preventDefault());button.addEventListener('click',()=>historyAction(action));}
+  const limitNotice=make('small',history,'Large edit · Local history limited');limitNotice.dataset.documentHistoryLimit='true';limitNotice.hidden=!draft.getStatus().historyLimited;
+  const titleLabel=make('label',section,'Document title'),title=make('input',titleLabel);title.className='document-edit';title.id='documentTitleInput';title.value=value.title;
+  const change=(key,newValue)=>{const current=draft.getContent();current[key]=newValue;draft.setContent(current,{historyGroup:key});};title.addEventListener('input',()=>change('title',title.value));
+  const holder=make('div',section),cards=new Map();let rendered=0;const more=make('button',section,'More blocks');more.type='button';
+  const owner=draft,canEdit=()=>!readonly&&!disposed&&!paused&&!pending&&draft===owner;
+  const removeBlock=(index,id)=>{const state=owner.getStatus();if(!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=owner.getContent();if(next.blocks[index]?.id!==id)return;next.blocks.splice(index,1);owner.setContent(next);paint(owner.getDocument());updateState();};
+  const openStructured=details=>{for(const other of holder.querySelectorAll('.document-structured'))if(other!==details){other.open=false;other.querySelector(':scope > div')?.replaceChildren();}};
+  const renderBlocks=(revealIndex=-1)=>{
+   const current=draft.getContent(),requestedFocus=focusBlock,end=Math.min(Math.max(rendered+40,focusBlock===null?0:focusBlock+1,Number.isSafeInteger(revealIndex)?revealIndex+1:0),current.blocks.length);focusBlock=null;
+   for(let index=rendered;index<end;index++){
+    const block=current.blocks[index],card=make('div',holder);cards.set(index,card);card.className='document-block';card.dataset.blockIndex=String(index);card.dataset.blockId=block?.id;const editableHeading=block?.kind==='heading'&&Object.keys(block).every(key=>['id','kind','level','text'].includes(key));const plain=plainText(block);
+    if(editableHeading||plain!==null){
+     const label=make('label',card,editableHeading?'Heading':'Text'),input=make('textarea',label);input.className='document-edit';input.dataset.blockIndex=String(index);input.dataset.blockId=block.id;input.rows=editableHeading?2:5;input.value=editableHeading?block.text??'':plain;
+     input.addEventListener('input',()=>{const next=draft.getContent();next.blocks[index]={...next.blocks[index],...(editableHeading?{text:input.value}:{html:'<p>'+escapeText(input.value)+'</p>'})};draft.setContent(next,{historyGroup:'block:'+block.id});});
+     const remove=make('button',card,'Remove block…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>{if(!confirm('Remove this block from the local document? It is saved only when you save the document.'))return;const next=draft.getContent();next.blocks.splice(index,1);draft.setContent(next);paint(draft.getDocument());updateState();});
+     if(!editableHeading&&window.SirenNativeDocsRichText.editable(block)){const format=make('button',card,'Format text');format.type='button';format.className='document-edit';format.dataset.openRich=block.id;format.addEventListener('click',()=>{const state=owner.getStatus();if(!format.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;if(!window.SirenNativeDocsRichText.editable(owner.getContent().blocks[index])){status.textContent='This text is too large for inline formatting. It remains editable as plain text.';return;}label.remove();format.remove();window.SirenNativeDocsRichText.render({parent:card,draft:owner,index,canEdit,onRejected:message=>{status.textContent=message||'Text edit refused. Previous content retained.';}}).focus();updateState();});}
+    }else if(block?.kind==='diagram-embed'&&diagramView){
+     card.append(diagramView.render(block));const remove=make('button',card,'Remove diagram…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>removeBlock(index,block.id));
+    }else if(block?.kind==='image'&&typeof block.id==='string'){
+     window.SirenNativeDocsImages.renderEditor({parent:card,draft:owner,index,canEdit,onRejected:message=>{status.textContent=message;},onRemove:()=>removeBlock(index,block.id)});field(card,'Preserved fields',block,0);
+    }else if(window.SirenNativeDocsRichText.editable(block)){
+     window.SirenNativeDocsRichText.render({parent:card,draft:owner,index,canEdit,onRejected:message=>{status.textContent=message||'Text edit refused. Previous content retained.';}});
+     const remove=make('button',card,'Remove block…');remove.type='button';remove.className='document-edit';remove.addEventListener('click',()=>removeBlock(index,block.id));
+    }else if(window.SirenStructuredDocs.isEditableBlock(block)){
+     window.SirenStructuredDocs.renderEditor({parent:card,draft:owner,index,canEdit,onOpen:openStructured,onRemove:()=>removeBlock(index,block.id),preserved:field,focus:requestedFocus===index,focusField:focusContext?.structuredId===block.id?focusContext.structuredField:null});
+    }else if(block?.kind==='knowledge'&&Array.isArray(block.rows)&&block.rows.some(row=>typeof row?.id==='string'&&row.id&&typeof row.sourceRef?.sourceId==='string')){
+     make('h3',card,'Linked-code context');make('p',card,'Names and notes explain the saved code. Source versions and other fields stay intact.').className='document-caption';
+     const rows=make('div',card),moreRows=make('button',card,'More sources');moreRows.type='button';let at=0;
+     const extendRows=()=>{const requested=focusContext?.knowledgeRow&&focusContext?.knowledgeField?block.rows.findIndex(row=>row.id===focusContext.knowledgeRow):-1;const end=Math.min(Math.max(at+40,requested+1),block.rows.length);for(let rowIndex=at;rowIndex<end;rowIndex++){
+      const row=block.rows[rowIndex];if(typeof row?.id!=='string'||!row.id||typeof row.sourceRef?.sourceId!=='string')continue;
+      const group=make('fieldset',rows);group.className='document-knowledge';make('legend',group,String(row.name??row.title??'Linked source').slice(0,160)+' · Saved version '+row.sourceRef.version);
+      for(const [key,title,max]of [['name','Source name',160],['notes','Context and notes',2000]]){
+       if(Object.hasOwn(row,key)&&typeof row[key]!=='string')continue;
+       const name=make('label',group,title),input=make(key==='name'?'input':'textarea',name);input.className='document-edit';input.dataset.knowledgeRow=row.id;input.dataset.knowledgeField=key;input.maxLength=max;input.value=row[key]??(key==='name'?row.title??'':'');if(key==='notes')input.rows=4;
+       input.addEventListener('input',()=>{const next=draft.getContent(),target=next.blocks[index]?.rows?.[rowIndex];if(!target||target.id!==row.id)return;target[key]=input.value;draft.setContent(next,{historyGroup:'knowledge:'+block.id+':'+row.id+':'+key});});
+      }
+     }at=end;moreRows.hidden=at===block.rows.length;};moreRows.addEventListener('click',extendRows);extendRows();field(card,'Preserved fields',block,0);
+    }else{make('h3',card,label(block?.kind??'Preserved block')+' · Preserved');make('p',card,'This section remains exact. Advanced or unrecognized fields are available for review.');field(card,'content',block,0);}
+   }rendered=end;more.hidden=rendered===current.blocks.length;
+  };more.addEventListener('click',renderBlocks);renderBlocks();
+  blockReveal=Object.freeze({reveal(id){if(draft!==owner||disposed||paused||pending||owner.getStatus().pending||!holder.isConnected)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};const result=window.SirenDocumentActivity.locate(owner.getContent().blocks,id);if(!result.ok)return result;if(result.index>=rendered)renderBlocks(result.index);const card=cards.get(result.index);if(!card)return {ok:false,code:'BLOCK_VIEW_UNAVAILABLE'};card.tabIndex=-1;card.scrollIntoView({block:'center'});card.focus({preventScroll:true});return {ok:true,index:result.index};}});
+  const actions=make('div',section);actions.className='document-block-actions';
+  if(diagramView){const insert=make('button',actions,'Insert diagram…');insert.type='button';insert.className='document-edit';insert.addEventListener('click',()=>{if(canEdit())diagramView.insert({afterBlockId:owner.getContent().blocks[Math.min(rendered,owner.getContent().blocks.length)-1]?.id??null});});}
+  for(const [kind,title]of [['heading','Add heading'],['text','Add text'],['image','Add image']]){const button=make('button',actions,title);button.type='button';button.className='document-edit';button.addEventListener('click',()=>{const next=draft.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,kind==='heading'?{id:crypto.randomUUID(),kind,level:2,text:''}:kind==='image'?{id:crypto.randomUUID(),kind,dataUri:'',caption:'',fileName:''}:{id:crypto.randomUUID(),kind,html:'<p></p>'});draft.setContent(next);paint(draft.getDocument(),at);updateState();content.querySelector('textarea[data-block-index="'+at+'"]')?.focus();});}
+  const add=make('details',actions);add.className='document-add-section';make('summary',add,'Add section…');
+  for(const [kind,title]of Object.entries(window.SirenStructuredDocs.names)){const button=make('button',add,title);button.type='button';button.className='document-edit';button.dataset.addStructured=kind;button.addEventListener('click',()=>{const state=owner.getStatus();if(!button.isConnected||!canEdit()||state.pending||state.paused||state.fenced||state.disposed)return;const next=owner.getContent();if(next.blocks.length>=300){status.textContent='The document has reached its 300-block editing limit. Existing blocks were retained.';return;}const at=Math.min(rendered,next.blocks.length);next.blocks.splice(at,0,window.SirenStructuredDocs.createBlock(kind));owner.setContent(next);paint(owner.getDocument(),at);updateState();});}
+ }
+ function historyAction(action){
+  if(paused||disposed||readonly||!draft||!['undo','redo'].includes(action))return;
+  const active=document.activeElement,card=active?.closest('.document-block'),key=active?.id||null,blockId=active?.dataset.blockId||active?.dataset.richBlockId||card?.dataset.blockId||null,start=active?.selectionStart,end=active?.selectionEnd,index=Number(active?.dataset.blockIndex??card?.dataset.blockIndex);
+  const focusContext={imageCaption:active?.dataset.imageCaption,structuredId:active?.closest('.document-structured')?.dataset.structuredId,structuredField:active?.dataset.structuredField,knowledgeRow:active?.dataset.knowledgeRow,knowledgeField:active?.dataset.knowledgeField};
+  let textSelection=null;const selection=document.getSelection();if(active?.classList.contains('document-rich-input')&&selection?.rangeCount){const range=selection.getRangeAt(0);if(active.contains(range.startContainer)&&active.contains(range.endContainer)){const before=document.createRange();before.selectNodeContents(active);before.setEnd(range.startContainer,range.startOffset);const after=before.cloneRange();after.setEnd(range.endContainer,range.endOffset);textSelection={start:before.toString().length,end:after.toString().length};}}
+  if(!draft[action]().ok)return;paint(draft.getDocument(),Number.isSafeInteger(index)?index:null,focusContext);updateState();
+  const next=key?document.getElementById(key):focusContext.structuredId?Array.from(content.querySelectorAll('[data-structured-field]')).find(node=>node.closest('.document-structured')?.dataset.structuredId===focusContext.structuredId&&node.dataset.structuredField===focusContext.structuredField):focusContext.knowledgeRow?Array.from(content.querySelectorAll('[data-knowledge-row]')).find(node=>node.closest('.document-block')?.dataset.blockId===blockId&&node.dataset.knowledgeRow===focusContext.knowledgeRow&&node.dataset.knowledgeField===focusContext.knowledgeField):focusContext.imageCaption?Array.from(content.querySelectorAll('textarea[data-image-caption]')).find(node=>node.dataset.imageCaption===focusContext.imageCaption&&node.closest('.document-block')?.dataset.blockId===blockId):blockId?Array.from(content.querySelectorAll('textarea[data-block-id],.document-rich-input')).find(node=>(node.dataset.blockId||node.dataset.richBlockId)===blockId):null;
+  if(next){next.focus({preventScroll:true});if(Number.isSafeInteger(start)&&Number.isSafeInteger(end))next.setSelectionRange(Math.min(start,next.value.length),Math.min(end,next.value.length));}
+  if(next&&textSelection){if(next.tagName==='TEXTAREA')next.setSelectionRange(Math.min(textSelection.start,next.value.length),Math.min(textSelection.end,next.value.length));else{const texts=[],walker=document.createTreeWalker(next,4);for(let node=walker.nextNode();node;node=walker.nextNode())texts.push(node);const point=offset=>{for(const node of texts){if(offset<=node.length)return [node,offset];offset-=node.length;}const last=texts.at(-1);return last?[last,last.length]:[next,0];};const range=document.createRange();range.setStart(...point(textSelection.start));range.setEnd(...point(textSelection.end));selection.removeAllRanges();selection.addRange(range);}}
+ }
+ async function readDocument(){
+  if(disposed)return false;openActionLifetime++;exportView.reset();activity.invalidate();const token=++generation,previousDraft=draft,previousChangeRevision=draftChangeRevision;let changedDuringRead=false;retry.hidden=true;status.textContent='Opening selected document…';appearance();
+  try{
+   const result=await window.sirenDocsRead.getDocument();if(disposed||paused||token!==generation)return false;
+   if(result?.ok!==true||typeof result.readonly!=='boolean')throw Error('Document unavailable');
+   // Refresh must not discard edits, history or a Save that changed the retained
+   // draft while the read was awaiting its reply, even if its text now matches.
+   if(draft!==previousDraft||draftChangeRevision!==previousChangeRevision||draft?.getStatus().pending){changedDuringRead=true;throw Error('Document changed during Refresh');}
+   if(draft&&!draft.getStatus().dirty&&!draft.getStatus().fenced&&readonly===result.readonly&&typeof draft.adoptSaved==='function'){const adopted=await draft.adoptSaved(result);if(!adopted.ok||disposed||paused||token!==generation){changedDuringRead=true;throw Error('Document changed during Refresh');}}
+   else{const own=window.SirenNativeDocsDraft.create({context:result,bridge:{...window.sirenDocsEdit,getDocument:window.sirenDocsRead.getDocument},onChange:()=>{draftChangeRevision++;updateState();}});draft?.dispose();draft=own;}
+   readonly=result.readonly;paint(result.document);
+   status.textContent=readonly?'Read only · Document sections and agent metadata · Refresh to read saved changes':'Document saved · Edit this working copy and save explicitly';
+   working.hidden=!readonly||result.canEdit!==true;save.hidden=readonly;if(latest&&(latest.version===result.version||latest.projectRevision<=result.projectRevision))latest=null;notice.hidden=!latest&&!diagramPending;if(!latest&&diagramPending)showDiagramPending();
+   document.body.dataset.documentReady='true';document.body.dataset.documentId=result.document.id;document.body.dataset.documentVersion=result.version;document.body.dataset.documentSha256=result.sha256;
+   document.body.dataset.documentReadonly=String(readonly);document.body.dataset.documentDirty='false';admitActivity(result.document);updateState();
+   retry.hidden=false;retry.textContent='Refresh';return true;
+  }catch{if(!disposed&&token===generation){if(!draft){clear();heading.textContent='Docs';}else if(savedContext)activity.setContext({...savedContext,dirty:draft.getStatus().dirty});status.textContent=changedDuringRead?'The document changed while refreshing. Your local work was retained. Refresh again when ready.':'Document could not be opened. Existing project data and local changes were retained.';retry.hidden=false;retry.textContent=changedDuringRead?'Refresh':'Retry';}return false;}
+ }
+ function connect(){
+  if(paused||disposed)return Promise.resolve(false);
+  const referenceAtStart=latest,own=readDocument();pending=own;own.then(ok=>{if(pending===own)pending=null;exportView.update();if(!disposed)activity.updateState({dirty:draft?.getStatus().dirty===true});if(ok&&!paused&&!disposed){void diagramView?.offerProposal();if(latest&&latest!==referenceAtStart)refreshWhenSettled();}});return own;
+ }
+ window.sirenViewControl.onPrepare(async()=>{
+  const lifetime=++prepareLifetime,current=()=>!disposed&&paused&&prepareLifetime===lifetime;
+  const retired=()=>({ok:false,code:'ACCESS_REFUSED'});
+  window.SirenHelpWorkspace?.cover();
+  paused=true;openActionLifetime++;activity.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
+  window.SirenNativeViewIdentity.clear('docs');
+  await exportView.pause();if(!current())return retired();
+  await diagramView?.pause();if(!current())return retired();
+  if(pending)await pending;if(!current())return retired();
+  if(sourceOpening)await sourceOpening;if(!current())return retired();
+  if(draft&&!readonly){const own=draft,result=await own.flushView();if(!current()||draft!==own)return retired();return {ok:result.ok===true,...(result.ok!==true?{code:result.code}:{})};}
+  return {ok:current()&&document.body.dataset.documentReady==='true'};
+ });
+ window.sirenViewControl.onResume(()=>{
+  if(disposed||!paused)return;
+  prepareLifetime++;paused=false;draft?.resumeView();diagramView?.resume();if(draft)paint(draft.getDocument());refreshActivitySaved(true);activity.resume();exportView.resume();updateState();document.body.inert=false;document.documentElement.style.visibility='';
+ });
+ const replace=()=>{if(paused||disposed||pending||draft?.getStatus().pending)return;if(draft?.getStatus().dirty&&!confirm('Discard local document changes and read the latest saved document?'))return;void connect();};
+ const saveCurrent=async()=>{if(paused||disposed||readonly||!draft||draft.getStatus().pending)return;const context=window.SirenHelpWorkspace?.capture(),owner=draft,pendingDiagram=diagramPending,result=await owner.save();if(disposed||draft!==owner||context&&!window.SirenHelpWorkspace?.isCurrent(context))return;if(result.ok){refreshActivitySaved();if(!result.unchanged&&diagramPending===pendingDiagram){diagramPending=null;if(!latest)notice.hidden=true;}}updateState();if(!result.ok){document.body.dataset.documentSaveError=['DOMAIN_VALIDATION_FAILED','DOCUMENT_CONFLICT','ACCESS_REFUSED','DOCUMENT_FENCED'].includes(result.code)?result.code:'DOCUMENT_SAVE_FAILED';status.textContent=result.code==='DOMAIN_VALIDATION_FAILED'?'This formatting could not be saved. Your edits are retained.':'Save refused · Your local changes are retained. Review the saved document separately or reload explicitly.';window.SirenHelpWorkspace?.explain(status,{namespace:'docs',operation:'save',code:result.code},context);}else{delete document.body.dataset.documentSaveError;refreshWhenSettled();}};
+ const openCopy=async method=>{
+  if(paused||disposed||pending||openAction||!draft)return;
+  const own={lifetime:openActionLifetime,generation,document:draft};openAction=own;
+  const current=()=>!paused&&!disposed&&own.lifetime===openActionLifetime&&own.generation===generation&&own.document===draft;
+  try{const result=await window.sirenDocsEdit[method]();if(current()&&!result?.ok)status.textContent='The document window could not be opened. Existing work was retained.';}
+  catch{if(current())status.textContent='The document window could not be opened. Existing work was retained.';}
+  // Cover/Refresh retires the result, while this guard still retains the actual
+  // outstanding action. A late finally must never release a newer owner.
+  finally{if(openAction===own)openAction=null;}
+ };
+ working.addEventListener('click',()=>{void openCopy('openWorkingCopy');});save.addEventListener('click',()=>{void saveCurrent();});
+ document.getElementById('reviewLatestDocument').addEventListener('click',()=>{void openCopy('openLatest');});document.getElementById('replaceLatestDocument').addEventListener('click',replace);
+ function refreshWhenSettled(){if(!latest||!draft||latest.version===draft.getStatus().version||draft.getStatus().dirty||draft.getStatus().pending||draft.getStatus().fenced)return;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=null;if(!paused&&!disposed&&!pending&&!draft.getStatus().dirty&&!draft.getStatus().pending&&!draft.getStatus().fenced)void connect();},250);}
+ function showDiagramPending(){notice.hidden=false;noticeMessage.textContent=readonly?'Diagram update pending · Save or close its working copies when ready.':'Diagram update pending · Save when ready. Close other working copies if the update remains pending.';}
+ const offPending=window.sirenDocsDiagramEvents?.onPending(ref=>{if(disposed||paused||ref.documentId!==draft?.getStatus().documentId)return;diagramPending={};updateState();showDiagramPending();})??(()=>{});
+ const off=window.sirenDocsEdit.onReferenceChanged(ref=>{if(disposed||paused||ref.documentId!==draft?.getStatus().documentId||ref.version===draft.getStatus().version||ref.projectRevision<=(latest?.projectRevision??draft.getStatus().projectRevision))return;latest=ref;notice.hidden=false;noticeMessage.textContent='The document changed in another window. Your local changes are retained.';refreshWhenSettled();});
+ theme.addEventListener('change',appearance);media.addEventListener('change',appearance);retry.addEventListener('click',replace);
+ window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.isComposing&&!readonly){const key=event.key.toLowerCase();if(key==='s'&&!event.shiftKey){event.preventDefault();if(!event.repeat)void saveCurrent();}else if(content.contains(document.activeElement)&&(key==='z'||key==='y'&&!event.shiftKey)){event.preventDefault();if(!event.repeat)historyAction(key==='y'||event.shiftKey?'redo':'undo');}}});
+ window.addEventListener('beforeunload',()=>{disposed=true;generation++;prepareLifetime++;openActionLifetime++;activity.dispose();savedContext=null;exportView.dispose();diagramView?.dispose();off();offPending();clearTimeout(refreshTimer);draft?.dispose();clear();media.removeEventListener('change',appearance);},{once:true});
+ window.sirenNativeDocsView=Object.freeze({connect});
+})();
+</script><script>(() => {
+  'use strict';
+  const status = document.getElementById('viewStatus');
+  const heading = document.getElementById('viewTitle');
+  let serial = 0;
+  const transfer=document.createElement('button');transfer.id='transferView';transfer.type='button';transfer.textContent='Attach to workspace';
+  document.getElementById('closeView').before(transfer);
+  let moving=false,placement='detached';
+  async function refreshPlacement(){
+    const result=await window.sirenWindowDock?.getShelf();
+    const item=result?.ok?result.items[0]:null;if(!item)return;
+    placement=item.placement;document.body.dataset.nativePlacement=placement;
+    transfer.textContent=placement==='attached'?'Detach window':'Attach to workspace';
+    transfer.title=placement==='attached'?'Open separately · Ctrl+Alt+D':'Keep this editor inside the workspace · Ctrl+Alt+A';
+  }
+  transfer.addEventListener('click',async()=>{
+    if(moving)return;moving=true;transfer.disabled=true;
+    try{const result=await window.sirenWindow.getView();if(!result?.ok)return;
+      const moved=await window.sirenWindowDock[placement==='attached'?'detach':'attach']({windowId:result.view.windowId});
+      if(!moved?.ok)status.textContent='The view could not be moved. Your work was retained.';
+      await refreshPlacement();
+    }finally{moving=false;transfer.disabled=false;}
+  });
+  const placementTimer=setInterval(()=>void refreshPlacement(),1200);
+  window.addEventListener('unload',()=>clearInterval(placementTimer),{once:true});
+  const connect = async () => {
+    const current = ++serial;
+    const result = await window.sirenWindow.getView();
+    if (current !== serial) return;
+    if (!result?.ok || result.view.role !== document.body.dataset.role) {
+      status.textContent = 'Waiting for the workspace…'; return;
+    }
+    heading.textContent = result.view.role === 'code' ? '⌘ Code' : 'Docs';
+    document.body.dataset.connected = 'true';
+    await refreshPlacement();
+    if(result.view.role==='code'&&window.sirenNativeCodeView){await window.sirenNativeCodeView.connect();return;}
+    if(result.view.role==='docs'&&window.sirenNativeDocsView){await window.sirenNativeDocsView.connect();return;}
+    status.textContent = 'Connected to the project. Shared editor integration is in development.';
+  };
+  window.sirenWindow.onReady(() => { void connect(); });
+  document.getElementById('closeView').addEventListener('click', async () => {
+    const result = await window.sirenWindow.getView();
+    if (!result?.ok) return;
+    const closed = await window.sirenWindow.closeView({ windowId: result.view.windowId });
+    if (!closed?.ok) status.textContent = 'The window could not be closed. Your project was retained.';
+  });
+  void connect();
+})();
+</script><script src="siren://app/assets/shell.js" integrity="sha384-ZFAkdr126JLjLnxngsUo7SoxSp/xPlnzV7/vmau7FMl9GYihjUZZnXWCVfLEzs/k" crossorigin="anonymous"></script></body></html>

@@ -17,12 +17,15 @@
    timer=setTimeout(()=>{
     timer=null;if(!current()||token!==generation||!latest)return;
     if(!clean(stateFor())){retain();return;}
-    const ref=latest;latest=null;reloading=true;
+    // Retain the known version while a temporary pause cancels this refresh.
+    // reset/dispose still clear or retire it with the owning source lifetime.
+    const ref=latest;reloading=true;
     // Invoke synchronously after the clean-state check: no input can slip
     // between that check and the editor's admission/disposal barrier.
     Promise.resolve(onReload()).then(ok=>{
      if(!current()||token!==generation)return;
      if(ok===false){failedVersion=ref.version;latest??=ref;retain();}
+     else if(latest===ref)latest=null;
     }).catch(()=>{if(current()&&token===generation){failedVersion=ref.version;latest??=ref;retain();}}).finally(()=>{reloading=false;reconcile();});
    },250);
   }

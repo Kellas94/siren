@@ -51,7 +51,10 @@ async function fixture() {
   const point = await recovery.checkpointProject({ snapshot: original, kind: 'saved' });
   const grants = new Set([original.project.id]);
   const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
-  const context = vm.createContext({ projects, recovery, recoveryAccess, grants, writes: new Set(), dataRoot,
+  const diagramScans = [];
+  const context = vm.createContext({ terminalRuntime:null, projects, recovery, recoveryAccess, grants, writes: new Set(), dataRoot,
+    // The real selection body notifies the separately owned Docs scheduler after its fence clears.
+    requestDocsDiagramScan: () => diagramScans.push({ selectedId: context.selectedId, bootstrapId: context.bootstrap.snapshot?.project.id, transition: context.writes.selectionTransition, quiesced: context.writes.selectionQuiesced }),
     atomicWrite, join, failure, Buffer, account: { accountId: null, policy: { opened() {} } }, retireNativeViews: () => {},
     accountTransition: false, pinTransition: false, window: { webContents: { executeJavaScript: async () => {} } },
     selectedId: original.project.id, snapshot: original, nativeReadonly: false, mode: 'normal', reason: null,
@@ -62,6 +65,9 @@ async function fixture() {
   const recovered = await services.restoreRecovery(point.id);
   assert.notEqual(recovered.project.id, original.project.id);
   assert.equal(recovered.revision, 1);
+  assert.equal(diagramScans.length,1,'Successful recovery selection must notify Docs exactly once');
+  assert.equal(diagramScans[0].selectedId,recovered.project.id);assert.equal(diagramScans[0].bootstrapId,recovered.project.id);
+  assert.equal(diagramScans[0].transition,false);assert.equal(diagramScans[0].quiesced,false);
   assert.deepEqual(await projects.readProject(original.project.id), original);
   return { dataRoot, projects, recovery, original, recovered, services, context };
 }

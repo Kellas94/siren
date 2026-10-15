@@ -1,0 +1,43 @@
+{
+  "classification": "ACTUAL_HOSTED_MERMAID_OUTPUT_DATA_NOT_APPROVAL",
+  "run": 38119248825,
+  "artifact": 11693689279,
+  "artifactSha256": "eb17ce22ee432178bbd9840a064d2a5d19bd143aa612aa07774dd8daa3a869aa",
+  "files": [
+    {
+      "id": "sequence",
+      "bytes": 23997,
+      "sha256": "5e057eb310d61c3c158424ceeb3c7eed73e3f5de05d92b5344caeed99a458e46"
+    },
+    {
+      "id": "class",
+      "bytes": 18934,
+      "sha256": "5a932e295471faedb0219e103209a71492f8f27a57702601e142e436e7ca0da2"
+    },
+    {
+      "id": "state",
+      "bytes": 28020,
+      "sha256": "364fc7011ae7171b8a1c6effa68c147869e47c9acdf81eda2c6ad286d514e769"
+    },
+    {
+      "id": "gantt",
+      "bytes": 10259,
+      "sha256": "169a65f134c1482974c1299847c6df956e042309eaebc65a92f9444d1f03a5ea"
+    },
+    {
+      "id": "pie",
+      "bytes": 4339,
+      "sha256": "54d958cabafd2286d1e3b057877b79d0561ba2653a8b7b40e7bfc0f300c03b5d"
+    },
+    {
+      "id": "er",
+      "bytes": 15744,
+      "sha256": "e2ff91b521fe95e71f3079df44b7ddd08da8f9effdfe0d97f29ae32580ed3c4a"
+    },
+    {
+      "id": "mindmap",
+      "bytes": 30984,
+      "sha256": "4e6338934c839200c430d14a1d45ebe94804d7fa9ae6467591c99ee99f441054"
+    }
+  ]
+}

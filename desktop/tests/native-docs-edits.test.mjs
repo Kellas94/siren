@@ -8,16 +8,23 @@ import {SourceRepository} from '../src/sources/repository.mjs';
 import {ProjectStore} from '../src/projects/store.mjs';
 import {documentVersion} from '../src/windows/docs.mjs';
 const module=await import('../src/windows/docs-edits.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
-async function fixture(t){
+async function fixture(t,{onSettled}={}){
  const f=await sourceReadFixture();t.after(()=>rm(f.root,{recursive:true,force:true}));let selected=f.selected,enabled=true,service;const notices=[];
  const owner=new WorkspaceCoordinator({registry:f.registry,sources:({canWrite})=>new SourceRepository(f.root,{canWrite}),
   domains:new DomainRepository({projects:({canWrite})=>new ProjectStore(f.root,{canSave:canWrite}),sources:({canWrite})=>new SourceRepository(f.root,{canWrite}),validatePatch:()=>true}),
   access:(grant,scope)=>f.isUnlocked()&&scope.domain==='docs'&&(scope.action==='read-domain'||service?.isWorking(grant))});
  assert.equal(typeof module.NativeDocsEdits,'function','Native working Docs must exist');
- service=new module.NativeDocsEdits({registry:f.registry,owner,enabled:()=>enabled&&f.isUnlocked(),snapshotFor:()=>selected,onReferenceChanged:(grant,ref)=>notices.push({windowId:grant.windowId,ref})});
+ service=new module.NativeDocsEdits({registry:f.registry,owner,enabled:()=>enabled&&f.isUnlocked(),snapshotFor:()=>selected,onSettled,onReferenceChanged:(grant,ref)=>notices.push({windowId:grant.windowId,ref})});
  const grant=()=>f.registry.capture(f.event(1));
  return {...f,service,owner,notices,grant,call:(method,payload,event=f.event(1),flushNonce)=>service.invoke({event,method,payload,flushNonce}),enable:v=>{enabled=v;},select:v=>{selected=v;}};
 }
+test('native working leases permit refresh only inside genuine saved settlement and another open draft still blocks it',async t=>{
+ let entered,release;const ready=new Promise(r=>entered=r),wait=new Promise(r=>release=r),settlements=[];const f=await fixture(t,{onSettled:async receipt=>{settlements.push(receipt);entered();await wait;}});assert.equal(typeof f.service.canRefresh,'function','Missing native settlement lease');const projectId=f.selected.project.id;
+ assert.equal(f.service.canRefresh(projectId,'doc-a'),true);assert.equal((await f.service.admit(f.grant())).ok,true);assert.equal(f.service.canRefresh(projectId,'doc-a'),false);
+ const request={operationId:'settled-document',documentId:'doc-a',expectedVersion:documentVersion(f.selected,'doc-a'),action:'rename',payload:{title:'Settled title'}};const saving=f.call('applyDocument',request);await ready;assert.equal(f.service.canRefresh(projectId,'doc-a'),true);assert.equal(settlements[0].receipt.ok,true);assert.deepEqual(settlements[0].grant,f.grant(),'separate captures describe the same actual frame and epoch');assert.equal(f.registry.isCurrent(settlements[0].grant),true);
+ await f.registry.openView({role:'docs',entityId:'doc-a'});const peer=f.registry.capture(f.event(2));assert.equal((await f.service.admit(peer)).ok,true);assert.equal(f.service.canRefresh(projectId,'doc-a'),false);release();assert.equal((await saving).ok,true);assert.equal(f.service.canRefresh(projectId,'doc-a'),false);assert.equal((await f.call('applyDocument',{...request,operationId:'stale-settlement'})).code,'DOCUMENT_CONFLICT');assert.equal(settlements.length,1);
+ await f.registry.discardViewAsync(peer.windowId);await f.registry.discardViewAsync(f.grant().windowId);assert.equal(f.service.canRefresh(projectId,'doc-a'),true);
+});
 test('native working Docs requires explicit main admission and scopes real atomic content saves to its selected document',async t=>{
  const f=await fixture(t),request={operationId:'atomic-docs',documentId:'doc-a',expectedVersion:documentVersion(f.selected,'doc-a'),action:'replace-content',payload:{title:'Native title',blocks:[{id:'heading-a',kind:'heading',level:2,text:'Exact 😀'}]}};
  assert.equal((await f.call('applyDocument',request)).code,'ACCESS_REFUSED');

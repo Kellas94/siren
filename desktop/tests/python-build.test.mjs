@@ -4,8 +4,7 @@ import { readFile, writeFile, mkdir, mkdtemp, rm, access, link } from 'node:fs/p
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
-import { LRParser } from '@lezer/lr';
-import { Tree } from '@lezer/common';
+import { Parser, Tree } from '@lezer/common';
 import { highlightTree, classHighlighter } from '@lezer/highlight';
 import { parser as upstream } from '@lezer/python';
 
@@ -21,15 +20,17 @@ async function owned(t) {
   t.after(() => rm(root, { recursive: true, force: true })); return root;
 }
 const errors = (parser, text) => { const found = []; parser.parse(text).iterate({ enter(node) { if (node.type.isError) found.push([node.from, node.to]); } }); return found; };
-async function built(t) { const root = await owned(t); const outputPath = join(root, 'patched-python.mjs'); const receipt = await buildPatchedPython({ baselinePath: resolve('baseline/R78.html'), outputPath }); return { root, outputPath, receipt, parser: (await import(pathToFileURL(outputPath).href)).parser }; }
+async function built(t) { const root = await owned(t); const outputPath = join(root, 'patched-python.mjs'); const receipt = await buildPatchedPython({ baselinePath: resolve('baseline/R78.html'), outputPath }); const emitted = await import(pathToFileURL(outputPath).href); return { root, outputPath, receipt, parser: emitted.parser, LRParser: emitted.LRParser }; }
 
-check('extracts exactly the admitted factory bytes and emits a deterministic module using shared installed Lezer', async t => {
-  const original = await readFile('baseline/R78.html'); const { root, outputPath, receipt, parser } = await built(t);
+check('extracts exactly the admitted factories with one pinned LR derivative and installed common/highlight', async t => {
+  const original = await readFile('baseline/R78.html'); const { root, outputPath, receipt, parser, LRParser } = await built(t);
   assert.equal(receipt.baselineSha256, BASELINE); assert.equal(receipt.factorySha256, FACTORIES);
   assert.deepEqual(receipt.localModules, ['@lezer/python', '@siren/python/terms', '@siren/python/tokens', '@siren/python/highlight']);
   assert.deepEqual(receipt.sharedModules, ['@lezer/common', '@lezer/lr', '@lezer/highlight']);
   const bytes = await readFile(outputPath); assert.equal(receipt.moduleSha256, digest(bytes)); assert.equal(receipt.bytes, bytes.length);
-  assert.equal(parser instanceof LRParser, true); assert.equal(parser.parse('x=1\n') instanceof Tree, true);
+  const derivative = await import(pathToFileURL(receipt.lrModulePath).href);
+  assert.equal(LRParser, derivative.LRParser); assert.equal(parser.constructor, LRParser);
+  assert.equal(parser instanceof LRParser, true); assert.equal(parser instanceof Parser, true); assert.equal(parser.parse('x=1\n') instanceof Tree, true);
   const next = join(root, 'again.mjs'); const second = await buildPatchedPython({ baselinePath: resolve('baseline/R78.html'), outputPath: next });
   assert.equal(second.moduleSha256, receipt.moduleSha256); assert.deepEqual(await readFile(next), bytes); assert.deepEqual(await readFile('baseline/R78.html'), original);
   assert.equal(bytes.toString().includes('Local Code parser licenses'), true);

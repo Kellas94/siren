@@ -36,3 +36,6 @@ test('Enter on Cancel or format selection never triggers a saved-document export
  }
  assert.equal(prevented,0);f.byId('documentExportCancel').emit();assert.equal(f.byId('documentExportPicker').open,false);assert.equal(f.calls.length,0);
 });
+test('Markdown receipt can reveal its bounded native ZIP while refusing arbitrary extensions',async()=>{
+ const f=fixture();f.button.emit();f.byId('documentExportFormat').value='markdown';const result=f.receipt('markdown');result.filename=result.filename.replace(/\.md$/,'.zip');f.answer(result);f.byId('documentExportConfirm').emit();await tick();assert.equal(f.revealButton.hidden,false);assert.match(f.messages.at(-1),/snapshots included/);f.view.reset();f.button.emit();f.answer({...result,filename:result.filename.replace(/\.zip$/,'.exe')});f.byId('documentExportConfirm').emit();await tick();assert.equal(f.revealButton.hidden,true);
+});

@@ -14,7 +14,7 @@ test('editor bundle is local, deterministic, retains notices and uses the frozen
   const bytes = await readFile(a.bundlePath);
   assert.deepEqual(bytes, await readFile(b.bundlePath));
   assert.equal(createHash('sha256').update(bytes).digest('hex'), a.sha256);
-  assert.equal(a.pythonModuleSha256, '594371c934fb01689a144bd350c854497c0f2d18499fee86cc4e3209b658a589');
+  assert.equal(a.pythonModuleSha256, 'cde02e780caa34e1f2270fd814e1ae6821ea2069e8df31d3f3903009357e338a');
   assert.ok(bytes.length > 100000); assert.ok(bytes.length < 2000000);
   // Artifact controls supplement the actual browser behavior probe, not its replacement.
   assert.match(bytes.toString('utf8'), /SirenCodeEditor/); assert.match(bytes.toString('utf8'), /MIT/);

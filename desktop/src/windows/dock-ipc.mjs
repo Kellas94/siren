@@ -7,13 +7,13 @@ export function invokeDock({registry,event,method,payload}){
  let grant,sender,frame;
  const current=()=>event.sender===sender&&event.senderFrame===frame&&registry.isCurrent(grant);
  try{
-  grant=registry.capture(event);if(!grant||!['workspace','code','docs','diagram'].includes(grant.role))return failure('ACCESS_REFUSED');
+  grant=registry.capture(event);if(!grant||!['workspace','code','docs','diagram','terminal'].includes(grant.role))return failure('ACCESS_REFUSED');
   sender=event.sender;frame=event.senderFrame;
   if(!['getShelf','attach','detach','showWorkspace'].includes(method))return failure('REQUEST_REFUSED');
   let data;try{data=navigationFields(payload??{},method==='attach'||method==='detach'?['windowId']:[],method==='attach'||method==='detach'?['windowId']:[]);}
   catch{return failure('REQUEST_REFUSED');}
   const rows=registry.surfaceRecords().slice(0,64).filter(row=>id(row.windowId)&&id(row.entityId)
-    &&['code','docs','diagram'].includes(row.role)&&['attached','detached'].includes(row.placement)&&typeof row.selected==='boolean'
+    &&['code','docs','diagram','terminal'].includes(row.role)&&['attached','detached'].includes(row.placement)&&typeof row.selected==='boolean'
     &&(grant.role==='workspace'||row.windowId===grant.windowId));
   if(!current())return failure('ACCESS_REFUSED');
   if(method==='getShelf'){

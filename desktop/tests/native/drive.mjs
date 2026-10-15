@@ -132,6 +132,7 @@ export async function launchDesktop({ root = resolve('.'), executable = resolve(
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 });
     };
     return { pid: child.pid, send, evaluate, waitFor, screenshot, click, events, logs: () => logs,
+      processExit: () => ({pid:child.pid,exitCode:child.exitCode,signalCode:child.signalCode}),
       waitForExit: async () => {
         if (exited) return;
         await new Promise((resolve, reject) => {

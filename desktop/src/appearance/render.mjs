@@ -515,6 +515,141 @@ export function createRenderAppearanceContract(){
  const resolve=(theme,systemDark)=>{if(theme==='system')theme=systemDark===true?'dark':'light';if(typeof theme!=='string'||!Object.hasOwn(palettes,theme))fail();return Object.freeze({theme,mode:palettes[theme].mode});};
  const read=input=>{if(!input||typeof input!=='object'||Array.isArray(input))fail();const keys=Reflect.ownKeys(input);if(keys.length!==2||!keys.includes('theme')||!keys.includes('mode'))fail();const own=Object.getOwnPropertyDescriptors(input);if(!('value'in own.theme)||!('value'in own.mode)||own.theme.value==='system')fail();const d=resolve(own.theme.value,false);if(d.mode!==own.mode.value)fail();return d;};
  const palette=input=>palettes[read(input).theme];
- const config=input=>{const d=read(input),p=palette(d);return {theme:'base',themeVariables:{darkMode:d.mode==='dark',background:p.canvasBg,mainBkg:p.nodeFill,primaryColor:p.nodeFill,primaryTextColor:p.nodeText,primaryBorderColor:p.nodeBorder,secondaryColor:p.nodeAccent,secondaryTextColor:p.nodeText,secondaryBorderColor:p.nodeAccentBorder,tertiaryColor:p.edgeLabel,tertiaryTextColor:p.nodeText,lineColor:p.line,edgeLabelBackground:p.edgeLabel,clusterBkg:p.nodeFill,clusterBorder:p.nodeBorder,textColor:p.text,titleColor:p.text,nodeTextColor:p.nodeText,actorBkg:p.nodeFill,actorBorder:p.nodeBorder,actorTextColor:p.nodeText,signalColor:p.line,signalTextColor:p.text,labelBoxBkgColor:p.edgeLabel,labelBoxBorderColor:p.nodeBorder,labelTextColor:p.nodeText,noteBkgColor:p.nodeAccent,noteBorderColor:p.nodeAccentBorder,noteTextColor:p.nodeText}};};
+ // Frozen R78 chart fill/ink derivation, kept self-contained for injection.
+ const DIAGRAM_INK_FLOOR=4.5,DIAGRAM_INK_AIM=5,DIAGRAM_PALETTE_SLOTS=8;
+ const themeIsDark=preset=>preset.mode==='dark';
+ function parseCssColour(value) {
+   const raw = String(value == null ? '' : value).trim();
+   // Theme presets are hex, computed styles are rgb() - one parser reads both, so the
+   // diagram ink below shares this colour system rather than growing a second one.
+   const hexMatch = raw.match(/^#([0-9a-fA-F]{3,8})$/);
+   if (hexMatch) {
+     let digits = hexMatch[1];
+     if (digits.length === 3 || digits.length === 4) digits = digits.split('').map(c => c + c).join('');
+     if (digits.length !== 6 && digits.length !== 8) return null;
+     return {
+       r: parseInt(digits.slice(0, 2), 16), g: parseInt(digits.slice(2, 4), 16), b: parseInt(digits.slice(4, 6), 16),
+       a: digits.length === 8 ? parseInt(digits.slice(6, 8), 16) / 255 : 1
+     };
+   }
+   const m = raw.match(/rgba?\(([^)]+)\)/);
+   if (!m) return null;
+   const parts = m[1].split(',').map(parseFloat);
+   if (parts.length < 3 || parts.some(v => Number.isNaN(v))) return null;
+   return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+ }
+ function mixColours(a, b, t) {
+   return { r: a.r + (b.r - a.r) * t, g: a.g + (b.g - a.g) * t, b: a.b + (b.b - a.b) * t, a: 1 };
+ }
+ function colourLuminance(c) {
+   const f = v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+   return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+ }
+ function colourContrast(a, b) {
+   const l1 = colourLuminance(a);
+   const l2 = colourLuminance(b);
+   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+ }
+ function raiseContrast(colour, bg, target, need) {
+   if (colourContrast(colour, bg) >= need) return colour;
+   let best = colour;
+   for (let step = 1; step <= 20; step += 1) {
+     const candidate = mixColours(colour, target, step / 20);
+     best = candidate;
+     if (colourContrast(candidate, bg) >= need) return candidate;
+   }
+   return best;
+ }
+ function toRgbString(c) {
+   return `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`;
+ }
+ function compositeOver(fg, bg) {
+   return { r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 };
+ }
+ function brightenColour(colour, factor) {
+   return { r: Math.min(255, colour.r * factor), g: Math.min(255, colour.g * factor), b: Math.min(255, colour.b * factor), a: 1 };
+ }
+ function inkOnFill(fill, surface, preset, options = {}) {
+   const need = options.need || DIAGRAM_INK_FLOOR;
+   const alpha = typeof options.alpha === 'number' ? options.alpha : 1;
+   const brightness = options.brightness || 1;
+   const ground = parseCssColour(surface) || { r: 0, g: 0, b: 0, a: 1 };
+   const declared = parseCssColour(fill);
+   if (!declared) return preset.text;
+   const painted = compositeOver({ r: declared.r, g: declared.g, b: declared.b, a: Math.min(1, declared.a * alpha) }, ground);
+   const score = candidate => {
+     const solid = compositeOver(candidate, painted);
+     const plain = colourContrast(solid, painted);
+     if (brightness === 1) return plain;
+     return Math.min(plain, colourContrast(brightenColour(solid, brightness), brightenColour(painted, brightness)));
+   };
+   let best = null;
+   let bestScore = -1;
+   for (const candidate of [options.prefer, preset.text, preset.nodeText, preset.canvasBg, preset.nodeFill, preset.muted]) {
+     const parsed = candidate ? parseCssColour(candidate) : null;
+     if (!parsed) continue;
+     const value = score(parsed);
+     if (value >= need) return toRgbString(compositeOver(parsed, painted));
+     if (value > bestScore) { bestScore = value; best = parsed; }
+   }
+   if (!best) return preset.text;
+   const aim = Math.max(need, options.need ? need : DIAGRAM_INK_AIM);
+   const solid = compositeOver(best, painted);
+   const black = { r: 0, g: 0, b: 0, a: 1 };
+   const white = { r: 255, g: 255, b: 255, a: 1 };
+   // Which extreme helps has to be measured, not guessed from luminance. Under the
+   // brightness filter a mid fill lifts toward white, so walking a light ink lighter
+   // can never clear the floor while black clears it comfortably.
+   const target = score(white) >= score(black) ? white : black;
+   if (brightness === 1) return toRgbString(raiseContrast(solid, painted, target, aim));
+   // brightness() clips at white, so the walk has to be re-scored at every step.
+   let walked = solid;
+   for (let step = 1; step <= 20; step += 1) {
+     if (score(walked) >= aim) break;
+     walked = mixColours(solid, target, step / 20);
+   }
+   return toRgbString(walked);
+ }
+ function themeChartFills(preset) {
+   const ground = parseCssColour(preset.canvasBg) || { r: 0, g: 0, b: 0, a: 1 };
+   const away = themeIsDark(preset) ? { r: 255, g: 255, b: 255, a: 1 } : { r: 0, g: 0, b: 0, a: 1 };
+   const out = [];
+   [preset.nodeAccentBorder, preset.nodeBorder, preset.line].forEach(token => {
+     const parsed = parseCssColour(token);
+     if (parsed) out.push(compositeOver(parsed, ground));
+   });
+   while (out.length < 3) out.push(mixColours(ground, away, 0.55));
+   const visible = out.map(colour => raiseContrast(colour, ground, away, 3));
+   for (let i = 0; i < 3; i += 1) {
+     const parent = visible[i];
+     // Step the variant away from its parent in whichever direction has room, and stop
+     // before it gets within 3:1 of the canvas. A lightness step rather than a new hue,
+     // so a single-hue theme - Matrix, Amber - still looks like itself.
+     const toward = colourContrast(parent, away) > colourContrast(parent, ground) ? away : ground;
+     let best = parent;
+     let bestGap = 1;
+     for (let step = 1; step <= 20; step += 1) {
+       const candidate = mixColours(parent, toward, step / 20);
+       if (colourContrast(candidate, ground) < 3) break;
+       const gap = colourContrast(candidate, parent);
+       if (gap > bestGap) { bestGap = gap; best = candidate; }
+       if (gap >= 1.7) break;
+     }
+     out.push(best);
+   }
+   return visible.concat(out.slice(3)).map(toRgbString);
+ }
+ function expandDiagramPalette(list) {
+   const out = list.slice(0, DIAGRAM_PALETTE_SLOTS);
+   let step = 0;
+   while (out.length < DIAGRAM_PALETTE_SLOTS && list.length) {
+     const a = parseCssColour(list[step % list.length]);
+     const b = parseCssColour(list[(step + 2) % list.length]);
+     out.push(a && b ? toRgbString(mixColours(a, b, 0.45)) : list[step % list.length]);
+     step += 1;
+   }
+   return out;
+ }
+ const config=input=>{const d=read(input),p=palette(d),fills=expandDiagramPalette(themeChartFills(p)),series={};for(let i=0;i<8;i++){series['git'+i]=fills[i];series['gitBranchLabel'+i]=inkOnFill(fills[i],p.canvasBg,p);}for(let i=0;i<12;i++){const fill=fills[i%fills.length];series['cScale'+i]=fill;series['cScaleLabel'+i]=inkOnFill(fill,p.canvasBg,p);}return {theme:'base',themeVariables:{...series,darkMode:d.mode==='dark',background:p.canvasBg,mainBkg:p.nodeFill,primaryColor:p.nodeFill,primaryTextColor:p.nodeText,primaryBorderColor:p.nodeBorder,secondaryColor:p.nodeAccent,secondaryTextColor:p.nodeText,secondaryBorderColor:p.nodeAccentBorder,tertiaryColor:p.edgeLabel,tertiaryTextColor:p.nodeText,lineColor:p.line,edgeLabelBackground:p.edgeLabel,clusterBkg:p.nodeFill,clusterBorder:p.nodeBorder,textColor:p.text,titleColor:p.text,nodeTextColor:p.nodeText,actorBkg:p.nodeFill,actorBorder:p.nodeBorder,actorTextColor:p.nodeText,signalColor:p.line,signalTextColor:p.text,labelBoxBkgColor:p.edgeLabel,labelBoxBorderColor:p.nodeBorder,labelTextColor:p.nodeText,noteBkgColor:p.nodeAccent,noteBorderColor:p.nodeAccentBorder,noteTextColor:p.nodeText}};};
  return Object.freeze({resolve,read,palette,config});
 }

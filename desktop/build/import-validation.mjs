@@ -9,6 +9,7 @@ import {bundleMetadataHelper} from './source-bundle-metadata.mjs';
 import {validateNativeNodeStyles} from './native-node-style-validation.mjs';
 import {createDiagramMetadataContract} from '../src/documents/diagram-metadata.mjs';
 import {createDiagramLayoutContract} from '../src/documents/diagram-layout.mjs';
+import {buildDiagramEmbedContract} from './diagram-embed-contract.mjs';
 
 const baselineHash='5fce39d9afc9d8d9a7367647a23aa5b07a00c61bdc357e369805d0bd3754faa4';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -56,6 +57,7 @@ export const domainHelper = `
               const projected={id:block.id,kind:'image',dataUri:block.dataUri??'',caption:block.caption??'',fileName:block.fileName??''},report=[];return same(sanitizeWorkpaperBlock(projected,report),projected)&&report.length===0;
             };
             return payload.blocks.length<=MAX_WP_BLOCKS&&payload.blocks.every(block=>{
+              if(block?.kind==='diagram-embed'){try{return same(window.SirenDiagramEmbedContract.normalizeDiagramEmbed(block),block);}catch{return false;}}
               if(existing.has(JSON.stringify(canonical(block))))return true;
               if(labelsOnly(block)||imageFieldsOnly(block))return true;
               const report=[];return same(sanitizeWorkpaperBlock(block,report),block)&&report.length===0;
@@ -109,9 +111,10 @@ export async function buildImportValidation({baselinePath,outputDir}) {
   if(digest(bytes)!==baselineHash)throw Error('Frozen import baseline SHA-256 mismatch');
   let html=bytes.toString('utf8');
   const presentationEdits=await buildPresentationEdits();
+  const diagramEmbedContract=await buildDiagramEmbedContract();
   const startup="document.addEventListener('DOMContentLoaded', () => {\n        sirenStore.start()";
   if(html.split(startup).length!==2)throw Error('Frozen import startup marker mismatch');
-  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+presentationEdits+importHelper+domainHelper+bundleMetadataHelper+`
+  html=html.replace(startup,()=>"document.addEventListener('DOMContentLoaded', () => {"+diagramEmbedContract+presentationEdits+importHelper+domainHelper+bundleMetadataHelper+`
         if (!window.mermaid || typeof window.mermaid.parse !== 'function') throw new Error('Embedded import engine unavailable');
         window.mermaid.initialize({startOnLoad:false,securityLevel:'strict'});
         rendererMode = 'mermaid';

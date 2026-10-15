@@ -50,6 +50,17 @@ function installBundleMetadata(){
  const blockFields={heading:'level text',text:'html',image:'dataUri caption fileName src url href',table:'rows headerRow',checklist:'items',prompt:'label model text reasoningEffort updatedAt copiedAt history',settings:'rows',knowledge:'rows reasoningEffort',testruns:'label rows'};
  function block(value){
   if(!object(value))refuse('block');
+  if(value.kind==='diagram-embed'){
+   // The frozen HTML document sanitizer predates this native typed block.
+   // Validate it with the same browser contract used by native Docs, then
+   // supply an inert text placeholder ONLY to the legacy projection. The
+   // original block and its saved asset bindings never pass through HTML.
+   const normalize=window.SirenDiagramEmbedContract?.normalizeDiagramEmbed;
+   if(typeof normalize!=='function')refuse('diagram embed contract');
+   let normalized;try{normalized=normalize(value);}catch{refuse('diagram embed');}
+   unchanged(value,normalized,'diagram embed');
+   return {id:value.id,kind:'text',html:''};
+  }
   if(own(value,'kind')&&!own(blockFields,value.kind))refuse('block kind');
   const kind=value.kind??'text',children={};
   if(kind==='knowledge'){identities(value.rows,'knowledge rows',false);children.rows=list(value=>knowledge(value));}

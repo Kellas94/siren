@@ -17,6 +17,18 @@ test('actual owned diff worker compares two immutable hashes and exact EOF chang
  const left=Array.from({length:300000},(_,i)=>`value_${i}=${i}\n`).join(''),right=left+'# exact EOF Ș😀\n',f=fixture(t,left,right),r=await f.submit();
  assert.equal(r.status,'complete');assert.deepEqual(r.rightRef,f.rightRef);assert.deepEqual(f.reads,['left','right']);assert.equal(r.result.hunks.length,1);assert.equal(r.result.hunks[0].left.from,left.length);assert.equal(r.result.hunks[0].right.preview,'# exact EOF Ș😀\n');assert.equal(hash(f.a),f.ref.sha256);assert.equal(hash(f.b),f.rightRef.sha256);assert.equal(f.service.isIdle(),true);
 });
+
+test('actual owned worker keeps a new 300k-line Python source exact with a one-cell dense budget',async t=>{
+ const text='value = "Ș😀"\r\n'.repeat(300000),f=fixture(t,'',text);
+ const r=await f.submit({budget:{maxUnits:1,maxCells:1,maxPreviewUnits:17,maxTotalPreviewUnits:31}});
+ assert.equal(r.status,'complete');assert.equal(r.result.approximate,false);
+ assert.equal(r.result.hunks.length,1);const h=r.result.hunks[0];
+ assert.deepEqual([h.left.from,h.left.to,h.right.from,h.right.to],[0,0,0,text.length]);
+ assert.equal(h.right.preview.isWellFormed(),true);assert.ok(h.right.preview.length<=17);
+ assert.equal(r.result.previewTruncated,true);assert.deepEqual(f.reads,['left','right']);
+ assert.equal(hash(f.b),f.rightRef.sha256);assert.equal(f.service.isIdle(),true);
+ assert.ok(f.activities.some(event=>event.phase==='worker-exited'&&event.status==='complete'));
+});
 test('missing/forged right ref, right corruption and left-buffer mutation during second read cannot publish a diff',async t=>{
  const f=fixture(t,'old\n','new\n');assert.equal((await f.submit({rightRef:undefined})).reason,'REQUEST_REFUSED');assert.equal(f.reads.length,0);
  const bad=fixture(t,'old\n','new\n',{loadSource:async(_ref,{side})=>Buffer.from(side==='right'?'CORRUPTED':'old\n')});assert.equal((await bad.submit()).reason,'SOURCE_HASH_MISMATCH');assert.deepEqual(bad.activities,[{phase:'job-admitted'},{phase:'job-finished',status:'error'}]);

@@ -2,6 +2,8 @@ import {parseFragment} from 'parse5';
 import {createHash} from 'node:crypto';
 import {navigationFields} from '../navigation/contracts.mjs';
 import {documentContentVersion} from '../windows/docs.mjs';
+import {normalizeDiagramEmbed} from './diagram-embeds.mjs';
+import {verifyDiagramEmbedAsset,formatDiagramEmbed,packageDiagramMarkdown,embedAssetPath} from './diagram-embed-export.mjs';
 
 const reject=code=>{throw Object.assign(Error(code),{code});};
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -66,17 +68,20 @@ function block(value,format,budget){
  // guessed into a new schema. This is explicit in both the reading section and archive.
  return {html:'<h3>'+escape(typeof kind==='string'?kind:'Preserved block')+'</h3><p class="notice">Structured or unrecognized content · Exact fields preserved.</p><pre>'+escape(JSON.stringify(value,null,2))+'</pre>',markdown:'### '+md(typeof kind==='string'?kind:'Preserved block')+'\n\nStructured or unrecognized content · Exact fields preserved.\n\n'+indented(JSON.stringify(value,null,2))};
 }
-export function formatSavedDocument(input){
+export function formatSavedDocument(input,{diagramAssets=[]}={}){
  const data=navigationFields(input,['format','projectId','document','version','sha256','projectRevision','exportedAt']);
  if(!['json','markdown','html'].includes(data.format)||!Number.isSafeInteger(data.projectRevision)||data.projectRevision<1||typeof data.exportedAt!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(data.exportedAt)||!Number.isFinite(Date.parse(data.exportedAt)))reject('REQUEST_REFUSED');
  const document=copy(data.document),raw=JSON.stringify(document);if(Buffer.byteLength(raw)>8*1024*1024)reject('DOCUMENT_BUDGET');
  if(digest(Buffer.from(raw))!==data.sha256||documentContentVersion(data.projectId,document)!==data.version)reject('DOCUMENT_VERSION_CHANGED');
- const archive={format:'siren-document-archive',schema:1,exporter:'SIREN saved document export v1',projectId:data.projectId,documentId:document.id,projectRevision:data.projectRevision,version:data.version,documentSha256:data.sha256,exportedAt:data.exportedAt,sourcePolicy:'references-only',document};
+ const embeds=(document.blocks??[]).filter(b=>b?.kind==='diagram-embed').map(normalizeDiagramEmbed),records=new Map();if(!Array.isArray(diagramAssets)||diagramAssets.length>128)reject('EXPORT_BUDGET');for(const value of diagramAssets){const record=verifyDiagramEmbedAsset(value),key=record.ref.kind+':'+record.ref.sha256;if(records.has(key))reject('DIAGRAM_EMBED_ASSET_CORRUPT');records.set(key,record);}for(const b of embeds)for(const ref of [b.snapshot.sourceAsset,b.snapshot.visualAsset]){const actual=records.get(ref.kind+':'+ref.sha256);if(!actual||actual.ref.bytes!==ref.bytes)reject('DIAGRAM_EMBED_ASSET_UNKNOWN');}
+ const required=new Set(embeds.flatMap(b=>[b.snapshot.sourceAsset,b.snapshot.visualAsset]).map(r=>r.kind+':'+r.sha256));if(records.size!==required.size)reject('DIAGRAM_EMBED_ASSET_UNKNOWN');
+ const expanded=[...records.values()].reduce((n,r)=>n+4*Math.ceil(r.bytes.length/3),0)+(data.format==='html'?embeds.reduce((n,b)=>n+4*Math.ceil(b.snapshot.visualAsset.bytes/3),0):0);if(expanded+Buffer.byteLength(raw)>16*1024*1024)reject('EXPORT_BUDGET');
+ const archive={format:'siren-document-archive',schema:embeds.length?2:1,exporter:'SIREN saved document export v1',projectId:data.projectId,documentId:document.id,projectRevision:data.projectRevision,version:data.version,documentSha256:data.sha256,exportedAt:data.exportedAt,sourcePolicy:embeds.length?'embedded-diagram-snapshots; other links references-only':'references-only',document,...(embeds.length?{diagramAssets:[...records.values()].map(({ref,bytes})=>data.format==='markdown'?{ref,path:embedAssetPath(ref)}:{ref,base64:bytes.toString('base64')})}:{})};
  const archival=JSON.stringify(archive,null,2);let output=archival,extension='json';
  if(data.format!=='json'){
-  const title=typeof document.title==='string'?document.title:'Untitled document',budget={cells:0},blocks=Array.isArray(document.blocks)?document.blocks.map(value=>block(value,data.format,budget)):[];
-  if(data.format==='markdown'){extension='md';output='# '+md(title)+'\n\n'+disclosure+'\n\n'+blocks.map(b=>b.markdown).join('\n\n')+'\n\nPreserved data (JSON archive)\n\n'+indented(archival);}
-  else{extension='html';output='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+escape(policy)+'"><title>'+escape(title)+'</title><style>'+css+'</style></head><body><h1>'+escape(title)+'</h1><p class="notice">'+escape(disclosure)+'</p>'+blocks.map(b=>'<section>'+b.html+'</section>').join('')+'<details><summary>Preserved data (JSON archive)</summary><pre id="siren-archive">'+escape(archival)+'</pre></details></body></html>';}
+  const title=typeof document.title==='string'?document.title:'Untitled document',budget={cells:0},blocks=Array.isArray(document.blocks)?document.blocks.map(value=>value?.kind==='diagram-embed'?formatDiagramEmbed(value,records.get(value.snapshot.visualAsset.kind+':'+value.snapshot.visualAsset.sha256),{format:data.format}):block(value,data.format,budget)):[],notice=embeds.length?'Saved diagram snapshots are included. Other linked code, diagrams and documents remain references only. Exact original fields and claims are retained in Preserved data.':disclosure;
+  if(data.format==='markdown'){extension='md';output='# '+md(title)+'\n\n'+notice+'\n\n'+blocks.map(b=>b.markdown).join('\n\n')+'\n\nPreserved data (JSON archive)\n\n'+indented(archival);}
+  else{extension='html';const styles=css+(embeds.length?'.diagram-context{margin:24px 0}.diagram-context img{display:block;max-width:100%;max-height:900px;object-fit:contain}':'');const exportPolicy=embeds.length?policy.replace(/style-src 'sha256-[^']+'/,"style-src 'sha256-"+createHash('sha256').update(styles).digest('base64')+"'")+"; img-src data:":policy;output='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+escape(exportPolicy)+'"><title>'+escape(title)+'</title><style>'+styles+'</style></head><body><h1>'+escape(title)+'</h1><p class="notice">'+escape(notice)+'</p>'+blocks.map(b=>'<section>'+b.html+'</section>').join('')+'<details><summary>Preserved data (JSON archive)</summary><pre id="siren-archive">'+escape(archival)+'</pre></details></body></html>';}
  }
- const bytes=Buffer.from(output);if(bytes.length>16*1024*1024)reject('EXPORT_BUDGET');return Object.freeze({bytes,extension});
+ let bytes=Buffer.from(output);if(bytes.length>16*1024*1024)reject('EXPORT_BUDGET');if(data.format==='markdown'&&embeds.length){bytes=packageDiagramMarkdown([{path:'document.md',bytes},...[...records.values()].map(({ref,bytes})=>({path:embedAssetPath(ref),bytes}))]);extension='zip';}return Object.freeze({bytes,extension});
 }

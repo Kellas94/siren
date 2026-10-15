@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,cp,realpath} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
@@ -9,7 +9,7 @@ import {commitManifest} from '../../src/sources/manifest.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
 
-const evidence=resolve('evidence/source-sync',new Date().toISOString().replaceAll(':','-'));await mkdir(evidence,{recursive:true});
+const evidenceAt=resolve('evidence/source-sync',new Date().toISOString().replaceAll(':','-'));await mkdir(evidenceAt,{recursive:true});const evidence=await realpath(evidenceAt);
 const packageAt=process.argv.indexOf('--package'),packageRoot=packageAt<0?null:resolve(process.argv[packageAt+1]||'');
 let packageReceipt=null,packageCopy=null;
 if(packageRoot){

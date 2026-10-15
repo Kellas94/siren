@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import {normalizeDomainRequest,projectDomainResult} from './domain.mjs';
 import {normalizeWorkspaceSave,projectWorkspaceResult,MAX_WORKSPACE_BYTES} from './primary.mjs';
 import {normalizeCatalogueCreation,projectCatalogueCreationReceipt} from './diagram-create.mjs';
+import {readDiagramEmbedPublication} from '../documents/diagram-embed-publication.mjs';
 
 const fail=code=>Object.freeze({ok:false,code});
 const error=code=>Object.assign(new Error(code),{code});
@@ -16,14 +17,35 @@ export class WorkspaceCoordinator {
   #bytes=0;#paused=false;#maxPending;#maxBytes;#subscriptions=new Set();
  #flushes=new Map();#pauseGeneration=0;#pauseReason=null;
   #activityGeneration=0;#quiescence=new WeakMap();#onNativeFailure;
-  constructor({sources,docs,domains,primary,readonlyViews,registry,access,onNativeFailure,maxPending=64,maxQueueBytes=16*1024*1024}) {
+  #nativeRefreshAccess;#nativeRefreshScopes=new WeakMap();#nativeSaveObservers=new Set();
+  constructor({sources,docs,domains,primary,readonlyViews,registry,access,onNativeFailure,nativeDiagramRefreshAccess,maxPending=64,maxQueueBytes=16*1024*1024}) {
     if(typeof sources!=='function' || typeof access!=='function' || !registry || !['isCurrent','eventFor','caller'].every(key=>typeof registry[key]==='function'))throw TypeError('Native source owner adapters required');
     if(!Number.isSafeInteger(maxPending)||maxPending<1||maxPending>64||!Number.isSafeInteger(maxQueueBytes)||maxQueueBytes<1||maxQueueBytes>16*1024*1024)throw error('OWNER_BUDGET');
     if(docs!==undefined && typeof docs.commitCodeToDocs!=='function')throw TypeError('Native Docs adapter required');
     if(domains!==undefined && !['read','apply','flush'].every(key=>typeof domains?.[key]==='function'))throw TypeError('Native domain adapter required');
     if(primary!==undefined && typeof primary?.save!=='function')throw TypeError('Native primary adapter required');
     if(readonlyViews!==undefined&&!['isReadonly','seal','verify'].every(method=>typeof readonlyViews?.[method]==='function'))throw TypeError('Native readonly proof adapter required');
+    if(nativeDiagramRefreshAccess!==undefined&&typeof nativeDiagramRefreshAccess!=='function')throw TypeError('Native refresh access adapter required');this.#nativeRefreshAccess=nativeDiagramRefreshAccess;
     this.#registry=registry;this.#sources=sources;this.#docs=docs;this.#domains=domains;this.#primary=primary;this.#readonly=readonlyViews;this.#access=access;this.#onNativeFailure=onNativeFailure;this.#maxPending=maxPending;this.#maxBytes=maxQueueBytes;
+  }
+  // Main-only background authority. No renderer/flush transport accepts these
+  // non-cloneable scopes. The policy must include selected project and native
+  // working-view leases; absence of that policy refuses all refresh writes.
+  captureDiagramRefresh(projectId,documentId,continuing=()=>true){
+    const generation=this.#pauseGeneration;let revoked=false;
+    const isCurrent=()=>{if(revoked)return false;try{if(this.#paused||generation!==this.#pauseGeneration||typeof continuing!=='function'||continuing()!==true||this.#nativeRefreshAccess?.(projectId,documentId)!==true)revoked=true;}catch{revoked=true;}return !revoked;};
+    if(typeof projectId!=='string'||typeof documentId!=='string'||!isCurrent())return null;
+    const capability=Object.freeze({isCurrent});this.#nativeRefreshScopes.set(capability,{projectId,documentId});return capability;
+  }
+  observeDomainSaves(callback){if(typeof callback!=='function')throw TypeError('Native save observer required');if(this.#nativeSaveObservers.size>=16)throw error('OWNER_BUDGET');this.#nativeSaveObservers.add(callback);return()=>this.#nativeSaveObservers.delete(callback);}
+  invokeDiagramRefresh(token,capability){
+    const scope=capability&&this.#nativeRefreshScopes.get(capability),request=readDiagramEmbedPublication(token);
+    if(!scope||!capability.isCurrent())return Promise.resolve(fail('ACCESS_REFUSED'));
+    if(!request||!['refresh','status'].includes(request.action)||request.documentId!==scope.documentId||typeof this.#domains?.commitDiagramEmbed!=='function')return Promise.resolve(fail('REQUEST_REFUSED'));
+    const bytes=Buffer.byteLength(JSON.stringify(request));if(this.#pending.size>=this.#maxPending||this.#bytes+bytes>this.#maxBytes)return Promise.resolve(fail('OWNER_BUDGET'));
+    this.#activityGeneration++;this.#bytes+=bytes;
+    const operation=this.#tail.catch(()=>{}).then(async()=>{if(!capability.isCurrent())return fail('ACCESS_REFUSED');const result=projectDomainResult('docs','applyDocument',await this.#domains.commitDiagramEmbed(token,{projectId:scope.projectId,purpose:'diagram-refresh',isCurrent:capability.isCurrent}),request);if(!capability.isCurrent())return fail('ACCESS_REFUSED');if(result.ok)this.#publish(scope.projectId,scope.documentId,result,'docs');return result;}).catch(()=>fail('OWNER_OPERATION_FAILED'));
+    this.#pending.add(operation);this.#tail=operation;operation.then(()=>{this.#pending.delete(operation);this.#bytes-=bytes;});return operation;
   }
   #current(grant,sourceId) {
     try {return this.#registry.isCurrent(grant) && ['workspace','code'].includes(grant.role) && grant.entityIds.includes(sourceId);}
@@ -135,11 +157,15 @@ export class WorkspaceCoordinator {
     ticket.cancelled=true;this.#flushes.delete(nonce);return Object.freeze({ok:true});
   }
   invoke(grant,intent,flushNonce) {
-    let kind,method,payload,bytes;
+    let kind,method,payload,bytes,embedToken;
     try {
       const input=navigationFields(intent,['kind','method','payload']);
       kind=input.kind;method=input.method;
-      if(kind==='source')payload=normalizeSourceRequest(method,input.payload);
+      if(kind==='docs-diagram'&&method==='commit'&&typeof this.#domains?.commitDiagramEmbed==='function'){
+        payload=readDiagramEmbedPublication(input.payload);embedToken=input.payload;kind='docs';method='applyDocument';
+        if(!payload||['refresh','status'].includes(payload.action))return Promise.resolve(fail('REQUEST_REFUSED'));
+      }
+      else if(kind==='source')payload=normalizeSourceRequest(method,input.payload);
       else if(kind==='catalogue'&&method==='appendDiagram'&&typeof this.#domains?.appendCatalogueDiagram==='function')payload=normalizeCatalogueCreation(input.payload);
       else if(kind==='docs' && method==='commitCodeToDocs' && this.#docs)payload=normalizeDocsLink(input.payload);
       else if(kind==='docs' && method==='createCodeToDocs' && typeof this.#docs?.createCodeToDocs==='function')payload=normalizeDocsCreation(input.payload);
@@ -157,13 +183,13 @@ export class WorkspaceCoordinator {
     let ticket;
     const primaryOperation=kind==='workspace';
     const catalogueOperation=kind==='catalogue';
-    if(catalogueOperation&&flushNonce!==undefined)return Promise.resolve(fail('FLUSH_REFUSED'));
+    if((catalogueOperation||embedToken)&&flushNonce!==undefined)return Promise.resolve(fail('FLUSH_REFUSED'));
     const domainOperation=!primaryOperation && !catalogueOperation && kind!=='source' && !['commitCodeToDocs','createCodeToDocs'].includes(method);
-    const generation=this.#pauseGeneration,admission=catalogueOperation?this.#registry.captureAdmissionGuard?.(grant):null;let revoked=false;
+    const fenced=catalogueOperation||Boolean(embedToken),generation=this.#pauseGeneration,admission=fenced?this.#registry.captureAdmissionGuard?.(grant):null;let revoked=false;
     const current=()=>{
-      if(catalogueOperation&&revoked)return false;
+      if(fenced&&(revoked||this.#paused||generation!==this.#pauseGeneration||admission?.isCurrent()!==true)){revoked=true;return false;}
       const live=(catalogueOperation?this.#currentCatalogue(grant)&&!this.#paused&&generation===this.#pauseGeneration&&admission?.isCurrent()===true:primaryOperation?this.#currentWorkspace(grant,payload):kind==='source'?this.#current(grant,payload.sourceId):domainOperation?this.#currentDomain(grant,kind,method,payload):this.#currentDocs(grant,payload))&&(!ticket||this.#flushCurrent(grant,ticket));
-      if(catalogueOperation&&!live)revoked=true;return Boolean(live);
+      if(fenced&&!live)revoked=true;return Boolean(live);
     };
     if(!current())return Promise.resolve(fail('ACCESS_REFUSED'));
     if(flushNonce!==undefined) {
@@ -181,7 +207,7 @@ export class WorkspaceCoordinator {
       if(!event)return fail('ACCESS_REFUSED');
       const receipt=catalogueOperation?projectCatalogueCreationReceipt(await this.#domains.appendCatalogueDiagram(payload,{projectId:grant.projectId,isCurrent:current}),payload):primaryOperation?projectWorkspaceResult(method==='sealReadonly'?await this.#primary.sealReadonly({projectId:grant.projectId,readonly:true,checkpoint:this.#pauseReason!=='native-home-navigation',isCurrent:current}):await this.#primary.save(payload,{projectId:grant.projectId,isCurrent:current})):kind==='source'?await invokeSource({event,method,payload,registry:this.#registry,repositoryFactory:this.#sources,
         access:(_caller,scope)=>current() && this.#access(grant,scope)===true,onNativeFailure:this.#onNativeFailure}):
-        domainOperation?projectDomainResult(kind,method,await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
+        domainOperation?projectDomainResult(kind,method,embedToken?await this.#domains.commitDiagramEmbed(embedToken,{projectId:grant.projectId,isCurrent:current}):await this.#domains[method.startsWith('read')?'read':method.startsWith('flush')?'flush':'apply'](kind,payload,{projectId:grant.projectId,isCurrent:current}),payload):
         method==='createCodeToDocs'?projectDocsCreationReceipt(await this.#docs.createCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload):projectDocsReceipt(await this.#docs.commitCodeToDocs(payload,{projectId:grant.projectId,isCurrent:current}),payload);
       if(!current())return fail('ACCESS_REFUSED');
       if(kind==='source' && receipt.ok===true && ['applyEdit','commitSource'].includes(method))this.#publish(grant.projectId,payload.sourceId,receipt,'source',grant.windowId);
@@ -205,6 +231,11 @@ export class WorkspaceCoordinator {
     const ticket=typeof flushNonce==='string'?this.#flushes.get(flushNonce):null;
     const readable=flushNonce===undefined?!this.#paused:['docs','diagram'].includes(kind)&&grant?.role===kind&&ticket&&!ticket.sealed&&this.#flushCurrent(grant,ticket);
     return Boolean(readable && ['docs','diagram'].includes(kind) && this.#currentDomain(grant,kind,kind==='docs'?'readDocument':'readDiagram',{entityId}));
+  }
+  captureDomainGuard(grant,kind,entityId){
+    const generation=this.#pauseGeneration,admission=this.#registry.captureAdmissionGuard?.(grant);let revoked=false;
+    const isCurrent=()=>{if(revoked)return false;if(this.#paused||generation!==this.#pauseGeneration||admission?.isCurrent()!==true||!this.canReadDomain(grant,kind,entityId))revoked=true;return !revoked;};
+    return isCurrent()?Object.freeze({isCurrent}):null;
   }
   // Trusted native classification controls preparation order only. It creates
   // no read/write grant and does not substitute for a verified readonly seal.
@@ -334,6 +365,7 @@ export class WorkspaceCoordinator {
     return ()=>{this.#subscriptions.delete(subscription);};
   }
   #publish(projectId,sourceId,receipt,domain='source',originWindowId) {
+    if(['docs','diagram'].includes(domain))for(const callback of this.#nativeSaveObservers)try{callback(Object.freeze({projectId,entityId:sourceId,domain,receipt,originWindowId}));}catch{/* An observer cannot undo a durable commit. */}
     for(const subscription of this.#subscriptions) {
       if(!this.#subscriptionCurrent(subscription.grant,subscription.entityId,subscription.domain)) {this.#subscriptions.delete(subscription);continue;}
       if(subscription.domain!==domain || subscription.grant.projectId!==projectId || subscription.entityId!==sourceId)continue;

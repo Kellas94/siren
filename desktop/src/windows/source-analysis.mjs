@@ -1,16 +1,28 @@
 import {AnalysisService,normalizeAnalysisRequest} from '../sources/analysis.mjs';
 import {randomUUID} from 'node:crypto';
+import {types} from 'node:util';
 const fail=code=>Object.freeze({ok:false,code});
 const same=(a,b)=>a&&b&&a.sourceId===b.sourceId&&a.version===b.version&&a.sha256===b.sha256;
 const empty=input=>input==null||[Object.prototype,null].includes(Object.getPrototypeOf(input))&&Reflect.ownKeys(input).length===0;
+const navigationFields=(input,keys)=>{
+ if(!input||types.isProxy(input)||![Object.prototype,null].includes(Object.getPrototypeOf(input)))return null;
+ const descriptors=Object.getOwnPropertyDescriptors(input),own=Reflect.ownKeys(descriptors);
+ if(own.length!==keys.length||own.some(key=>typeof key!=='string'||!keys.includes(key)||!descriptors[key].enumerable||!Object.hasOwn(descriptors[key],'value')))return null;
+ return Object.fromEntries(own.map(key=>[key,descriptors[key].value]));
+};
+const navigationRef=input=>{const value=navigationFields(input,['sourceId','version','sha256']);return value&&typeof value.sourceId==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(value.sourceId)&&Number.isSafeInteger(value.version)&&value.version>0&&typeof value.sha256==='string'&&/^[a-f0-9]{64}$/.test(value.sha256)?Object.freeze(value):null;};
+const navigationRange=input=>{const value=navigationFields(input,['from','to']);return value&&Number.isSafeInteger(value.from)&&Number.isSafeInteger(value.to)&&value.from>=0&&value.to>=value.from&&value.to<=32*1024*1024?Object.freeze(value):null;};
 
 /** Code-only static analysis. Requests carry no path, text, project or native
  * identity. Main derives scope and rechecks real authority throughout I/O. */
 export class NativeSourceAnalysis {
  #registry;#owner;#reference;#factory;#service;#windows;#jobs=new Map();#disposed=false;#language;#displayName;
- constructor({registry,owner,referenceFor,repositoryFactory,windowsFor=()=>[],workerPath,workerSha256,onActivity,languageFor,displayNameFor}){
+ #navigation;#navigations=new Map();#paused=false;#navigationGeneration=0;
+ constructor({registry,owner,referenceFor,repositoryFactory,windowsFor=()=>[],workerPath,workerSha256,onActivity,languageFor,displayNameFor,navigation}){
   if(languageFor!==undefined&&typeof languageFor!=='function'||displayNameFor!==undefined&&typeof displayNameFor!=='function')throw TypeError('NATIVE_ANALYSIS_METADATA_ADAPTERS_REQUIRED');
   this.#language=languageFor;this.#displayName=displayNameFor;
+  if(navigation!==undefined&&(!navigation||!['enabled','send','focus'].every(key=>typeof navigation[key]==='function')))throw TypeError('NATIVE_COMPARISON_NAVIGATION_ADAPTERS_REQUIRED');
+  this.#navigation=navigation;
   this.#registry=registry;this.#owner=owner;this.#reference=referenceFor;this.#factory=repositoryFactory;
   this.#windows=windowsFor;
   this.#service=new AnalysisService({workerPath,workerSha256,onActivity,loadSource:async(ref,{jobId,side})=>{
@@ -40,14 +52,71 @@ export class NativeSourceAnalysis {
   const a=this.#registry.eventFor(left),b=this.#registry.eventFor(right);
   return Boolean(a&&b&&a.sender===b.sender&&a.senderFrame===b.senderFrame&&['windowId','projectId','epoch','webContentsId','mainFrameUrl','role'].every(key=>left[key]===right[key]));
  }
- isIdle(){return this.#jobs.size===0&&this.#service.isIdle();}
- pause(){this.#service.pause();}
- resume(){this.#service.resume();}
- async drain(){await this.#service.drain();await Promise.all([...this.#jobs.values()].map(job=>job.done));return this.isIdle();}
+ #navigationCurrent(job){
+  try{return !job.finished&&!this.#paused&&job.generation===this.#navigationGeneration&&this.#navigation?.enabled()===true&&this.#current(job)&&job.leftGuard.isCurrent()===true&&job.rightGuard.isCurrent()===true&&!job.finished&&!this.#paused&&!this.#disposed&&job.generation===this.#navigationGeneration;}catch{return false;}
+ }
+ #finishNavigation(job,result){
+  if(job.finished)return;job.finished=true;clearTimeout(job.timer);job.resolve(Object.freeze(result));
+  // A public timeout/Lock cannot refund a slot while its original repository
+  // call is still unsettled. The actual loader finally releases that slot.
+  if(!job.loading){this.#navigations.delete(job.key);job.complete();}
+ }
+ async #loadNavigation(job,range){
+  try{
+   if(!this.#navigationCurrent(job))return this.#finishNavigation(job,fail('ACCESS_REFUSED'));
+   const repository=this.#factory({canWrite:scope=>this.#navigationCurrent(job)&&scope.action==='read'&&scope.projectId===job.right.grant.projectId&&scope.sourceId===job.right.ref.sourceId});
+   if(!this.#navigationCurrent(job))return this.#finishNavigation(job,fail('ACCESS_REFUSED'));
+   const metrics=await repository.getMetrics({projectId:job.right.grant.projectId,sourceId:job.right.ref.sourceId,version:job.right.ref.version});
+   if(!this.#navigationCurrent(job)||!same(metrics,job.right.ref))return this.#finishNavigation(job,fail('ACCESS_REFUSED'));
+   if(!Number.isSafeInteger(metrics.utf16Units)||range.to>metrics.utf16Units)return this.#finishNavigation(job,fail('RANGE_REFUSED'));
+   const target=this.#registry.eventFor(job.right.grant);if(!target||!this.#navigationCurrent(job))return this.#finishNavigation(job,fail('ACCESS_REFUSED'));
+   job.delivered=true;
+   this.#navigation.send(target,Object.freeze({requestId:job.key,sourceRef:job.right.ref,range}));
+   if(!job.finished&&!this.#navigationCurrent(job))this.#finishNavigation(job,fail('ACCESS_REFUSED'));
+  }catch{this.#finishNavigation(job,fail('COMPARISON_NAVIGATION_FAILED'));}
+  finally{job.loading=false;if(job.finished){this.#navigations.delete(job.key);job.complete();}}
+ }
+ #navigate(context,method,payload){
+  if(!this.#navigation||this.#paused||this.#disposed)return fail('ACCESS_REFUSED');
+  try{
+   if(method!=='revealComparison'){
+    const input=navigationFields(payload,method==='claimComparison'?['requestId']:['requestId','ok']);
+    if(!input||typeof input.requestId!=='string'||!/^[-a-f0-9]{36}$/.test(input.requestId)||method==='completeComparison'&&typeof input.ok!=='boolean')return fail('REQUEST_REFUSED');
+    const job=this.#navigations.get(input.requestId);
+    if(!job||!job.delivered||!this.#sameCaller(job.right.grant,context.grant)||!this.#navigationCurrent(job))return fail('ACCESS_REFUSED');
+    if(method==='claimComparison'){if(job.claimed)return fail('ACCESS_REFUSED');job.claimed=true;return {ok:true};}
+    if(!job.claimed||job.completing)return fail('ACCESS_REFUSED');job.completing=true;
+    if(!input.ok){this.#finishNavigation(job,fail('TARGET_NOT_READY'));return {ok:true};}
+    // The adapter is synchronous and may call native show/focus only while
+    // this exact captured scope remains current. A receipt grants no new view.
+    let focused=false;try{focused=this.#navigation.focus(job.right.grant,Object.freeze({isCurrent:()=>this.#navigationCurrent(job)}))===true;}catch{}
+    const ok=focused&&this.#navigationCurrent(job);this.#finishNavigation(job,ok?{ok:true}:fail('ACCESS_REFUSED'));return ok?{ok:true}:fail('ACCESS_REFUSED');
+   }
+   const input=navigationFields(payload,['sourceRef','rightWindowId','rightRef','range']);
+   if(!input)return fail('REQUEST_REFUSED');
+   const leftRef=navigationRef(input.sourceRef),rightRef=navigationRef(input.rightRef),range=navigationRange(input.range);
+   if(!leftRef||!rightRef||!range||typeof input.rightWindowId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(input.rightWindowId))return fail('REQUEST_REFUSED');
+   const right=this.#comparisons(context).find(other=>other.grant.windowId===input.rightWindowId);
+   if(!right||!same(context.ref,leftRef)||!same(right.ref,rightRef))return fail('ACCESS_REFUSED');
+   if(this.#navigations.size>=8||[...this.#navigations.values()].some(job=>job.grant.windowId===context.grant.windowId||job.right.grant.windowId===right.grant.windowId))return fail('COMPARISON_NAVIGATION_BUSY');
+   const leftGuard=this.#registry.captureAdmissionGuard(context.grant),rightGuard=this.#registry.captureAdmissionGuard(right.grant);
+   if(!leftGuard||!rightGuard)return fail('ACCESS_REFUSED');
+   let resolve,complete;const answer=new Promise(done=>resolve=done),done=new Promise(finish=>complete=finish),key=randomUUID();
+   const job={...context,ref:leftRef,right:{...right,ref:rightRef},leftGuard,rightGuard,generation:this.#navigationGeneration,key,resolve,complete,done,loading:true,finished:false,delivered:false,claimed:false};
+   if(!this.#navigationCurrent(job))return fail('ACCESS_REFUSED');
+   this.#navigations.set(key,job);job.timer=setTimeout(()=>this.#finishNavigation(job,fail('COMPARISON_NAVIGATION_TIMEOUT')),1500);
+   void this.#loadNavigation(job,range);return answer;
+  }catch{return fail('REQUEST_REFUSED');}
+ }
+ isIdle(){return this.#jobs.size===0&&this.#navigations.size===0&&this.#service.isIdle();}
+ pause(){this.#paused=true;this.#navigationGeneration++;for(const job of this.#navigations.values())this.#finishNavigation(job,fail('ACCESS_REFUSED'));this.#service.pause();}
+ resume(){if(!this.#disposed)this.#paused=false;this.#service.resume();}
+ async drain(){await this.#service.drain();await Promise.all([...this.#jobs.values(),...this.#navigations.values()].map(job=>job.done));return this.isIdle();}
  async dispose(){this.#disposed=true;this.pause();return this.drain();}
  async invoke({event,method,payload}){
-  if(!['submit','cancel','listComparisons'].includes(method))return fail('REQUEST_REFUSED');
+  if(!['submit','cancel','listComparisons','revealComparison','claimComparison','completeComparison'].includes(method))return fail('REQUEST_REFUSED');
   const context=this.#capture(event);if(!context)return fail('ACCESS_REFUSED');
+  if(['revealComparison','claimComparison','completeComparison'].includes(method))return this.#navigate(context,method,payload);
   if(method==='listComparisons'){
    if(!empty(payload))return fail('REQUEST_REFUSED');
    const items=this.#comparisons(context).map(other=>{let name;try{name=this.#displayName?.(other.grant,other.ref);}catch{}

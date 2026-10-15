@@ -1,0 +1,189 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-H1rmpaefTonUXEA3Dd3PiKwYtzhntiawpVV+ALniOtU=' siren://app/assets/shell.js; style-src 'unsafe-inline' siren://app/assets/shell.css; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none';"><title>SIREN — Presenter</title><style>
+   :root{color-scheme:light dark;font-family:Inter,system-ui,sans-serif;color:light-dark(#20283a,#e9ebf3);background:light-dark(#f7f8fc,#171719)}*{box-sizing:border-box}body{margin:0;height:100vh;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:12px;padding:18px}header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.035em;flex:1;overflow-wrap:anywhere}button,select{font:inherit;font-size:12px;padding:7px 11px;border:1px solid light-dark(#d5dbea,#454958);border-radius:8px;background:light-dark(#fff,#26282f);color:inherit;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #648dff;outline-offset:2px}button:disabled{opacity:.45;cursor:default}#viewStatus{font-size:12px;margin:0;opacity:.7}main{display:grid;grid-template-columns:190px minmax(0,1fr);gap:20px;min-height:0}#slideList{overflow:auto;display:flex;flex-direction:column;gap:6px}#slideList button{text-align:left;overflow-wrap:anywhere}#slideList button[aria-current=true]{background:#648dff22;border-color:#648dff}.presentation-content{display:grid;grid-template-rows:minmax(0,1fr) minmax(90px,25%);gap:16px;min-height:0}#publicSlide{min-height:0;display:grid;place-items:center;border:1px solid #78859a33;border-radius:12px;overflow:hidden;background:light-dark(#fff,#171719)}#publicSlide img{display:block;width:100%;height:100%;object-fit:contain}#publicSlide>div{padding:5vw;white-space:pre-wrap;overflow-wrap:anywhere}#publicSlide>div h1{font-size:36px}.notes{border-top:1px solid #78859a33;padding-top:12px;min-height:0;display:flex;flex-direction:column;gap:8px}.notes span{font-size:11px;letter-spacing:.1em;opacity:.6}#presenterNotes{margin:0;overflow:auto;font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}body[data-role=audience]{grid-template-rows:auto auto minmax(0,1fr);padding:12px}body[data-role=audience] #publicSlide{border:0;border-radius:0}body[data-role=audience] h1{font-size:14px}body[data-role=audience] #viewStatus{font-size:11px}
+  #publicSlide{position:relative;min-width:0}
+.notes-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notes-actions{display:flex;gap:6px;flex-wrap:wrap}
+.notes-actions button{font-size:11px;padding:5px 9px}
+.notes-export-hint{margin:0;font-size:11px;line-height:1.4;opacity:.65}
+.notes [hidden]{display:none!important}
+#publicSlide img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;min-width:0;min-height:0}
+body[data-role=audience][data-fullscreen=true]{padding:0;gap:0;grid-template-rows:minmax(0,1fr)}
+body[data-role=audience][data-fullscreen=true]>header,body[data-role=audience][data-fullscreen=true]>#viewStatus{display:none}
+@media (max-width:700px){body[data-role=presenter] main{grid-template-columns:140px minmax(0,1fr);gap:12px}body[data-role=presenter] header h1{flex-basis:100%}}
+
+/* Shared desktop chrome; content rendering, native bounds and grants stay local. */
+:root{--siren-bg:light-dark(#f4efe7,#0a0f16);--siren-panel:light-dark(#fffdf8,#111923);--siren-alt:light-dark(#f7f1e8,#151f2b);--siren-input:light-dark(#ffffff,#0d151f);--siren-ink:light-dark(#2f2924,#f4f7fb);--siren-muted:light-dark(#665e56,#a9b7c8);--siren-line:light-dark(#d8cec1,#2c3a4b);--siren-accent:light-dark(#9a4c2e,#2563eb);--siren-focus:light-dark(#b95f38,#93c5fd);--siren-radius:12px;--siren-font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+/* Classic retains all existing named palettes. */
+:root{--siren-radius-xl:22px;--siren-radius-lg:16px;--siren-radius-md:12px;--siren-radius-sm:9px;--siren-radius:var(--siren-radius-md);--siren-shadow:0 18px 55px #00000047;--siren-shadow-soft:0 8px 26px #0000002e}
+:root[data-theme],body[data-theme]{--siren-bg:var(--app-bg);--siren-panel:var(--panel-bg);--siren-alt:var(--panel-alt);--siren-input:var(--input-bg);--siren-ink:var(--text);--siren-muted:var(--muted);--siren-line:var(--border);--siren-accent:var(--primary);--siren-focus:var(--focus-ring)}
+:root:has(#homeRoot){--home-bg:var(--siren-bg);--home-panel:var(--siren-panel);--home-ink:var(--siren-ink);--home-muted:var(--siren-muted);--home-line:var(--siren-line);--home-accent:var(--siren-accent)}
+.home-resume:after{background:radial-gradient(ellipse at 100% 50%,color-mix(in srgb,var(--siren-accent) 14%,var(--siren-panel)),transparent 75%)}
+.home-primary{color:var(--siren-accent-ink,#fff)}
+/* The retained editor creates an inline fixed radius; native chrome owns shape. */
+body[data-role=code] .siren-code-editor{border-color:var(--siren-line)!important;border-radius:var(--siren-radius-md)!important}
+body[data-role=code] .siren-code-editor button{border-color:var(--siren-line)!important;border-radius:var(--siren-radius-sm)!important}
+body[data-role]{background:var(--siren-bg);color:var(--siren-ink);font-family:var(--siren-font)}
+body[data-role] button,body[data-role] select{font-family:var(--siren-font);font-size:12px;line-height:1.35;min-height:32px;padding:7px 11px;border:1px solid var(--siren-line);border-radius:9px;background:var(--siren-panel);color:var(--siren-ink);transition:background .12s,border-color .12s}
+body[data-role] button:hover:not(:disabled){background:var(--siren-alt);border-color:var(--siren-muted)}
+body[data-role] button:disabled{cursor:default;opacity:.5}
+body[data-role] :is(button,select,input,textarea,summary):focus-visible{outline:2px solid var(--siren-focus);outline-offset:3px}
+body[data-role] :is(main>header,body>header){gap:8px;padding:0 0 14px;border-bottom:1px solid var(--siren-line)}
+body[data-role] header h1{font-family:var(--siren-font);font-size:20px;font-weight:600;letter-spacing:-.035em}
+body[data-role] #viewStatus{color:var(--siren-muted);opacity:1;line-height:1.5;min-height:18px}
+body[data-role] #closeView{background:transparent}
+body[data-role] #transferView{background:var(--siren-alt)}
+body[data-role] :is(#saveDiagram,#saveDocument){background:var(--siren-accent);color:var(--siren-accent-ink,#fff);border-color:transparent}
+body[data-role] :is(#diagramSource,#diagramViewport,#diagramGuided,#diagramStylePanel,#diagramBuildPanel,#codeAnalysis,.document-group,.document-knowledge,.document-source,.document-source-preview,.document-structured-row){border-color:var(--siren-line);border-radius:var(--siren-radius);background:var(--siren-panel)}
+body[data-role] :is(#diagramSource,.document-editor input,.document-editor textarea,.document-field input,.document-field textarea,#analysisFilter){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line)}
+body[data-role] :is(.diagram-note,.diagram-source-panel label,.document-caption){color:var(--siren-muted);opacity:1}
+body[data-role] :is(#documentOutline,#slideList){padding:10px;background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius)}
+body[data-role] #documentContent{background:var(--siren-panel);border:1px solid var(--siren-line);border-radius:var(--siren-radius);padding:20px 28px 40px}
+body[data-role] .document-layout{border-top:0;padding-top:0;gap:14px}
+body[data-role] .notes{border-color:var(--siren-line);color:var(--siren-ink)}
+body[data-role] :is(#slideList button[aria-current=true],.diagram-editor-modes button[aria-pressed=true]){background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel));border-color:var(--siren-accent)}
+/* Public slide pixels remain immutable. */
+body[data-role=presenter] #publicSlide{background:var(--siren-panel);border-color:var(--siren-line);border-radius:var(--siren-radius)}
+#nativeWindowShelf{font-family:var(--siren-font);background:var(--siren-panel);color:var(--siren-ink);border-color:var(--siren-line)}
+#nativeWindowShelf button:focus-visible{outline-color:var(--siren-focus)}
+#nativeWindowShelf button[aria-pressed=true]{border-color:var(--siren-accent);background:color-mix(in srgb,var(--siren-accent) 12%,var(--siren-panel))}
+#desktopBar,.desktop-windows-panel,.desktop-recovery-panel{font-family:var(--siren-font)}
+/* One scale of controls and surfaces follows each original named theme. */
+body[data-role] :is(button,select),.home-topbar button,.home-section-heading>button,.home-create-actions button{border-radius:var(--siren-radius-sm)}
+body[data-role] :is(.document-editor input,.document-editor textarea,#analysisFilter),body[data-role] #diagramSource{border-radius:var(--siren-radius-md)}
+body[data-role=diagram] :is(#diagramStylePanel input:not([type=color]),#diagramStylePanel select,#diagramBuildPanel input){background:var(--siren-input);color:var(--siren-ink);border-color:var(--siren-line);border-radius:var(--siren-radius-sm);font-family:var(--siren-font)}
+body[data-role] :is(#documentContent,#diagramViewport,.siren-code-editor),.home-resume,.home-module{box-shadow:var(--siren-shadow-soft)}
+.home-resume{border-radius:var(--siren-radius-xl)}.home-module{border-radius:var(--siren-radius-lg)}
+.home-module:not(:disabled):hover{box-shadow:var(--siren-shadow)}
+.home-resume button,.home-project-row:not(:disabled):hover,.home-warning,.home-create input,.home-create select,.home-library-search button{border-radius:var(--siren-radius-md)}
+.home-create,.code-docs-dialog{border-radius:var(--siren-radius-xl);box-shadow:var(--siren-shadow)}
+body[data-role] main{overflow:auto;overscroll-behavior:contain}
+body[data-role] :is(header h1,#codeLayout,.document-layout,.diagram-layout){min-width:0}
+@media(max-width:700px){
+ body[data-role] main>header h1,body[data-role=presenter]>header h1{flex-basis:100%;min-width:0}
+ body[data-role=code] #codeLayout.has-analysis{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,1fr) minmax(110px,1fr)}
+ body[data-role=code] #codeAnalysis{border-left:0;padding:10px;border-top:1px solid var(--siren-line)}
+}
+@media(max-width:700px) and (max-height:500px){
+ /* Keep content visible in a small desktop window. Tab naturally scrolls
+    the actual command strip; all original handlers remain on their buttons. */
+ body[data-role] main>header,body[data-role=presenter]>header{flex-wrap:nowrap;overflow-x:auto;min-height:40px;padding-bottom:5px;scroll-padding-inline:5px}
+ body[data-role] main>header h1,body[data-role=presenter]>header h1{flex:0 0 92px;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body[data-role] header :is(button,select){flex-shrink:0}
+ body[data-role] #viewStatus{max-height:36px;overflow:auto;font-size:11px}
+ body[data-role=diagram] .diagram-layout{grid-template-columns:minmax(120px,var(--source-width,32%)) 10px minmax(0,1fr)}
+ body[data-role=diagram] .diagram-layout[data-source-hidden=true]{grid-template-columns:minmax(0,1fr)}
+ body[data-role=diagram] :is(.diagram-source-panel,.diagram-preview-panel){min-width:0}
+ body[data-role=diagram] .diagram-toolbar{flex-wrap:nowrap;overflow-x:auto;min-width:0;min-height:36px}
+ body[data-role=diagram] .diagram-toolbar>*{flex-shrink:0}
+ body[data-role=diagram] .diagram-toolbar .diagram-note{display:none}
+ body[data-role=docs] #documentOutline{max-height:40px;padding:4px}
+}
+@media(max-height:500px){body[data-role] :is(#codeLayout,.document-layout,.diagram-layout){min-height:120px}body[data-role=presenter] main{min-height:120px}}
+.home-topbar .home-current{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-topbar-tools{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){body[data-role] button,body[data-role] select{transition:none}}
+</style><link rel="stylesheet" href="siren://app/assets/shell.css" integrity="sha384-1ACOOgs56D0suaeWAeWKnEIU4XbV3IM/Omlu1zQZXRAPmEyjvxcI8B7otUxCUgWJ" crossorigin="anonymous"></head><body data-role="presenter"><header><h1 id="viewTitle">Presenter</h1><button id="previousSlide" aria-label="Previous slide">←</button><span id="position"></span><button id="nextSlide" aria-label="Next slide">→</button><button id="editDeck">Edit deck</button><button id="refreshDeck">Refresh saved deck</button><select id="audienceDisplay" aria-label="Audience display"></select><button id="openAudience">Open Audience</button><button id="fullscreen">Fullscreen</button><button id="closeView">Close</button></header><p id="viewStatus" role="status">Waiting for the workspace…</p><main><nav id="slideList" aria-label="Slides"></nav><section class="presentation-content"><div id="publicSlide" aria-label="Slide preview"></div><aside class="notes"><div class="notes-heading"><span>PRIVATE PRESENTER NOTES</span><div class="notes-actions"><button id="exportNotes" title="Export the captured presentation notes as UTF-8 text">Export notes (.txt)</button><button id="revealNotesExport" hidden>Show file</button></div></div><p class="notes-export-hint">Exports this captured deck. Refresh includes newer saved changes. Text only.</p><p id="presenterNotes"></p></aside></section></main><script>(() => {
+ 'use strict';
+ const hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+ window.SirenPresenterNotesExport=Object.freeze({create({button,revealButton,bridge,getState,isReady,onStatus}){
+  let pending=null,receipt=null,covered=false,disposed=false,serial=0;
+  const identity=()=>{const d=getState()?.deck;return d&&typeof d.deckId==='string'&&hash(d.version)?{deckId:d.deckId,deckVersion:d.version}:null;};
+  const same=(a,b)=>a&&b&&a.deckId===b.deckId&&a.deckVersion===b.deckVersion;
+  const allowed=()=>!covered&&!disposed&&isReady()&&identity();
+  const update=()=>{if(receipt&&!same(receipt,identity()))receipt=null;button.disabled=!allowed()||!!pending;revealButton.hidden=!receipt||covered||disposed;revealButton.disabled=!allowed()||!!pending;};
+  const valid=(r,expected)=>r?.ok===true&&Object.keys(r).sort().join(',')==='bytes,deckId,deckVersion,exportId,filename,ok,sha256'&&same(r,expected)&&typeof r.exportId==='string'&&/^[a-f0-9-]{36}$/.test(r.exportId)&&r.filename==='presentation-notes-'+r.exportId+'.txt'&&hash(r.sha256)&&Number.isSafeInteger(r.bytes)&&r.bytes>0&&r.bytes<=8*1024*1024;
+  const start=()=>{
+   if(!allowed()||pending)return;const expected=identity(),turn=serial;receipt=null;onStatus('Exporting captured notes…');
+   pending=Promise.resolve().then(()=>bridge.exportNotes({deckVersion:expected.deckVersion})).then(result=>{
+    if(covered||disposed||turn!==serial)return;
+    if(!same(expected,identity())||!valid(result,expected)){onStatus('Notes export unavailable or presentation changed. Your captured notes and saved deck are retained.');return;}
+    receipt=result;onStatus('Captured notes saved · '+result.filename+' · Refresh to include newer saved changes.');
+   }).catch(()=>{if(!covered&&!disposed&&turn===serial)onStatus('Notes export unavailable. Your captured notes and saved deck are retained.');}).finally(()=>{pending=null;update();});update();
+  };
+  const reveal=()=>{
+   if(!allowed()||pending||!receipt||!same(receipt,identity()))return;const turn=serial,current=receipt;
+   pending=Promise.resolve().then(()=>bridge.revealExport({exportId:current.exportId})).then(result=>{if(!covered&&!disposed&&turn===serial&&same(current,identity())&&result?.ok!==true){receipt=null;onStatus('Exported file unavailable or changed. Your notes are retained.');}}).catch(()=>{if(!covered&&!disposed&&turn===serial){receipt=null;onStatus('Exported file unavailable. Your notes are retained.');}}).finally(()=>{pending=null;update();});update();
+  };
+  button.addEventListener('click',start);revealButton.addEventListener('click',reveal);update();
+  return Object.freeze({update,reset(){serial++;receipt=null;update();},pause(){covered=true;serial++;receipt=null;update();return pending?pending.then(()=>({ok:true})): {ok:true};},resume(){if(!disposed){covered=false;update();}},dispose(){disposed=true;covered=true;serial++;receipt=null;button.removeEventListener('click',start);revealButton.removeEventListener('click',reveal);update();}});
+ }});
+})();
+
+(() => {
+ 'use strict';
+ const bridge=window.sirenPresentation,role=document.body.dataset.role,status=document.getElementById('viewStatus'),surface=document.getElementById('publicSlide');
+ if(role==='presenter')document.getElementById('editDeck').addEventListener('click',async()=>{if(busy||covered||!state)return;const turn=serial;busy=true;controls();try{const result=await bridge.editDeck();if(!covered&&turn===serial)status.textContent=result?.ok?'Deck editor opened · Playback keeps this saved version until Refresh.':'Deck editor unavailable. Your presentation is retained.';}catch{if(!covered&&turn===serial)status.textContent='Deck editor unavailable.';}finally{if(turn===serial){busy=false;controls();flushAppearance();}}});
+ let grant=null,state=null,sequence=0,serial=0,busy=false,covered=false,last=0,connecting=null,pendingAppearance=false,appearanceSignature='';
+ const flushAppearance=()=>{if(role!=='presenter'||!pendingAppearance||busy||covered||connecting||!state)return;pendingAppearance=false;void navigate(state.slideId);};
+ document.addEventListener('siren-appearance',event=>{if(role!=='presenter'||covered)return;const detail=event.detail;if(!detail||typeof detail.theme!=='string'||!['light','dark'].includes(detail.mode))return;const themes=window.SirenAppearancePalette;if(!themes?.some(t=>t.id===(detail.theme==='system'?detail.mode:detail.theme)&&t.mode===detail.mode))return;const next=detail.theme+':'+detail.mode;if(next===appearanceSignature)return;appearanceSignature=next;pendingAppearance=true;flushAppearance();});
+ const notesExport=role==='presenter'?window.SirenPresenterNotesExport.create({button:document.getElementById('exportNotes'),revealButton:document.getElementById('revealNotesExport'),bridge:window.sirenPresenterExport,getState:()=>state,isReady:()=>!covered&&!busy&&!!state,onStatus:text=>status.textContent=text}):null;
+ const controls=()=>{for(const e of document.querySelectorAll('button,select'))e.disabled=covered||busy;notesExport?.update();};
+ const blank=()=>{surface.replaceChildren();last=0;document.body.dataset.publicReady='false';};
+ const frame=async value=>{
+  const turn=serial;if(covered||!grant||value.epoch!==grant.epoch||value.sequence<=last)return false;
+  const publicSlide=value.publicSlide;let content;
+  if(publicSlide.kind==='image'){content=new Image();content.alt=publicSlide.title;content.src=publicSlide.image;await content.decode();}
+  else{content=document.createElement('div');const title=document.createElement('h1');title.textContent=publicSlide.title;const body=document.createElement('p');body.textContent=publicSlide.body;content.append(title,body);}
+  if(covered||turn!==serial||value.sequence<=last)return false;surface.replaceChildren(content);last=value.sequence;document.body.dataset.publicReady='true';document.body.dataset.slideId=value.slideId;document.body.dataset.deckVersion=value.deckVersion;document.body.dataset.sequence=String(last);
+  if(role==='audience'){status.textContent=publicSlide.title;const result=await bridge.acknowledge({deckVersion:value.deckVersion,sequence:value.sequence});if(!result?.ok&&!covered&&turn===serial)status.textContent='Presentation changed. Waiting for a new frame.';}
+  return true;
+ };
+ const paint=()=>{
+  if(!state)return;document.getElementById('viewTitle').textContent=state.deck.title;
+  const list=document.getElementById('slideList');list.replaceChildren();for(const [index,slide]of state.deck.slides.entries()){const b=document.createElement('button');b.type='button';b.textContent=String(index+1).padStart(2,'0')+'  '+slide.title;b.dataset.slideId=slide.id;b.setAttribute('aria-current',String(slide.id===state.slideId));b.addEventListener('click',()=>void navigate(slide.id));list.append(b);}
+  const slide=state.deck.slides.find(item=>item.id===state.slideId);document.getElementById('presenterNotes').textContent=slide?.notes||'No presenter notes for this slide.';document.getElementById('position').textContent=(state.deck.slides.indexOf(slide)+1)+' / '+state.deck.slides.length;
+  controls();
+ };
+ const reconcile=async(turn,owner,deck,code)=>{
+  const current=()=>!covered&&turn===serial&&grant===owner&&state?.deck.deckId===deck.deckId&&state.deck.version===deck.version;
+  const unverified=()=>{if(current())status.textContent='The current slide could not be verified. Audience delivery is uncertain and views may differ.';};
+  try{
+   const actual=await bridge.getPresenter();if(!current())return;
+   if(actual?.ok!==true||actual.deck?.deckId!==deck.deckId||actual.deck.version!==deck.version||!Number.isSafeInteger(actual.sequence)||actual.sequence<last||!actual.deck.slides?.some(slide=>slide.id===actual.slideId)){unverified();return;}
+   sequence=Math.max(sequence,actual.sequence);
+   const preview=await bridge.getPreview();if(!current())return;const value=preview?.frame;
+   // Main commits before sending to Audiences. Adopt only a single matching
+   // authoritative position/frame; a send refusal cannot roll delivery back.
+   if(preview?.ok!==true||!value||value.epoch!==owner.epoch||value.deckVersion!==actual.deck.version||value.slideId!==actual.slideId||value.sequence!==actual.sequence){unverified();return;}
+   const alreadyShown=value.sequence===last&&document.body.dataset.publicReady==='true'&&document.body.dataset.slideId===value.slideId&&document.body.dataset.deckVersion===value.deckVersion;
+   const shown=alreadyShown||await frame(value);if(!current())return;if(!shown){unverified();return;}
+   state=actual;paint();
+   status.textContent=code==='PRESENTATION_SEND_FAILED'?'Presenter follows the current slide. Some Audience views were not updated and may show an earlier slide.':'Presenter follows the current slide. Audience delivery could not be confirmed; views may differ.';
+  }catch{unverified();}
+ };
+ const navigate=async id=>{
+  if(covered||busy||!state)return;busy=true;controls();status.textContent='Preparing slide…';const turn=serial,owner=grant,deck=state.deck;let failed=false;
+  try{const result=await bridge.navigate({deckVersion:state.deck.version,sequence:++sequence,slideId:id});if(covered||turn!==serial)return;
+   if(!result?.ok){failed=true;await reconcile(turn,owner,deck,result?.code);return;}
+   state={...state,slideId:result.slideId};paint();const preview=await bridge.getPreview();if(covered||turn!==serial)return;if(preview?.ok)await frame(preview.frame);if(!covered&&turn===serial)status.textContent='Presenting · Saved deck version';
+  }catch{failed=true;if(!covered&&turn===serial)await reconcile(turn,owner,deck,'PRESENTATION_DELIVERY_UNCERTAIN');}finally{if(turn===serial){busy=false;controls();if(failed)pendingAppearance=false;else flushAppearance();}}
+ };
+ const connect=()=>connecting??=(async()=>{
+  const turn=serial,view=await window.sirenWindow.getView();if(covered||turn!==serial||!view?.ok||view.view.role!==role)return;grant=view.view;document.body.dataset.connected='true';
+  if(role==='presenter'){
+   const actual=await bridge.getPresenter();if(covered||turn!==serial||!actual?.ok){status.textContent='The saved presentation is unavailable.';return;}state=actual;sequence=Math.max(sequence,actual.sequence);paint();document.body.dataset.presentationReady='true';
+   const displays=await bridge.getDisplays();if(covered||turn!==serial)return;if(displays?.ok){const select=document.getElementById('audienceDisplay');select.replaceChildren();for(const display of displays.displays){const option=document.createElement('option');option.value=display.id;option.textContent=display.label;select.append(option);}}
+   pendingAppearance=false;await navigate(state.slideId);
+  }else{document.body.dataset.presentationReady='true';const current=await bridge.getFrame();if(current?.ok)await frame(current.frame);else status.textContent='Waiting for the presenter…';}
+ })().catch(()=>{if(!covered)status.textContent='Presentation unavailable. Your saved work is retained.';}).finally(()=>{connecting=null;flushAppearance();});
+ const reconnect=()=>{const turn=serial;void Promise.resolve(connecting).then(()=>{if(!covered&&turn===serial&&document.body.dataset.presentationReady!=='true')return connect();});};
+ bridge.onFrame(value=>{if(role==='audience')return frame(value);});window.sirenWindow.onReady(reconnect);
+ bridge.onFullscreen(value=>{document.body.dataset.fullscreen=String(value.enabled);});
+ window.sirenViewControl.onPrepare(()=>{window.SirenHelpWorkspace?.cover();covered=true;serial++;busy=false;pendingAppearance=false;appearanceSignature='';grant=null;state=null;blank();document.body.dataset.presentationReady='false';document.getElementById('presenterNotes')?.replaceChildren();document.getElementById('slideList')?.replaceChildren();document.body.inert=true;document.documentElement.style.visibility='hidden';return notesExport?.pause()??{ok:true};});
+ window.sirenViewControl.onResume(()=>{covered=false;serial++;document.body.inert=false;document.documentElement.style.visibility='';notesExport?.resume();blank();reconnect();});
+ document.getElementById('closeView').addEventListener('click',()=>{if(grant)void window.sirenWindow.closeView({windowId:grant.windowId});});
+ document.getElementById('fullscreen').addEventListener('click',()=>void bridge.setFullscreen({enabled:true}));
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){event.preventDefault();void bridge.setFullscreen({enabled:false});}
+  if(event.ctrlKey&&event.key.toLowerCase()==='w'){event.preventDefault();if(grant)void window.sirenWindow.closeView({windowId:grant.windowId});}
+  const interactive=event.target?.isContentEditable||event.target?.closest?.('button,select,input,textarea,a[href],[role="button"],[contenteditable]');
+  if(role==='presenter'&&!interactive&&!event.ctrlKey&&!event.altKey&&!event.metaKey&&['ArrowRight','ArrowLeft','PageDown','PageUp',' '].includes(event.key)){event.preventDefault();const offset=['ArrowLeft','PageUp'].includes(event.key)?-1:1,index=state?.deck.slides.findIndex(s=>s.id===state.slideId);if(index>=0)void navigate(state.deck.slides[Math.max(0,Math.min(state.deck.slides.length-1,index+offset))].id);}
+ });
+ if(role==='presenter'){
+  for(const [id,offset]of [['previousSlide',-1],['nextSlide',1]])document.getElementById(id).addEventListener('click',()=>{const index=state?.deck.slides.findIndex(s=>s.id===state.slideId);if(index>=0)void navigate(state.deck.slides[Math.max(0,Math.min(state.deck.slides.length-1,index+offset))].id);});
+  document.getElementById('refreshDeck').addEventListener('click',async()=>{if(busy||covered||!state)return;notesExport.reset();busy=true;controls();const turn=serial;try{const result=await bridge.refreshDeck({deckVersion:state.deck.version});if(covered||turn!==serial)return;if(!result?.ok){status.textContent='The saved deck could not be refreshed. Your current version is retained.';return;}const actual=await bridge.getPresenter();if(covered||turn!==serial)return;if(!actual?.ok){status.textContent='The saved deck could not be read. Your current view is retained.';return;}state=actual;sequence=Math.max(sequence,actual.sequence);blank();paint();busy=false;await navigate(state.slideId);}catch{if(!covered&&turn===serial)status.textContent='Refresh unavailable. Your current view and saved deck are retained.';}finally{if(turn===serial){busy=false;controls();flushAppearance();}}});
+  document.getElementById('openAudience').addEventListener('click',async()=>{if(busy||covered||!state)return;busy=true;controls();const turn=serial;try{const displayId=document.getElementById('audienceDisplay').value,result=await bridge.openAudience(displayId?{displayId}:{});if(covered||turn!==serial)return;if(!result?.ok){status.textContent='Audience could not be opened. Your presentation remains available.';return;}busy=false;await navigate(state.slideId);}catch{if(!covered&&turn===serial)status.textContent='Audience unavailable. Your presentation remains available.';}finally{if(turn===serial){busy=false;controls();flushAppearance();}}});
+ }
+ window.addEventListener('pagehide',()=>{covered=true;serial++;pendingAppearance=false;grant=null;state=null;},{once:true});
+ void connect();
+})();
+</script><script src="siren://app/assets/shell.js" integrity="sha384-ZFAkdr126JLjLnxngsUo7SoxSp/xPlnzV7/vmau7FMl9GYihjUZZnXWCVfLEzs/k" crossorigin="anonymous"></script></body></html>

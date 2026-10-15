@@ -14,8 +14,8 @@ export async function resolveLocalResource({ url, rendererRoot }) {
   // Serve only the built renderer. This is not a general file-reading API.
   const appEntry = segments.length === 1 && segments[0] === 'app.html';
   const homeEntry = url === 'siren://app/home.html';
-  const viewEntry = segments.length === 2 && segments[0] === 'windows' && ['code.html', 'docs.html', 'diagram.html','presenter.html','audience.html'].includes(segments[1])
-    && /^siren:\/\/app\/windows\/(?:code|docs|diagram|presenter|audience)\.html\?windowId=[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(url);
+  const viewEntry = segments.length === 2 && segments[0] === 'windows' && ['code.html', 'docs.html', 'diagram.html','presenter.html','audience.html','terminal.html'].includes(segments[1])
+    && /^siren:\/\/app\/windows\/(?:code|docs|diagram|presenter|audience|terminal)\.html\?windowId=[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(url);
   const shellAsset=['siren://app/assets/shell.js','siren://app/assets/shell.css','siren://app/assets/home-workspace.js','siren://app/assets/diagram-catalogue.css'].includes(url);
   if (!appEntry && !homeEntry && !viewEntry && !shellAsset) throw refused();
   const root = await realpath(rendererRoot);

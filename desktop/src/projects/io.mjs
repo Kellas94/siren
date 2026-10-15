@@ -8,13 +8,14 @@ export async function readOwnedBytes(path, limit) {
     const info = await file.stat();
     if (!info.isFile() || info.size > limit) throw new Error('File exceeds read limit');
     const chunks = []; let total = 0;
+    const chunk = Buffer.alloc(Math.min(65536, limit + 1));
     for (;;) {
-      const chunk = Buffer.alloc(Math.min(65536, limit - total + 1));
-      const { bytesRead } = await file.read(chunk, 0, chunk.length, null);
+      const length = Math.min(chunk.length, limit - total + 1);
+      const { bytesRead } = await file.read(chunk, 0, length, null);
       if (!bytesRead) break;
       total += bytesRead;
       if (total > limit) throw new Error('File grew beyond read limit');
-      chunks.push(chunk.subarray(0, bytesRead));
+      chunks.push(Buffer.from(chunk.subarray(0, bytesRead)));
     }
     return Buffer.concat(chunks, total);
   } finally { await file.close(); }

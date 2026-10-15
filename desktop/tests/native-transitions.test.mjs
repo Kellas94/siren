@@ -56,8 +56,8 @@ test('successful login preserves edits queued during the browser round trip befo
   let releaseFirst, firstEntered, finishLogin, switched = false, reloaded = false;
   const entered = new Promise(resolve => { firstEntered = resolve; }); const browser = new Promise(resolve => { finishLogin = resolve; });
   let pause = true;
-  const context = vm.createContext({ selectedId: original.project.id, snapshot: original, grants: new Set([original.project.id]),
-    mode: 'normal', nativeReadonly: false, reason: null, accountTransition: false, accountQuiesced: false,
+  const context = vm.createContext({ terminalRuntime:null, selectedId: original.project.id, snapshot: original, grants: new Set([original.project.id]),
+    mode: 'normal', nativeReadonly: false, reason: null, accountTransition: false, accountQuiesced: false, pinTransition: false,
     bootstrap: { mode: 'normal', snapshot: original, readonly: false }, failure, retireNativeViews: () => {},
     account: { beginLogin: async ({ beforeCommit } = {}) => { await browser; await beforeCommit?.(); switched = true; return { state: 'online', recoveryOnly: false }; } },
     projects: new ProjectStore(root, { fault: async stage => { if (stage === 'revision-verified' && pause) { pause = false; firstEntered(); await new Promise(resolve => { releaseFirst = resolve; }); } } }),
@@ -90,7 +90,7 @@ test('successful login preserves edits queued during the browser round trip befo
 test('failed account-transition flush retains original authority and does not reload', async () => {
   let switched = false; const originalGrant = 'owned';
   const context = vm.createContext({ grants: new Set([originalGrant]), selectedId: originalGrant, snapshot: {}, mode: 'normal', nativeReadonly: false, reason: null,
-    bootstrap: {}, accountTransition: false, accountQuiesced: false, writes: new Set(), failure,
+    bootstrap: {}, accountTransition: false, accountQuiesced: false, pinTransition: false, writes: new Set(), failure,
     account: { beginLogin: async ({ beforeCommit } = {}) => { try { await beforeCommit?.(); switched = true; return { state: 'online' }; } catch { return failure('LOGIN_FAILED', 'Save refused'); } } },
     window: { webContents: { executeJavaScript: async code => vm.runInContext(code, context) }, sirenDesktopBeginAccountTransition: async () => { throw new Error('Disk full'); }, sirenDesktopEndAccountTransition: () => {} },
   });

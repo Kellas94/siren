@@ -141,6 +141,36 @@ export class SourceRepository {
     if (digest(result) !== ref.sha256 || result.length !== ref.utf8Bytes) throw error('CORRUPT_SOURCE');
     return { directory, pointer, records, ref, selected, model, bytes: result };
   }
+  // Only applyEdit can supply this transaction-local proof. Reread every
+  // journal and the original blob; reuse semantic replay only after proving
+  // the on-disk prefix is exactly the prefix already verified in this call.
+  async #verifySelectedEdit(projectId, sourceId, proof) {
+    const directory = await this.sourceDirectory(projectId, sourceId);
+    const pointer = await this.readPointer(directory, sourceId);
+    if (directory !== proof.directory || !jsonBytes(pointer).equals(proof.pointer)) throw error('SOURCE_READBACK_FAILED');
+    let descriptor = pointer.head, base, suffix;
+    for (let index = 0; index < proof.descriptors.length; index++) {
+      if (!jsonBytes(descriptor).equals(proof.descriptors[index])) throw error('SOURCE_READBACK_FAILED');
+      const record = await this.readRecord(directory, descriptor, sourceId);
+      if (index === 0) {
+        if (!jsonBytes(record).equals(proof.record)) throw error('SOURCE_READBACK_FAILED');
+        suffix = record;
+      }
+      base = record; descriptor = record.parent;
+    }
+    if (descriptor !== null || base.kind !== 'import' || base.ref.version !== 1 || base.blob !== proof.blob || base.ref.sha256 !== proof.blob) throw error('CORRUPT_SOURCE');
+    const original = await readOwnedBytes(join(await childDirectory(directory, 'blobs'), `${base.blob}.bin`), this.limits.sourceBytes);
+    if (digest(original) !== proof.blob) throw error('CORRUPT_SOURCE');
+    // Prefix I/O can yield while another owner changes the selected identity.
+    // Bind the final selection again before the remaining synchronous proof.
+    if (!jsonBytes(await this.readPointer(directory, sourceId)).equals(proof.pointer)) throw error('SOURCE_READBACK_FAILED');
+    const prior = Buffer.from(proof.model.text);
+    if (proof.model.version !== proof.priorVersion || prior.length !== proof.priorBytes || digest(prior) !== proof.priorHash) throw error('SOURCE_READBACK_FAILED');
+    const applied = proof.model.apply(suffix.edit);
+    const result = Buffer.from(proof.model.text);
+    if (!applied.ok || applied.version !== suffix.ref.version || !result.equals(proof.bytes)
+      || !jsonBytes(sourceRef(sourceId, applied.version, result, suffix.ref.provenance)).equals(jsonBytes(suffix.ref))) throw error('SOURCE_READBACK_FAILED');
+  }
   async select(projectId, directory, pointer) {
     const bytes = jsonBytes(pointer);
     try { await this.write(projectId, join(directory, 'current.json'), bytes, { selection: true }); }
@@ -236,12 +266,18 @@ export class SourceRepository {
         const ref = sourceRef(edit.sourceId, checked.version, bytes, loaded.ref.provenance);
         const record = { schema: 1, kind: 'edit', ref, parent: loaded.pointer.head, edit: payload, requestHash: payloadHash };
         const file = `v-${ref.version}-${randomUUID()}.json`;
-        const sha256 = await this.immutable(projectId, join(await childDirectory(loaded.directory, 'versions'), file), jsonBytes(record));
+        const recordBytes = jsonBytes(record);
+        const proof = { directory: loaded.directory, model: loaded.model,
+          descriptors: loaded.records.map(item => jsonBytes(item.descriptor)),
+          blob: loaded.records.at(-1).record.blob, priorVersion: loaded.ref.version,
+          priorBytes: loaded.ref.utf8Bytes, priorHash: loaded.ref.sha256, record: recordBytes, bytes };
+        const sha256 = await this.immutable(projectId, join(await childDirectory(loaded.directory, 'versions'), file), recordBytes);
         await this.fault('source-version-verified');
         await this.access('edit', projectId, edit.sourceId);
-        await this.select(projectId, loaded.directory, { ...loaded.pointer, head: { file, sha256 } });
-        const verified = await this.load(projectId, edit.sourceId);
-        if (verified.ref.version !== ref.version || verified.ref.sha256 !== ref.sha256) throw error('SOURCE_READBACK_FAILED');
+        const pointer = { ...loaded.pointer, head: { file, sha256 } };
+        proof.pointer = jsonBytes(pointer); proof.descriptors.unshift(jsonBytes(pointer.head));
+        await this.select(projectId, loaded.directory, pointer);
+        await this.#verifySelectedEdit(projectId, payload.sourceId, proof);
         return { ok: true, operationId: edit.operationId, sourceId: edit.sourceId, version: ref.version, sha256: ref.sha256, durability: 'draft' };
       }, this.writerOptions);
     } catch (e) { return reject(e.code ?? 'SOURCE_WRITE_FAILED', { operationId: edit?.operationId, sourceId: edit?.sourceId }); }

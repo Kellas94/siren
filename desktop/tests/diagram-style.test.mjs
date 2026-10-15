@@ -38,3 +38,13 @@ test('source node and global weight declarations prevent global/root and block t
 test('actual extracted Mermaid node CSS provenance identifies family/size/weight and keeps its rendered text untouched',async()=>{
  const styles=fixture({},[{id:'B',cssStyles:['font-family:Georgia;font-size:22px;font-weight:700']}]),appearance=await styles.prepare({},'exact'),root=new Element(),group=new Element({'data-id':'B'});group.texts=[new Element()];root.groups=[group];root.texts=group.texts;const targets=styles.apply(root,{fontFamily:'Verdana',fontSize:20,fontWeight:800,nodeStyles:{B:{fontSize:24}}},appearance);assert.equal(targets[0].protected.font,true);assert.deepEqual(group.texts[0].values,{});
 });
+test('Mindmap circle root centers its unowned label without moving child labels or geometry',()=>{
+ const styles=fixture(),root=new Element({class:'mindmapDiagram'}),group=new Element({class:'node mindmap-node section-root'}),circle=new Element(),label=new Element({class:'label',transform:'translate(0, -9.5)'}),text=new Element({x:'0'}),childText=new Element({x:'0'});circle.localName='circle';label.localName='g';group.children=[circle,label];label.texts=[text];label.querySelectorAll=()=>[text];root.groups=[group];root.texts=[text,childText];
+ styles.apply(root,{}, {nodes:new Map(),global:{}});assert.equal(text.getAttribute('text-anchor'),'middle');assert.equal(childText.getAttribute('text-anchor'),null);assert.equal(label.getAttribute('transform'),'translate(0, -9.5)');assert.deepEqual(circle.attrs,{});
+ text.setAttribute('text-anchor','end');styles.apply(root,{}, {nodes:new Map(),global:{}});assert.equal(text.getAttribute('text-anchor'),'end');
+ delete text.attrs['text-anchor'];styles.apply(root,{}, {nodes:new Map(),global:{},alignmentDeclared:true});assert.equal(text.getAttribute('text-anchor'),null);
+});
+test('explicit source alignment and theme CSS retain ownership of Mindmap root anchoring',async()=>{
+ const fromNode=fixture({},[{id:'B',cssStyles:['text-anchor:end']}]),node=await fromNode.prepare({},'exact');assert.equal(node.alignmentDeclared,true);
+ const fromCss=fixture({themeCSS:'.label{text-anchor:start}'}),css=await fromCss.prepare({},'exact');assert.equal(css.alignmentDeclared,true);
+});

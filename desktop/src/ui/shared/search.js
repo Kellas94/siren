@@ -6,12 +6,12 @@
  const close=()=>{serial++;off?.();off=null;if(dialog){dialog.replaceChildren();dialog.remove();dialog=null;}};
  window.SirenProjectSearch=Object.freeze({open(){
   if(location.href!=='siren://app/home.html'||!window.sirenHomeView||dialog)return;
-  const own=++serial;dialog=make('dialog',document.body);dialog.id='sirenProjectFind';dialog.setAttribute('aria-labelledby','sirenProjectFindTitle');
+  const own=++serial,closeOwn=()=>{if(own===serial)close();};dialog=make('dialog',document.body);dialog.id='sirenProjectFind';dialog.setAttribute('aria-labelledby','sirenProjectFindTitle');
   make('h2',dialog,'Find in project').id='sirenProjectFindTitle';make('p',dialog,'Search saved names across Diagrams, Docs, Code and Present. Code text search remains Ctrl+F inside Code.').className='document-caption';
   const form=make('form',dialog),label=make('label',form,'Name');label.htmlFor='sirenProjectFindQuery';const input=make('input',form);input.id='sirenProjectFindQuery';input.type='search';input.maxLength=160;input.autocomplete='off';
   const submit=make('button',form,'Search');submit.type='submit';submit.id='sirenProjectFindSubmit';
   const rows=make('div',dialog);rows.id='sirenProjectFindResults';const notice=make('p',dialog,'');notice.setAttribute('role','status');
-  const more=make('button',dialog,'More results');more.type='button';more.hidden=true;const done=make('button',dialog,'Done');done.type='button';done.addEventListener('click',close);
+  const more=make('button',dialog,'More results');more.type='button';more.hidden=true;const done=make('button',dialog,'Done');done.type='button';done.addEventListener('click',closeOwn);
   let cursor=0,query='',count=0,busy=false;
   const current=()=>own===serial&&dialog?.open===true;
   const load=async()=>{
@@ -26,6 +26,6 @@
    }catch{if(current())notice.textContent='Search unavailable. Your work was retained.';}
    finally{busy=false;if(current())submit.disabled=more.disabled=input.disabled=false;}
   };
-  form.addEventListener('submit',event=>{event.preventDefault();if(busy||!current())return;query=input.value.trim();cursor=count=0;rows.replaceChildren();void load();});more.addEventListener('click',()=>void load());dialog.addEventListener('close',close,{once:true});off=window.sirenHome.onInvalidated(close);dialog.showModal();input.focus();void load();
+  form.addEventListener('submit',event=>{event.preventDefault();if(busy||!current())return;query=input.value.trim();cursor=count=0;rows.replaceChildren();void load();});more.addEventListener('click',()=>void load());dialog.addEventListener('close',closeOwn,{once:true});off=window.sirenHome.onInvalidated(closeOwn);dialog.showModal();input.focus();void load();
  }});
 })();

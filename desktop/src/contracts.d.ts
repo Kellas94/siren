@@ -34,6 +34,10 @@ export type AnalysisStatus = 'complete' | 'partial' | 'unsupported' | 'budget-ex
 export type AnalysisSourceRef = { sourceId: string; version: number; sha256: string };
 export type SourceAnalysisRequest = AnalysisSourceRef & { jobId: string } & ({ kind: 'index'; range?: { from: number; to: number }; budget?: { maxUnits?: number; maxDefinitions?: number; maxNodes?: number; wallMs?: number } } | { kind: 'diff'; rightWindowId: string; rightRef: AnalysisSourceRef; budget?: { maxUnits?: number; maxCells?: number; maxLines?: number; maxHunks?: number; maxPreviewUnits?: number; maxTotalPreviewUnits?: number; wallMs?: number } });
 export type SourceComparisonChoices = { ok: true; items: { windowId: string; sourceRef: AnalysisSourceRef }[] } | { ok: false; code: string };
+// Saved comparison navigation only targets an existing, current Code window.
+// Main privately claims/completes the request; no renderer path/window creation.
+export type SourceComparisonReveal = { sourceRef: AnalysisSourceRef; rightWindowId: string; rightRef: AnalysisSourceRef; range: { from: number; to: number } };
+export type SourceComparisonRevealResult = { ok: true } | { ok: false; code: 'REQUEST_REFUSED' | 'ACCESS_REFUSED' | 'RANGE_REFUSED' | 'COMPARISON_NAVIGATION_BUSY' | 'COMPARISON_NAVIGATION_TIMEOUT' | 'TARGET_NOT_READY' | 'COMPARISON_NAVIGATION_FAILED' };
 export type DiffRange = { from: number; to: number; fromLine: number; toLine: number; preview: string };
 export type SourceMapRequest = AnalysisSourceRef & { kind: 'map'; jobId: string; range: { from: number; to: number }; budget?: { maxUnits?: number; maxNodes?: number; wallMs?: number; maxGraphNodes?: number; maxGraphEdges?: number } };
 export type SourceMapNode = { id: number; kind: string; label: string; from: number; to: number; line: number; parent: number | null };

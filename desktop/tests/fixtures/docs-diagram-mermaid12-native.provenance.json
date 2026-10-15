@@ -1,0 +1,16 @@
+{
+  "classification": "REAL_HOSTED_ENGINE_OUTPUT_REGRESSION_FIXTURE_NOT_FEATURE_APPROVAL",
+  "author": "/root",
+  "repository": "Kellas94/siren",
+  "run": 38084408215,
+  "job": 114307758828,
+  "commit": "42c89c6c035f6dd6f4fa5c1b07d8cf31159b0d64",
+  "rendererEntrySha256": "5e680b59cefdf038d82d6c4d6fdee8fc23cdc68769fc6fa9a640cdc217126b0b",
+  "artifactId": 11682080183,
+  "artifactSha256": "c020de515ab2ff6de5f91d6c9f2ef601129dff0f6c5148382fc995027d41610c",
+  "pathWithinArtifact": "evidence/docs-diagram-embeds-native/diagnostic-1791664653379/raw.svg",
+  "bytes": 18203,
+  "sha256": "0bdaf01503aec2d0e2a615cd276ad5ea3e55b2472a7941e7148f9547a2cead55",
+  "originalOutcome": "DIAGRAM_EMBED_SVG_REFUSED",
+  "localExecution": "PURE_XML_ONLY_NO_ENGINE"
+}

@@ -1,6 +1,7 @@
 // Legacy primary coordinator regression. Updated by the implementing coordinator;
 // it is not a new independent approval of the native all-view transport.
 import test from 'node:test';
+import {createPinLifecycleServices} from '../src/account/pin-lifecycle.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile, mkdir, rmdir } from 'node:fs/promises';
@@ -26,6 +27,7 @@ const between = (source, start, end) => {
 const selection = between(main, 'const selected = async (next,{isCurrent}={}) => {', 'const exportBytes =');
 const prepare = between(main, 'const prepareLocalWorkspace =', 'session.defaultSession');
 const pinServices = between(main, '  getPinState:', '  requestClose:');
+const pinLifecycleFactory = between(main, 'const pinLifecycleHooks=', 'const services =');
 const saveService = between(main, '  saveProject:', '  exportProject:');
 const factory = between(main, 'const projects = new ProjectStore(', '\nconst recovery =');
 const transition = between(builder, 'let accountTransitionBodyState =', 'window.sirenDesktopStartOpening =');
@@ -47,14 +49,20 @@ const owner = { isMainFrame: true, senderUrl: 'siren://app/app.html' };
 
 test('PIN unlock creates no implicit project, and failed explicit durable selection cannot publish selected state', async () => {
   const { root, localPin } = await fixture();
-  const context = vm.createContext({ join, Buffer, atomicWrite, failure, dataRoot: root, localPin,
+  const diagramScans = [];
+  const context = vm.createContext({ join, Buffer, atomicWrite, failure, terminalRuntime:null, dataRoot: root, localPin,
+    // Main owns the scheduler; this isolated PIN fixture observes its notification seam.
+    requestDocsDiagramScan: () => diagramScans.push({ unlocked: localPin.state().unlocked, selectedId: context.view().selectedId }),
     projects: new ProjectStore(root, { canSave: () => localPin.state().unlocked }),
     account: { accountId: null, policy: { opened() {} } },
   });
   vm.runInContext(`let selectedId=null,snapshot=null,mode='normal',reason=null,nativeReadonly=false;const grants=new Set();let bootstrap={snapshot:null,readonly:true};` + selection + prepare + ';globalThis.prepare=prepareLocalWorkspace;globalThis.select=selected;globalThis.view=()=>({selectedId,bootstrap,grants:[...grants]});', context);
+  const refusedSetup = { ok: false, code: 'PIN_REFUSED' };
+  assert.equal(await context.prepare(refusedSetup), refusedSetup);assert.equal(diagramScans.length,0,'Refused unlock must not schedule Docs refresh');
   await mkdir(join(root, 'session-selection.json'));
   const setup = await context.prepare(await localPin.setup({ pin: '4826', confirmation: '4826' }));
   assert.equal(setup.ok, true); assert.equal(localPin.state().configured, true); assert.equal(localPin.state().unlocked, true);
+  assert.equal(diagramScans.length,1);assert.equal(diagramScans[0].unlocked,true);assert.equal(diagramScans[0].selectedId,null,'Successful PIN notification must not create/select a project');
   assert.equal(context.view().selectedId, null); assert.equal(context.view().bootstrap.snapshot, null); assert.equal(context.view().grants.length, 0);
   const next=await context.projects.createProject({label:'Explicit project',json:'{}'});
   await assert.rejects(context.select(next));assert.equal(context.view().selectedId,null);assert.equal(context.view().bootstrap.snapshot,null);assert.equal(context.view().grants.length,0);
@@ -86,7 +94,8 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   const seed = new ProjectStore(root); const original = await seed.createProject({ label: 'Owned lock fixture', json: '{}' });
   let release, entered; const paused = new Promise(r => { entered = r; }); const gate = new Promise(r => { release = r; }); let first = true;
   const body = { inert: false, classList: { add() {}, remove() {} } };
-  const context = vm.createContext({ ProjectStore, SourceRepository, localPin, failure, dataRoot: root, writerOptions: {
+  // Normalize only the fixed MAIN config container across VM realms; actual hooks stay unchanged.
+  const context = vm.createContext({ createPinLifecycleServices:options=>createPinLifecycleServices({...options}), terminalRuntime:null, ProjectStore, SourceRepository, localPin, failure, dataRoot: root, writerOptions: {
     fault: async stage => { if (stage === 'revision-verified' && first) { first = false; entered(); await gate; if (failWrite) throw new Error('Owned test persistence failure'); } },
   }, mode: 'normal', nativeReadonly: false, accountQuiesced: false, accountTransition: false, pinTransition: false,
     grants: new Set([original.project.id]), selectedId: original.project.id, snapshot: original, bootstrap: { mode: 'normal', snapshot: original, readonly: false },
@@ -98,7 +107,7 @@ for (const failWrite of [false, true]) test(`native PIN lock drains private reco
   });
   const window = context.window;
   window.webContents = { executeJavaScript: async text => vm.runInContext(text, context) };
-  vm.runInContext(factory + '\nconst services={\n' + pinServices + saveService + '\n};globalThis.services=services;', context);
+  vm.runInContext(factory + '\n'+pinLifecycleFactory+'\nconst services={\n' + pinServices + saveService + '\n};globalThis.services=services;', context);
   installPrimaryOwner(context);
   let admittedPreparation;
   const preparationStarted = new Promise(resolve => { admittedPreparation = resolve; });

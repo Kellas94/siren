@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {createPinLifecycleServices} from '../src/account/pin-lifecycle.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile,writeFile,readdir,rm,mkdir,rename} from 'node:fs/promises';
@@ -16,7 +17,8 @@ const prepare=main.slice(prepareStart,main.indexOf("ipcMain.handle('siren:view-a
 const method=(from,to)=>main.slice(main.indexOf(from),main.indexOf(to,main.indexOf(from)));
 const project=method('  exportProject: async id => {','  getRecovery:');
 const diagnostics=method('  exportDiagnostics: async () => {','  getAccess:');
-const lock=method('  lockPin: async () => {','  requestClose:');
+const lock=method('  lockPin: async () => (terminalRuntime?.pinLifecycle??pinLifecycle).lockPin(),','  requestClose:');
+const pinLifecycleFactory=method('const pinLifecycleHooks=','const services =');
 const recovery=method('  exportRecovery: async id => {','\n};\nconst nativeDisplays');
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 
@@ -26,11 +28,12 @@ async function fixture(t){
  let unlocked=true,chooserCalls=0,writeCalls=0,hook=async()=>{};
  const frame={url:'siren://app/app.html'},contents={mainFrame:frame,isDestroyed:()=>false,getURL:()=>frame.url,send(){},executeJavaScript:async()=>{}};
  const saved={schema:1,json:'{"private":"Exact Ș😀\\r\\n"}'};
- const context=vm.createContext({Buffer,failure,legacyExportEpoch:0,selectedId:'owned-project',mode:'normal',bootstrap:{selectionGeneration:1},pinTransition:false,accountTransition:false,accountQuiesced:false,nativeReadonly:false,grants:new Set(['owned-project']),writes:new Set(),snapshot:null,window:{webContents:contents,isDestroyed:()=>false},localPin:{state:()=>({unlocked}),cancelPending(){},async drain(){}},homeAuthority:{invalidate(){}},nativeShells:new Map(),windowRegistry:{listViews:()=>[]},projects:{readProject:async()=>saved},recovery:{exportSourceSnapshot:async()=>Buffer.from('exact source bundle')},recoveryAccess:{export:async()=>Buffer.from('exact recovery bytes')},dialog:{showSaveDialog:async()=>{chooserCalls++;entered.resolve();return choice.promise;}},atomicWrite:async(path,bytes,options={})=>{writeCalls++;return actualWrite(path,bytes,{...options,fault:async phase=>{await hook(phase);await options.fault?.(phase);}});}});
+ // Fixed MAIN config container remap only; no service or authority substitution.
+ const context=vm.createContext({createPinLifecycleServices:options=>createPinLifecycleServices({...options}),Buffer,failure,terminalRuntime:null,legacyExportEpoch:0,selectedId:'owned-project',mode:'normal',bootstrap:{selectionGeneration:1},pinTransition:false,accountTransition:false,accountQuiesced:false,nativeReadonly:false,grants:new Set(['owned-project']),writes:new Set(),snapshot:null,window:{webContents:contents,isDestroyed:()=>false},localPin:{state:()=>({unlocked}),cancelPending(){},async drain(){}},homeAuthority:{invalidate(){}},nativeShells:new Map(),windowRegistry:{listViews:()=>[]},projects:{readProject:async()=>saved},recovery:{exportSourceSnapshot:async()=>Buffer.from('exact source bundle')},recoveryAccess:{export:async()=>Buffer.from('exact recovery bytes')},dialog:{showSaveDialog:async()=>{chooserCalls++;entered.resolve();return choice.promise;}},atomicWrite:async(path,bytes,options={})=>{writeCalls++;return actualWrite(path,bytes,{...options,fault:async phase=>{await hook(phase);await options.fault?.(phase);}});}});
  Object.assign(context,{buildDiagnostics:input=>input,app:{getVersion:()=> 'test'},process:{versions:{electron:'test',chrome:'test',node:'test'},platform:'win32',arch:'x64'},osRelease:()=> 'test',account:{getAccess:async()=>({state:'offline'})},updates:{getUpdate:()=>({phase:'idle'})}});
  context.recovery.scan=async()=>({valid:[],invalid:[]});context.projects.listProjects=async()=>[];
  context.localPin.lock=()=>{unlocked=false;};context.retireNativeViews=async()=>{};context.rollbackNativePreparation=async()=>{};
- vm.runInContext(helpers+'\n'+prepare+'\nconst exportServices={'+lock+diagnostics+project+recovery+'};',context);
+ vm.runInContext(helpers+'\n'+prepare+'\n'+pinLifecycleFactory+'\nconst exportServices={'+lock+diagnostics+project+recovery+'};',context);
  return {root,destination,entered,choice,context,contents,saved,setUnlocked:value=>{unlocked=value;},setHook:value=>{hook=value;},chooserCalls:()=>chooserCalls,writeCalls:()=>writeCalls,call:(name,...args)=>vm.runInContext('exportServices',context)[name](...args),prepare:()=>vm.runInContext('prepareNativeWorkspace',context)()};
 }
 

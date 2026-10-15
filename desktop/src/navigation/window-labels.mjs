@@ -1,6 +1,6 @@
 import {workspaceMetadata} from '../windows/entities.mjs';
 
-const roles=Object.freeze({code:'⌘ Code',docs:'Docs',diagram:'Diagrams',presenter:'Presenter',audience:'Audience'});
+const roles=Object.freeze({code:'⌘ Code',docs:'Docs',diagram:'Diagrams',presenter:'Presenter',audience:'Audience',terminal:'Terminal'});
 const own=(value,key)=>{const descriptor=value&&typeof value==='object'?Object.getOwnPropertyDescriptor(value,key):null;return descriptor&&Object.hasOwn(descriptor,'value')?descriptor.value:undefined;};
 const key=ref=>ref&&typeof ref.sourceId==='string'&&Number.isSafeInteger(ref.version)&&ref.version>0&&typeof ref.sha256==='string'&&/^[a-f0-9]{64}$/.test(ref.sha256)?`${ref.sourceId}:${ref.version}:${ref.sha256}`:null;
 function name(value,fallback,limit=160){
@@ -13,7 +13,7 @@ const rows=value=>Array.isArray(value)?value.slice(0,4096):[];
 
 /** Display-only native title; never use it to select an entity or authorize work. */
 export function surfaceWindowLabel(role,title,entityId){
- const module=roles[role];if(!['code','docs','diagram'].includes(role))return null;
+ const module=roles[role];if(!['code','docs','diagram','terminal'].includes(role))return null;
  const prefix='SIREN — '+module+' — ';
  const fallback=typeof entityId==='string'?entityId.slice(0,8):module;
  return module+' · '+name(typeof title==='string'&&title.startsWith(prefix)?title.slice(prefix.length):null,fallback,224);
@@ -51,7 +51,7 @@ export function homeWindowSummaries(snapshot,views,referenceFor=()=>null){
   }else if(view.role==='docs'){
    title=docs.get(view.entityId)||fallback;
    if(Number.isSafeInteger(snapshot.revision)&&snapshot.revision>0)suffix=' · project r'+snapshot.revision;
-  }else{
+  }else if(view.role==='terminal'){title='Project shell';}else{
    const diagram=diagrams.get(view.entityId);title=own(diagram,'name')||fallback;
    const version=own(diagram,'version');if(view.role==='diagram'&&Number.isSafeInteger(version)&&version>0)suffix=' · v'+version;
   }

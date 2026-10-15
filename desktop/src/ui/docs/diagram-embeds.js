@@ -1,0 +1,132 @@
+(() => {
+ 'use strict';
+ const make=(tag,parent,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;parent?.append(n);return n;};
+ const visualUri=visual=>{if(!visual||!['svg','png'].includes(visual.kind)||typeof visual.base64!=='string'||visual.base64.length>2796204||visual.base64.length%4||!/^[A-Za-z0-9+/]+={0,2}$/.test(visual.base64))throw Error('Invalid visual');return 'data:image/'+(visual.kind==='svg'?'svg+xml':'png')+';base64,'+visual.base64;};
+ window.createDiagramEmbedView=({api,getContext=()=>({}),onChanged=()=>{},onStatus=()=>{}})=>{
+  let generation=0,paused=false,disposed=false,tail=Promise.resolve(),picker=null;const pending=new Set(),cards=new Set(),expanded=new Set(),explanationSerial=new WeakMap();
+  const alive=token=>!paused&&!disposed&&token===generation;
+
+  function captureExplanation(c,target){
+   if(!target?.card||!target.host)return null;const {card,host}=target,serial=(explanationSerial.get(card)??0)+1;explanationSerial.set(card,serial);
+   for(const child of [...(host.children??[])])if(child.className==='siren-help-error')child.remove();
+   try{const owner=window.SirenHelpWorkspace;if(typeof owner?.capture!=='function'||typeof owner.isCurrent!=='function'||typeof owner.explain!=='function')return null;const context=owner.capture();if(owner.isCurrent(context)!==true)return null;return {owner,context,card,host,serial,generation,documentId:c.documentId,version:c.version};}catch{return null;}
+  }
+  function showExplanation(host,record,operation,reply){
+   try{if(!record||host!==record.host||!alive(record.generation)||!cards.has(record.card)||record.card.isConnected!==true||explanationSerial.get(record.card)!==record.serial||window.SirenHelpWorkspace!==record.owner||record.owner.isCurrent(record.context)!==true)return;
+    const current=getContext();if(current.documentId!==record.documentId||current.version!==record.version)return;
+    const ok=Object.getOwnPropertyDescriptor(reply,'ok'),code=Object.getOwnPropertyDescriptor(reply,'code');if(!ok||!Object.hasOwn(ok,'value')||ok.value!==false||!code||!Object.hasOwn(code,'value')||typeof code.value!=='string'||!/^[A-Z][A-Z0-9_]{0,95}$/.test(code.value))return;
+    record.owner.explain(host,Object.freeze({namespace:'docs-diagram',operation,code:code.value}),record.context);
+   }catch{/* Optional reference help cannot change the operation receipt or saved document. */}
+  }
+  const action=(node,name,id)=>{node.dataset.embedAction=name;if(id)node.dataset.embedId=id;return node;};
+  const button=(parent,title,name,id)=>{const n=action(make('button',parent,title),name,id);n.type='button';return n;};
+  const enqueue=work=>{
+   const token=generation,operation=tail.catch(()=>{}).then(()=>alive(token)?work(token):undefined).catch(()=>{if(alive(token))onStatus('Diagram operation could not finish. Your document is retained.');});
+   pending.add(operation);tail=operation;operation.finally(()=>pending.delete(operation));return operation;
+  };
+  const editable=()=>{const c=getContext();if(c.readonly||c.dirty||c.pending||c.paused||c.fenced||c.disposed){onStatus(c.dirty?'Save your document before inserting or updating a diagram.':'This document is not ready for diagram changes.');return null;}return c;};
+  const stillEditable=c=>{const latest=editable();if(!latest)return false;if(latest.documentId!==c.documentId||latest.version!==c.version){onStatus('The saved document changed. Your local work is retained.');return false;}return true;};
+  function previewLive(block,c,target){
+   return enqueue(async token=>{
+    if(!stillEditable(c))return;const result=await api.preview({diagramId:block.diagramId,scope:block.scope,nodeIds:[...(block.nodeIds??[])]});if(!alive(token)||!stillEditable(c))return;if(result?.ok!==true||typeof result.previewId!=='string'){onStatus('The current diagram could not be previewed. Its saved version is retained.');return;}
+    const dialog=make('dialog',document.body);dialog.className='document-diagram-expanded';expanded.add(dialog);make('h2',dialog,'Use the current diagram with Live');make('p',dialog,'Review saved source version '+result.sourceVersion+'. Live will follow future saved changes.');const image=make('img',dialog);image.src=visualUri(result.visual);image.alt=block.caption||'Current saved diagram';const confirm=button(dialog,'Use this version · Live','confirm-live',block.id),cancel=button(dialog,'Cancel','cancel-live',block.id);
+    const close=()=>{dialog.close();dialog.remove();expanded.delete(dialog);};cancel.addEventListener('click',close);dialog.addEventListener('close',()=>{dialog.remove();expanded.delete(dialog);});confirm.addEventListener('click',()=>{if(confirm.disabled||!alive(token))return;confirm.disabled=true;const explanation=captureExplanation(c,target);void enqueue(async next=>{if(!stillEditable(c)||!dialog.isConnected)return;const published=await api.setMode({blockId:block.id,mode:'live',previewId:result.previewId,expectedDocumentVersion:c.version,operationId:crypto.randomUUID()});if(!alive(next))return;if(published?.ok!==true){onStatus('The saved diagram or document changed. Preview again; your document is retained.');showExplanation(target?.host,explanation,'set-mode',published);close();return;}close();onChanged(published);});});dialog.showModal();return {awaitingChoice:true};
+   });
+  }
+  async function command(method,block,extra={},target=null){
+   if(paused||disposed)return;const c=['setMode','update'].includes(method)?editable():getContext();if(!c)return;
+   const explanation=captureExplanation(c,target);
+   if(method==='setMode'&&extra.mode==='live')return previewLive(block,c,target);
+   return enqueue(async token=>{if(method!=='openSource'&&!stillEditable(c))return;const result=await api[method]({blockId:block.id,expectedDocumentVersion:c.version,...extra,...(method==='openSource'?{}:{operationId:crypto.randomUUID()})});if(!alive(token))return;if(result?.ok!==true){onStatus(result?.code==='DOCUMENT_CONFLICT'?'The saved document changed. Your local work is retained.':'Diagram could not be updated. The last saved visual is retained.'+(/^[A-Z][A-Z0-9_]{2,63}$/.test(result?.code??'')?' ('+result.code+')':''));if(method==='setMode'||method==='update')showExplanation(target?.host,explanation,method==='setMode'?'set-mode':'update',result);return;}if(method!=='openSource')onChanged(result);return result;});
+  }
+  function render(block){
+   const card=make('figure');card.className='document-diagram';card.dataset.embedId=block.id;cards.add(card);
+   const header=make('div',card);header.className='document-diagram-header';make('strong',header,block.caption||'Diagram context');
+   const identity=action(make('p',card),'identity',block.id);identity.className='document-diagram-identity';
+   const describe=name=>{identity.textContent=(typeof name==='string'&&name.trim()?name.trim().slice(0,160)+' · ':'')+block.diagramId+' · '+(block.scope==='selection'?'Selected steps: '+(block.nodeIds??[]).join(', '):'Whole diagram')+' · Version '+block.snapshot.sourceVersion;};describe();
+   const mode=action(make('select',header),'mode',block.id);mode.setAttribute('aria-label','Diagram update mode');for(const [value,title]of [['live','Live'],['fixed','Fixed']]){const o=make('option',mode,title);o.value=value;}mode.value=block.mode;mode.disabled=getContext().readonly===true;mode.addEventListener('change',()=>{mode.disabled=true;void command('setMode',block,{mode:mode.value},{card,host:status}).then(result=>{if(result?.ok!==true)mode.value=block.mode;mode.disabled=getContext().readonly===true;});});
+   const viewport=action(make('div',card),'viewport',block.id);viewport.className='document-diagram-viewport';viewport.tabIndex=0;viewport.setAttribute('aria-label','Diagram · Plus and minus zoom, zero to fit');viewport.style.height=Math.min(1600,Math.max(80,block.display?.height??320))+'px';
+   const img=make('img',viewport);img.alt=block.caption||'Saved diagram';img.loading='lazy';img.decoding='async';
+   const resize=button(card,'','resize',block.id);resize.className='document-diagram-resize';resize.setAttribute('role','separator');resize.setAttribute('aria-orientation','horizontal');resize.setAttribute('aria-label','Resize diagram height · Up and down arrows');resize.setAttribute('aria-valuemin','80');resize.setAttribute('aria-valuemax','1600');let drag=null;const resizeGeneration=generation;
+   const resizeCurrent=()=>alive(resizeGeneration)&&card.isConnected!==false;
+   const setHeight=value=>{const height=Math.min(1600,Math.max(80,Math.round(value)));viewport.style.height=height+'px';resize.setAttribute('aria-valuenow',String(height));};setHeight(block.display?.height??320);
+   const stopResize=()=>{const previous=drag;drag=null;if(previous)try{resize.releasePointerCapture(previous.id);}catch{/* Capture may already have retired. */}};
+   resize.addEventListener('pointerdown',event=>{if(!resizeCurrent()||event.button!==0||!Number.isFinite(event.clientY))return;event.preventDefault();resize.focus({preventScroll:true});stopResize();drag={id:event.pointerId,y:event.clientY,height:viewport.getBoundingClientRect().height};try{resize.setPointerCapture(event.pointerId);}catch{drag=null;}});
+   resize.addEventListener('pointermove',event=>{if(!resizeCurrent()||!drag||event.pointerId!==drag.id||!Number.isFinite(event.clientY))return;event.preventDefault();setHeight(drag.height+event.clientY-drag.y);});
+   for(const name of ['pointerup','pointercancel','lostpointercapture'])resize.addEventListener(name,event=>{if(drag?.id===event.pointerId)stopResize();});
+   resize.addEventListener('keydown',event=>{if(!resizeCurrent()||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;event.preventDefault();stopResize();setHeight(event.key==='Home'?80:event.key==='End'?1600:parseInt(viewport.style.height)+(event.key==='ArrowUp'?-1:1)*(event.shiftKey?100:20));});
+   const status=action(make('p',card,block.status==='missing'?'Missing source or steps'+(block.missingNodeIds?.length?' · Missing: '+block.missingNodeIds.join(', '):'')+' · Last saved visual retained':block.status==='render-error'?'Update failed · Last saved visual retained':block.status==='pending'?'Update pending · Last saved visual retained':'Saved source · Version '+block.snapshot.sourceVersion),'status',block.id);status.className='document-diagram-status';status.setAttribute('role','status');
+   const tools=make('div',card);tools.className='document-diagram-tools';tools.setAttribute('role','toolbar');tools.setAttribute('aria-label','Diagram controls');let zoom=1,source=null,observer;
+   const fit=button(tools,'Fit','fit',block.id),minus=button(tools,'−','zoom-out',block.id),readout=action(make('span',tools,'Fit'),'zoom',block.id),plus=button(tools,'+','zoom-in',block.id),expand=button(tools,'Expand','expand',block.id),open=button(tools,'Open source','open-source',block.id),update=button(tools,'Update','update',block.id),load=button(tools,'Load diagram','load',block.id);
+   const resume=button(tools,'Resume Live','resume-live',block.id);resume.hidden=true;resume.disabled=getContext().readonly===true;resume.addEventListener('click',()=>{void command('setMode',block,{mode:'live'},{card,host:status});});
+   minus.setAttribute('aria-label','Zoom out');plus.setAttribute('aria-label','Zoom in');update.disabled=getContext().readonly===true;expand.disabled=true;
+   function setZoom(value,fit=false){zoom=Math.max(.25,Math.min(4,value));img.style.maxWidth=fit?'100%':'none';img.style.width=fit?'100%':Math.round(zoom*100)+'%';img.style.maxHeight=fit?'100%':'none';readout.textContent=fit?'Fit':Math.round(zoom*100)+'%';}
+   fit.addEventListener('click',()=>setZoom(1,true));minus.addEventListener('click',()=>setZoom(zoom-.25));plus.addEventListener('click',()=>setZoom(zoom+.25));
+   viewport.addEventListener('keydown',event=>{if(paused||disposed)return;if(['+','=','-','0'].includes(event.key)){event.preventDefault();setZoom(event.key==='-'?zoom-.25:event.key==='0'?1:zoom+.25,event.key==='0');}});
+   expand.addEventListener('click',()=>{if(!source||paused||disposed)return;const dialog=make('dialog',document.body);dialog.className='document-diagram-expanded';expanded.add(dialog);make('h2',dialog,block.caption||'Diagram context');const image=make('img',dialog);image.src=source;image.alt=img.alt;const close=button(dialog,'Close','close-expanded',block.id);close.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{expanded.delete(dialog);dialog.remove();if(!paused&&!disposed&&card.isConnected)expand.focus({preventScroll:true});});dialog.showModal();});
+   open.addEventListener('click',()=>{void command('openSource',block);});update.addEventListener('click',()=>{void command('update',block,{},{card,host:status});});
+   let requested=false;
+   function read(){
+    if(requested||paused||disposed||card.isConnected===false)return;requested=true;load.disabled=true;observer?.unobserve(card);
+    const c=getContext(),explanation=captureExplanation(c,{card,host:status});void enqueue(async token=>{let failure=null;try{const result=await api.readEmbed({blockId:block.id,expectedDocumentVersion:c.version});if(!alive(token)||card.isConnected===false)return;if(result?.ok!==true||result.block?.id!==block.id){failure=result;throw Error('Visual unavailable');}describe(result.sourceName);source=visualUri(result.visual);img.src=source;load.hidden=true;expand.disabled=false;if(result.refreshSuspended===true){status.textContent='Live paused after Undo · Resume Live or Update when ready';resume.hidden=false;}setZoom(1,true);}
+     catch{if(alive(token)&&card.isConnected!==false){status.textContent='Diagram unavailable · Saved caption and reference retained';showExplanation(status,explanation,'read-embed',failure);load.textContent='Retry diagram';requested=false;load.disabled=false;}}});
+   }
+   load.addEventListener('click',read);
+   if(typeof IntersectionObserver==='function'){observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===card&&e.isIntersecting))read();},{rootMargin:'160px'});observer.observe(card);}card._diagramDispose=()=>{observer?.disconnect();stopResize();};return card;
+  }
+  function insert({afterBlockId=null,proposal=null}={}){
+   if(paused||disposed||!editable())return;
+   picker?.remove();const own=picker=make('dialog',document.body);own.className='document-diagram-picker';make('h2',own,'Bring the flow into your document');make('p',own,'Insert a saved diagram. Live keeps it connected; Fixed preserves the version you reviewed.');
+   const search=action(make('input',own),'search-diagrams');search.placeholder='Find a saved diagram…';search.maxLength=160;search.setAttribute('aria-label','Search saved diagrams');
+   const select=action(make('select',own),'choose-diagram');select.setAttribute('aria-label','Saved diagram');const more=button(own,'More diagrams','more-diagrams');more.hidden=true;const position=action(make('select',own),'choose-position');position.setAttribute('aria-label','Insert after');const context=getContext();const end=make('option',position,'End of document');end.value='';for(const b of context.blocks??[]){const o=make('option',position,'After '+(b.kind==='heading'?b.text:b.caption||b.kind||'section'));o.value=b.id;}position.value=afterBlockId??'';
+   const scope=action(make('select',own),'choose-scope');scope.setAttribute('aria-label','Diagram content');for(const [value,text]of [['whole','Whole diagram'],['selection','Selected steps']]){const o=make('option',scope,text);o.value=value;}scope.value='whole';const selectionList=make('fieldset',own);selectionList.className='document-diagram-selection';selectionList.hidden=true;const selectedIds=new Set();
+   const reviewSelection=button(own,'Use reviewed selection','review-selection');reviewSelection.hidden=true;
+   const caption=action(make('input',own),'caption');caption.placeholder='Caption (optional)';caption.maxLength=1000;caption.setAttribute('aria-label','Diagram caption');const image=make('img',own);image.hidden=true;image.alt='Diagram preview';const message=make('p',own);message.setAttribute('role','status');const actions=make('div',own);actions.className='document-diagram-tools';const preview=button(actions,'Preview','preview'),confirm=button(actions,'Insert diagram','confirm-insert'),cancel=button(actions,'Cancel','cancel-insert');confirm.disabled=true;let receipt=null,selectionRevision=0,selectionReviewRequired=false,missingIds=[],missingInputs=[];
+   const remainingSelection=()=>[...selectedIds].filter(id=>!missingIds.includes(id));
+   const updateSelection=()=>{preview.disabled=selectionReviewRequired||!selectedIds.size;reviewSelection.disabled=!remainingSelection().length;};
+   const resetSelection=()=>{selectedIds.clear();missingIds=[];missingInputs=[];selectionReviewRequired=false;reviewSelection.hidden=true;selectionList.replaceChildren();selectionList.hidden=true;scope.value='whole';};
+   function chooseScope(){
+    const revision=++selectionRevision,choice=select.value;receipt=null;confirm.disabled=true;image.hidden=true;selectedIds.clear();missingIds=[];missingInputs=[];selectionReviewRequired=false;reviewSelection.hidden=true;selectionList.replaceChildren();selectionList.hidden=scope.value!=='selection';
+    if(scope.value!=='selection'||!choice){preview.disabled=!choice;return;}
+    preview.disabled=true;message.textContent='Checking saved steps…';
+    void enqueue(async token=>{
+     const result=await api.inspectSelection({diagramId:choice});if(!alive(token)||picker!==own||revision!==selectionRevision||select.value!==choice)return;
+     if(result?.ok!==true){resetSelection();preview.disabled=false;message.textContent='This syntax supports the whole diagram. Selected steps are not yet qualified.';return;}
+     const proposed=proposal?.diagramId===choice&&proposal.scope==='selection'?proposal.nodeIds:[],nodes=result.nodes??[],present=new Set(nodes.map(node=>node.id));
+     for(const id of proposed)selectedIds.add(id);
+     missingIds=proposed.filter(id=>!present.has(id));
+     const changedSource=typeof proposal?.sourceHash==='string'&&typeof result.sourceHash==='string'&&proposal.sourceHash!==result.sourceHash&&proposed.length>0;
+     selectionReviewRequired=missingIds.length>0||changedSource;reviewSelection.hidden=!selectionReviewRequired;
+     make('legend',selectionList,'Choose steps to include');
+     for(const n of nodes){
+      const label=make('label',selectionList),input=action(make('input',label),'select-node',n.id);input.type='checkbox';input.checked=selectedIds.has(n.id);input.setAttribute('aria-label',n.id+' · '+n.label);make('span',label,n.id+' · '+n.label);
+      input.addEventListener('change',()=>{if(paused||disposed||picker!==own||scope.value!=='selection')return;if(input.checked)selectedIds.add(n.id);else selectedIds.delete(n.id);selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;updateSelection();});
+     }
+     for(const id of missingIds){const label=make('label',selectionList),input=action(make('input',label),'missing-node',id);input.type='checkbox';input.checked=true;input.disabled=true;input.setAttribute('aria-label',id+' · Missing from the saved diagram');make('span',label,id+' · Missing from the saved diagram');missingInputs.push(input);}
+     updateSelection();message.textContent=selectionReviewRequired?'The saved diagram changed.'+(missingIds.length?' Missing steps: '+missingIds.join(', ')+'.':'')+' Requested steps: '+proposed.join(', ')+'. Review your choices and use the reviewed selection, or choose the whole diagram.':'Select at least one step. Connections outside the selection are reported in preview.';
+    });
+   }
+   reviewSelection.addEventListener('click',()=>{
+    if(paused||disposed||picker!==own||own.isConnected===false||!selectionReviewRequired||scope.value!=='selection'||!remainingSelection().length)return;
+    const omitted=missingIds.slice();for(const id of omitted)selectedIds.delete(id);for(const input of missingInputs)input.checked=false;
+    selectionReviewRequired=false;reviewSelection.hidden=true;selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;updateSelection();
+    message.textContent='Reviewed steps: '+[...selectedIds].join(', ')+'.'+(omitted.length?' Missing steps excluded by your choice: '+omitted.join(', ')+'.':'')+' Preview before insertion.';preview.focus({preventScroll:true});
+   });
+   scope.addEventListener('change',chooseScope);
+   const retire=()=>{if(picker===own)picker=null;own.remove();};const close=()=>{if(picker===own)picker=null;own.close();own.remove();};cancel.addEventListener('click',close);own.addEventListener('cancel',event=>{event.preventDefault();close();});own.addEventListener('close',retire);select.addEventListener('change',()=>{selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;resetSelection();preview.disabled=false;});
+   preview.addEventListener('click',()=>{if(paused||disposed||picker!==own||!select.value||own.isConnected===false||scope.value==='selection'&&(selectionReviewRequired||!selectedIds.size))return;const choice=select.value,revision=++selectionRevision,selectedScope=scope.value,nodeIds=selectedScope==='selection'?[...selectedIds]:[];receipt=null;confirm.disabled=preview.disabled=true;void enqueue(async token=>{try{const result=await api.preview({diagramId:choice,scope:selectedScope,nodeIds});if(!alive(token)||picker!==own||revision!==selectionRevision||select.value!==choice)return;if(result?.ok!==true||typeof result.previewId!=='string')throw Error('Preview unavailable');image.src=visualUri(result.visual);image.hidden=false;receipt=result.previewId;confirm.disabled=false;message.textContent='Saved diagram · Live by default'+(selectedScope==='selection'?' · '+(result.boundary??[]).length+' connection(s) cross this selection. Open source to review the full flow.':'');}catch{if(alive(token)&&picker===own&&revision===selectionRevision&&select.value===choice)message.textContent='Preview unavailable. The diagram and document are retained.';}finally{if(alive(token)&&picker===own&&revision===selectionRevision&&select.value===choice)preview.disabled=scope.value==='selection'&&(selectionReviewRequired||!selectedIds.size);}});});
+   confirm.addEventListener('click',()=>{if(!receipt||paused||disposed||confirm.disabled||picker!==own)return;const c=editable();if(!c)return;confirm.disabled=true;const request={previewId:receipt,afterBlockId:position.value||null,caption:caption.value||'',expectedDocumentVersion:c.version,operationId:crypto.randomUUID()};void enqueue(async token=>{if(!stillEditable(c)||picker!==own||own.isConnected===false||own.open===false)return;const result=await api.insert(request);if(!alive(token)||picker!==own)return;if(result?.ok!==true){const code=typeof result?.code==='string'&&/^[A-Z][A-Z0-9_]{0,95}$/.test(result.code)?result.code:null;message.textContent='Insertion could not be confirmed'+(code?' · '+code:'')+'. Inspect the saved document before retrying.';receipt=null;image.hidden=true;if(code)window.SirenHelpWorkspace?.explain?.(message,{namespace:'docs-diagram',operation:'insert',code});return;}close();onChanged(result);});});
+   let catalogueRevision=0,nextCursor=0;
+   function loadPage(reset=false){
+    const revision=reset?++catalogueRevision:catalogueRevision,query=search.value||'',cursor=reset?0:nextCursor;more.disabled=true;
+    if(reset){selectionRevision++;receipt=null;confirm.disabled=true;image.hidden=true;resetSelection();preview.disabled=false;select.replaceChildren();select.value='';}
+    void enqueue(async token=>{if(revision!==catalogueRevision)return;const result=await api.listDiagrams(cursor||query?{cursor,query}:{});if(!alive(token)||picker!==own||revision!==catalogueRevision)return;if(result?.ok!==true){message.textContent='Saved diagrams could not be listed.';return;}for(const item of result.items??[]){const o=make('option',select,item.label);o.value=item.id;}if(reset&&proposal){if(!(result.items??[]).some(n=>n.id===proposal.diagramId)){const o=make('option',select,'Shared diagram');o.value=proposal.diagramId;}select.value=proposal.diagramId;scope.value=proposal.scope;chooseScope();}nextCursor=result.nextCursor??cursor+(result.items??[]).length;more.hidden=!result.hasMore;more.disabled=false;message.textContent=(result.items??[]).length?'Choose a diagram and preview it before insertion.':'No saved diagrams match this search.';});
+   }
+   search.addEventListener('input',()=>loadPage(true));more.addEventListener('click',()=>{if(!more.disabled&&!more.hidden)loadPage();});own.showModal();loadPage(true);
+  }
+  const offerProposal=()=>enqueue(async token=>{const c=getContext();if(!api.getProposal||c.dirty||c.pending||c.fenced)return;const result=await api.getProposal({});if(!alive(token)||!result?.ok||!result.proposal)return;if(getContext().readonly){onStatus('A diagram is ready to insert. Open this document’s working copy to preview it.');return;}if(!stillEditable(c))return;insert({proposal:result.proposal});});
+  const clear=()=>{generation++;for(const card of cards)card._diagramDispose?.();cards.clear();for(const dialog of [...expanded]){dialog.close();dialog.remove();}expanded.clear();picker?.close();picker?.remove();picker=null;};
+  const drain=async()=>{while(pending.size)await Promise.all([...pending]);};
+  return Object.freeze({render,insert,offerProposal,clear,drain,pause:async()=>{paused=true;clear();await drain();},resume:()=>{if(!disposed){paused=false;generation++;}},dispose:()=>{disposed=true;paused=true;clear();}});
+ };
+})();

@@ -26,6 +26,9 @@ import {NativeDiagramCatalogue} from '../src/windows/diagram-catalogue.mjs';
 import {NativeDiagramEdits} from '../src/windows/diagram-edits.mjs';
 import {NativeDiagramExports} from '../src/windows/diagram-export.mjs';
 import {NativeDocsExports} from '../src/windows/docs-export.mjs';
+import {NativeDocsDiagrams} from '../src/windows/docs-diagrams.mjs';
+import {DocsDiagramRefresh} from '../src/windows/docs-diagram-refresh.mjs';
+import {DiagramEmbedAssetStore} from '../src/documents/diagram-embed-assets.mjs';
 import {NativePresenterExports} from '../src/windows/presenter-export.mjs';
 import {renderDiagramVector} from '../src/windows/diagram-vector-render.mjs';
 import {NativePresentationDecks} from '../src/windows/presentation-deck.mjs';
@@ -56,6 +59,7 @@ const slice = (a,b) => { const start = main.indexOf(a); const stop = main.indexO
 const sourceId = '11111111-1111-4111-8111-111111111111';
 function fixture() {
   let serial = 10; const handles = []; let unlocked = true; let failLoad = false; let failDestroy = false; let delayLoad; let failAdmission; let failJournal=false; let closeErrors=0;
+  let closeErrorObserved;const closeError=new Promise(resolve=>{closeErrorObserved=resolve;});
   class NativeWindow extends EventEmitter {
     destroyed = false; shown = false;
     constructor(options = {}) { super(); this.id=serial++; this.options=options; handles.push(this); const wc = new EventEmitter();
@@ -70,24 +74,28 @@ function fixture() {
   const snapshot = { schema:2, project:{id:'owned_project'}, revision:2, json:JSON.stringify({workpapers:[{id:'doc_a'},{id:'doc_b'}]}), sourceRefs:[{sourceId,version:1,sha256:'a'.repeat(64)}] };
   const dataRoot=resolve('evidence/native-window-context');
   const nativeLayoutMemory=new NativeLayoutMemory({store:new WindowLayoutStore(dataRoot),displays:()=>[{id:1,primary:true,workArea:{x:0,y:40,width:1280,height:800}}]});
-  const context = vm.createContext({createRenderAppearanceContract,nativeTheme:{shouldUseDarkColors:false}, nativeLayoutMemory,WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,NativeDocsExports,NativePresenterExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
+  const context = vm.createContext({initializeTerminalCandidate:null,terminalRuntime:null,createRenderAppearanceContract,nativeTheme:Object.assign(new EventEmitter(),{shouldUseDarkColors:false}), nativeLayoutMemory,WindowRegistry,WorkspaceCoordinator,PrimaryPersistence,NativeCodeDocs,DocsLinkService,ProjectStore,SourceRepository,NativeDocsReads,NativeDiagramReads,NativeDiagramEdits,NativeDiagramExports,NativeDocsExports,NativeDocsDiagrams,DocsDiagramRefresh,DiagramEmbedAssetStore,NativePresenterExports,renderDiagramVector,NativePresentationDecks,PresentationSession,NativePresentationIPC,NativeWindowCatalog,invokeHomeWindow,NativeReadonlyViewSeals,NativeAllViewControl,NativeAllWorkspaceBarrier,navigationFields,HomeAuthority,HomeService,HomeTransitionReceipts,NavigationStore,ProjectCatalog,createLocationResolver,invokeHome,DomainRepository,dataRoot,writerOptions:{},projects:new ProjectStore(dataRoot),recovery:new RecoveryStore(dataRoot),sources:new SourceRepository(dataRoot),invokeWindow,nativeViewFactory,workspaceEntities,workspaceMetadata,failure,resolve,here:'/owned/src',BrowserWindow:NativeWindow,window:owner,
     dispatchNativeHelp,handleNativeHelpInput,NativeDiagramCatalogue,AppearanceStore,invokeShell,NativeDocsSources,NativeDocsReferences,NativeDeckNavigation,NativeWindowFocus,bindNativeWindowFocusKeys,NativeWindowLayout,bindNativeDisplayRecovery,screen:Object.assign(new EventEmitter(),{getPrimaryDisplay:()=>({id:1}),getAllDisplays:()=>[{id:1,workArea:{x:0,y:40,width:1280,height:800}}]}),
     localPin:{state:()=>({unlocked}),cancelPending(){},async drain(){}},selectedId:'owned_project',snapshot,mode:'normal',nativeReadonly:false,accountQuiesced:false,accountTransition:false,pinTransition:false,writes:new Set(),bootstrap:{mode:'normal',snapshot,readonly:true},
     ipcMain:{on:(name,fn)=>handlers.set(name,fn),handle:(name,fn)=>handlers.set(name,fn)},
-    app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;}},
+    app:{getVersion:()=> 'fixture'},processIdentity:{owned:true},sessionId:'fixture',journal:{recordSession:async()=>{if(failJournal)throw new Error('Owned journal failure');}},dialog:{showErrorBox:()=>{closeErrors++;closeErrorObserved();}},
   });
-  vm.runInContext(slice('const nativeShells =','const exportHomeBackup=') + slice("ipcMain.handle('siren:home',",'const desktopCommand =') + '\n' + slice('function desktopHelp(origin)','const nativeWindowFocus=') + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;',context);
+  vm.runInContext(slice('const nativeShells =','const exportHomeBackup=') + slice("ipcMain.handle('siren:home',",'const desktopCommand =') + '\n' + slice('function desktopHelp(origin)','const nativeWindowFocus=') + slice('const nativeWindowFocus=','Menu.setApplicationMenu') + '\n' + slice('let initialOpening=true;','let readyRecorded') + '\n' + slice('const invokeNativeWindow=','window.webContents.setWindowOpenHandler') + '\n' + slice('let closing =','app.on(\'window-all-closed\'') + ';globalThis.registry=windowRegistry;globalThis.retire=retireNativeViews;globalThis.docsRefresh=docsDiagramRefresh;',context);
   const event=()=>({sender:owner.webContents,senderFrame:owner.webContents.mainFrame});
   const bootstrap=()=>{const request=event(); handlers.get('siren:bootstrap')(request); return request.returnValue;};
   const invoke=(method,payload,eventOverride=event())=>handlers.get('siren:windows')(eventOverride,method,payload);
-  return {context,owner,handles,event,bootstrap,invoke,setLocked:value=>{unlocked=!value;},setFaults:(load,destroy)=>{failLoad=load;failDestroy=destroy;},setDelay:promise=>{delayLoad=promise;},setAdmission:kind=>{failAdmission=kind;},failJournal:()=>{failJournal=true;},closeErrors:()=>closeErrors};
+  return {context,owner,handles,event,bootstrap,invoke,setLocked:value=>{unlocked=!value;},setFaults:(load,destroy)=>{failLoad=load;failDestroy=destroy;},setDelay:promise=>{delayLoad=promise;},setAdmission:kind=>{failAdmission=kind;},failJournal:()=>{failJournal=true;},closeErrors:()=>closeErrors,waitForCloseError:()=>closeError};
 }
 
-test('actual main retirement awaits native async destruction before confirming a transition',async()=>{
+test('actual main retirement awaits native async destruction before confirming a transition',{timeout:5000},async()=>{
  const f=fixture();f.bootstrap();await f.invoke('openView',{role:'docs',entityId:'doc_a'});
- const original=f.context.registry.invalidateEpochAsync.bind(f.context.registry);let release,entered=false;
- const held=new Promise(done=>{release=done;});f.context.registry.invalidateEpochAsync=async options=>{entered=true;await held;return original(options);};
- const retirement=f.context.retire();assert.equal(entered,true);assert.equal(typeof retirement?.then,'function');
+ const original=f.context.registry.invalidateEpochAsync.bind(f.context.registry);let release,entered=false,observeEntry;
+ const entry=new Promise(done=>{observeEntry=done;});
+ const held=new Promise(done=>{release=done;});f.context.registry.invalidateEpochAsync=async options=>{entered=true;observeEntry();await held;return original(options);};
+ // Main's callers fence admission before retirement; the Docs drain may await
+ // before reaching native destruction. Observe that boundary explicitly.
+ f.context.pinTransition=true;f.context.registry.freezeRoster();
+ const retirement=f.context.retire();assert.equal(typeof retirement?.then,'function');await entry;assert.equal(entered,true);
  assert.equal(f.handles[1].isDestroyed(),false);release();await retirement;assert.equal(f.handles[1].isDestroyed(),true);
 });
 test('actual main binds exact native owner, scoped shell entries and locked null bootstrap',async()=>{
@@ -127,10 +135,20 @@ test('main failed factory destruction fences every later open and data bootstrap
   assert.equal(f.bootstrap().snapshot,null); assert.equal(f.handles[1].isDestroyed(),false);
   await f.context.retire(); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.bootstrap().snapshot.project.id,'owned_project');
 });
-test('actual main revokes a hidden in-flight native factory before a transition can admit or show it',async()=>{
+test('actual main revokes a hidden in-flight native factory before a transition can admit or show it',{timeout:5000},async()=>{
   const f=fixture(); f.bootstrap(); let release; f.setDelay(new Promise(r=>{release=r;}));
+  let readEntered,releaseRead;const entered=new Promise(resolve=>{readEntered=resolve;}),heldRead=new Promise(resolve=>{releaseRead=resolve;});
+  // Hold the actual scheduler's initial saved-project read, not a guessed turn.
+  f.context.projects.readProject=async()=>{readEntered();return heldRead;};
   const pending=f.invoke('openView',{role:'docs',entityId:'doc_a'}); assert.equal(f.handles.length,2); assert.equal(f.handles[1].shown,false);
-  const retiring=f.context.retire(); release(); await retiring; assert.equal((await pending).ok,false); assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.handles[1].shown,false); assert.equal(f.context.registry.listViews().length,0);
+  await entered;
+  // Real snapshot callers set their transition flag and prepare() freezes the
+  // registry roster synchronously before any drain. Flags alone are not a
+  // replacement for the registry's admission-generation fence.
+  f.context.pinTransition=true;f.context.registry.freezeRoster();
+  let retired=false;const retiring=f.context.retire().then(()=>{retired=true;});release();
+  assert.equal((await pending).ok,false);assert.equal(retired,false);assert.equal(f.context.docsRefresh.isIdle(),false);assert.equal(f.handles[1].shown,false);
+  releaseRead(f.context.snapshot);await retiring;assert.equal(f.handles[1].isDestroyed(),true); assert.equal(f.handles[1].shown,false); assert.equal(f.context.registry.listViews().length,0);
 });
 test('actual ready/send/show failures dispose the admitted shell or fence retained native handles',async()=>{
   for (const kind of ['send','show']) for (const cannotDestroy of [false,true]) {
@@ -142,13 +160,13 @@ test('actual ready/send/show failures dispose the admitted shell or fence retain
     else assert.equal(f.handles[1].isDestroyed(),true);
   }
 });
-test('actual locked clean-close journal failure retains the owner after shell retirement, then admits a fresh unlocked grant',async()=>{
+test('actual locked clean-close journal failure retains the owner after shell retirement, then admits a fresh unlocked grant',{timeout:5000},async()=>{
   const f=fixture(); f.bootstrap(); await f.invoke('openView',{role:'docs',entityId:'doc_a'}); f.failJournal();
   // This metadata-only fixture has no persisted editor/project. Its locked close
   // tests the actual journal/destruction boundary; unlocked persistence is
   // qualified with real repositories and the Electron recovery/close probe.
   f.setLocked(true);
-  f.owner.close(); await new Promise(resolve=>setImmediate(resolve));
+  f.owner.close();await f.waitForCloseError();
   assert.equal(f.closeErrors(),1); assert.equal(f.owner.isDestroyed(),false); assert.equal(f.handles[1].isDestroyed(),true);
   assert.equal(f.context.registry.caller(f.event()),null);
   f.setLocked(false);f.bootstrap();

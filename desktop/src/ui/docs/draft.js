@@ -6,7 +6,7 @@
   if(context?.ok!==true||typeof context.readonly!=='boolean'||!context.document?.id||!hash(context.version)||!hash(context.sha256))throw TypeError('Exact native document required');
   let document=structuredClone(context.document),version=context.version,sha256=context.sha256,projectRevision=context.projectRevision??0;
   let content={title:document.title??'',blocks:structuredClone(document.blocks??[])},dirty=false,paused=false,fenced=false,disposed=false,pending=null;
-  let undo=[],redo=[],group=null,groupAt=0,historyLimited=false;
+  let undo=[],redo=[],group=null,groupAt=0,historyLimited=false,prepareLifetime=0;
   const editable=()=>!disposed&&!paused&&!pending&&!fenced&&!context.readonly;
   const actualDocument=()=>({...((content.context&&window.SirenDocumentContext)?window.SirenDocumentContext.applyDocumentContext(document,content.context):document),title:content.title,blocks:content.blocks});
   const resetHistory=()=>{undo=[];redo=[];group=null;groupAt=0;historyLimited=false;};
@@ -21,7 +21,10 @@
   }
   async function save(prepare=false){
    if(disposed||context.readonly||fenced||paused&&!prepare)return fail(fenced?'DOCUMENT_FENCED':'ACCESS_REFUSED');
-   if(pending)return pending;if(!dirty)return Object.freeze({ok:true,unchanged:true});
+   if(pending)return pending;if(!dirty){
+    if(prepare||typeof bridge.flushDocument!=='function')return Object.freeze({ok:true,unchanged:true});
+    const request={entityId:document.id,expectedVersion:version},expected=structuredClone(document),own=Promise.resolve().then(async()=>{let result;try{result=await bridge.flushDocument(request);if(disposed)return fail('VIEW_DISPOSED');if(!await accepted(result,request,false,expected))return fail(result?.code??'DOCUMENT_RESULT_REFUSED');return result;}catch{return fail('DOCUMENT_FLUSH_FAILED');}});pending=own;changed();try{return await own;}finally{if(pending===own)pending=null;changed();}
+   }
    group=null;
    const payload=structuredClone(content),request={operationId:operationId(),documentId:document.id,expectedVersion:version,action:content.context?'replace-context-content':'replace-content',payload},expected=actualDocument();
    const own=(async()=>{
@@ -35,6 +38,13 @@
   }
   return Object.freeze({
    getStatus:status,getContent:()=>structuredClone(content),getDocument:()=>structuredClone(actualDocument()),
+   async adoptSaved(next){
+    if(disposed||paused||pending||dirty||fenced)return fail('DOCUMENT_NOT_EDITABLE');const previous=JSON.stringify(content),baseline=version;
+    try{if(next?.readonly!==context.readonly||next.document?.id!==document.id||!hash(next.version)||!hash(next.sha256)||!Number.isSafeInteger(next.projectRevision)||next.projectRevision<projectRevision||next.sha256!==await fingerprint(next.document))return fail('DOCUMENT_REFRESH_REFUSED');}catch{return fail('DOCUMENT_REFRESH_REFUSED');}
+    if(disposed||paused||pending||dirty||fenced||version!==baseline||JSON.stringify(content)!==previous)return fail('DOCUMENT_NOT_EDITABLE');const contentNext={title:next.document.title??'',blocks:structuredClone(next.document.blocks??[])},serialized=JSON.stringify(contentNext);
+    if(serialized!==previous){if(Math.max(serialized.length,previous.length)*2>4*1024*1024){resetHistory();historyLimited=true;}else{undo.push(previous);redo=[];trimHistory();}}
+    document=structuredClone(next.document);content=contentNext;version=next.version;sha256=next.sha256;projectRevision=next.projectRevision;group=null;dirty=false;changed();return Object.freeze({ok:true});
+   },
    setContext(patch){
     if(!editable())return fail('DOCUMENT_NOT_EDITABLE');let delta;try{delta=window.SirenDocumentContext.documentContextDelta(document,window.SirenDocumentContext.applyDocumentContext(actualDocument(),patch));}catch{return fail('INVALID_CONTEXT');}
     const next=structuredClone(content);if(Object.keys(delta).length)next.context=delta;else delete next.context;return this.setContent(next,{historyGroup:'context:'+Object.keys(patch).join(',')});
@@ -49,24 +59,38 @@
    undo:()=>moveHistory(undo,redo),redo:()=>moveHistory(redo,undo),
    save:()=>save(),
    async flushView(){
-    if(disposed||context.readonly)return fail('ACCESS_REFUSED');paused=true;changed();if(pending)await pending;
-    if(fenced)return fail('DOCUMENT_FENCED');if(dirty){const saved=await save(true);if(!saved.ok)return saved;}
+    if(disposed||context.readonly)return fail('ACCESS_REFUSED');
+    const lifetime=++prepareLifetime,current=()=>!disposed&&paused&&prepareLifetime===lifetime;
+    const retired=()=>fail(disposed?'VIEW_DISPOSED':'DOCUMENT_NOT_EDITABLE');
+    paused=true;changed();if(pending)await pending;
+    if(!current())return retired();
+    if(fenced)return fail('DOCUMENT_FENCED');if(dirty){const saved=await save(true);if(!current())return retired();if(!saved.ok)return saved;}
     for(let attempt=0;attempt<2;attempt++){
-    if(typeof bridge.getDocument==='function'){
-     // Local changes have already been genuinely saved. Reading a later clean
-     // entity under the private ticket never retries a stale content mutation.
-     let latest;try{latest=await bridge.getDocument();if(latest?.ok===false&&typeof latest.code==='string')return fail(latest.code);if(disposed||latest?.ok!==true||latest.readonly!==false||latest.document?.id!==document.id||!hash(latest.version)||!hash(latest.sha256)||!Number.isSafeInteger(latest.projectRevision)||latest.projectRevision<projectRevision||latest.sha256!==await fingerprint(latest.document))throw Error('Invalid native document');}catch{return fail('DOCUMENT_REFRESH_REFUSED');}
-     if(disposed)return fail('VIEW_DISPOSED');const next={title:latest.document.title??'',blocks:structuredClone(latest.document.blocks??[])};if(JSON.stringify(next)!==JSON.stringify(content))resetHistory();document=structuredClone(latest.document);content=next;version=latest.version;sha256=latest.sha256;projectRevision=latest.projectRevision;changed();
-    }
-    const request={entityId:document.id,expectedVersion:version};let receipt;
-    try{receipt=await bridge.flushDocument(request);}catch{return fail('DOCUMENT_FLUSH_FAILED');}
-    if(receipt?.ok===false&&receipt.code==='DOCUMENT_CONFLICT'&&typeof bridge.getDocument==='function'){if(attempt===0)continue;return fail(receipt.code);}
-    let verified=false;try{verified=await accepted(receipt,request,false,document);}catch{/* Refuse unverified durability. */}
-    if(disposed||!verified)return fail(receipt?.ok===false?receipt.code:'DOCUMENT_RESULT_REFUSED');return receipt;
+     if(!current())return retired();
+     if(typeof bridge.getDocument==='function'){
+      // A rollback retires this preparation even if the returned read was valid.
+      // Never replace the hidden draft after the view has accepted new edits.
+      let latest;
+      try{
+       latest=await bridge.getDocument();if(!current())return retired();
+       if(latest?.ok===false&&typeof latest.code==='string')return fail(latest.code);
+       if(latest?.ok!==true||latest.readonly!==false||latest.document?.id!==document.id||!hash(latest.version)||!hash(latest.sha256)||!Number.isSafeInteger(latest.projectRevision)||latest.projectRevision<projectRevision||latest.sha256!==await fingerprint(latest.document))throw Error('Invalid native document');
+      }catch{return current()?fail('DOCUMENT_REFRESH_REFUSED'):retired();}
+      if(!current())return retired();
+      const next={title:latest.document.title??'',blocks:structuredClone(latest.document.blocks??[])};if(JSON.stringify(next)!==JSON.stringify(content))resetHistory();document=structuredClone(latest.document);content=next;version=latest.version;sha256=latest.sha256;projectRevision=latest.projectRevision;changed();
+     }
+     if(!current())return retired();
+     const request={entityId:document.id,expectedVersion:version};let receipt;
+     try{receipt=await bridge.flushDocument(request);}catch{return current()?fail('DOCUMENT_FLUSH_FAILED'):retired();}
+     if(!current())return retired();
+     if(receipt?.ok===false&&receipt.code==='DOCUMENT_CONFLICT'&&typeof bridge.getDocument==='function'){if(attempt===0)continue;return fail(receipt.code);}
+     let verified=false;try{verified=await accepted(receipt,request,false,document);}catch{/* Refuse unverified durability. */}
+     if(!current())return retired();
+     if(!verified)return fail(receipt?.ok===false?receipt.code:'DOCUMENT_RESULT_REFUSED');return receipt;
     }
    },
-   resumeView(){if(disposed)return fail('VIEW_DISPOSED');paused=false;changed();return Object.freeze({ok:true});},
-   dispose(){disposed=true;paused=true;resetHistory();changed();},
+   resumeView(){if(disposed)return fail('VIEW_DISPOSED');prepareLifetime++;paused=false;changed();return Object.freeze({ok:true});},
+   dispose(){prepareLifetime++;disposed=true;paused=true;resetHistory();changed();},
   });
  }});
 })();

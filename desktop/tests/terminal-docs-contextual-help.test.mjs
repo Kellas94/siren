@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fixture as terminal} from './helpers/terminal-docs-contextual-terminal.mjs';
+import {fixture as entry,panel,tick as entryTick} from './helpers/terminal-docs-contextual-entry.mjs';
+import {docsHelp,tick} from './helpers/terminal-docs-contextual-docs-help.mjs';
+import {HELP_ARTICLES} from '../src/help/catalog.mjs';
+import {createHelpResolver} from '../src/help/resolve.mjs';
+const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
+const bad=(p,code)=>({ok:false,code,operationId:p.operationId,message:'private arbitrary text not forwarded'});
+function exact(actual,namespace,operation,code){assert.deepEqual(JSON.parse(JSON.stringify(actual)),{namespace,operation,code});assert.deepEqual(Reflect.ownKeys(actual).sort(),['code','namespace','operation']);}
+function terminalOffer(s,operation,code){const button=s.action();assert.ok(button,'Prospective owned Explain action');assert.equal(s.explained.length,0,'Opening Help requires a user click');button.click();assert.equal(s.explained.length,1);exact(s.explained[0],'terminal',operation,code);return button;}
+function docsOffer(f,operation,code){const observations=f.diagnostic();assert.equal(observations.length,1,'Prospective exact Docs contextual explanation');exact(observations[0].identity,'docs-diagram',operation,code);assert.equal(f.offers().length,1,'Actual HelpWorkspace creates one explicit action');assert.equal(f.document.getElementById('sirenHelpDiagnostics'),undefined,'No automatic manual dialog');return f.offers()[0];}
+
+test('Stop cleanup refusal offers stop identity while preserving actual uncertainty and exactly one Stop',async()=>{
+ const s=terminal({dispatch:(name,p)=>name==='Stop'?Promise.resolve(bad(p,'CLEANUP_FAILED')):undefined});try{await s.controls.refresh();await s.controls.selectSession('session_a');assert.equal((await s.controls.stopSession()).code,'CLEANUP_FAILED');assert.equal(s.controls.snapshot().sessions[0].uncertain,true);assert.equal(s.calls.filter(r=>r.name==='Stop').length,1);assert.equal(s.calls.some(r=>r.name==='Input'),false);terminalOffer(s,'stop','CLEANUP_FAILED');assert.equal(s.calls.filter(r=>r.name==='Stop').length,1);}finally{await s.end();}
+});
+test('attachment refusal offers attach identity without creating, stopping or releasing uncertainty',async()=>{
+ const s=terminal({dispatch:(name,p)=>name==='Attach'?Promise.resolve(bad(p,'DETACH_UNVERIFIED')):undefined});try{await s.controls.refresh();assert.equal((await s.controls.selectSession('session_a')).code,'DETACH_UNVERIFIED');assert.equal(s.controls.snapshot().detachUncertain,true);assert.equal(s.calls.some(r=>['Stop','Create','Input'].includes(r.name)),false);terminalOffer(s,'attach','DETACH_UNVERIFIED');assert.equal(s.calls.filter(r=>r.name==='Attach').length,1);}finally{await s.end();}
+});
+test('successful Create followed by attachment refusal is only attach, never create or an automatic retry',async()=>{
+ const s=terminal({dispatch:(name,p)=>name==='Create'?Promise.resolve({ok:true,value:{sessionId:'made_a',projectId:'project_a',profileId:'powershell',cwdDisplay:'C:\\Owned',state:'running',exitCode:null,droppedUtf8Bytes:0,attachedWindowId:'window_a'},operationId:p.operationId}):name==='Attach'?Promise.resolve(bad(p,'DETACH_UNVERIFIED')):undefined});try{await s.controls.refresh();await s.controls.pickFolder();assert.equal((await s.controls.createSession()).code,'DETACH_UNVERIFIED');assert.equal(s.controls.snapshot().creationUncertain,false);assert.equal(s.controls.snapshot().sessions.length,2);assert.equal(s.calls.filter(r=>r.name==='Create').length,1);assert.equal(s.calls.filter(r=>r.name==='Attach').length,1);terminalOffer(s,'attach','DETACH_UNVERIFIED');assert.equal(s.calls.some(r=>['Input','Stop'].includes(r.name)),false);}finally{await s.end();}
+});
+for(const operation of ['stop','attach'])test('actual entry accepts '+operation+' only after a fresh readonly handshake',async()=>{
+ const f=entry(),code=operation==='stop'?'CLEANUP_FAILED':'DETACH_UNVERIFIED';try{const pending=f.explain(f.identity(operation,code));assert.equal(f.requests.length,1,'Prospective exact-operation allowlist');assert.equal(panel(f),undefined);f.release(0);assert.equal(await pending,true);assert.equal(panel(f).open,true);assert.equal(f.doc.getElementById('sirenHelpArticle').children[0].textContent,'Stop or display cleanup is unconfirmed');assert.equal(f.requests.length,1);}finally{f.api.dispose();}
+});
+test('held Stop explanation cannot publish after actual local detach retires the operation',async()=>{
+ const held=defer(),s=terminal({dispatch:name=>name==='Stop'?held.promise:undefined});try{await s.controls.refresh();await s.controls.selectSession('session_a');const work=s.controls.stopSession();await s.controls.detachDisplay();held.resolve({ok:false,code:'CLEANUP_FAILED'});assert.equal((await work).ok,false);assert.equal(s.action(),undefined);assert.equal(s.explained.length,0);assert.equal(s.calls.filter(r=>r.name==='Stop').length,1);assert.equal(s.calls.some(r=>r.name==='Input'),false);}finally{held.resolve({ok:false,code:'CLEANUP_FAILED'});await s.end();}
+});
+
+for(const [method,operation,code]of [['setMode','set-mode','WRITER_BUSY'],['update','update','DOCUMENT_CONFLICT'],['readEmbed','read-embed','DIAGRAM_EMBED_ASSET_CORRUPT']])test('Docs '+method+' refusal supplies only its exact identity and preserves saved CAS/content',async()=>{
+ const f=docsHelp();try{f.render();f.answer({ok:false,code,message:'private arbitrary text not forwarded'});if(method==='setMode'){const mode=f.find('mode','embed-a');mode.value='fixed';mode.emit('change');}else if(method==='update')f.find('update','embed-a').emit();else f.intersect('embed-a');await f.view.drain();assert.equal(f.calls.length,1);assert.equal(f.calls[0].method,method);assert.equal(f.calls[0].p.expectedDocumentVersion,'b'.repeat(64));assert.equal(f.changed.length,0);if(method==='setMode')assert.equal(f.find('mode','embed-a').value,'live');if(method==='readEmbed'){assert.equal(f.find('load','embed-a').disabled,false);assert.match(f.find('status','embed-a').textContent,/reference retained/);}docsOffer(f,operation,code).emit();assert.equal(f.document.getElementById('sirenHelpDiagnostics').open,true);assert.notEqual(f.document.getElementById('sirenHelpArticle').children[0].textContent,'Unknown error');assert.equal(f.calls.length,1);}finally{await f.finish();}
+});
+test('Docs dirty draft prevents mode/update writes and offers no misleading backend-error explanation',async()=>{
+ const f=docsHelp();try{f.render();f.context({dirty:true});f.find('update','embed-a').emit();const mode=f.find('mode','embed-a');mode.value='fixed';mode.emit('change');await f.view.drain();assert.equal(f.calls.length,0);assert.equal(f.changed.length,0);assert.equal(f.diagnostic().length,0);assert.match(f.messages.at(-1),/Save your document/);}finally{await f.finish();}
+});
+for(const retire of ['pause-resume','help-cover-resume','document-switch'])test('Docs held visual failure cannot offer stale context after '+retire,async()=>{
+ const f=docsHelp(),held=defer();try{f.render();f.answer(()=>held.promise);f.intersect('embed-a');await tick();assert.equal(f.calls.length,1);let paused;if(retire==='pause-resume'){paused=f.view.pause();f.view.resume();}else if(retire==='help-cover-resume'){f.actual.cover();f.actual.resume();}else f.context({documentId:'replacement-doc',version:'c'.repeat(64)});held.resolve({ok:false,code:'DIAGRAM_EMBED_ASSET_CORRUPT'});await paused;await f.view.drain();assert.equal(f.changed.length,0);assert.equal(f.offers().length,0);assert.equal(f.document.getElementById('sirenHelpDiagnostics'),undefined);}finally{held.resolve({ok:false,code:'DIAGRAM_EMBED_ASSET_CORRUPT'});await f.finish();}
+});
+test('Docs saved offer cannot reopen the real manual after Help cover and resume',async()=>{
+ const f=docsHelp();try{f.render();f.answer({ok:false,code:'WRITER_BUSY'});const mode=f.find('mode','embed-a');mode.value='fixed';mode.emit('change');await f.view.drain();const button=docsOffer(f,'set-mode','WRITER_BUSY');f.actual.cover();f.actual.resume();button.emit();assert.equal(f.document.getElementById('sirenHelpDiagnostics'),undefined);assert.equal(f.calls.length,1);assert.equal(f.changed.length,0);}finally{await f.finish();}
+});
+test('Docs malformed read error code causes zero getter reads and forwards no private metadata',async()=>{
+ const f=docsHelp();let gets=0;try{f.render();f.answer(Object.defineProperty({ok:false},'code',{enumerable:true,get(){gets++;return 'DIAGRAM_EMBED_ASSET_CORRUPT';}}));f.intersect('embed-a');await f.view.drain();assert.equal(gets,0);assert.equal(f.diagnostic().length,0);assert.equal(f.offers().length,0);assert.equal(f.calls.length,1);assert.equal(f.changed.length,0);}finally{await f.finish();}
+});
+test('Docs unknown valid read code gets an exact unknown explanation without inventing corruption or retrying',async()=>{
+ const f=docsHelp();try{f.render();f.answer({ok:false,code:'UNMAPPED_VISUAL_REFUSAL',message:'DIAGRAM_EMBED_ASSET_CORRUPT is only private text'});f.intersect('embed-a');await f.view.drain();docsOffer(f,'read-embed','UNMAPPED_VISUAL_REFUSAL').emit();assert.match(f.document.getElementById('sirenHelpContext').textContent,/Unknown error identity/);assert.equal(f.calls.length,1);assert.equal(f.changed.length,0);}finally{await f.finish();}
+});
+test('new Terminal operations still refuse a foreign Help grant instead of opening or retrying',async()=>{
+ const f=entry();try{const pending=f.explain(f.identity('stop','CLEANUP_FAILED'));assert.equal(f.requests.length,1,'Prospective scoped operation');f.release(0,{role:'docs'});assert.equal(await pending,false);assert.equal(panel(f),undefined);await entryTick();assert.equal(f.requests.length,1);}finally{f.api.dispose();}
+});
+
+test('positive fixture control: existing actual insert renderer opens the existing real scoped article',async()=>{
+ const f=docsHelp();try{f.answer(method=>method==='listDiagrams'?{ok:true,items:[{id:'flow-a',label:'Saved flow'}],hasMore:false}:method==='preview'?{ok:true,previewId:'preview-a',visual:{kind:'svg',base64:'PHN2Zy8+'}}:{ok:false,code:'WRITER_BUSY'});f.view.insert();await f.view.drain();f.find('choose-diagram').value='flow-a';f.find('preview').emit();await f.view.drain();f.find('confirm-insert').emit();await f.view.drain();docsOffer(f,'insert','WRITER_BUSY').emit();assert.match(f.document.getElementById('sirenHelpContext').textContent,/Explanation for the reported docs operation/);assert.equal(f.document.getElementById('sirenHelpArticle').children[0].textContent,'Diagram insertion and safe recovery');assert.equal(f.changed.length,0);assert.deepEqual(f.calls.map(c=>c.method),['listDiagrams','preview','insert']);}finally{await f.finish();}
+});
+for(const [operation,code]of [['set-mode','WRITER_BUSY'],['read-embed','DIAGRAM_EMBED_ASSET_CORRUPT'],['update','DOCUMENT_CONFLICT']])test('prospective catalog maps exact docs-diagram/'+operation+' and leaves wrong-operation identities unknown',()=>{
+ const resolver=createHelpResolver(HELP_ARTICLES);assert.notEqual(resolver.resolve({namespace:'docs-diagram',operation,code}).id,'unknown-error','Prospective exact Docs operation mapping');assert.equal(resolver.resolve({namespace:'docs-diagram',operation:'unknown-operation',code}).id,'unknown-error');assert.equal(resolver.resolve({namespace:'terminal',operation,code}).id,'unknown-error');
+});

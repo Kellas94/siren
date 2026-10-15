@@ -2,11 +2,14 @@ import {randomUUID,createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {ownedFile} from '../projects/paths.mjs';
 import {readOwnedBytes} from '../projects/io.mjs';
+import {navigationFields} from '../navigation/contracts.mjs';
 const error=code=>Object.assign(Error(code),{code});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 /** Separate no-preload utility; SVG is produced from main-owned saved content.
  * Publication waits for actual window AND webContents destruction. */
-export async function renderDiagramVector({BrowserWindow,entryPath,entrySha256,input,scope,timeoutMs=10000}){
+export function renderDiagramVector(options){return renderVector({...options,embed:false});}
+export function renderDiagramEmbed(options){return renderVector({...options,embed:true});}
+async function renderVector({BrowserWindow,entryPath,entrySha256,input,scope,timeoutMs=10000,embed}){
  const current=()=>{try{return scope?.isCurrent()===true&&!scope.signal?.aborted;}catch{return false;}};
  if(!current())throw error('ACCESS_REFUSED');
  if(typeof BrowserWindow!=='function'||typeof entrySha256!=='string'||!/^[a-f0-9]{64}$/.test(entrySha256)||!Number.isSafeInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)throw error('DIAGRAM_VECTOR_ENTRY_REFUSED');
@@ -20,7 +23,9 @@ export async function renderDiagramVector({BrowserWindow,entryPath,entrySha256,i
   wc.setWindowOpenHandler(()=>({action:'deny'}));for(const name of ['will-navigate','will-frame-navigate','will-attach-webview'])wc.on(name,event=>event.preventDefault());
   wc.session.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));wc.session.setPermissionCheckHandler(()=>false);wc.session.webRequest.onBeforeRequest((details,callback)=>callback({cancel:details.url!==expected}));
   const work=(async()=>{if(!current())throw error('ACCESS_REFUSED');await window.loadFile(path);frame=wc.mainFrame;if(!live()||hash(await readOwnedBytes(path,32*1024*1024))!==entrySha256||!live()||await wc.executeJavaScript('window.sirenDiagramVectorReady === true')!==true||!live())throw error('DIAGRAM_VECTOR_ENTRY_REFUSED');
-   const result=await wc.executeJavaScript(`window.sirenRenderDiagramVector(${argument})`);if(!live())throw error('ACCESS_REFUSED');if(typeof result!=='string'||Buffer.byteLength(result)>2*1024*1024||!/^<svg\b/.test(result)||!result.endsWith('</svg>'))throw error('DIAGRAM_VECTOR_REFUSED');return result;
+   const result=await wc.executeJavaScript(`window.${embed?'sirenRenderDiagramEmbed':'sirenRenderDiagramVector'}(${argument})`);if(!live())throw error('ACCESS_REFUSED');
+   let output=result;if(embed){try{output=navigationFields(result,['svg','rendererVersion','styleHash']);}catch{throw error('DIAGRAM_VECTOR_REFUSED');}if(typeof output.rendererVersion!=='string'||!output.rendererVersion.length||output.rendererVersion.length>80||typeof output.styleHash!=='string'||!/^[a-f0-9]{64}$/.test(output.styleHash))throw error('DIAGRAM_VECTOR_REFUSED');}
+   const svg=embed?output.svg:output;if(typeof svg!=='string'||Buffer.byteLength(svg)>2*1024*1024||!/^<svg\b/.test(svg)||!svg.endsWith('</svg>'))throw error('DIAGRAM_VECTOR_REFUSED');return embed?Object.freeze(output):svg;
   })();
   const cancelled=new Promise((_,reject)=>{abort=()=>reject(error('ACCESS_REFUSED'));scope.signal?.addEventListener('abort',abort,{once:true});if(!current())abort();});
   const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(error('DIAGRAM_VECTOR_TIMEOUT')),timeoutMs);});

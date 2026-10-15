@@ -17,6 +17,6 @@ export async function buildAnalysisWorker({baselinePath,outputDirectory}) {
  }
  const entry=join(directory,'analysis-entry.mjs'),workerPath=join(directory,'code-analysis-worker.cjs');
  await writeFile(entry,`import {parser} from './analysis-python.mjs';\nimport {runAnalysisWorker} from ${JSON.stringify(fileURLToPath(new URL('../src/sources/analysis-worker.mjs',import.meta.url)).replaceAll('\\','/'))};\nrunAnalysisWorker(parser);\n`);
- await build({entryPoints:[entry],outfile:workerPath,bundle:true,platform:'node',format:'cjs',target:'node24',minify:true,sourcemap:false,legalComments:'eof',nodePaths:[fileURLToPath(new URL('../node_modules',import.meta.url))],banner:{js:`/*! SIREN analysis dependencies\n${notices.join('\n\n').replaceAll('*/','* /')}\n*/`}});
+ await build({entryPoints:[entry],outfile:workerPath,bundle:true,platform:'node',format:'cjs',target:'node24',minify:true,sourcemap:false,legalComments:'eof',alias:{'@lezer/lr':python.lrModulePath},nodePaths:[fileURLToPath(new URL('../node_modules',import.meta.url))],banner:{js:`/*! SIREN analysis dependencies\n${notices.join('\n\n').replaceAll('*/','* /')}\n*/`}});
  const bytes=await readFile(workerPath);return Object.freeze({workerPath,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,pythonModuleSha256:python.moduleSha256});
 }

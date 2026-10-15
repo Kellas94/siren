@@ -20,3 +20,7 @@ test('render capsule refuses unknown names, inconsistent modes and arbitrary CSS
  assert.throws(()=>contract.resolve('unknown',false));const d=contract.resolve('matrix',false);assert.equal(Object.isFrozen(d),true);assert.equal(Object.isFrozen(contract.palette(d)),true);
  const cfg=contract.config(d);assert.equal(cfg.theme,'base');assert.equal(cfg.themeVariables.primaryColor,'#021a08');assert.equal(cfg.themeVariables.primaryTextColor,'#caffd6');assert.equal(cfg.themeVariables.darkMode,true);assert.equal('layout'in cfg,false);assert.equal('securityLevel'in cfg,false);
 });
+test('all native themes supply explicit series fills and readable ink for Mindmap and Git',()=>{
+ const rgb=s=>s.startsWith('#')?[1,3,5].map(i=>parseInt(s.slice(i,i+2),16)):s.match(/[\d.]+/g).map(Number),lum=s=>rgb(s).map(v=>v/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0),contrast=(a,b)=>(Math.max(lum(a),lum(b))+0.05)/(Math.min(lum(a),lum(b))+0.05);
+ for(const id of THEME_IDS){const vars=contract.config(contract.resolve(id,false)).themeVariables;for(let i=0;i<8;i++){assert.equal(typeof vars['git'+i],'string',id);assert.equal(typeof vars['gitBranchLabel'+i],'string',id);assert.ok(contrast(vars['git'+i],vars['gitBranchLabel'+i])>=4.5,id+':git'+i);}for(let i=0;i<12;i++){assert.equal(typeof vars['cScale'+i],'string',id);assert.ok(contrast(vars['cScale'+i],vars['cScaleLabel'+i])>=4.5,id+':cScale'+i);}}
+});

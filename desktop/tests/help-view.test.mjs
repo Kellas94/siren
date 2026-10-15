@@ -96,8 +96,8 @@ test('unknown structured error keeps only its bounded code visible without guess
 test('the actual Docs save callback cannot offer a diagnosis after native cover and resume',async()=>{
  const f=await workspaceFixture();f.context.status=f.document.createElement('p');f.document.body.append(f.context.status);
  const line=(await readFile('src/ui/windows/docs.js','utf8')).split('\n').find(l=>l.trim().startsWith('const saveCurrent=async()=>'));
- assert.ok(line);runInNewContext('var paused=false,disposed=false,readonly=false;var release;var saved=new Promise(resolve=>release=resolve);var draft={save:()=>saved};function refreshActivitySaved(){}function updateState(){};'+line+';window.fixtureSave=saveCurrent;',f.context);
- const pending=f.context.window.fixtureSave();f.api.cover();f.resume();runInNewContext('release({ok:false,code:"DOCUMENT_CONFLICT"})',f.context);await pending;
+ assert.ok(line);runInNewContext('var paused=false,disposed=false,readonly=false;var release;var saved=new Promise(resolve=>release=resolve);var diagramPending=null,saveCalls=0;var draft={getStatus:()=>({pending:false}),save:()=>{saveCalls++;return saved;}};function refreshActivitySaved(){}function updateState(){};'+line+';window.fixtureSave=saveCurrent;',f.context);
+ const pending=f.context.window.fixtureSave();assert.equal(runInNewContext('saveCalls',f.context),1);f.api.cover();f.resume();runInNewContext('release({ok:false,code:"DOCUMENT_CONFLICT"})',f.context);await pending;
  assert.equal(f.context.status.children.length,0);assert.equal(f.document.body.dataset.documentSaveError,undefined);assert.equal(f.document.getElementById('sirenHelpDiagnostics'),undefined);
 });
 

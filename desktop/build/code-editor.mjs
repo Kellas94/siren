@@ -31,6 +31,7 @@ export async function buildCodeEditor({ baselinePath, outputDirectory } = {}) {
   const licenseText = notices.join('\n\n');
   await writeFile(join(directory, 'code-editor.NOTICES.txt'), licenseText);
   await build({ entryPoints: [entryPath], outfile: bundlePath, bundle: true, format: 'iife', globalName: 'SirenCodeEditor', platform: 'browser',
+    alias: { '@lezer/lr': python.lrModulePath },
     target: 'chrome152', minify: true, sourcemap: false, legalComments: 'eof',
     banner: { js: `/*! SIREN Code dependencies\n${licenseText.replaceAll('*/', '* /')}\n*/` },
     // Generated grammar outside the package root still resolves to the one

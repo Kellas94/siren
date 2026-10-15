@@ -22,7 +22,10 @@ export function diffSourceText(left,right,input={}){
  const add=(af,at,bf,bt,coarse=false)=>raw.push({af,at,bf,bt,approximate:coarse});
  if(n||m){
   const aUnits=offset(a,left,aEnd)-offset(a,left,prefix),bUnits=offset(b,right,bEnd)-offset(b,right,prefix);
-  if(n*m>budget.maxCells||aUnits>budget.maxUnits||bUnits>budget.maxUnits){approximate=true;add(prefix,aEnd,prefix,bEnd,true);}
+  // A one-sided span is already exact after common prefix/suffix removal.
+  // It needs neither a dense comparison nor its allocation/unit budget.
+  if(n===0||m===0)add(prefix,aEnd,prefix,bEnd);
+  else if(n*m>budget.maxCells||aUnits>budget.maxUnits||bUnits>budget.maxUnits){approximate=true;add(prefix,aEnd,prefix,bEnd,true);}
   else{
    const width=m+1,table=new Uint32Array((n+1)*width),aa=Array.from({length:n},(_,i)=>line(a,left,prefix+i)),bb=Array.from({length:m},(_,j)=>line(b,right,prefix+j));
    for(let i=n-1;i>=0;i--){check();for(let j=m-1;j>=0;j--)table[i*width+j]=aa[i]===bb[j]?table[(i+1)*width+j+1]+1:Math.max(table[(i+1)*width+j],table[i*width+j+1]);}

@@ -1,6 +1,11 @@
 import { restoreBounds } from './geometry.mjs';
 import {setTimeout as nativePause} from 'node:timers/promises';
 import {workspaceSurfaceFor} from './surface.mjs';
+import {win32 as preloadPath} from 'node:path';
+
+// Main-owned paths only. Catch Windows spelling aliases; actual file identity
+// and package provenance remain native integration responsibilities.
+const samePreload=(left,right)=>typeof left==='string'&&typeof right==='string'&&preloadPath.normalize(left).toLowerCase()===preloadPath.normalize(right).toLowerCase();
 
 /** Hidden native shells can acquire a different frame size during creation on
  * a scaled display. Place then size on that display before caching a mode. */
@@ -27,21 +32,22 @@ export async function settleHiddenBounds(window,bounds){
 }
 
 /** Data-free native shells. Main supplies the native registry's exact role URL. */
-export function nativeViewFactory({ BrowserWindow, displays, preload, presentationPreload, layoutMemory, createSurface, onCreated = () => {} }) {
+export function nativeViewFactory({ BrowserWindow, displays, preload, presentationPreload, terminalPreload, layoutMemory, createSurface, onCreated = () => {} }) {
   return async options => {
     const expected = `siren://app/windows/${options.role}.html?windowId=${options.windowId}`;
     const presenting=['presenter','audience'].includes(options.role);
-    if (!['code', 'docs', 'diagram','presenter','audience'].includes(options.role) || presenting&&typeof presentationPreload!=='string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
+    const terminal=options.role==='terminal';
+    if (!['code', 'docs', 'diagram','presenter','audience','terminal'].includes(options.role) || presenting&&typeof presentationPreload!=='string' || terminal&&(typeof terminalPreload!=='string'||!terminalPreload.trim()||!preloadPath.isAbsolute(terminalPreload)||terminalPreload.includes('\0')||samePreload(terminalPreload,preload)||samePreload(terminalPreload,presentationPreload)) || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(options.windowId) || options.mainFrameUrl !== expected) {
       throw Object.assign(new Error('Native entrypoint refused'), { code: 'REQUEST_REFUSED' });
     }
     const ticket=layoutMemory?.reserve(options);
     const { normalBounds } = ticket?.layout??restoreBounds({}, displays());let window,surface;
     try {
-    const windowOptions={ ...normalBounds, show: false, title: 'SIREN — '+({code:'Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience'}[options.role]),
+    const windowOptions={ ...normalBounds, show: false, title: 'SIREN — '+({code:'Code',diagram:'Diagrams',docs:'Docs',presenter:'Presenter',audience:'Audience',terminal:'Terminal'}[options.role]),
       minWidth: Math.min(480, normalBounds.width), minHeight: Math.min(320, normalBounds.height), backgroundColor: '#171719',
     };
-    const webPreferences={ preload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true };
-    if(['code','docs','diagram'].includes(options.role)&&typeof createSurface==='function'){
+    const webPreferences={ preload:terminal?terminalPreload:presenting?presentationPreload:preload, sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true };
+    if(['code','docs','diagram','terminal'].includes(options.role)&&typeof createSurface==='function'){
       surface=createSurface({windowOptions,webPreferences});window=surface?.window;
       if(!window||workspaceSurfaceFor(window)!==surface||window.webContents!==surface.webContents)
         throw Object.assign(Error('Owned native surface required'),{code:'ACCESS_REFUSED'});

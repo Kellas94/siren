@@ -1,0 +1,79 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {runInNewContext} from 'node:vm';
+import {webcrypto} from 'node:crypto';
+import {Text} from '@codemirror/state';
+import {createEditorAdapter} from '../src/ui/code/editor-adapter.js';
+import {createCodeViewLifecycle} from '../src/ui/code/view-lifecycle.js';
+const [windowCode,editorCode]=await Promise.all(['../src/ui/windows/code.js','../src/ui/code/editor.js'].map(p=>readFile(new URL(p,import.meta.url),'utf8')));
+const normalized=editorCode.replaceAll('\r\n','\n'),start=normalized.indexOf('  return Object.freeze({ open, flush, pauseView'),end=normalized.indexOf('\n  });\n}',start);
+assert.ok(start>=0&&end>start,'Use actual final public API composition, not a hard-coded replica');
+const publicComposition=normalized.slice(start,end+'\n  });'.length);
+const held=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+async function fixture(){
+ const nodes=[],callbacks={},editors=[],clients=[];let document,nextReference=null,metricsRefusal=false,analysisUpdates=0,edits=0,sourceHooks=null;
+ const noop=()=>{};
+ class Node{constructor(){this.children=[];this.parentNode=null;this.dataset={};this.style={};this.listeners={};this.hidden=false;this.disabled=false;this.textContent='';this.classList={toggle:noop};nodes.push(this);}append(...ns){for(const n of ns){n.remove();n.parentNode=this;this.children.push(n);}}replaceChildren(...ns){for(const n of this.children)n.parentNode=null;this.children=[];this.append(...ns);}get childNodes(){return this.children;}remove(){if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(n=>n!==this);this.parentNode=null;}addEventListener(k,fn){this.listeners[k]=fn;}removeEventListener(){}focus(){document.activeElement=this;}}
+ document={body:new Node(),documentElement:new Node(),getElementById:id=>nodes.find(n=>n.id===id),createElement:()=>new Node(),removeEventListener:noop};
+ for(const id of ['codeSurface','viewStatus','retrySource','codeTheme','openWorkingCopy','linkCodeDocs','sourceChangesNotice','sourceChangesMessage','reviewLatestSource','toggleAnalysis','compareSources','codeAnalysis','replaceLatestSource']){const n=new Node();n.id=id;document.body.append(n);}document.getElementById('codeTheme').value='light';
+ const ref={sourceId:'source1',version:1,sha256:'a'.repeat(64)},text='saved code\n';
+ const reference=()=>({ok:true,readonly:false,canEdit:true,sourceRef:{...ref},displayName:'Original.py',language:'python'});
+ const sourceClient=({sourceRef})=>{
+  const state={...sourceRef,disposed:false,paused:false,fenced:false,pending:0},subscribers=[];
+  const client={getState:()=>({...state}),getMetrics:async()=>metricsRefusal?{ok:false}:{ok:true,utf8Bytes:Buffer.byteLength(text),utf16Units:text.length,lines:2},loadDocument:async()=>({ok:true,...sourceRef,doc:Text.of(text.split('\n')),metrics:{utf16Units:text.length,utf8Bytes:Buffer.byteLength(text)}}),applyEdit:async q=>{edits++;state.version++;state.sha256='b'.repeat(64);const receipt={ok:true,sourceId:state.sourceId,version:state.version,sha256:state.sha256,operationId:q.operationId,durability:'draft'};for(const fn of subscribers)fn(receipt);return receipt;},commitSource:async q=>({ok:true,sourceId:state.sourceId,version:state.version,sha256:state.sha256,operationId:q.operationId,durability:'committed'}),pauseView:()=>{state.paused=true;return {ok:true};},resumeView:()=>{state.paused=false;return {ok:true};},drain:async()=>({ok:true}),subscribeSource:fn=>{subscribers.push(fn);return noop;},dispose(){state.disposed=true;}};
+  clients.push({client,emit:value=>subscribers.forEach(fn=>fn(value))});return client;
+ };
+ const api={sourceClient,createCodeEditor({client,readonly}){
+  const adapter=createEditorAdapter({client,readonly}),lifecycle=createCodeViewLifecycle({editor:adapter,client}),root=new Node(),surface=new Node();
+  // Exact public return expression from editor.js executes unchanged. Only its
+  // DOM EditorView/theme/menu collaborators are inert; real adapter/lifecycle
+  // functions own all pause/resume/save behavior. This is not full editor DOM.
+  const context={adapter,lifecycle,clearDiagnostic:noop,open:adapter.open,flush:adapter.flush,view:{focus:noop,dispatch:spec=>adapter.dispatch(spec),destroy:noop},disposed:false,unsubscribe:noop,document,root,surface,outside:noop,onContext:noop,menuKeys:noop,onSearchInput:noop,theme:'light',paintTheme:noop,colors:{reconfigure:()=>null},appearance:()=>null};
+  const view=runInNewContext('(function(){'+publicComposition+'})()',context);editors.push({view,adapter});return view;
+ }};
+ const window={SirenNativeViewIdentity:{clear:noop,set:noop},SirenNativeDocsLinks:{create:()=>({pause:noop,dispose:noop})},SirenNativeSourceChanges:{create:hooks=>{sourceHooks=hooks;return {reset:noop,reconcile:noop,pause:noop,resume:noop,dispose:noop};}},SirenNativeAnalysis:{create:()=>({reset:noop,reconcile:()=>analysisUpdates++,pause:noop,resume:noop,dispose:noop})},sirenSourceRead:{getReference:()=>nextReference?nextReference.promise:Promise.resolve(reference())},sirenSource:{},sirenSourceEdit:{onReferenceChanged:()=>noop},sirenViewControl:{onPrepare:fn=>callbacks.prepare=fn,onResume:fn=>callbacks.resume=fn},addEventListener:noop,confirm:()=>true};
+ runInNewContext(windowCode,{window,document,SirenCodeEditor:api,matchMedia:()=>({matches:false,addEventListener:noop,removeEventListener:noop})});assert.equal(await window.sirenNativeCodeView.connect(),true);
+ return {window,document,editors,clients,reference,callbacks,get sourceHooks(){return sourceHooks;},get edits(){return edits;},get analysisUpdates(){return analysisUpdates;},holdReference(){return nextReference=held();},releaseReference(){nextReference=null;},refuseMetrics(value=true){metricsRefusal=value;},refresh:()=>window.sirenNativeCodeView.connect({preserveCurrent:true})};
+}
+for(const failure of ['reference','metrics'])test('failed '+failure+' refresh retains an editable exact old Code owner',async()=>{
+ const f=await fixture(),old=f.editors[0],before=old.adapter.getState().doc.toString();
+ if(failure==='metrics')f.refuseMetrics();const gate=failure==='reference'?f.holdReference():null,refresh=f.refresh();
+ assert.equal(old.adapter.getStatus().paused,true);assert.equal(old.adapter.dispatch({changes:{from:0,insert:'held '}}).code,'EDITOR_PAUSED');gate?.reject(Error('controlled read refusal'));
+ assert.equal(await refresh,false);assert.equal(old.adapter.getStatus().paused,false);assert.equal(old.adapter.getState().doc.toString(),before);assert.equal(old.adapter.getStatus().disposed,false);
+ assert.equal(old.adapter.dispatch({changes:{from:0,insert:'after '}}).ok,true);await tick();assert.equal(old.adapter.getStatus().fenced,false);assert.equal(f.edits,1);
+});
+test('failed refresh keeps actual retained editor and client metadata subscriptions live',async()=>{
+ const f=await fixture(),old=f.editors[0],gate=f.holdReference(),refresh=f.refresh();gate.reject(Error('controlled read refusal'));assert.equal(await refresh,false);
+ // Isolate observer continuity from the separate pause rollback regression.
+ // Before its fix this raw pure adapter resume is a diagnostic-only seam.
+ assert.equal(old.adapter.resumeView().ok,true);const before=f.analysisUpdates;
+ assert.equal(old.adapter.dispatch({changes:{from:0,insert:'new '}}).ok,true);await tick();
+ assert.equal(old.adapter.getStatus().sourceRef.version,2);assert.equal(old.adapter.getStatus().dirty,true);
+ assert.equal(f.document.body.dataset.sourceVersion,'2');assert.equal(f.document.body.dataset.sourceSha256,'b'.repeat(64));assert.equal(f.document.body.dataset.sourceUnits,'15');assert.match(f.document.getElementById('viewStatus').textContent,/Local draft/);assert.ok(f.analysisUpdates>before);
+});
+test('superseded failed refresh cannot resume the old editor still held by its newer attempt',async()=>{
+ const f=await fixture(),old=f.editors[0],a=f.holdReference(),first=f.refresh(),b=f.holdReference(),second=f.refresh();
+ a.reject(Error('old refusal'));assert.equal(await first,false);assert.equal(old.adapter.getStatus().paused,true);
+ b.reject(Error('new refusal'));assert.equal(await second,false);assert.equal(old.adapter.getStatus().paused,false);assert.equal(old.adapter.getStatus().disposed,false);
+});
+test('successful refresh retires old clients and their later events cannot repaint the replacement',async()=>{
+ const f=await fixture(),old=f.editors[0];assert.equal(await f.refresh(),true);assert.equal(old.adapter.getStatus().disposed,true);assert.equal(f.editors.length,2);
+ f.clients[0].emit({version:99,sha256:'f'.repeat(64)});assert.equal(f.document.body.dataset.sourceVersion,'1');assert.equal(f.document.body.dataset.sourceSha256,'a'.repeat(64));assert.equal(f.editors[1].adapter.getStatus().paused,false);
+});
+test('refresh final guard retains an old owner changed by a controlled admission reentry',async()=>{
+ const f=await fixture(),old=f.editors[0],gate=f.holdReference(),refresh=f.refresh();assert.equal(old.adapter.resumeView().ok,true);
+ assert.equal(old.adapter.dispatch({changes:{from:0,insert:'retained '}}).ok,true);await tick();gate.resolve(f.reference());
+ assert.equal(await refresh,false);assert.equal(old.adapter.getStatus().disposed,false);assert.equal(old.adapter.getState().doc.toString(),'retained saved code\n');assert.equal(old.adapter.getStatus().dirty,true);
+});
+test('Lock preparation during a held refresh retains strict lifecycle resume and permits later refresh',async()=>{
+ const f=await fixture(),old=f.editors[0],gate=f.holdReference(),refresh=f.refresh();assert.equal((await f.callbacks.prepare()).ok,true);
+ gate.reject(Error('while covered'));assert.equal(await refresh,false);assert.equal(old.adapter.getStatus().paused,true);assert.equal(f.document.body.inert,true);
+ f.callbacks.resume();assert.equal(old.adapter.getStatus().paused,false);assert.equal(f.document.body.inert,false);f.releaseReference();assert.equal(await f.refresh(),true);
+});
+test('failed candidate reference never changes installed source identity or working-copy controls',async()=>{
+ const f=await fixture(),old=f.editors[0],working=f.document.getElementById('openWorkingCopy');assert.equal(working.hidden,true);assert.equal(f.sourceHooks.sourceIdFor(),'source1');
+ const gate=f.holdReference();f.refuseMetrics();const refresh=f.refresh();gate.resolve({...f.reference(),readonly:true,canEdit:true,sourceRef:{sourceId:'candidate2',version:1,sha256:'c'.repeat(64)}});
+ assert.equal(await refresh,false);assert.equal(f.sourceHooks.sourceIdFor(),'source1');assert.equal(working.hidden,true);assert.equal(f.document.body.dataset.sourceId,'source1');assert.equal(old.adapter.getStatus().readonly,false);
+});

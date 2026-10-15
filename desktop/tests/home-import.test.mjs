@@ -11,14 +11,15 @@ import { buildImportValidation } from '../build/import-validation.mjs';
 import { validateImportedProject } from '../src/projects/import-validation.mjs';
 
 const digest=value=>createHash('sha256').update(value).digest('hex');
+const baselinePath=new URL('../baseline/R78.html',import.meta.url);
 test('headless import build retains frozen validator/signoff and stops before workspace initialization',async()=>{
   const root=await mkdtemp(join(tmpdir(),'siren-headless-build-'));
-  const before=await readFile('baseline/R78.html');
-  const receipt=await buildImportValidation({baselinePath:'baseline/R78.html',outputDir:root});
+  const before=await readFile(baselinePath);
+  const receipt=await buildImportValidation({baselinePath,outputDir:root});
   const html=await readFile(join(root,'import-validation.html'),'utf8');
   assert.equal(receipt.baselineSha256,digest(before));assert.equal(receipt.entrySha256,digest(Buffer.from(html)));
-  assert.deepEqual(await readFile('baseline/R78.html'),before);
-  assert.deepEqual(await buildImportValidation({baselinePath:'baseline/R78.html',outputDir:root}),receipt);
+  assert.deepEqual(await readFile(baselinePath),before);
+  assert.deepEqual(await buildImportValidation({baselinePath,outputDir:root}),receipt);
   assert.match(html,/await validatePortableProjectForImport\(payload, fileName\)/);
   assert.match(html,/stampWorkpaperFileSignoff\(doc, workpaperProjectReviewInput.get\(doc\)\)/);
   assert.match(html,/sirenImportValidationReady = true;\s*return;\s*sirenStore.start\(\)/);

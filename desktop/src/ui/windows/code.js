@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const surface=document.getElementById('codeSurface'),status=document.getElementById('viewStatus'),retry=document.getElementById('retrySource'),theme=document.getElementById('codeTheme'),working=document.getElementById('openWorkingCopy');
-  const media=matchMedia('(prefers-color-scheme: dark)');let generation=0,editor=null,client=null,disposed=false,paused=false;
+  const media=matchMedia('(prefers-color-scheme: dark)');let generation=0,navigationLifetime=0,editor=null,client=null,disposed=false,paused=false;
   const linkButton=document.getElementById('linkCodeDocs');let links=null,analysis=null;
   const changeNotice=document.getElementById('sourceChangesNotice'),changeMessage=document.getElementById('sourceChangesMessage'),reviewLatest=document.getElementById('reviewLatestSource');let sourceChanges=null,unsubscribeEditor=null,nativeSourceId=null,nativeSourceName=null;
   const appearance=()=>theme.value==='system'?(media.matches?'dark':'light'):theme.value;
@@ -9,6 +9,7 @@
   const paint=()=>{const value=appearance();document.documentElement.style.colorScheme=value;editor?.setTheme(value);};
   async function connect({preserveCurrent=false}={}){
     if(disposed||paused)return false;
+    navigationLifetime++;
     const previousEditor=editor,previousClient=client,previousStatus=status.textContent;
     const preserve=preserveCurrent&&previousEditor?.getStatus().ready&&!previousEditor.getStatus().dirty&&!previousEditor.getStatus().pending&&!previousEditor.getStatus().saving&&!previousEditor.getStatus().fenced;
     if(preserve&&previousEditor.pauseView()?.ok!==true)return false;
@@ -17,8 +18,7 @@
     try{
       const context=await window.sirenSourceRead.getReference();if(token!==generation||disposed)return false;
       if(!context?.ok||typeof context.readonly!=='boolean')throw Error('Source reference unavailable');
-      nativeSourceId=context.sourceRef.sourceId;
-      const readonly=context.readonly;working.hidden=!readonly||context.canEdit!==true;
+      const readonly=context.readonly;
       const bridge=Object.freeze(Object.fromEntries([
         ...['getMetrics','readRange',...(!readonly?['applyEdit','commitSource']:[])].map(name=>[name,payload=>window.sirenSource[name](payload)]),
         ...['openRead','readChunk','closeRead'].map(name=>[name,payload=>window.sirenSourceRead[name](payload)])
@@ -28,16 +28,19 @@
       if(!metrics.ok)throw Error('Source metrics refused');
       if(preserve){staging=document.createElement('div');staging.style.cssText=`position:fixed;left:-100000px;top:0;width:${surface.clientWidth}px;height:${surface.clientHeight}px;visibility:hidden`;document.body.append(staging);}
       candidateEditor=SirenCodeEditor.createCodeEditor({container:staging??surface,client:candidateClient,theme:appearance(),readonly,language:context.language??'unknown',committedOperationId:context.committedOperationId});
-      const ownEditor=candidateEditor,receipt=await ownEditor.open(context.sourceRef);
+      const ownEditor=candidateEditor,ownClient=candidateClient,receipt=await ownEditor.open(context.sourceRef);
       if(token!==generation||disposed||paused)return false;
       if(!receipt.ok)throw Error('Source load refused');
       if(preserve){
         const current=await window.sirenSourceRead.getReference();
         if(token!==generation||disposed||paused)return false;
         if(!current?.ok||current.readonly!==readonly||['sourceId','version','sha256'].some(key=>current.sourceRef[key]!==context.sourceRef[key]))throw Error('Source changed during refresh');
+        const retained=previousEditor.getStatus();
+        if(editor!==previousEditor||client!==previousClient||!retained.ready||!retained.paused||retained.disposed||retained.opening||retained.dirty||retained.pending||retained.saving||retained.fenced)throw Error('Retained editor changed during refresh');
         links.pause();unsubscribeEditor?.();previousEditor.dispose();previousClient.dispose();surface.replaceChildren(...staging.childNodes);
       }
       editor=candidateEditor;client=candidateClient;candidateEditor=null;candidateClient=null;
+      nativeSourceId=context.sourceRef.sourceId;working.hidden=!readonly||context.canEdit!==true;
       nativeSourceName=context.displayName||'Source '+context.sourceRef.sourceId.slice(0,8);
       window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:context.sourceRef.version,readonly});
       const state=ownEditor.getState();
@@ -47,10 +50,10 @@
       document.body.dataset.sourceReadonly=String(readonly);
       document.body.dataset.sourceLanguage=context.language??'unknown';
       linkButton.hidden=readonly;
-      client.subscribeSource(event=>{if(token!==generation||disposed)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
+      ownClient.subscribeSource(event=>{if(disposed||client!==ownClient||editor!==ownEditor)return;document.body.dataset.sourceVersion=String(event.version);document.body.dataset.sourceSha256=event.sha256;});
       let sourceSummary=null;
       unsubscribeEditor=ownEditor.subscribe(value=>{
-        if(token!==generation||disposed||paused||editor!==ownEditor||!value.ready||!value.sourceRef)return;
+        if(disposed||paused||client!==ownClient||editor!==ownEditor||!value.ready||!value.sourceRef)return;
         const draft=value.dirty||value.pending;
         window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:value.sourceRef.version,readonly,dirty:draft});
         const summary=`${readonly?'Read only · Version':'Working copy · Stored version'} ${value.sourceRef.version}${draft?' · Local draft':''} · ${value.utf8Bytes.toLocaleString()} bytes · ${value.lines.toLocaleString()} lines`;
@@ -63,12 +66,12 @@
       ownEditor.focus();return true;
     }catch{
       if(token===generation&&!disposed){
-        if(preserve){if(!paused)previousEditor.resumeView();status.textContent=previousStatus;}
+        if(preserve){const retained=previousEditor.getStatus();if(editor===previousEditor&&client===previousClient&&!retained.dirty&&!retained.pending&&!retained.saving&&!retained.fenced)status.textContent=previousStatus;}
         else{clear();status.textContent='Source could not be opened. Existing project data was retained.';}
         retry.hidden=false;
       }
       return false;
-    }finally{candidateEditor?.dispose();candidateClient?.dispose();staging?.remove();if(preserve&&editor===previousEditor&&!paused&&!disposed)previousEditor.resumeView();}
+    }finally{candidateEditor?.dispose();candidateClient?.dispose();staging?.remove();if(preserve&&token===generation&&editor===previousEditor&&client===previousClient&&!paused&&!disposed)previousEditor.resumeRefresh();}
   }
   links=window.SirenNativeDocsLinks.create({button:linkButton,editorFor:()=>editor,isCurrent:()=>!disposed&&!paused&&document.body.dataset.sourceReady==='true'&&document.body.dataset.sourceReadonly==='false',onStatus:text=>{status.textContent=text;}});
   sourceChanges=window.SirenNativeSourceChanges.create({subscribe:callback=>window.sirenSourceEdit.onReferenceChanged(callback),sourceIdFor:()=>nativeSourceId,stateFor:()=>editor?.getStatus(),isCurrent:()=>!disposed&&!paused&&nativeSourceId!==null&&document.body.dataset.sourceReadonly!=='true',onReload:async()=>{
@@ -77,6 +80,15 @@
   },onRetained:ref=>{changeNotice.hidden=false;changeMessage.textContent=`Version ${ref.version} was stored in another window. Your local text is retained.`;},onClear:()=>{changeNotice.hidden=true;}});
   const changed=()=>paint();theme.addEventListener('change',changed);media.addEventListener('change',changed);
   analysis=window.SirenNativeAnalysis.create({button:document.getElementById('toggleAnalysis'),compareButton:document.getElementById('compareSources'),panel:document.getElementById('codeAnalysis'),editorFor:()=>editor,bridge:window.sirenSourceAnalysis,languageFor:()=>document.body.dataset.sourceLanguage??'unknown',nameFor:()=>nativeSourceName});
+  const unsubscribeComparison=window.sirenSourceAnalysis?.onComparisonReveal?.(async(ticket,claim)=>{
+    const ownEditor=editor,lifetime=navigationLifetime,ref=ticket?.sourceRef,range=ticket?.range;
+    const current=()=>{
+      if(disposed||paused||lifetime!==navigationLifetime||editor!==ownEditor||!ownEditor||document.body.dataset.sourceReady!=='true')return false;
+      const state=ownEditor.getStatus();return state.ready&&!state.disposed&&!state.opening&&!state.paused&&!state.fenced&&!state.dirty&&!state.pending&&!state.saving&&ref&&['sourceId','version','sha256'].every(key=>state.sourceRef?.[key]===ref[key])&&range&&Number.isSafeInteger(range.from)&&Number.isSafeInteger(range.to)&&range.from>=0&&range.to>=range.from&&range.to<=ownEditor.getState().doc.length&&!disposed&&!paused&&lifetime===navigationLifetime&&editor===ownEditor;
+    };
+    if(!current()||typeof claim!=='function')return {ok:false};
+    try{if((await claim())?.ok!==true||!current())return {ok:false};ownEditor.select(range.from,range.to);return {ok:current()};}catch{return {ok:false};}
+  });
   const replaceLatest=()=>{
     if(disposed||paused)return;const state=editor?.getStatus();
     if((state?.dirty||state?.fenced)&&!window.confirm('Discard the local text in this window and load the latest stored source? Other windows and stored source versions are retained.'))return;
@@ -93,7 +105,7 @@
   document.getElementById('replaceLatestSource').addEventListener('click',replaceLatest);
   window.sirenViewControl.onPrepare(async()=>{
     window.SirenHelpWorkspace?.cover();
-    paused=true;analysis.pause();links.pause();sourceChanges.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
+    paused=true;navigationLifetime++;analysis.pause();links.pause();sourceChanges.pause();document.body.inert=true;document.documentElement.style.visibility='hidden';
     window.SirenNativeViewIdentity.clear('code');
     const current=editor;
     if(!current||document.body.dataset.sourceReady!=='true')return {ok:false};
@@ -110,6 +122,6 @@
     paused=false;sourceChanges.resume();analysis.resume();document.body.inert=false;document.documentElement.style.visibility='';
     const state=editor?.getStatus();if(state?.ready&&state.sourceRef)window.SirenNativeViewIdentity.set({role:'code',name:nativeSourceName,version:state.sourceRef.version,readonly:document.body.dataset.sourceReadonly==='true',dirty:state.dirty||state.pending});
   });
-  window.addEventListener('beforeunload',()=>{disposed=true;generation++;analysis.dispose();links.dispose();sourceChanges.dispose();clear();media.removeEventListener('change',changed);},{once:true});
+  window.addEventListener('beforeunload',()=>{disposed=true;generation++;navigationLifetime++;unsubscribeComparison?.();analysis.dispose();links.dispose();sourceChanges.dispose();clear();media.removeEventListener('change',changed);},{once:true});
   window.sirenNativeCodeView=Object.freeze({connect});
 })();

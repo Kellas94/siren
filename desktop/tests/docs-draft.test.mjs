@@ -4,6 +4,10 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {createHash,webcrypto} from 'node:crypto';
 const fingerprint=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+test('clean explicit Save settles through a genuine flush while pending and retains Undo across a saved refresh',async()=>{
+ const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder});const document={id:'settlement-doc',title:'Before',blocks:[]};let entered,release;const ready=new Promise(r=>entered=r),wait=new Promise(r=>release=r);const own=window.SirenNativeDocsDraft.create({context:{ok:true,readonly:false,document,version:'1'.repeat(64),sha256:fingerprint(document),projectRevision:1},bridge:{applyDocument:async()=>({ok:false}),flushDocument:async request=>{entered();await wait;return {ok:true,domain:'docs',entityId:document.id,version:request.expectedVersion,sha256:fingerprint(document),projectRevision:1,durability:'committed'};}}});const saving=own.save();await Promise.race([ready,saving.then(()=>{throw Error('Clean Save must obtain a real settlement');})]);assert.equal(own.getStatus().pending,true);assert.equal(own.setContent({title:'Must wait',blocks:[]}).ok,false);release();assert.equal((await saving).ok,true);assert.equal(own.getStatus().pending,false);
+ assert.equal(typeof own.adoptSaved,'function');const next={...document,title:'Latest saved flow'};assert.equal((await own.adoptSaved({readonly:false,document:next,version:'2'.repeat(64),sha256:fingerprint(next),projectRevision:2})).ok,true);assert.equal(own.getStatus().dirty,false);assert.equal(own.undo().ok,true);assert.equal(own.getDocument().title,'Before');assert.equal(own.getStatus().dirty,true);
+});
 
 test('ordinary Docs Save preserves Undo and Redo against the newly saved baseline',async()=>{
  const code=await readFile(new URL('../src/ui/docs/draft.js',import.meta.url),'utf8'),window={};vm.runInNewContext(code,{window,structuredClone,crypto:webcrypto,TextEncoder});

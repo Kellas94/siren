@@ -33,6 +33,12 @@ export function createOutputRing({ maxBytes = OUTPUT_RING_BYTES } = {}) {
         let tail = blocks.at(-1);
         const needed = data.codePointAt(offset) <= 0x7f ? 1 : data.codePointAt(offset) <= 0x7ff ? 2 : data.codePointAt(offset) <= 0xffff ? 3 : 4;
         if (!tail || blockBytes - tail.used < needed) {
+          // Scalar alignment can leave1..3 unused bytes per block. Enforce
+          // the physical allocation cap before allocating another block.
+          while ((blocks.length + 1) * blockBytes > maxBytes) {
+            const removed = blocks.shift();
+            retainedUtf8Bytes -= removed.used; droppedUtf8Bytes += removed.used;
+          }
           tail = { sequence: nextSequence, buffer: Buffer.allocUnsafe(blockBytes), used: 0 };
           blocks.push(tail);
         }

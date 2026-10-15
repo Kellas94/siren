@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {rm} from 'node:fs/promises';
+import {sourceReadFixture} from './source-read-context.mjs';
+import {DiagramEmbedAssetStore} from '../../src/documents/diagram-embed-assets.mjs';
+import {commitManifest} from '../../src/sources/manifest.mjs';
+export async function embedContext(t){
+ const f=await sourceReadFixture();t.after(()=>rm(f.root,{recursive:true,force:true}));const projectId=f.selected.project.id,assets=new DiagramEmbedAssetStore({projects:f.projects});const sourceAsset=await assets.put({projectId,kind:'diagram-source',bytes:Buffer.from(JSON.stringify({id:'flow-a',sirenNativeVersion:3,source:'flowchart TD\n A-->B'})),isCurrent:()=>true}),visualAsset=await assets.put({projectId,kind:'svg',bytes:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0L10 10"/></svg>'),isCurrent:()=>true});const block={id:'embed-a',kind:'diagram-embed',schema:1,diagramId:'flow-a',mode:'fixed',scope:'whole',nodeIds:[],caption:'A < B · Ș😀',display:{height:320,fit:'contain'},snapshot:{sourceHash:sourceAsset.sha256,sourceVersion:3,sourceAsset,visualAsset,rendererVersion:'inert-test-only',styleHash:'a'.repeat(64)},status:'missing',missingNodeIds:[]};const metadata={workpapers:[{id:'doc-a',title:'Review',blocks:[{id:'before',kind:'heading',level:2,text:'Before'},block,{...block,id:'embed-b'},{id:'after',kind:'heading',level:2,text:'After'}],future:{preserve:'exact'}}],diagrams:[],future:{claim:'UNVERIFIED'},diagramEmbedAssets:{schema:1,refs:[sourceAsset,visualAsset]}};
+ assert.equal((await commitManifest({projects:f.projects,repository:f.sources,projectId,baseRevision:f.selected.revision,sourceRefs:f.selected.sourceRefs,metadata,operationId:'embed-export-fixture'})).ok,true);return {...f,assets,block,metadata,snapshot:await f.projects.readProject(projectId)};
+}

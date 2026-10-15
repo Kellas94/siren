@@ -9,10 +9,11 @@ const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
  * same-origin URL creates it. The shared owner supplies real receipts; this
  * service does not clone project content or retry stale document edits. */
 export class NativeDocsEdits{
- #registry;#owner;#enabled;#snapshot;#notify;#views=new Map();#disposed=false;
- constructor({registry,owner,enabled,snapshotFor,onReferenceChanged}){
+ #registry;#owner;#enabled;#snapshot;#notify;#settled;#views=new Map();#disposed=false;
+ constructor({registry,owner,enabled,snapshotFor,onReferenceChanged,onSettled}){
   if(!(registry instanceof WindowRegistry)||!(owner instanceof WorkspaceCoordinator)||typeof enabled!=='function'||typeof snapshotFor!=='function'||onReferenceChanged!==undefined&&typeof onReferenceChanged!=='function')throw TypeError('NATIVE_DOCS_EDIT_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#owner=owner;this.#enabled=enabled;this.#snapshot=snapshotFor;this.#notify=onReferenceChanged;
+  if(onSettled!==undefined&&typeof onSettled!=='function')throw TypeError('NATIVE_DOCS_SETTLEMENT_ADAPTER_REQUIRED');
+  this.#registry=registry;this.#owner=owner;this.#enabled=enabled;this.#snapshot=snapshotFor;this.#notify=onReferenceChanged;this.#settled=onSettled;
  }
  #context(grant){
   try{
@@ -26,6 +27,12 @@ export class NativeDocsEdits{
   return entry&&entry.entityId===context.entityId&&entry.event.sender===context.event?.sender&&entry.event.senderFrame===context.event?.senderFrame?entry:null;
  }
  isWorking(grant){return Boolean(this.#entry(grant));}
+ // Working admission conservatively holds a dirty lease for the whole view.
+ // Only a real owner save/flush temporarily settles that exact frame/epoch;
+ // renderer assertions about local cleanliness never grant refresh authority.
+ canRefresh(projectId,documentId){
+  for(const entry of this.#views.values())if(entry.grant.projectId===projectId&&entry.entityId===documentId&&this.#entry(entry.grant)===entry&&!entry.settling)return false;return true;
+ }
  async admit(grant){
   const context=this.#context(grant);if(!context)return fail('ACCESS_REFUSED');
   for(const [id,entry]of this.#views)if(!this.#context(entry.grant)){entry.unsubscribe();this.#views.delete(id);}
@@ -34,7 +41,7 @@ export class NativeDocsEdits{
   if(!this.#context(grant))return fail('ACCESS_REFUSED');if(!actual.ok)return actual;
   if(actual.entityId!==context.entityId||!hash(actual.version)||!Number.isSafeInteger(actual.projectRevision))return fail('DOMAIN_RESULT_REFUSED');
   const previous=this.#views.get(grant.windowId);previous?.unsubscribe();
-  const entry={grant,event:context.event,entityId:context.entityId,version:actual.version,projectRevision:actual.projectRevision,unsubscribe:()=>{}};
+  const entry={grant,event:context.event,entityId:context.entityId,version:actual.version,projectRevision:actual.projectRevision,settling:0,unsubscribe:()=>{}};
   try{
    entry.unsubscribe=this.#owner.subscribe(grant,context.entityId,(receipt,originWindowId)=>{
     const version=receipt?.version??receipt?.documentVersion,entityId=receipt?.entityId??receipt?.documentId;
@@ -50,6 +57,9 @@ export class NativeDocsEdits{
   const grant=this.#registry.capture({sender:event?.sender,senderFrame:event?.senderFrame}),entry=this.#entry(grant);
   if(!entry||(request.documentId??request.entityId)!==entry.entityId)return fail('ACCESS_REFUSED');
   const result=await this.#owner.invoke(grant,{kind:'docs',method,payload:request},flushNonce);
+  if(result?.ok===true&&flushNonce===undefined&&this.#entry(grant)===entry&&this.#settled){
+   entry.settling++;try{await this.#settled(Object.freeze({projectId:grant.projectId,documentId:entry.entityId,grant,receipt:result}));}catch{/* Refresh failure never falsifies the user's already durable save. */}finally{entry.settling--;}
+  }
   return this.#entry(grant)?result:fail('ACCESS_REFUSED');
  }
  dispose(){if(this.#disposed)return;this.#disposed=true;for(const entry of this.#views.values())entry.unsubscribe();this.#views.clear();}

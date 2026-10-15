@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import {deriveHostOwnershipCandidate} from '../build/terminal-host-ownership-candidate-derive.mjs';
+const base=()=>readFileSync(new URL('../src/terminal/production-ownership.mjs',import.meta.url));
+test('known legacy bytes derive exact readable candidate output without changing legacy',()=>{const b=base();assert.equal(deriveHostOwnershipCandidate(b),readFileSync(new URL('../src/terminal/host-candidate-ownership.mjs',import.meta.url),'utf8'));assert.deepEqual(base(),b);});
+test('wrong bytes, oversized/Proxy input and non-byte input refuse before hooks',()=>{let hooks=0;const b=base();b[0]^=1;for(const x of [b,new Uint8Array(40357),{},null,new Proxy(base(),{get(){hooks++;throw Error();}})])assert.throws(()=>deriveHostOwnershipCandidate(x),/HOST_OWNERSHIP_BASE_REFUSED/);assert.equal(hooks,0);});
+test('caller Buffer serialization/subarray hooks cannot substitute checked source',()=>{const b=base();let hooks=0;for(const name of ['toString','subarray','slice','valueOf'])b[name]=()=>{hooks++;throw Error();};assert(deriveHostOwnershipCandidate(b).includes('class TerminalHostCandidateOwnership'));assert.equal(hooks,0);});
+test('own byteLength getter cannot run during exact source admission',()=>{const b=base();let hooks=0;Object.defineProperty(b,'byteLength',{get(){hooks++;throw Error('getter');}});assert(deriveHostOwnershipCandidate(b).includes('class TerminalHostCandidateOwnership'));assert.equal(hooks,0);});

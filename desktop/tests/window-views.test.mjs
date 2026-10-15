@@ -23,15 +23,16 @@ class Window extends EventEmitter{
  focus(){this.focused=true;}hide(){this.visible=false;}show(){this.visible=true;}
  getContentBounds(){return {width:1000,height:800};}destroy(){this.destroyed=true;this.emit('closed');}close(){this.destroy();}
 }
-async function fixture({diagram=false}={}){
+async function fixture({diagram=false,terminal=false}={}){
  const host=new Window();host.webContents=new Contents();host.webContents.mainFrame.url='siren://app/app.html';
- const surfaces=new Map(),entities=new Set(['code_a','doc_a',...(diagram?['diagram_a']:[])]);let allowed=true;
- const registry=new WindowRegistry({authorize:request=>{if(!allowed||request.entityId!==null&&!entities.has(request.entityId))throw Error('retired');return {projectId:'project_a',mode:'normal',access:'write',entityIds:request.entityId===null?[]:[request.entityId]};},
+ const surfaces=new Map(),entities=new Set(['code_a','doc_a',...(diagram?['diagram_a']:[]),...(terminal?['terminal_a']:[])]);let allowed=true;
+ const registry=new WindowRegistry({terminalViews:terminal,authorize:request=>{if(!allowed||request.entityId!==null&&!entities.has(request.entityId))throw Error('retired');return {projectId:'project_a',mode:'normal',access:'write',entityIds:request.entityId===null?[]:[request.entityId]};},
  createWindow:options=>{let surface;surface=createWorkspaceSurface({BaseWindow:Window,WebContentsView:ContentsView,host,isCurrent:()=>!!registry.capture({sender:surface.webContents,senderFrame:surface.webContents.mainFrame})});surface.webContents.mainFrame.url=options.mainFrameUrl;surfaces.set(options.windowId,surface);return surface.window;}});
  registry.bindWorkspace(host);registry.activateWorkspace();
  const code=await registry.openView({role:'code',entityId:'code_a'}),docs=await registry.openView({role:'docs',entityId:'doc_a'});
  const diagramView=diagram?await registry.openView({role:'diagram',entityId:'diagram_a'}):null;
- return {host,registry,surfaces,code,docs,diagram:diagramView,retire:()=>{allowed=false;},retireEntity:entity=>entities.delete(entity)};
+ const terminalView=terminal?await registry.openView({role:'terminal',entityId:'terminal_a'}):null;
+ return {host,registry,surfaces,code,docs,diagram:diagramView,terminal:terminalView,retire:()=>{allowed=false;},retireEntity:entity=>entities.delete(entity)};
 }
 
 test('shared shelf names only current owned native views and reports real minimized state without source reads',async()=>{
@@ -145,4 +146,17 @@ test('dock IPC derives actual caller identity and rejects borrowed IDs, getters,
  assert.equal((await invoke('showWorkspace')).ok,true);assert.equal(code.view.visible,false);
  f.retire();assert.equal((await invoke('detach',{windowId:f.code.windowId})).code,'ACCESS_REFUSED');
  await f.registry.invalidateEpochAsync({preserveWorkspace:true});
+});
+
+
+test('opt-in Terminal uses real surface shelf, detach, resize, minimize and restore without replacing contents',async()=>{
+ const {invokeDock}=await import('../src/windows/dock-ipc.mjs'),f=await fixture({terminal:true});
+ try{const row=f.terminal,surface=f.surfaces.get(row.windowId),contents=surface.webContents,event={sender:contents,senderFrame:contents.mainFrame};
+ const shelf=invokeDock({registry:f.registry,event,method:'getShelf'});assert.equal(shelf.ok,true);assert.equal(shelf.items.find(v=>v.windowId===row.windowId).role,'terminal');
+ assert.equal(invokeDock({registry:f.registry,event,method:'attach',payload:{windowId:row.windowId}}).ok,true);assert.equal(f.registry.surfaceRecords().find(r=>r.windowId===row.windowId).placement,'attached');
+ f.host.getContentBounds=()=>({width:640,height:400});f.registry.resizeAttached();assert.equal(surface.webContents,contents);
+ assert.equal(invokeDock({registry:f.registry,event,method:'detach',payload:{windowId:row.windowId}}).ok,true);surface.window.minimized=true;assert.equal(f.registry.surfaceSummary(row.windowId).state,'minimized');
+ assert.equal(f.registry.focusView(row.windowId),true);assert.equal(surface.window.minimized,false);assert.equal(surface.webContents,contents);
+ f.retireEntity('terminal_a');assert.equal(invokeDock({registry:f.registry,event,method:'getShelf'}).ok,false);
+ }finally{await f.registry.invalidateEpochAsync({preserveWorkspace:true});}
 });

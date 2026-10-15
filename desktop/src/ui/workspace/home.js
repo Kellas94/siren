@@ -12,11 +12,12 @@
     });return()=>{if(disposed)return;disposed=true;off?.();};
   };
   window.renderSirenHome=({container,bridge,desktop,bootstrap})=>{
-    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off,offCommands,offNavigation,offCatalog,catalogue=null,catalogueChanged=false;
+    let serial=0,busy=false,disposed=false,blocked=bootstrap?.mode==='locked',state=null,off,offCommands,offNavigation,offCatalog,catalogue=null,catalogueChanged=false,navigationTimer=null,navigationIntent=null;
     const events=[];
     const listen=(node,event,callback)=>{node.addEventListener(event,callback);events.push(()=>node.removeEventListener(event,callback));};
     const clear=()=>{catalogue?.dispose();catalogue=null;for(const dispose of events.splice(0))dispose();container.replaceChildren();state=null;};
-    const cover=()=>{window.SirenHelpWorkspace?.cover();blocked=true;serial++;clear();container.hidden=true;};
+    const retireNavigation=()=>{navigationIntent=null;if(navigationTimer!==null){clearTimeout(navigationTimer);navigationTimer=null;}};
+    const cover=()=>{window.SirenHelpWorkspace?.cover();blocked=true;serial++;retireNavigation();clear();container.hidden=true;};
     const message=result=>({MIGRATION_INCOMPLETE:'The desktop copy could not be completed. Your original and any partial copy were retained.',SOURCE_BUDGET:'This source exceeds the 32 MiB import limit.',UNSUPPORTED_ENCODING:'Save this file as UTF-8 before importing it.',SOURCE_IMPORT_FAILED:'The source could not be imported. Your existing work was retained.',DOCUMENT_CREATE_FAILED:'The document could not be created. Review Docs before trying again.',NAVIGATION_LIMIT:'The document catalog has reached its limit. Existing work was retained.',REVISION_CONFLICT:'Your project changed. Refresh Home before trying again.'}[result?.code]||window.SirenHomeMessages?.[result?.code]||'The action could not complete. Your work was retained.');
     const button=(parent,text,fn,{disabled=false,className='',id}={})=>{
       const node=make('button',parent,text,className);node.type='button';node.disabled=disabled;if(id)node.id=id;
@@ -195,6 +196,47 @@
       }catch{if(!disposed&&!blocked&&turn===serial){clear();container.hidden=false;make('p',container,'Home could not load. Existing work was retained.').setAttribute('role','status');}return false;}
       finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
     };
+    const openFoundItem=async item=>{
+      if(disposed||blocked||busy)return;
+      // Find already selected an exact saved identity. Pin only data fields;
+      // another catalog query could lose a paged item or replace its version.
+      let request,location;
+      try{
+        const field=(value,key)=>{
+          if(!value||typeof value!=='object'||Array.isArray(value))return undefined;
+          const own=Object.getOwnPropertyDescriptor(value,key);
+          return own&&Object.hasOwn(own,'value')?own.value:undefined;
+        };
+        const role=field(item,'role'),entityId=field(item,'entityId'),source=field(item,'sourceRef');
+        if(!['docs','code','diagram','presenter'].includes(role)||typeof entityId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(entityId))throw Error('Invalid selection');
+        let sourceRef;
+        if(role==='code'){
+          const sourceId=field(source,'sourceId'),version=field(source,'version'),sha256=field(source,'sha256');
+          if(sourceId!==entityId||!/^[a-z0-9][a-z0-9_-]{0,127}$/.test(sourceId)||!Number.isSafeInteger(version)||version<1||typeof sha256!=='string'||!/^[a-f0-9]{64}$/.test(sha256))throw Error('Invalid source selection');
+          sourceRef=Object.freeze({sourceId,version,sha256});
+        }else if(source!==undefined)throw Error('Unexpected source selection');
+        request=Object.freeze({role,entityId,...(sourceRef?{version:sourceRef.version}:{})});
+        location=Object.freeze({surface:role==='diagram'?'diagrams':role==='presenter'?'present':role,entityId,...(sourceRef?{sourceRef}:{})});
+      }catch{if(!disposed&&!blocked&&!busy)say('The selected item could not open. Refresh Find and try again.');return;}
+      if(disposed||blocked||busy)return;
+      const turn=serial;busy=true;controls();say('Opening…');
+      try{
+        const opened=await bridge.openView(request);
+        if(disposed||blocked||turn!==serial)return;
+        if(opened?.ok!==true){say(message(opened));return;}
+        let recorded=false;
+        try{recorded=(await bridge.recordLocation(location))?.ok===true;}catch{/* Opening succeeded; only Continue work failed. */}
+        if(disposed||blocked||turn!==serial)return;
+        const refreshedTurn=serial+1;await refresh();
+        if(disposed||blocked||refreshedTurn!==serial)return;
+        if(!recorded){
+          // A refresh error can replace Home, including its normal status node.
+          let target=status();if(!target){target=make('p',container,'','home-status');target.id='homeStatus';target.setAttribute('role','status');target.setAttribute('aria-live','polite');}
+          target.textContent='The window opened, but Continue work could not be updated.';
+        }
+      }catch{if(!disposed&&!blocked&&turn===serial)say('The window could not open. Your work was retained.');}
+      finally{if(!disposed&&!blocked&&turn===serial){busy=false;controls();}}
+    };
     const library=async(surface,selected=null)=>{
       if(disposed||blocked||busy)return;const turn=serial;busy=true;controls();
       const dialog=make('dialog',container,undefined,'home-create home-library');dialog.setAttribute('aria-labelledby','homeLibraryTitle');
@@ -246,11 +288,18 @@
     if(typeof bridge?.onInvalidated==='function')off=bridge.onInvalidated(cover);
     if(typeof bridge?.onCatalogChanged==='function')offCatalog=bridge.onCatalogChanged(()=>{if(disposed||blocked)return;catalogueChanged=true;if(!busy&&!catalogue?.isOpen()){catalogueChanged=false;void refresh();}});
     offNavigation=bridge?.onNavigate?.(surface=>{
-      const open=()=>{if(disposed||blocked)return;if(busy||!state){setTimeout(open,50);return;}
-        if(surface==='find')window.SirenProjectSearch.open();else container.querySelector('#homeModule-'+surface)?.click();};open();
+      if(disposed||blocked)return;retireNavigation();
+      const intent={surface,serial};navigationIntent=intent;
+      const open=()=>{
+        if(navigationIntent!==intent)return;navigationTimer=null;
+        if(disposed||blocked||intent.serial!==serial){navigationIntent=null;return;}
+        if(busy||!state){navigationTimer=setTimeout(open,50);return;}
+        navigationIntent=null;
+        if(surface==='find')window.SirenProjectSearch.open();else container.querySelector('#homeModule-'+surface)?.click();
+      };open();
     });
     offCommands=window.installSirenHomeCommands({desktop,enabled:id=>!disposed&&!blocked&&(!busy||id==='desktopLockPin'),commands:{desktopPinSettings:showSettings,desktopLockPin:lockWorkspace,desktopOpenProject:()=>perform('importProject',{}),desktopCheckUpdates:showUpdates,desktopGuide:showGuide,desktopRecovery:()=>state?.mode!=='normal'?perform('showRecovery',{}):say('Open Diagrams to review Disaster Recovery.'),desktopExportProject:exportSavedBackup}});
-    return Object.freeze({refresh,cover,openFoundItem:item=>library(item.role,item),resume:()=>{blocked=false;window.SirenHelpWorkspace?.resume();return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();offCatalog?.();}});
+    return Object.freeze({refresh,cover,openFoundItem,resume:()=>{blocked=false;window.SirenHelpWorkspace?.resume();return refresh();},dispose:()=>{if(disposed)return;disposed=true;cover();off?.();offCommands?.();offNavigation?.();offCatalog?.();}});
   };
   const start=()=>{
     const boot=window.sirenDesktopBootstrap;

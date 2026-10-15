@@ -1,0 +1,57 @@
+// Test observations only. Never grants production admission or renderer rights.
+import {isDeepStrictEqual as equal} from 'node:util';
+const n=x=>Number.isSafeInteger(x)&&x>=0,hash=x=>typeof x==='string'&&/^[0-9a-f]{64}$/.test(x);
+const identity=(a,b)=>a?.pid===b?.pid&&a?.image===b?.image&&a?.createdFileTime===b?.createdFileTime;
+const validIdentity=p=>n(p?.pid)&&p.pid>0&&typeof p.image==='string'&&p.image.length>0&&typeof p.createdFileTime==='string'&&/^[0-9]{1,20}$/.test(p.createdFileTime);
+const ring=t=>n(t.receivedUtf8Bytes)&&t.receivedUtf8Bytes===t.nextSequence&&n(t.retainedUtf8Bytes)&&t.retainedUtf8Bytes<=4194304&&n(t.allocatedBytes)&&t.allocatedBytes>=t.retainedUtf8Bytes&&t.allocatedBytes<=4194304&&n(t.droppedUtf8Bytes)&&t.retainedUtf8Bytes+t.droppedUtf8Bytes===t.receivedUtf8Bytes&&t.firstSequence===t.droppedUtf8Bytes;
+export function isAggregateStreamObserved(r,age){try{
+ const f=r.flood,c=r.completedWhileLocked,s=r.finalStats,first=r.commands.first,fresh=r.commands.fresh;
+ if(f.admitted!==false||f.minimumMs!==62000||!n(f.elapsedMs)||f.elapsedMs<62000||f.elapsedMs>=75000||f.byteCap!==134217728||!n(f.generatedAsciiBytes)||f.generatedAsciiBytes<=4194304||f.generatedAsciiBytes>f.byteCap||f.blocks*8192!==f.generatedAsciiBytes||!n(f.startedQpc)||!n(f.finishedQpc)||f.finishedQpc<=f.startedQpc||!n(f.qpcFrequency)||f.qpcFrequency===0||(f.finishedQpc-f.startedQpc)*1000/f.qpcFrequency<62000)return false;
+ if(!n(first.bytes)||first.bytes<1||first.bytes>32768||!n(fresh.bytes)||fresh.bytes<1||fresh.bytes>32768||!hash(first.sha256)||!hash(fresh.sha256))return false;
+ if(c.open!==false||c.unavailable!==false||c.inputWrites!==1||c.inputWriteAttempts!==1||c.inputUtf8Bytes!==first.bytes||c.inputWriteSha256!==first.sha256||c.inputAttemptSha256!==first.sha256||s.inputWrites!==2||s.inputWriteAttempts!==2||s.inputUtf8Bytes!==first.bytes+fresh.bytes||!hash(s.inputWriteSha256)||s.inputWriteSha256!==s.inputAttemptSha256||s.open!==true||s.unavailable!==false)return false;
+ if(r.locked.result.ok!==false||r.locked.stats.inputWrites!==1||r.locked.stats.open!==false||!ring(c)||!ring(s)||c.receivedUtf8Bytes<f.generatedAsciiBytes||s.receivedUtf8Bytes<c.receivedUtf8Bytes)return false;
+ if(!Array.isArray(r.samples)||r.samples.length<2||r.samples.length>100||!equal(r.samples.at(-1).stats,s))return false;
+ let previous=0,previousAge=-1,cursor=0,delivered=0,omitted=0;
+ for(const sample of r.samples){const t=sample.stats;if(!ring(t)||t.receivedUtf8Bytes<previous||!n(sample.ageMs)||sample.ageMs<previousAge||sample.ageMs>age)return false;previous=t.receivedUtf8Bytes;previousAge=sample.ageMs;
+  if(sample.gap){const g=sample.gap;if(g.fromSequence!==cursor||cursor>=t.firstSequence||g.resumeSequence!==t.firstSequence||g.droppedUtf8Bytes!==t.firstSequence-cursor||g.resetParser!==true)return false;omitted+=g.droppedUtf8Bytes;cursor=g.resumeSequence;}
+  if(cursor<t.firstSequence||cursor>t.nextSequence)return false;
+  let bytes=0;for(const chunk of sample.chunks){if(chunk.sequence!==cursor||!n(chunk.utf8Bytes)||chunk.utf8Bytes<1||chunk.utf8Bytes>32768||cursor+chunk.utf8Bytes>t.nextSequence||!hash(chunk.sha256))return false;bytes+=chunk.utf8Bytes;cursor+=chunk.utf8Bytes;delivered+=chunk.utf8Bytes;}if(bytes>32768)return false;
+  if(sample.tailGap){const g=sample.tailGap;if(g.fromSequence!==cursor||!n(g.toSequence)||g.toSequence<=cursor||g.toSequence>t.nextSequence||g.droppedUtf8Bytes!==g.toSequence-cursor||g.resetParser!==true||g.reason!=='fixed-probe-tail-selection')return false;omitted+=g.droppedUtf8Bytes;cursor=g.toSequence;}
+ }
+ if(cursor!==s.nextSequence||delivered+omitted!==s.receivedUtf8Bytes||c.droppedUtf8Bytes<=0||!['start','done','fresh'].every(k=>r.finalScanner.seen.includes(k)))return false;
+ const ctl=r.controller;if(ctl.nativeExecutionAdmitted!==false||!n(ctl.requests)||ctl.requests>128||ctl.dataPending!==0||ctl.control.pending!==0||ctl.gateAckMs.length!==3||ctl.inputAckMs.length!==2||[...ctl.gateAckMs,...ctl.inputAckMs].some(ms=>!n(ms)||ms>500))return false;
+ const replay=r.historyReplay,t=replay.stats,g=replay.gap;if(!ring(t)||t.inputWrites!==1||t.inputWriteAttempts!==1||t.open!==false||t.inputAttemptSha256!==first.sha256||g.fromSequence!==0||g.resumeSequence!==t.firstSequence||g.droppedUtf8Bytes!==t.firstSequence||g.droppedUtf8Bytes<=0||g.resetParser!==true)return false;
+ let replayCursor=g.resumeSequence,replayBytes=0;for(const chunk of replay.chunks){if(chunk.sequence!==replayCursor||!n(chunk.utf8Bytes)||chunk.utf8Bytes<1||!hash(chunk.sha256))return false;replayCursor+=chunk.utf8Bytes;replayBytes+=chunk.utf8Bytes;}return replayBytes>0&&replayBytes<=32768&&replayCursor<=t.nextSequence;
+}catch{return false;}}
+export function isAggregateFlowObserved(value){try{
+ const {native:r,observer:o,ready,finish}=value;
+ if(r.admitted!==false||o.admitted!==false||r.status!=='AGGREGATE_FLOW_OBSERVED_NOT_ADMITTED'||o.status!=='AGGREGATE_FLOW_SAFETY_OBSERVED_NOT_ADMITTED'||r.error||o.error||r.cleanupError||r.hostCleanupError||o.cleanupError||!equal(ready,o.ready)||!equal(finish,o.finish))return false;
+ if(r.runtime.electron!=='44.5.1'||r.runtime.modules!=='149'||r.runtime.arch!=='x64'||r.runtime.platform!=='win32'||!n(r.ageMs)||r.ageMs>=100000||!n(o.ageMs)||o.ageMs>=100000||o.cleanupVerified!==true||o.safetyOpenAtObservation!==true||o.activeBeforeSafetyCleanup!==0||r.hostClosed!==true)return false;
+ if(!Array.isArray(r.slots)||r.slots.length!==8||ready.slots.length!==8||finish.slots.length!==8||!equal(ready.host,r.hostBefore)||ready.mainPid!==finish.mainPid||ready.mainPid!==o.main.pid||o.main.alive!==true)return false;
+ if(r.ninth.code!=='SESSION_CAPACITY_REFUSED'||r.ninth.bootstrapPresent!==false||r.lockSynchronous!==true||r.oldAckRefused!==8||r.blockedReadTransportCalls!==0)return false;
+ const all=new Set();let frequency,started=0,finished=Number.MAX_SAFE_INTEGER;
+ for(let i=0;i<8;i++){const s=r.slots[i],a=ready.slots[i],b=finish.slots[i],before=s.before,after=s.stopped;
+  if(s.slot!==i||!equal(a,{slot:i,worker:s.worker,before,fixturePids:s.fixturePids})||!equal(b,{slot:i,flood:s.flood,finalStats:s.finalStats,controller:s.controller})||!isAggregateStreamObserved(s,r.ageMs)||s.sessionClosed!==true||!n(s.stopMs)||s.stopMs>=3000)return false;
+  if(s.worker.osConpty!==true||s.worker.useConptyDll!==false||s.worker.nodePty!=='1.1.0'||s.worker.workerPid!==before.root.pid||s.worker.rootPid!==before.shell.pid||before.root.pid===before.shell.pid||before.killOnClose!==true||before.breakaway!==false||before.inheritable!==false||before.held.length<6||before.held.length>32||before.active!==before.held.length||after.active!==0||after.root.alive!==false||after.shell.alive!==false||after.held.length!==before.held.length)return false;
+  if(!before.held.some(p=>identity(p,before.root))||!before.held.some(p=>identity(p,before.shell))||Object.keys(s.fixturePids).sort().join(',')!=='branch,detached,grandchild,root'||new Set(Object.values(s.fixturePids)).size!==4||Object.values(s.fixturePids).some(pid=>!before.held.some(p=>p.pid===pid)||pid===before.root.pid||pid===before.shell.pid))return false;
+  for(const p of before.held){if(!n(p.pid)||p.pid===0||all.has(p.pid)||p.alive!==true)return false;all.add(p.pid);if(!after.held.some(q=>identity(p,q)&&q.alive===false&&q.exitCode===77)||!o.before.some(q=>identity(p,q)&&q.alive===true)||!o.after.some(q=>identity(p,q)&&q.alive===false&&q.exitCode===77))return false;}
+  if(i>0){const sibling=r.siblingsAfterFirstStop[i-1];if(sibling.active!==before.active||sibling.held.length!==before.held.length||sibling.root.alive!==true||sibling.shell.alive!==true||before.held.some(p=>!sibling.held.some(q=>identity(p,q)&&q.alive===true)))return false;}
+  if(frequency===undefined)frequency=s.flood.qpcFrequency;if(s.flood.qpcFrequency!==frequency)return false;started=Math.max(started,s.flood.startedQpc);finished=Math.min(finished,s.flood.finishedQpc);
+ }
+ const overlap=Math.floor((finished-started)*1000/frequency);if(overlap<60000||r.commonOverlapMs!==overlap||finish.commonOverlapMs!==overlap)return false;
+ const host=r.hostBefore;if(host.killOnClose!==true||host.breakaway!==false||host.inheritable!==false||host.active!==all.size+1||host.held.length!==host.active||host.held.length>128||all.has(host.root.pid)||host.root.alive!==true||!validIdentity(host.root)||!host.held.some(p=>identity(p,host.root))||new Set(host.held.map(p=>p.pid)).size!==host.held.length)return false;
+ for(const s of r.slots)for(const p of s.before.held)if(!host.held.some(q=>identity(p,q)))return false;
+ if(!validIdentity(o.main)||all.has(o.main.pid)||o.main.pid===host.root.pid||host.root.image!==o.main.image||!o.before.some(p=>identity(p,o.main)&&p.alive===true)||!o.after.some(p=>identity(p,o.main)&&p.alive===false&&p.exitCode===0)||!o.after.some(p=>identity(p,host.root)&&p.alive===false&&p.exitCode===0))return false;
+ if(o.before.length!==o.after.length||o.before.length>128||new Set(o.before.map(p=>p.pid)).size!==o.before.length||new Set(o.after.map(p=>p.pid)).size!==o.after.length||o.before.some(p=>!validIdentity(p)||p.alive!==true||BigInt(p.createdFileTime)<BigInt(o.main.createdFileTime))||o.after.some(p=>p.alive!==false)||o.before.some(p=>!o.after.some(q=>identity(p,q))))return false;
+ for(const p of host.held)if(p.alive!==true||!o.before.some(q=>identity(p,q)&&q.alive===true))return false;
+ // Safety also contains main's Electron infrastructure, outside the Host Job.
+ // Keep it in the exact before/after set; only the same pinned image and newer
+ // creation identity are allowed here. The native observer binds Safety itself.
+ const required=new Set([...host.held.map(p=>p.pid),o.main.pid]);
+ for(const p of o.before)if(!required.has(p.pid)&&(p.image!==o.main.image||!o.after.some(q=>identity(p,q)&&q.exitCode===0)))return false;
+ const credit=c=>n(c.outstandingUtf8Bytes)&&n(c.inFlightBytes)&&c.outstandingUtf8Bytes+c.inFlightBytes<=2097152&&c.payloadUtf8Bytes===c.outstandingUtf8Bytes&&n(c.maxOutstandingUtf8Bytes)&&c.maxOutstandingUtf8Bytes>=c.outstandingUtf8Bytes&&c.maxOutstandingUtf8Bytes<=2097152&&n(c.maxInFlightBytes)&&c.maxInFlightBytes>=c.inFlightBytes&&c.maxInFlightBytes<=262144&&c.views.length<=8&&c.attachments===c.views.length&&new Set(c.views.map(v=>v.slot)).size===c.views.length&&c.views.every(v=>n(v.slot)&&v.slot<8&&n(v.pendingUtf8Bytes)&&v.pendingUtf8Bytes<=262144)&&c.views.reduce((n,v)=>n+v.pendingUtf8Bytes,0)===c.outstandingUtf8Bytes;
+ if(!credit(r.pressure)||r.pressure.outstandingUtf8Bytes<1835008||r.pressure.views.length!==8||!credit(r.afterLock)||r.afterLock.closed!==true||r.afterLock.outstandingUtf8Bytes!==0||!credit(r.finalDelivery)||r.finalDelivery.outstandingUtf8Bytes!==0||r.finalDelivery.inFlightBytes!==0||!Array.isArray(r.creditSamples)||r.creditSamples.length<3||r.creditSamples.length>110||r.creditSamples.some(c=>!credit(c)))return false;
+ if(!n(o.measurementMs)||o.measurementMs<60000||!n(o.peakSafetyJobMemoryBytes)||o.peakSafetyJobMemoryBytes===0||!Array.isArray(o.samples)||o.samples.length<2||o.samples.length>400)return false;
+ let interval=-1,peak=0;for(const s of o.samples){if(!n(s.intervalMs)||s.intervalMs<=interval||s.intervalMs>o.measurementMs||!n(s.ageMs)||s.ageMs<s.intervalMs||s.ageMs>o.ageMs||!n(s.peakSafetyJobMemoryBytes)||s.peakSafetyJobMemoryBytes<peak||s.peakSafetyJobMemoryBytes>o.peakSafetyJobMemoryBytes||s.heldCount!==o.before.length||s.active!==o.before.length)return false;interval=s.intervalMs;peak=s.peakSafetyJobMemoryBytes;}
+ return interval>=59000;
+}catch{return false;}}

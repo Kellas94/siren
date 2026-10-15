@@ -30,6 +30,7 @@
    let accepted=value;node.addEventListener(check?'change':'input',()=>{const value=check?node.checked:node.value;if(write(node,block=>apply(block,value)))accepted=value;else if(check)node.checked=accepted;else node.value=accepted;});return node;
   };
   function paint(){
+   const active=doc.activeElement,focusedAction=active&&body.contains(active)?active.dataset.structuredAction:null;
    body.replaceChildren();const block=draft.getContent().blocks[index];if(block?.id!==original.id||!isEditableBlock(block))return;
    make('p',body,'Local document section · Save document when ready.').className='document-caption';
    if(block.kind==='prompt'){
@@ -56,6 +57,7 @@
     if(table){button(actions,'Add column','add-column',node=>{if(write(node,b=>{for(const row of b.rows)row.push('');}))paint();},rows[0].length>=12);button(actions,'Remove last column…','remove-column',node=>{if(!doc.defaultView.confirm('Remove the last column from this local table? Save document to commit the change.'))return;if(write(node,b=>{for(const row of b.rows)row.pop();}))paint();},rows[0].length<=1);}
    }
    const actions=make('div',body);actions.className='document-structured-actions';button(actions,'Remove section…','remove-section',()=>onRemove());
+   if(focusedAction){const replacement=Array.from(body.querySelectorAll('[data-structured-action]')).find(node=>node.dataset.structuredAction===focusedAction);(replacement&&!replacement.disabled?replacement:body.querySelector('input,textarea'))?.focus({preventScroll:true});}
   }
   details.addEventListener('toggle',()=>{if(!details.open){body.replaceChildren();return;}if(!details.isConnected)return;onOpen(details);if(!body.children.length)paint();});
   if(focus){details.open=true;onOpen(details);paint();const first=body.querySelector?.('input,textarea');first?.focus();}

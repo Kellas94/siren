@@ -225,7 +225,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
     if (html.split(tour).length !== 2) throw new Error('Desktop tour marker mismatch');
     html=patchDesktopTour(html);
     html = html.replace(tour, tour + `
-        ...(window.sirenDesktop ? [{sel:'#desktopOptions',title:'Local desktop workspace',text:'Desktop holds local project import, saved backups, account status, signed update checks and Disaster Recovery. Recovery opens a new copy and preserves the original. Code drafts stay private until Save to Docs. This development build has no production account service or update installation.'}] : []),`);
+        ...(window.sirenDesktop ? [{sel:'#desktopOptions',title:'Local desktop workspace',text:'Desktop holds local project import, saved backups, account status, signed update checks and Disaster Recovery. Recovery opens a new copy and preserves the original. In desktop Docs, Insert diagram brings a saved flow between text blocks: Live follows saved changes, Fixed preserves the reviewed version. Preview first; missing steps keep the last good image. Code drafts stay private until Save to Docs. This development build has no production account service or update installation.'}] : []),`);
     const tourCard = '        tourCard.replaceChildren();';
     if (html.split(tourCard).length !== 2) throw new Error('Desktop tour card marker mismatch');
     html = html.replace(tourCard, tourCard + "\n        tourCard.dataset.desktopStep = String(step.sel === '#desktopOptions');");
@@ -274,7 +274,7 @@ export async function buildRenderer({ baselinePath, expectedSha256 = BASELINE_SH
   const importValidation=expectedSha256.toLowerCase()===BASELINE_SHA256?await buildImportValidation({baselinePath,outputDir}):null;
   const presentationRender=await buildPresentationRender({outputDir});
   const diagramVector=await buildDiagramVector({outputDir});
-  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},diagramVector:{entrySha256:diagramVector.entrySha256},sourceAnalysis:{entrySha256:analysisBuild.sha256,bytes:analysisBuild.bytes,pythonModuleSha256:analysisBuild.pythonModuleSha256},...(importValidation?{importValidation}:{}) };
+  const receipt = { schema: 1, baselineSha256: sha256(bytes), rendererSha256: sha256(Buffer.from(html)), scriptCount: scripts.length, electron: '44.5.1', windowEntrypoints,homeEntrypoint,presentationRender:{entrySha256:presentationRender.entrySha256},diagramVector:{entrySha256:diagramVector.entrySha256,embedSupported:diagramVector.embedSupported},sourceAnalysis:{entrySha256:analysisBuild.sha256,bytes:analysisBuild.bytes,pythonModuleSha256:analysisBuild.pythonModuleSha256},...(importValidation?{importValidation}:{}) };
   await writeFile(join(outputDir, 'build.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }

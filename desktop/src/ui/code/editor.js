@@ -1,6 +1,6 @@
 import { Compartment } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
-import { history, defaultKeymap, historyKeymap, indentWithTab, undo, redo } from '@codemirror/commands';
+import { defaultKeymap, indentWithTab } from '@codemirror/commands';
 import { search, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, languageDataProp, indentUnit, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { pythonLanguage, python } from '@codemirror/lang-python';
@@ -10,6 +10,7 @@ import { createCodeViewLifecycle } from './view-lifecycle.js';
 import { readonlySelectionGuard } from './selection-guard.js';
 import { createCodeCommands } from './commands.js';
 import { preserveMultilineInput } from './multiline-input.js';
+import { sourceUndo, sourceRedo, sourceHistoryKeymap, sourceHistoryInput } from './source-newlines.js';
 
 function pythonSupport(parser) {
   if (!parser || typeof parser.configure !== 'function') throw new TypeError('PATCHED_PYTHON_REQUIRED');
@@ -46,12 +47,36 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   if(!['python','text','unknown'].includes(syntaxLanguage))throw new TypeError('INVALID_LANGUAGE');
   const document = container.ownerDocument, colors = new Compartment(), wrap = new Compartment(), editable = new Compartment();
   let view = null, disposed = false, wrapping = false, enabled = !readonly;
-  const root = document.createElement('section'), toolbar = document.createElement('div'), surface = document.createElement('div'), status = document.createElement('div');
+  const root = document.createElement('section'), toolbar = document.createElement('div'), surface = document.createElement('div'), status = document.createElement('div'), footer = document.createElement('div'), diagnostic = document.createElement('div');
   root.className = 'siren-code-editor'; root.dataset.theme = theme;root.dataset.language=syntaxLanguage;
   Object.assign(root.style, { height: '100%', minHeight: '0', display: 'grid', gridTemplateRows: 'auto minmax(0, 1fr) auto', borderRadius: '12px', overflow: 'hidden', border: '1px solid #78859a55' });
   Object.assign(toolbar.style, { display: 'flex', gap: '8px', alignItems: 'center', padding: '10px', flexWrap: 'wrap' });
   Object.assign(surface.style, { height: '100%', minHeight: '0', overflow: 'hidden' });
   Object.assign(status.style, { padding: '8px 12px', font: '12px system-ui' }); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+  let diagnosticLifetime = 0, diagnosticOwner = null, queueDiagnostic = false;
+  function clearDiagnostic() {
+    diagnosticLifetime++; const previous = diagnosticOwner; diagnosticOwner = null; queueDiagnostic = false;
+    try { previous?.explain(diagnostic, null); } catch { /* Optional manual cannot change an edit or receipt. */ }
+  }
+  function captureDiagnostic(operation) {
+    clearDiagnostic(); if (disposed) return null;
+    try {
+      const help = document.defaultView?.SirenHelpWorkspace;
+      if (typeof help?.capture !== 'function' || typeof help.isCurrent !== 'function' || typeof help.explain !== 'function') return null;
+      return { operation, help, context: help.capture(), lifetime: diagnosticLifetime };
+    } catch { return null; }
+  }
+  function explainReceipt(token, receipt) {
+    if (!token || disposed || token.lifetime !== diagnosticLifetime || adapter.getStatus().paused) return;
+    try {
+      const ok = Object.getOwnPropertyDescriptor(receipt, 'ok'), code = Object.getOwnPropertyDescriptor(receipt, 'code');
+      if (!ok || !Object.hasOwn(ok, 'value') || ok.value !== false || !code || !Object.hasOwn(code, 'value') || typeof code.value !== 'string' || !/^[A-Z][A-Z0-9_]{0,95}$/.test(code.value)) return;
+      if (token.operation === 'edit' && !['EDITOR_QUEUE_FULL', 'SOURCE_TOO_LARGE'].includes(code.value)) return;
+      if (token.help.isCurrent(token.context) !== true || disposed || token.lifetime !== diagnosticLifetime || adapter.getStatus().paused) return;
+      diagnosticOwner = token.help; queueDiagnostic = token.operation === 'edit' && code.value === 'EDITOR_QUEUE_FULL';
+      token.help.explain(diagnostic, { namespace: 'sources', operation: token.operation, code: code.value }, token.context);
+    } catch { /* A missing or retired manual does not alter the source operation. */ }
+  }
   toolbar.setAttribute('role', 'toolbar'); toolbar.setAttribute('aria-label', 'Code commands');
   const buttons = new Map(),handlers=Object.create(null),menuItems=new Map();
   function button(name, label, action) {
@@ -59,11 +84,11 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     Object.assign(item.style, { font: '13px system-ui', border: '1px solid #78859a55', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', color: 'inherit', background: 'transparent' });
     handlers[name]=action;item.addEventListener('click', () => { if(view)commands.run(name); }); buttons.set(name, item); toolbar.append(item); return item;
   }
-  const adapter = createEditorAdapter({ client, readonly, committedOperationId, extensions: [lineNumbers(), drawSelection(), history(), search({ top: true }),
-    EditorView.domEventHandlers({beforeinput:preserveMultilineInput}),
+  const adapter = createEditorAdapter({ client, readonly, committedOperationId, extensions: [lineNumbers(), drawSelection(), search({ top: true }),
+    EditorView.domEventHandlers({beforeinput:(event, target)=>sourceHistoryInput(event,target)||preserveMultilineInput(event,target)}),
     readonlySelectionGuard({readonly,isFocused:()=>Boolean(view?.contentDOM.contains(document.activeElement))}),
     indentUnit.of('    '), ...(syntaxLanguage==='python'?[pythonSupport(pythonParser)]:[]), colors.of(appearance(theme === 'dark')), wrap.of([]), editable.of(EditorView.editable.of(enabled)),EditorView.contentAttributes.of({tabindex:'0'}),
-    keymap.of([{ key: 'Mod-s', run: () => { commands.run('save'); return true; } }, ...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab])
+    keymap.of([{ key: 'Mod-s', run: () => { commands.run('save'); return true; } }, ...sourceHistoryKeymap, ...defaultKeymap, ...searchKeymap, indentWithTab])
   ] });
   const commands=createCodeCommands({stateFor:adapter.getStatus,isDisposed:()=>disposed||!view,handlers});
   // Search panels live outside CM's contentDOM. Its editor input handlers do
@@ -73,7 +98,7 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     if (event.target.closest?.('.cm-search')) event.target.dispatchEvent(new document.defaultView.Event('change', { bubbles: true }));
   };
   root.addEventListener('input', onSearchInput);
-  button('undo', 'Undo', () => undo(view)); button('redo', 'Redo', () => redo(view));
+  button('undo', 'Undo', () => sourceUndo(view)); button('redo', 'Redo', () => sourceRedo(view));
   button('find', 'Find', () => openSearchPanel(view));
   const wrappingButton = button('wrap', 'Wrap', () => {
     wrapping = !wrapping; wrappingButton.setAttribute('aria-pressed', String(wrapping));
@@ -94,13 +119,14 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   const menuKeys=event=>{if(menu.hidden)return;if(event.key==='Escape'){event.preventDefault();hideMenu();view?.focus();}else if(event.key==='Tab')hideMenu();else if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const items=[...menuItems.values()].filter(item=>!item.hidden&&!item.disabled),i=items.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?items.length-1:(i+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus();}};root.addEventListener('keydown',menuKeys);
   toolbar.append(commandButton);
   const language = document.createElement('span'); language.textContent = syntaxLanguage==='python'?'Python':syntaxLanguage==='text'?'Plain text':'Plain text · language unclassified'; Object.assign(language.style, { marginLeft: 'auto', font: '12px system-ui' }); toolbar.append(language);
-  root.append(toolbar, surface, status,menu); container.replaceChildren(root);
+  footer.append(status, diagnostic); root.append(toolbar, surface, footer,menu); container.replaceChildren(root);
   function paintTheme() {
     const dark = theme === 'dark'; root.dataset.theme = theme;
     root.style.background = `var(--siren-alt,${dark ? '#232936' : '#edf1f8'})`; root.style.color = `var(--siren-ink,${dark ? '#d9e0ed' : '#182335'})`;
   }
   function refresh(value = adapter.getStatus()) {
     if (disposed) return;
+    if (queueDiagnostic && value.pending === 0) clearDiagnostic();
     const nextEnabled = value.ready && !value.readonly && !value.fenced && !value.saving && !value.paused;
     for(const [name,item]of buttons)item.disabled=!commands.enabled(name);
     for(const [name,item]of menuItems)item.disabled=!commands.enabled(name);commandButton.disabled=!value.ready||value.paused;if(commandButton.disabled)hideMenu();
@@ -116,24 +142,28 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
   }
   const unsubscribe = adapter.subscribe(refresh); paintTheme(); refresh();
   async function open(ref) {
+    const diagnosticToken = captureDiagnostic('read');
     const receipt = await adapter.open(ref);
     if (disposed) return Object.freeze({ ok: false, code: 'EDITOR_DISPOSED' });
     if (!receipt.ok) {
       refresh(); status.textContent = adapter.getState() ? `Open refused · ${receipt.code} · current source retained` : `Source not opened · ${receipt.code}`;
+      explainReceipt(diagnosticToken, receipt);
       return receipt;
     }
     view = new EditorView({ parent: surface, state: adapter.getState(), dispatchTransactions(transactions) {
       for (const transaction of transactions) {
+        const diagnosticToken = transaction.docChanged ? captureDiagnostic('edit') : null;
         const accepted = adapter.applyTransaction(transaction);
         if (accepted.ok) view.update([transaction]);
-        else { view.setState(adapter.getState()); status.textContent = `Edit refused · ${accepted.code} · source unchanged`; }
+        else { view.setState(adapter.getState()); status.textContent = `Edit refused · ${accepted.code} · source unchanged`; explainReceipt(diagnosticToken, accepted); }
       }
     } }); refresh(); return receipt;
   }
-  async function flush() { const receipt = await adapter.flush(); refresh(); return receipt; }
+  async function flush() { const diagnosticToken = captureDiagnostic('save'); const receipt = await adapter.flush(); refresh(); explainReceipt(diagnosticToken, receipt); return receipt; }
   const lifecycle = createCodeViewLifecycle({editor: adapter, client});
-  return Object.freeze({ open, flush, pauseView: adapter.pauseView, flushView: lifecycle.flushView, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
-    getState: adapter.getState,subscribe:adapter.subscribe,
+  return Object.freeze({ open, flush, pauseView() { clearDiagnostic(); return adapter.pauseView(); }, resumeRefresh: adapter.resumeView, flushView() { clearDiagnostic(); return lifecycle.flushView(); }, resumeView: lifecycle.resumeView, getStatus: adapter.getStatus,
+    // Exact immutable raw Text; getState().doc is the display line projection.
+    getSourceText: adapter.getSourceText, getState: adapter.getState,subscribe:adapter.subscribe,
     focus: () => view?.focus(),
     select(from, to = from) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); view.focus(); } },
     setTheme(next) {
@@ -141,6 +171,6 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
       if (!['light', 'dark'].includes(next)) return Object.freeze({ ok: false, code: 'INVALID_THEME' });
       theme = next; paintTheme(); view?.dispatch({ effects: colors.reconfigure(appearance(theme === 'dark')) }); return Object.freeze({ ok: true });
     },
-    dispose() { if (disposed) return; disposed = true; unsubscribe(); document.removeEventListener('pointerdown',outside);surface.removeEventListener('contextmenu',onContext);root.removeEventListener('keydown',menuKeys);root.removeEventListener('input', onSearchInput); adapter.dispose(); view?.destroy(); view = null; root.remove(); }
+    dispose() { if (disposed) return; disposed = true; clearDiagnostic(); unsubscribe(); document.removeEventListener('pointerdown',outside);surface.removeEventListener('contextmenu',onContext);root.removeEventListener('keydown',menuKeys);root.removeEventListener('input', onSearchInput); adapter.dispose(); view?.destroy(); view = null; root.remove(); }
   });
 }

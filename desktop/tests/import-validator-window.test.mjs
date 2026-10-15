@@ -8,6 +8,8 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { createImportValidator } from '../src/projects/import-validator-window.mjs';
+import {runInNewContext} from 'node:vm';
+import {DOMParser,XMLSerializer} from '@xmldom/xmldom';
 
 async function fixture(){
   const root=await mkdtemp(join(tmpdir(),'siren-validator-window-'));const entryPath=join(root,'import-validation.html'),html='<html>Owned validator fixture</html>';
@@ -71,4 +73,9 @@ test('pending bundle metadata cannot overlap patch validation and timeout destro
   const pending=validator.validateBundleMetadata('{}','chosen.siren-backup');
   await assert.rejects(validator.validatePatch({}),{code:'IMPORT_BUSY'});
   await assert.rejects(pending,{code:'IMPORT_VALIDATION_TIMEOUT'});assert.equal(w.isDestroyed(),true);finish('{}');await validator.dispose();
+});
+test('actual isolated visual-call expression uses structured SVG allowlist, literal data, frame fencing and disposal (inert DOM fixture)',async()=>{
+ const f=await fixture(),validator=await createImportValidator({...f,BrowserWindow:f.NativeWindow}),w=f.getWindow();const context={DOMParser,XMLSerializer,TextEncoder};w.webContents.executeJavaScript=async code=>runInNewContext(code,context);
+ assert.equal(await validator.validateDiagramAsset('svg','<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><text>"; injected = true; //</text></svg>'),true);assert.equal(context.injected,undefined);
+ await assert.rejects(validator.validateDiagramAsset('svg','<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><script>injected=true</script></svg>'));assert.equal(w.isDestroyed(),true);await validator.dispose();
 });

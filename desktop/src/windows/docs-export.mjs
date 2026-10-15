@@ -10,6 +10,9 @@ import {childDirectory,ownedDirectory,ownedFile} from '../projects/paths.mjs';
 import {readOwnedBytes} from '../projects/io.mjs';
 import {digest} from '../projects/atomic.mjs';
 import {formatSavedDocument} from '../documents/export.mjs';
+import {collectDiagramEmbedAssets} from '../documents/diagram-embed-export.mjs';
+import {DiagramEmbedAssetStore} from '../documents/diagram-embed-assets.mjs';
+import {workspaceMetadata} from './entities.mjs';
 const fail=code=>Object.freeze({ok:false,code});
 const refused=()=>{throw Object.assign(Error('ACCESS_REFUSED'),{code:'ACCESS_REFUSED'});};
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
@@ -19,10 +22,10 @@ const maximum=16*1024*1024,extensions={json:'json',markdown:'md',html:'html'};
  * destination. Pending work joins native preparation; unretained output is
  * removed before drain, and uncertain cleanup permanently fences this service. */
 export class NativeDocsExports{
- #registry;#owner;#reads;#projects;#format;#reveal;#paused=false;#disposed=false;#pending=new Set();#receipts=new Map();#generation=0;#failed=false;
- constructor({registry,owner,reads,projects,format=formatSavedDocument,reveal}){
+ #registry;#owner;#reads;#projects;#assets;#format;#reveal;#paused=false;#disposed=false;#pending=new Set();#receipts=new Map();#generation=0;#failed=false;
+ constructor({registry,owner,reads,projects,assets=new DiagramEmbedAssetStore({projects}),format=formatSavedDocument,reveal}){
   if(!(registry instanceof WindowRegistry)||!(owner instanceof WorkspaceCoordinator)||!(reads instanceof NativeDocsReads)||!(projects instanceof ProjectStore)||typeof format!=='function'||typeof reveal!=='function')throw TypeError('NATIVE_DOCS_EXPORT_ADAPTERS_REQUIRED');
-  this.#registry=registry;this.#owner=owner;this.#reads=reads;this.#projects=projects;this.#format=format;this.#reveal=reveal;
+  this.#registry=registry;this.#owner=owner;this.#reads=reads;this.#projects=projects;this.#assets=assets;this.#format=format;this.#reveal=reveal;
  }
  #capture(event){const grant=this.#registry.capture(event);return grant?.role==='docs'&&grant.entityIds.length===1&&grant.mainFrameUrl==='siren://app/windows/docs.html?windowId='+grant.windowId&&this.#registry.isCurrent(grant)&&this.#owner.canReadDomain(grant,'docs',grant.entityIds[0])?grant:null;}
  #current(event,grant,generation){const actual=this.#capture(event);return !this.#paused&&!this.#disposed&&!this.#failed&&generation===this.#generation&&actual?.windowId===grant.windowId&&actual?.epoch===grant.epoch;}
@@ -46,8 +49,12 @@ export class NativeDocsExports{
     const path=await ownedFile(receipt.path),bytes=await readOwnedBytes(path,maximum);if(!current()||digest(bytes)!==receipt.sha256)return fail('EXPORT_CHANGED');this.#reveal(path);return Object.freeze({ok:true});
    }
    const read=async()=>{if(!current())refused();const actual=await this.#reads.invoke({event,method:'getDocument'});if(!current()||actual.ok!==true)refused();if(actual.version!==request.expectedVersion||actual.sha256!==request.expectedSha256)throw Object.assign(Error('DOCUMENT_VERSION_CHANGED'),{code:'DOCUMENT_VERSION_CHANGED'});return actual;};
-   const saved=await read(),output=await this.#format({format:request.format,projectId:grant.projectId,document:saved.document,version:saved.version,sha256:saved.sha256,projectRevision:saved.projectRevision,exportedAt:new Date().toISOString()},{isCurrent:current,signal:job.controller.signal});
-   if(!current())refused();if(!Buffer.isBuffer(output?.bytes)||output.bytes.length<1||output.bytes.length>maximum||output.extension!==extensions[request.format])return fail('EXPORT_FORMAT_REFUSED');
+   const saved=await read();let diagramAssets=[];
+   const embeds=(saved.document.blocks??[]).some(b=>b?.kind==='diagram-embed');
+   if(embeds){const snapshot=await this.#projects.readProject(grant.projectId);if(!current())refused();const document=workspaceMetadata(snapshot).workpapers?.find(d=>d.id===saved.document.id);if(snapshot.project.id!==grant.projectId||snapshot.revision!==saved.projectRevision||digest(Buffer.from(JSON.stringify(document)))!==saved.sha256)throw Object.assign(Error('DOCUMENT_VERSION_CHANGED'),{code:'DOCUMENT_VERSION_CHANGED'});diagramAssets=await collectDiagramEmbedAssets({snapshot,assets:this.#assets,isCurrent:current,documentId:saved.document.id});await read();}
+   const output=await this.#format({format:request.format,projectId:grant.projectId,document:saved.document,version:saved.version,sha256:saved.sha256,projectRevision:saved.projectRevision,exportedAt:new Date().toISOString()},{diagramAssets,isCurrent:current,signal:job.controller.signal});
+   const extension=request.format==='markdown'&&embeds?'zip':extensions[request.format];
+   if(!current())refused();if(!Buffer.isBuffer(output?.bytes)||output.bytes.length<1||output.bytes.length>maximum||output.extension!==extension)return fail('EXPORT_FORMAT_REFUSED');
    const bytes=Buffer.from(output.bytes);await read();const parent=await this.#projects.directory(grant.projectId);if(!current())refused();const directory=await childDirectory(parent,'exports',{create:true});if(!current())refused();
    const exportId=randomUUID(),filename='document-'+exportId+'.'+output.extension,path=join(directory,filename),temporary=join(directory,'pending-'+exportId+'.tmp');let handle,published=false,retained=false,outcome;
    try{

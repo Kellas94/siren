@@ -1,9 +1,11 @@
+import {takeDesktopLaunch} from './desktop-launch.mjs';
 import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen, nativeTheme } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { join, basename } from 'node:path';
 import { readFile, realpath } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import {digest} from './projects/atomic.mjs';
 import { resolveLocalResource } from './protocol.mjs';
 import { invokeDesktop, failure } from './ipc.mjs';
 import { chooseDataRoot, writableDataRoot } from './data-root.mjs';
@@ -15,7 +17,7 @@ import {invokeDock} from './windows/dock-ipc.mjs';
 import {AppearanceStore} from './appearance/store.mjs';
 import {createRenderAppearanceContract} from './appearance/render.mjs';
 import {invokeShell} from './appearance/ipc.mjs';
-import {dispatchNativeHelp,handleNativeHelpInput} from './help/native.mjs';
+import {dispatchNativeHelp,handleNativeHelpInput,captureTerminalHelpContext} from './help/native.mjs';
 import {NativeWindowFocus,bindNativeWindowFocusKeys} from './windows/focus.mjs';
 import {NativeWindowLayout,bindNativeDisplayRecovery,showNativeMonitorMenu} from './windows/layout.mjs';
 import {WindowLayoutStore,NativeLayoutMemory} from './windows/layout-memory.mjs';
@@ -38,7 +40,7 @@ import {NativeDiagramCatalogue} from './windows/diagram-catalogue.mjs';
 import {NativeDiagramExports} from './windows/diagram-export.mjs';
 import {NativeDocsExports} from './windows/docs-export.mjs';
 import {NativePresenterExports} from './windows/presenter-export.mjs';
-import {renderDiagramVector} from './windows/diagram-vector-render.mjs';
+import {renderDiagramVector,renderDiagramEmbed} from './windows/diagram-vector-render.mjs';
 import {NativeWindowCatalog} from './windows/catalog.mjs';
 import {invokeHomeWindow} from './windows/home-admission.mjs';
 import {NativeReadonlyViewSeals} from './windows/readonly-seals.mjs';
@@ -47,6 +49,9 @@ import {NativeAllWorkspaceBarrier} from './windows/source-barrier.mjs';
 import {PresentationSession} from './windows/presentation.mjs';
 import {NativePresentationDecks} from './windows/presentation-deck.mjs';
 import {NativeDocsReferences} from './windows/docs-references.mjs';
+import {NativeDocsDiagrams} from './windows/docs-diagrams.mjs';
+import {DocsDiagramRefresh} from './windows/docs-diagram-refresh.mjs';
+import {DiagramEmbedAssetStore} from './documents/diagram-embed-assets.mjs';
 import {NativeDeckNavigation} from './windows/deck-navigation.mjs';
 import {NativePresentationIPC} from './windows/presentation-ipc.mjs';
 import {renderPresentationPreview} from './windows/presentation-render.mjs';
@@ -85,12 +90,15 @@ import { publisherConfig } from './publisher-config.mjs';
 import { CredentialStore } from './account/credentials.mjs';
 import { AccountService } from './account/service.mjs';
 import { LocalPinAccess } from './account/local-pin.mjs';
+import {createPinLifecycleServices} from './account/pin-lifecycle.mjs';
 import { PinProtector } from './account/pin-protection.mjs';
 import { readOwnedBytes } from './projects/io.mjs';
 import { UpdateService } from './updates/service.mjs';
 import { buildDiagnostics } from './recovery/diagnostics.mjs';
 import { release as osRelease } from 'node:os';
 
+const initializeTerminalCandidate=takeDesktopLaunch();
+let terminalRuntime=null;
 const here = dirname(fileURLToPath(import.meta.url));
 const rendererRoot = resolve(here, '../generated');
 protocol.registerSchemesAsPrivileged([{ scheme: 'siren', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
@@ -147,7 +155,7 @@ const sources = new SourceRepository(dataRoot, { ...writerOptions, canWrite: asy
   // the existing renderer is quiesced; normal edits retain the native mode gate.
   return (!nativeReadonly && mode === 'normal') || Boolean(writes.selectionQuiesced);
 } });
-const recovery = new RecoveryStore(dataRoot, { ...writerOptions, sources });
+const recovery = new RecoveryStore(dataRoot, { ...writerOptions, sources,assets:new DiagramEmbedAssetStore({projects}),isCurrent:()=>!accountQuiesced&&localPin.state().unlocked });
 const updates = new UpdateService({ root: dataRoot, config: publisherConfig.updates, currentVersion: '1.131.0', onStatus: state => { if (!window.isDestroyed()) window.webContents.send('siren:status', { kind: 'updates', state }); } });
 let selectedId = devArgument('--siren-test-project=') || null;
 if (!selectedId) { try { const record = JSON.parse((await readOwnedBytes(join(dataRoot, 'session-selection.json'), 65536)).toString('utf8')); if (validId(record.projectId)) selectedId = record.projectId; } catch { /* no implicit browser/profile import */ } }
@@ -162,6 +170,7 @@ let bootstrap = { mode, reason, snapshot, recoveryProjectId: selectedId, readonl
 const grants = new Set(selectedId ? [selectedId] : []);
 const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
 const writes = new Set();
+let requestDocsDiagramScan=()=>{};
 const selected = async (next,{isCurrent}={}) => {
   const guarded=typeof isCurrent==='function';let accepted=false;
   const operation=(async()=>{
@@ -200,12 +209,16 @@ const changeSelection = async action => {
     const result = await action(); changed = bootstrap.selectionGeneration !== generation; return result;
   } finally {
     changed=bootstrap.selectionGeneration!==generation;
+    try { if(changed&&terminalRuntime)await terminalRuntime.shutdown(); }
+    finally {
     writes.selectionQuiesced = false; writes.selectionTransition = false;
+    requestDocsDiagramScan();
     // A successful selection reloads the renderer; keep that old view frozen.
     if (!changed) {
       await rollbackNativePreparation();
       await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
       try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
+    }
     }
   }
 };
@@ -234,40 +247,41 @@ const exportBytes = async (bytes, suggested, isCurrent) => {
 };
 // Unlock never creates or selects a project. First-use Home requires an
 // explicit New/Open action; PIN success is independent of project creation.
-const prepareLocalWorkspace = async result => result;
+const prepareLocalWorkspace = async result => {if(result?.ok===true)requestDocsDiagramScan();return result;};
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 protocol.handle('siren', async request => {
   try { return await net.fetch(pathToFileURL(await resolveLocalResource({ url: request.url, rendererRoot })).href); }
   catch { return new Response('Resource refused', { status: 403 }); }
 });
+// MAIN owns these callbacks; no Terminal access authority is supplied in product.
+const pinLifecycleHooks={
+  isLockBusy:()=>pinTransition||accountTransition,isUnlockBusy:()=>pinTransition,
+  enterTransition:()=>{pinTransition=true;},leaveTransition:()=>{accountQuiesced=false;pinTransition=false;},
+  isUnlocked:()=>localPin.state().unlocked,
+  prepareWorkspace:async()=>{localPin.cancelPending();await localPin.drain();await prepareNativeWorkspace();accountQuiesced=true;await Promise.all([...writes]);},
+  retireViews:async()=>{await retireNativeViews();},rollbackWorkspace:async()=>{await rollbackNativePreparation(true);},
+  endAccountTransition:async()=>{await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(()=>{});},
+  activateWorkspace:()=>windowRegistry.activateWorkspace(),commitLock:()=>localPin.lock(),
+  verifyUnlock:payload=>localPin.unlock(payload),afterUnlock:result=>prepareLocalWorkspace(result),
+  runWhenReady:operation=>runAfterWorkspaceLoad(window.webContents,operation,{expectedUrl:window.webContents.getURL()}),
+  captureUnlockScope:()=>{
+    const contents=window.webContents,frame=contents.mainFrame,projectId=selectedId,generation=bootstrap.selectionGeneration,url=contents.getURL();
+    return {event:{sender:contents,senderFrame:frame},isCurrent:()=>{
+      try{return !pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!nativeShellFailure&&
+        !window.isDestroyed()&&!contents.isDestroyed()&&window.webContents===contents&&contents.mainFrame===frame&&
+        contents.getURL()===url&&selectedId===projectId&&bootstrap.selectionGeneration===generation;}catch{return false;}
+    }};
+  },
+};
+const pinLifecycle=createPinLifecycleServices(pinLifecycleHooks);
 const services = {
   getPinState: () => localPin.state(),
   setupPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.setup(payload)),{expectedUrl:window.webContents.getURL()}),
-  unlockPin: async payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : runAfterWorkspaceLoad(window.webContents, async () => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : prepareLocalWorkspace(await localPin.unlock(payload)),{expectedUrl:window.webContents.getURL()}),
+  unlockPin: payload => (terminalRuntime?.pinLifecycle??pinLifecycle).unlockPin(payload),
   verifyCurrentPin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.verifyCurrent(payload),
   changePin: payload => pinTransition ? failure('PIN_BUSY', 'Local access is changing.') : localPin.change(payload),
-  lockPin: async () => {
-    if (pinTransition || accountTransition) return failure('PIN_BUSY', 'Local access is changing.');
-    pinTransition = true;
-    try {
-      localPin.cancelPending();
-      await localPin.drain();
-      await prepareNativeWorkspace();
-      accountQuiesced = true;
-      await Promise.all([...writes]);
-      await retireNativeViews();
-      localPin.lock(); return { ok: true };
-    } catch (error) {
-      await rollbackNativePreparation();
-      await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
-      if (error?.code === 'WINDOW_DESTROY_FAILED') return failure('WINDOW_DESTROY_FAILED', 'SIREN could not protect every native window. Lock was not confirmed; your project was retained.');
-      return failure('SAVE_FAILED', 'SIREN could not confirm your local changes. The workspace remains open.');
-    } finally {
-      accountQuiesced = false; pinTransition = false;
-      if (localPin.state().unlocked) { try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ } }
-    }
-  },
+  lockPin: async () => (terminalRuntime?.pinLifecycle??pinLifecycle).lockPin(),
   requestClose: async () => { window.close(); return { ok: true }; },
   goHome:()=>invokeHome({event:{sender:window.webContents,senderFrame:window.webContents.mainFrame},method:'continueWork',payload:{},authority:homeAuthority,transitions:homeTransitions,services:{continueWork:(_input,scope)=>navigateHome(scope)}}),
   exportDiagnostics: async () => {
@@ -278,7 +292,7 @@ const services = {
   },
   getAccess: () => account.getAccess(),
   beginLogin: async () => {
-    if (accountTransition) return failure('ACCOUNT_BUSY', 'An account transition is already pending');
+    if (accountTransition || pinTransition) return failure('ACCOUNT_BUSY', 'An access transition is already pending');
     accountTransition = true; let committed = false;
     try {
       const state = await account.beginLogin({ beforeCommit: async () => {
@@ -286,32 +300,42 @@ const services = {
         accountQuiesced = true;
         await Promise.all([...writes]);
         await retireNativeViews();
+        if(terminalRuntime)await terminalRuntime.shutdown();
       } });
       if (state.ok !== false) { grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode, reason, snapshot: null, recoveryProjectId: null, readonly: true }; committed = true; }
       return state;
     } finally {
-      accountQuiesced = false; accountTransition = false;
-      if (!committed) {
-        await rollbackNativePreparation();
-        await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
-        try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
+      accountQuiesced = false;
+      try {
+        if (!committed) {
+          await rollbackNativePreparation();
+          await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
+          try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
+        }
+      } finally {
+        accountTransition = false;
       }
     }
   },
   logout: async () => {
-    if (accountTransition) return failure('ACCOUNT_BUSY', 'An account transition is already pending');
+    if (accountTransition || pinTransition) return failure('ACCOUNT_BUSY', 'An access transition is already pending');
     accountTransition = true; let committed = false;
     try {
       await prepareNativeWorkspace();
       accountQuiesced = true; await Promise.all([...writes]);
       await retireNativeViews();
+      if(terminalRuntime)await terminalRuntime.shutdown();
       const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
     } finally {
-      accountQuiesced = false; accountTransition = false;
-      if (!committed) {
-        await rollbackNativePreparation();
-        await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
-        try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
+      accountQuiesced = false;
+      try {
+        if (!committed) {
+          await rollbackNativePreparation();
+          await window.webContents.executeJavaScript('window.sirenDesktopEndAccountTransition?.()').catch(() => {});
+          try { windowRegistry.activateWorkspace(); } catch { /* Native failure remains fenced. */ }
+        }
+      } finally {
+        accountTransition = false;
       }
     }
   },
@@ -398,24 +422,40 @@ const mainLayoutTicket=nativeLayoutMemory.reserve({role:'workspace'}),savedMainL
 const primaryWorkArea=screen.getPrimaryDisplay().workArea;
 const mainBounds=restoreBounds(savedMainLayout??{normalBounds:{x:primaryWorkArea.x+Math.max(0,Math.floor((primaryWorkArea.width-1440)/2)),y:primaryWorkArea.y+Math.max(0,Math.floor((primaryWorkArea.height-960)/2)),width:1440,height:960}},nativeDisplays()).normalBounds;
 const window = new BrowserWindow({ ...mainBounds, minWidth: Math.min(960,mainBounds.width), minHeight: Math.min(640,mainBounds.height), title: 'SIREN — Desktop prototype', backgroundColor: '#171719', webPreferences: {
-  preload: resolve(here, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
+  preload: initializeTerminalCandidate?resolve(here,'../generated/terminal-launch-preload.cjs'):resolve(here, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
 } });
 const nativeShells = new Map(); let nativeShellFailure = false;
 const closingWorkingViews=new WeakSet();
+const nativeWindowAdmissionEnabled=()=>!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!accountQuiesced&&!nativeShellFailure;
+const guardNativeFactory=create=>async options=>{
+  if(!nativeWindowAdmissionEnabled())throw Object.assign(Error('Native view admission changed'),{code:'ACCESS_REFUSED'});
+  const primary=windowRegistry.capturePrimary({sender:window.webContents,senderFrame:window.webContents.mainFrame});
+  const admission=windowRegistry.captureAdmissionGuard(primary);
+  if(!admission)throw Object.assign(Error('Native view admission changed'),{code:'ACCESS_REFUSED'});
+  const view=await create(options);
+  if(nativeWindowAdmissionEnabled()&&admission.isCurrent())return view;
+  // The registry's genuine surface-error path revokes the unregistered contents,
+  // retains both handles and awaits their actual disposal under its fence.
+  if(windowRegistry.surfaceFor(view))throw Object.assign(Error('Native view admission changed'),{code:'ACCESS_REFUSED',nativeWindow:view});
+  try{if(!view.isDestroyed())view.destroy();if(!view.isDestroyed())throw Error('Native destruction incomplete');}
+  catch{nativeShellFailure=true;throw Object.assign(Error('Native window protection incomplete'),{code:'WINDOW_DESTROY_FAILED'});}
+  throw Object.assign(Error('Native view admission changed'),{code:'ACCESS_REFUSED'});
+};
 const windowRegistry = new WindowRegistry({
+  terminalViews:initializeTerminalCandidate!==null,
   authorize: request => {
     if (!localPin.state().unlocked || !selectedId || !snapshot || accountQuiesced || writes.selectionQuiesced || nativeShellFailure) return null;
-    const roster = workspaceEntities(snapshot);
-    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs, ...roster.diagram])] : ['presenter','audience'].includes(request.role)?roster.diagram:roster[request.role];
+    const roster = {...workspaceEntities(snapshot),terminal:terminalRuntime?.entityIds(selectedId)??[]};
+    const entityIds = request.role === 'workspace' ? [...new Set([...roster.code, ...roster.docs, ...roster.diagram,...roster.terminal])] : ['presenter','audience'].includes(request.role)?roster.diagram:roster[request.role];
     if (!entityIds) return null;
     if (request.role === 'code' && Object.hasOwn(request, 'version') && !snapshot.sourceRefs?.some(ref => ref.sourceId === request.entityId && ref.version === request.version)) return null;
     const nativeMode = mode === 'normal' && !nativeReadonly ? 'normal' : mode === 'recovery' ? 'recovery' : 'readonly';
     return { projectId: selectedId, mode: nativeMode, access: request.role==='audience'?'presentation':request.role==='presenter'?'read':nativeMode === 'normal' ? 'write' : 'read', entityIds };
   },
-  createWindow: nativeViewFactory({ BrowserWindow, displays: () => {
+  createWindow: guardNativeFactory(nativeViewFactory({ BrowserWindow, displays: () => {
     const primaryId = screen.getPrimaryDisplay().id;
     return screen.getAllDisplays().map(display => ({ id: display.id, workArea: display.workArea, primary: display.id === primaryId }));
-  }, layoutMemory:nativeLayoutMemory,preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'),
+  }, layoutMemory:nativeLayoutMemory,preload: resolve(here, 'windows/preload.cjs'),presentationPreload:resolve(here,'windows/presentation-preload.cjs'),terminalPreload:initializeTerminalCandidate?resolve(here,'ui/terminal/preload.cjs'):undefined,
   createSurface:typeof BaseWindow==='function'&&typeof WebContentsView==='function'?options=>{
     let surface;surface=createWorkspaceSurface({...options,BaseWindow,WebContentsView,host:window,
       isCurrent:()=>!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&!nativeShellFailure&&
@@ -435,7 +475,7 @@ const windowRegistry = new WindowRegistry({
       windowRegistry.surfaceFor(view)?.resize();
     });
     view.on('resize',()=>windowRegistry.surfaceFor(view)?.resize());
-    if(['code','docs'].includes(record.role))view.webContents.on('context-menu',()=>{
+    if(['code','docs','terminal'].includes(record.role))view.webContents.on('context-menu',()=>{
       const surface=windowRegistry.surfaceFor(view);if(!surface)return;
       const attached=surface.placement()==='attached';
       Menu.buildFromTemplate([{label:attached?'Detach window':'Attach to workspace',accelerator:attached?'Ctrl+Alt+D':'Ctrl+Alt+A',click:()=>nativeWindowFocus.transfer(attached?'detach':'attach',view)},
@@ -451,15 +491,20 @@ const windowRegistry = new WindowRegistry({
       if(closingWorkingViews.has(view)||!workingSources?.isWorking(grant)&&!workingDocs?.isWorking(grant)&&!workingDiagrams?.isWorking(grant))return;
       event.preventDefault();
       if(writes.viewClosing||workspaceBarrier||writes.selectionTransition||pinTransition||accountTransition)return;
-      writes.viewClosing=true;
-      void (async()=>{
-        const prepared=await prepareNativeWorkspace('native-close-view');
-        if(!prepared.barrier.release(prepared.proof))throw Error('Native close release refused');
-        workspaceBarrier=null;closingWorkingViews.add(view);view.close();
-        for(const current of [window,...nativeShells.values()])if(!current.isDestroyed())current.webContents.send('siren:view-resume');
-      })().catch(()=>rollbackNativePreparation()).finally(()=>{writes.viewClosing=false;});
+      windowRegistry.deferNativeClose(view,event,async({isCurrent})=>{
+        writes.viewClosing=true;
+        try{
+          const prepared=await prepareNativeWorkspace('native-close-view');
+          if(!isCurrent())throw Error('Native close preparation superseded');
+          if(!prepared.barrier.release(prepared.proof))throw Error('Native close release refused');
+          workspaceBarrier=null;closingWorkingViews.add(view);view.close();
+          for(const current of [window,...nativeShells.values()])if(!current.isDestroyed())current.webContents.send('siren:view-resume');
+          return true;
+        }catch{await rollbackNativePreparation();return false;}
+        finally{closingWorkingViews.delete(view);writes.viewClosing=false;requestDocsDiagramScan();}
+      });
     });
-  } }),
+  } })),
 });
 windowRegistry.bindWorkspace(window);
 const homeAuthority=new HomeAuthority({workspace:window,state:()=>({unlocked:localPin.state().unlocked,projectId:selectedId,mode,generation:bootstrap.selectionGeneration||0})});
@@ -483,6 +528,7 @@ const readonlyViews=new NativeReadonlyViewSeals({registry:windowRegistry,
   snapshotFor:()=>projects.readProject(selectedId),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
 });
 const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
+  nativeDiagramRefreshAccess:(projectId,documentId)=>workingEnabled({projectId})&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier&&workspaceEntities(snapshot).docs.includes(documentId)&&workingDocs?.canRefresh(projectId,documentId)!==false,
   readonlyViews,
   onNativeFailure:info=>console.warn('SIREN_SOURCE_NATIVE_FAILURE',JSON.stringify(info)),
   access:(grant,scope)=>localPin.state().unlocked && !accountQuiesced && !writes.selectionQuiesced && grant.projectId===selectedId &&
@@ -496,6 +542,12 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
   sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),
   domains:{
     read:(...args)=>new DomainRepository({projects:()=>new ProjectStore(dataRoot,{...writerOptions,canSave:()=>false}),sources:()=>new SourceRepository(dataRoot,{...writerOptions,canWrite:()=>false}),validatePatch:()=>false}).read(...args),
+    async commitDiagramEmbed(token,scope){
+      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,diagramAssets:new DiagramEmbedAssetStore({projects}),
+        validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
+      const result=await repository.commitDiagramEmbed(token,scope);
+      if(result.ok&&scope.isCurrent()){const current=await projects.readProject(scope.projectId);if(!scope.isCurrent())return {ok:false,code:'ACCESS_REFUSED'};snapshot=current;bootstrap={...bootstrap,snapshot:current};}return result;
+    },
     async appendCatalogueDiagram(input,scope){
       const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
         validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
@@ -510,7 +562,7 @@ const workspaceOwner=new WorkspaceCoordinator({registry:windowRegistry,
     async apply(kind,input,scope){
       if(!['docs','diagram'].includes(kind))return {ok:false,code:'ACCESS_REFUSED'};
 
-      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,
+      const repository=new DomainRepository({projects:({canWrite})=>new ProjectStore(dataRoot,{...writerOptions,canSave:async context=>await projects.canSave(context)&&canWrite(context)}),sources:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),recovery,diagramAssets:new DiagramEmbedAssetStore({projects}),
         validatePatch:(patch,own)=>validateDomainPatch(patch,{isCurrent:own.isCurrent,createValidator:async()=>{const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));return createImportValidator({BrowserWindow,entryPath:join(rendererRoot,'import-validation.html'),entrySha256:build.importValidation?.entrySha256,timeoutMs:5000});}})});
       const result=await repository.apply(kind,input,scope);
       if(!result.ok)console.warn('SIREN_DOMAIN_NATIVE_FAILURE',JSON.stringify({method:kind==='diagram'?'applyDiagram':'applyDocument',code:result.code}));
@@ -567,6 +619,27 @@ const diagramExports=new NativeDiagramExports({registry:windowRegistry,owner:wor
  reveal:path=>shell.showItemInFolder(path),
 });
 const docsExports=new NativeDocsExports({registry:windowRegistry,owner:workspaceOwner,reads:docsReads,projects,reveal:path=>shell.showItemInFolder(path)});
+const docsDiagrams=new NativeDocsDiagrams({registry:windowRegistry,owner:workspaceOwner,projects,assets:new DiagramEmbedAssetStore({projects}),snapshotFor:grant=>projects.readProject(grant.projectId),workingState:grant=>workingDocs?.isWorking(grant)===true,
+ show:opened=>{const view=nativeShells.get(opened.windowId);if(!view||view.isDestroyed())throw Error('Diagram source window unavailable');view.webContents.send('siren:view-ready');view.show();},
+ renderIdentityFor:async scope=>{
+  const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));if(build.diagramVector?.embedSupported!==true)throw Object.assign(Error('DIAGRAM_EMBED_RENDER_UNAVAILABLE'),{code:'DIAGRAM_EMBED_RENDER_UNAVAILABLE'});
+  const renderAppearance=await nativeRenderAppearance(scope);if(!scope.isCurrent())throw Error('Diagram embed retired');
+  return {key:digest(Buffer.from(JSON.stringify({entrySha256:build.diagramVector.entrySha256,renderAppearance}))),build,renderAppearance};
+ },
+ render:async(capture,selection,scope)=>{
+  const {build,renderAppearance}=scope.renderIdentity;
+  const result=await renderDiagramEmbed({BrowserWindow,entryPath:join(rendererRoot,'diagram-vector.html'),entrySha256:build.diagramVector.entrySha256,input:{diagram:capture,renderAppearance},scope});return {bytes:Buffer.from(result.svg),kind:'svg',rendererVersion:result.rendererVersion,styleHash:result.styleHash};
+ },
+});
+const docsDiagramRefresh=new DocsDiagramRefresh({owner:workspaceOwner,diagrams:docsDiagrams,workingState:{
+ isBlocked:(projectId,documentId)=>workingDocs?.canRefresh(projectId,documentId)===false,
+ onPending:ref=>{for(const record of windowRegistry.listViews()){if(record.role!=='docs'||record.projectId!==ref.projectId||record.entityId!==ref.documentId)continue;const view=nativeShells.get(record.windowId),grant=view&&windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant&&workspaceOwner.canReadDomain(grant,'docs',ref.documentId))windowRegistry.eventFor(grant)?.sender.send('siren:docs-diagram-pending',{documentId:ref.documentId,diagramId:ref.diagramId,reason:ref.reason});}},
+}});
+requestDocsDiagramScan=()=>{if(workingEnabled({projectId:selectedId})&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.viewClosing&&!workspaceBarrier)void docsDiagramRefresh.rescanProject(selectedId);};
+workspaceOwner.observeDomainSaves(ref=>{
+ if(ref.domain!=='docs'||ref.receipt?.ok!==true)return;
+ for(const record of windowRegistry.listViews()){if(record.role!=='docs'||record.projectId!==ref.projectId||record.entityId!==ref.entityId)continue;const view=nativeShells.get(record.windowId),grant=view&&windowRegistry.capture({sender:view.webContents,senderFrame:view.webContents.mainFrame});if(grant&&!workingDocs?.isWorking(grant)&&workspaceOwner.canReadDomain(grant,'docs',ref.entityId))windowRegistry.eventFor(grant)?.sender.send('siren:working-docs-changed',{documentId:ref.entityId,version:ref.receipt.version,projectRevision:ref.receipt.projectRevision});}
+});
 const presenterExports=new NativePresenterExports({registry:windowRegistry,sessionFor:()=>presentationSession,projects,reveal:path=>shell.showItemInFolder(path)});
 const codeDocs=new NativeCodeDocs({registry:windowRegistry,owner:workspaceOwner,canLink:canLinkCodeDocs,snapshotFor:()=>snapshot});
 const windowCatalog=new NativeWindowCatalog({registry:windowRegistry,snapshotFor:()=>snapshot});
@@ -576,7 +649,7 @@ const deckNavigation=new NativeDeckNavigation({registry:windowRegistry,snapshotF
  openEdit:async(grant,{entityId},scope)=>{
   let opened;try{
    if(!scope.isCurrent())throw Error('Deck retired');const existing=windowRegistry.listViews().find(v=>v.role==='diagram'&&v.projectId===grant.projectId&&v.entityId===entityId&&workingDiagrams?.isWorking(windowRegistry.capture({sender:nativeShells.get(v.windowId)?.webContents,senderFrame:nativeShells.get(v.windowId)?.webContents.mainFrame})));
-   if(existing){const view=nativeShells.get(existing.windowId);if(!view||view.isDestroyed()||!scope.isCurrent())throw Error('Deck retired');if(view.isMinimized())view.restore();view.webContents.send('siren:deck-authoring');view.show();view.focus();return {ok:true,view:{windowId:existing.windowId,role:'diagram',entityId,epoch:existing.epoch}};}
+   if(existing){const view=nativeShells.get(existing.windowId);if(!view||view.isDestroyed()||!scope.isCurrent())throw Error('Deck retired');view.webContents.send('siren:deck-authoring');if(!scope.isCurrent()||windowRegistry.focusView(existing.windowId)!==true||!scope.isCurrent())throw Error('Deck focus refused');return {ok:true,view:{windowId:existing.windowId,role:'diagram',entityId,epoch:existing.epoch}};}
    opened=await windowRegistry.openView({role:'diagram',entityId});if(!scope.isCurrent())throw Error('Deck retired');const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
    workingDiagrams??=new NativeDiagramEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onReferenceChanged:(own,ref)=>{if(workingDiagrams?.isWorking(own)&&workspaceOwner.canReadDomain(own,'diagram',ref.diagramId))windowRegistry.eventFor(own)?.sender.send('siren:working-diagram-changed',ref);}});
    const admitted=await workingDiagrams.admit(fresh);if(!admitted.ok||!scope.isCurrent()||!workingDiagrams.isWorking(fresh))throw Error('Working deck refused');view.webContents.send('siren:deck-authoring');view.webContents.send('siren:view-ready');view.show();return {ok:true,view:{windowId:opened.windowId,role:opened.role,entityId,epoch:opened.epoch}};
@@ -585,12 +658,67 @@ const deckNavigation=new NativeDeckNavigation({registry:windowRegistry,snapshotF
 });
 const viewControl=new NativeAllViewControl({registry:windowRegistry,owner:workspaceOwner,send:(event,ticket)=>event.sender.send('siren:view-prepare',ticket),onProgress:progress=>console.info('SIREN_VIEW_PREPARE_STAGE',JSON.stringify(progress))});
 let workspaceBarrier=null;
-const rollbackNativePreparation=async()=>{
-  if(!workspaceBarrier)return;
-  workspaceBarrier?.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();docsExports.resume();presenterExports.resume();
-  for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
+// MAIN_TERMINAL_ROLLBACK_SCOPE_BEGIN
+let terminalRollbackScopeState=null;
+const terminalRollbackRefused=()=>Object.assign(Error('Terminal workspace restoration refused'),{code:'TERMINAL_ROLLBACK_SCOPE_REFUSED'});
+const terminalRollbackStateCurrent=own=>{
+  try{return terminalRollbackScopeState===own&&!own.revoked&&selectedId===own.projectId&&snapshot===own.snapshot&&snapshot?.project?.id===own.projectId
+    &&snapshot.revision===own.revision&&snapshot.sha256===own.sha256&&snapshot.json===own.json&&bootstrap.selectionGeneration===own.selectionGeneration
+    &&mode==='normal'&&mode===own.mode&&!nativeReadonly&&nativeReadonly===own.readonly&&!nativeShellFailure&&!accountQuiesced&&!writes.selectionQuiesced&&!writes.viewClosing
+    &&pinTransition===own.pin&&accountTransition===own.account&&writes.selectionTransition===own.selection
+    &&window===own.window&&!window.isDestroyed()&&window.id===own.nativeId&&window.webContents===own.contents&&!own.contents.isDestroyed()&&own.contents.id===own.contentsId
+    &&own.contents.mainFrame===own.frame&&own.frame.url===own.entryUrl&&own.contents.getURL()===own.entryUrl
+    &&own.frame.processId===own.processId&&own.frame.routingId===own.routingId&&!localPin.busy&&localPin.state().unlocked===true
+    &&terminalRollbackScopeState===own&&bootstrap.selectionGeneration===own.selectionGeneration&&snapshot===own.snapshot;
+  }catch{return false;}
+};
+const captureTerminalRollbackScope=()=>{
+  if(terminalRollbackScopeState)throw terminalRollbackRefused();
+  const token=Object.freeze({}),own={token,bound:false,revoked:false,projectId:selectedId,snapshot,revision:snapshot?.revision,sha256:snapshot?.sha256,json:snapshot?.json,
+    selectionGeneration:bootstrap.selectionGeneration,mode,readonly:nativeReadonly,pin:pinTransition,account:accountTransition,selection:writes.selectionTransition,
+    window,contents:window.webContents,nativeId:window.id};
+  terminalRollbackScopeState=own;
+  try{
+    own.frame=own.contents.mainFrame;own.contentsId=own.contents.id;own.processId=own.frame?.processId;own.routingId=own.frame?.routingId;own.entryUrl=own.contents.getURL();
+    if([own.pin,own.account,own.selection].filter(Boolean).length!==1||!Number.isSafeInteger(own.selectionGeneration)||own.selectionGeneration<0
+      ||!Number.isSafeInteger(own.nativeId)||own.nativeId<1||!Number.isSafeInteger(own.contentsId)||own.contentsId<1
+      ||!/^siren:\/\/app\/(?:home|app)\.html$/.test(own.entryUrl)||!terminalRollbackStateCurrent(own))throw terminalRollbackRefused();
+    return token;
+  }catch(cause){own.revoked=true;if(terminalRollbackScopeState===own)terminalRollbackScopeState=null;throw cause;}
+};
+const isTerminalRollbackScopeCurrent=token=>{
+  const own=terminalRollbackScopeState;if(!own||token!==own.token)return false;
+  if(!terminalRollbackStateCurrent(own)){own.revoked=true;return false;}
+  if(!own.bound)return false;
+  try{const current=!workspaceBarrier&&windowRegistry.isCurrent(own.grant)&&own.admission.isCurrent()&&terminalRollbackStateCurrent(own);if(!current)own.revoked=true;return current;}catch{own.revoked=true;return false;}
+};
+const bindTerminalRollbackScope=token=>{
+  const own=terminalRollbackScopeState;if(!own||token!==own.token||own.bound||!terminalRollbackStateCurrent(own)||workspaceBarrier)throw terminalRollbackRefused();
+  windowRegistry.activateWorkspace({entryUrl:own.entryUrl});
+  if(!terminalRollbackStateCurrent(own))throw terminalRollbackRefused();
+  const event={sender:own.contents,senderFrame:own.frame},grant=windowRegistry.capturePrimary(event),admission=windowRegistry.captureAdmissionGuard(grant);
+  if(grant?.role!=='workspace'||grant.projectId!==own.projectId||!admission)throw terminalRollbackRefused();
+  own.grant=grant;own.admission=admission;own.bound=true;if(!isTerminalRollbackScopeCurrent(token))throw terminalRollbackRefused();return token;
+};
+const retireTerminalRollbackScope=token=>{const own=terminalRollbackScopeState;if(!own||token!==own.token)return false;own.revoked=true;terminalRollbackScopeState=null;return true;};
+// MAIN_TERMINAL_ROLLBACK_SCOPE_END
+const rollbackNativePreparation=async(fromTerminal=false)=>{
+  if(fromTerminal&&terminalRollbackScopeState){if(!isTerminalRollbackScopeCurrent(terminalRollbackScopeState.token))throw terminalRollbackRefused();return;}
+  if(terminalRollbackScopeState)throw terminalRollbackRefused();
+  // Failed PIN preparation restores workspace authority while its reservation remains held.
+  if(fromTerminal&&pinTransition&&!accountTransition)accountQuiesced=false;
+  const scope=terminalRuntime&&terminalRuntime.snapshot().project!==null&&(pinTransition||accountTransition||writes.selectionTransition)?captureTerminalRollbackScope():null;
+  try{
+  if(workspaceBarrier){
+    workspaceBarrier.dispose();workspaceBarrier=null;workspaceOwner.resume();presentationSession.resume();sourceAnalysis?.resume();diagramExports.resume();docsExports.resume();docsDiagrams.resume();docsDiagramRefresh.resume();presenterExports.resume();
+    for(const view of [window,...nativeShells.values()])if(!view.isDestroyed())view.webContents.send('siren:view-resume');
+    requestDocsDiagramScan();
+  }
+  if(terminalRuntime){if(scope){bindTerminalRollbackScope(scope);await terminalRuntime.rollbackTransition(scope);}else await terminalRuntime.rollbackTransition();}
+  }finally{if(scope)retireTerminalRollbackScope(scope);}
 };
 const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
+  if(terminalRuntime)await terminalRuntime.prepareTransition();
   legacyExportEpoch++;
   homeAuthority.invalidate();window.webContents.send('siren:home-invalidated');
   if(!snapshot){
@@ -604,12 +732,12 @@ const prepareNativeWorkspace=async(reason='native-workspace-transition')=>{
   const capturedPresentation=presentationSession;
   const capturedAnalysis=sourceAnalysis;
   const barrierOwner={
-   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();docsExports.pause();presenterExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();docsExports.resume();presenterExports.resume();},
-   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();await docsExports.drain();await presenterExports.drain();return sourceDrain;},
+   pause:reason=>{workspaceOwner.pause(reason);capturedPresentation.pause();capturedAnalysis?.pause();diagramExports.pause();docsExports.pause();docsDiagrams.pause();void docsDiagramRefresh.pause();presenterExports.pause();},resume:()=>{workspaceOwner.resume();capturedPresentation.resume();capturedAnalysis?.resume();diagramExports.resume();docsExports.resume();docsDiagrams.resume();docsDiagramRefresh.resume();presenterExports.resume();},
+   drain:async()=>{const sourceDrain=workspaceOwner.drain();await capturedPresentation.drain();await capturedAnalysis?.drain();await diagramExports.drain();await docsExports.drain();await docsDiagrams.drain();await docsDiagramRefresh.drain();await presenterExports.drain();return sourceDrain;},
    reconcileSourceReceipts:(...args)=>workspaceOwner.reconcileSourceReceipts(...args),
    reconcileWorkspaceReceipts:(...args)=>capturedPresentation.isIdle()?workspaceOwner.reconcileWorkspaceReceipts(...args):{ok:false,code:'PRESENTATION_NOT_IDLE'},
-   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle()||!docsExports.isIdle()||!presenterExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
-   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&docsExports.isIdle()&&presenterExports.isIdle()&&workspaceOwner.isQuiescent(proof),
+   captureQuiescence:()=>{if(!capturedPresentation.isIdle()||capturedAnalysis&&!capturedAnalysis.isIdle()||!diagramExports.isIdle()||!docsExports.isIdle()||!docsDiagrams.isIdle()||!docsDiagramRefresh.isIdle()||!presenterExports.isIdle())throw Error('Native background work not drained');return workspaceOwner.captureQuiescence();},
+   isQuiescent:proof=>presentationSession===capturedPresentation&&sourceAnalysis===capturedAnalysis&&capturedPresentation.isIdle()&&(!capturedAnalysis||capturedAnalysis.isIdle())&&diagramExports.isIdle()&&docsExports.isIdle()&&docsDiagrams.isIdle()&&docsDiagramRefresh.isIdle()&&presenterExports.isIdle()&&workspaceOwner.isQuiescent(proof),
    isReadonlyForPreparation:grant=>workspaceOwner.isReadonlyForPreparation(grant),
   };
   workspaceBarrier=new NativeAllWorkspaceBarrier({registry:windowRegistry,owner:barrierOwner,control:{
@@ -640,6 +768,8 @@ ipcMain.handle('siren:workspace-flush',async(event,method,input)=>{
 const retireNativeViews = async () => {
   diagramExports.pause();if(!diagramExports.isIdle())throw Object.assign(Error('Diagram export not drained'),{code:'DIAGRAM_EXPORT_NOT_IDLE'});diagramExports.resume();
   docsExports.pause();if(!docsExports.isIdle())throw Object.assign(Error('Docs export not drained'),{code:'DOCS_EXPORT_NOT_IDLE'});docsExports.resume();
+  docsDiagrams.pause();if(!docsDiagrams.isIdle())throw Object.assign(Error('Docs diagram work not drained'),{code:'DOCS_DIAGRAM_NOT_IDLE'});docsDiagrams.resume();
+  await docsDiagramRefresh.pause();if(!docsDiagramRefresh.isIdle())throw Object.assign(Error('Docs refresh not drained'),{code:'DOCS_DIAGRAM_REFRESH_NOT_IDLE'});docsDiagramRefresh.resume();
   presenterExports.pause();if(!presenterExports.isIdle())throw Object.assign(Error('Presenter export not drained'),{code:'PRESENTER_EXPORT_NOT_IDLE'});presenterExports.resume();
   presentationSession.dispose();presentationSession=createPresentation();
   sourceReads?.dispose();sourceReads=null;
@@ -849,6 +979,7 @@ function desktopHelp(origin){return dispatchNativeHelp({mainWindow:window,origin
       canRead:()=>localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!workspaceBarrier&&!nativeShellFailure,
       capture:own=>{if(own.sender===window.webContents){const grant=homeAuthority.capture(own);return grant?{role:'workspace',kind:'home',grant}:null;}const grant=windowRegistry.capture(own);return grant?{role:grant.role,kind:'native',grant}:null;},
       isCurrent:own=>Boolean(own&&(own.kind==='home'?homeAuthority.isCurrent(own.grant):windowRegistry.isCurrent(own.grant)))});}
+ipcMain.handle('siren:terminal-help-context',(event,...args)=>captureTerminalHelpContext({event,args,registry:windowRegistry,windowFor:id=>nativeShells.get(id),canRead:()=>Boolean(selectedId&&snapshot&&localPin.state().unlocked&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!accountQuiesced&&!workspaceBarrier&&!nativeShellFailure)}));
 const nativeWindowFocus=new NativeWindowFocus({registry:windowRegistry,mainWindow:window,
  windowFor:id=>nativeShells.get(id),focusedWindow:()=>typeof BaseWindow==='function'?BaseWindow.getFocusedWindow():BrowserWindow.getFocusedWindow(),
  canCycle:()=>localPin.state().unlocked&&Boolean(selectedId)&&!writes.selectionTransition&&!writes.selectionQuiesced&&!writes.viewClosing&&!workspaceBarrier&&!pinTransition&&!accountTransition&&!accountQuiesced&&!nativeShellFailure,
@@ -952,13 +1083,19 @@ ipcMain.handle('siren:source-analysis',async(event,method,payload)=>{
  const operation=(async()=>{
   const grant=windowRegistry.capture(event),ref=grant?.role==='code'?sourceReferenceFor(grant):null;
   if(!ref||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
+  const comparisonNavigation=['revealComparison','claimComparison','completeComparison'].includes(method);
+  if(comparisonNavigation&&!nativeWindowAdmissionEnabled())return {ok:false,code:'ACCESS_REFUSED'};
   if(!sourceAnalysis){
    const build=JSON.parse(await readOwnedBytes(join(rendererRoot,'build.json'),65536));
-   if(!windowRegistry.isCurrent(grant)||!workspaceOwner.canRead(grant,ref.sourceId))return {ok:false,code:'ACCESS_REFUSED'};
+   if(!windowRegistry.isCurrent(grant)||!workspaceOwner.canRead(grant,ref.sourceId)||comparisonNavigation&&!nativeWindowAdmissionEnabled())return {ok:false,code:'ACCESS_REFUSED'};
    sourceAnalysis??=new NativeSourceAnalysis({registry:windowRegistry,owner:workspaceOwner,referenceFor:sourceReferenceFor,windowsFor:()=>nativeShells.values(),
     languageFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.language,
     displayNameFor:(grant,reference)=>selectedCodeMetadata(snapshot,windowRegistry,workingSources,grant,reference)?.displayName,
-    repositoryFactory:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),workerPath:join(rendererRoot,'code-analysis-worker.cjs'),workerSha256:build.sourceAnalysis?.entrySha256,onActivity:state=>console.info('SIREN_ANALYSIS_ACTIVITY',JSON.stringify(state))});
+    repositoryFactory:({canWrite})=>new SourceRepository(dataRoot,{...writerOptions,canWrite}),workerPath:join(rendererRoot,'code-analysis-worker.cjs'),workerSha256:build.sourceAnalysis?.entrySha256,onActivity:state=>console.info('SIREN_ANALYSIS_ACTIVITY',JSON.stringify(state)),
+    navigation:{enabled:()=>nativeWindowAdmissionEnabled(),send:(target,ticket)=>target.sender.send('siren:source-comparison-reveal',ticket),focus:(target,scope)=>{
+     const view=nativeShells.get(target.windowId),current=()=>scope.isCurrent()&&nativeWindowAdmissionEnabled()&&windowRegistry.isCurrent(target)&&view&&!view.isDestroyed();
+     if(!current())return false;const focused=windowRegistry.focusView(target.windowId)===true;return focused&&current();
+    }}});
   }
   return sourceAnalysis.invoke({event,method,payload});
  })();writes.add(operation);try{return await operation;}catch{return {ok:false,code:'ANALYSIS_FAILED'};}finally{writes.delete(operation);}
@@ -1004,7 +1141,7 @@ ipcMain.handle('siren:docs-editors',async(event,method,payload,flushNonce)=>{
         opened=await windowRegistry.openView({role:'docs',entityId:grant.entityIds[0]});if(!canOpenWorkingDocs(grant))throw Error('Document access retired');
         const view=nativeShells.get(opened.windowId),fresh=windowRegistry.capture({sender:view?.webContents,senderFrame:view?.webContents.mainFrame});
         if(method==='openWorkingCopy'){
-          workingDocs??=new NativeDocsEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onReferenceChanged:(own,ref)=>{if(workingDocs?.isWorking(own)&&workspaceOwner.canReadDomain(own,'docs',ref.documentId))windowRegistry.eventFor(own)?.sender.send('siren:working-docs-changed',ref);}});
+          workingDocs??=new NativeDocsEdits({registry:windowRegistry,owner:workspaceOwner,enabled:workingEnabled,snapshotFor:()=>snapshot,onSettled:async ref=>{docsDiagramRefresh.onDocumentSettled(ref);await docsDiagramRefresh.drain();},onReferenceChanged:(own,ref)=>{if(workingDocs?.isWorking(own)&&workspaceOwner.canReadDomain(own,'docs',ref.documentId))windowRegistry.eventFor(own)?.sender.send('siren:working-docs-changed',ref);}});
           const admitted=await workingDocs.admit(fresh);if(!admitted.ok||!canOpenWorkingDocs(grant)||!workingDocs.isWorking(fresh))throw Error('Working document refused');
         }
         view.webContents.send('siren:view-ready');view.show();return {ok:true,view:opened};
@@ -1024,6 +1161,10 @@ ipcMain.handle('siren:docs-sources',async(event,method,payload,flushNonce)=>{
 });
 ipcMain.handle('siren:docs-references',async(event,method,payload,flushNonce)=>{
  const operation=docsReferences.invoke({event,method,payload,flushNonce});writes.add(operation);
+ try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
+});
+ipcMain.handle('siren:docs-diagrams',async(event,method,payload,flushNonce)=>{
+ const operation=docsDiagrams.invoke({event,method,payload,flushNonce});writes.add(operation);
  try{const result=await operation;if(result.code==='WINDOW_DESTROY_FAILED')nativeShellFailure=true;return result;}finally{writes.delete(operation);}
 });
 ipcMain.handle('siren:diagram-editors',async(event,method,payload,flushNonce)=>{
@@ -1069,34 +1210,47 @@ ipcMain.handle('siren:presenter-export',async(event,method,payload)=>{
  const operation=presenterExports.invoke({event,method,payload});writes.add(operation);try{return await operation;}finally{writes.delete(operation);}
 });
 const invokeNativeWindow=async (event, method, payload) => {
-  if (pinTransition || writes.selectionTransition || writes.viewClosing || accountQuiesced || nativeShellFailure) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
+  const admissionEnabled=nativeWindowAdmissionEnabled;
+  if (pinTransition || writes.selectionTransition || writes.viewClosing || accountQuiesced || nativeShellFailure || method==='openView'&&!admissionEnabled()) return failure('PROJECT_BUSY', 'Wait for the current workspace transition');
   if(method==='getCatalog'){
     const operation=windowCatalog.invoke({event,payload});writes.add(operation);
     try{return await operation;}finally{writes.delete(operation);}
   }
-  const before = windowRegistry.caller(event);
+  const before = windowRegistry.capture(event);
+  const admission=method==='openView'?windowRegistry.captureAdmissionGuard(before):null;
   const result = method==='openView'&&before?.mainFrameUrl==='siren://app/home.html'
     ? await invokeHomeWindow({event,payload,registry:windowRegistry,snapshot})
     : await invokeWindow({ event, method, payload, registry: windowRegistry });
   if (result.code === 'WINDOW_DESTROY_FAILED') nativeShellFailure = true;
   if (method === 'openView' && result.ok) {
-    const current = windowRegistry.caller(event); const view = nativeShells.get(result.view.windowId);
-    const registered = view && windowRegistry.caller({ sender: view.webContents, senderFrame: view.webContents.mainFrame });
-    if (!before || !current || current.windowId !== before.windowId || current.epoch !== before.epoch || !registered || registered.epoch !== current.epoch) {
+    const view = nativeShells.get(result.view.windowId);
+    const currentAdmission=()=>{
+      if(!admissionEnabled()||admission?.isCurrent()!==true)return false;
+      const current=windowRegistry.caller(event);
+      const registered=view&&windowRegistry.caller({sender:view.webContents,senderFrame:view.webContents.mainFrame});
+      return Boolean(before&&current&&current.windowId===before.windowId&&current.epoch===before.epoch&&registered&&registered.epoch===current.epoch);
+    };
+    if (!currentAdmission()) {
       const discarded = await windowRegistry.discardViewAsync(result.view.windowId);
       if (!discarded) nativeShellFailure = true;
       return failure(discarded ? 'SENDER_REFUSED' : 'WINDOW_DESTROY_FAILED', 'Native view admission changed');
     }
-    try { view.webContents.send('siren:view-ready'); view.show(); }
-    catch {
+    let operationFailed=false,admissionChanged=false;
+    try {
+      view.webContents.send('siren:view-ready');
+      if(currentAdmission())view.show();else admissionChanged=true;
+      if(!currentAdmission())admissionChanged=true;
+    }catch {operationFailed=true;}
+    if(operationFailed||admissionChanged){
       const discarded = await windowRegistry.discardViewAsync(result.view.windowId);
       if (!discarded) nativeShellFailure = true;
-      return failure(discarded ? 'OPERATION_FAILED' : 'WINDOW_DESTROY_FAILED', 'Native window could not be shown');
+      return failure(discarded ? operationFailed?'OPERATION_FAILED':'SENDER_REFUSED' : 'WINDOW_DESTROY_FAILED', operationFailed?'Native window could not be shown':'Native view admission changed');
     }
   }
   return result;
 };
 ipcMain.handle('siren:windows',invokeNativeWindow);
+if(initializeTerminalCandidate)terminalRuntime=initializeTerminalCandidate({registry:windowRegistry,ipcMain,getProjectId:()=>selectedId,isReady:()=>Boolean(selectedId&&snapshot&&localPin.state().unlocked&&mode==='normal'&&!nativeReadonly&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure),workspaceEvent:()=>({sender:window.webContents,senderFrame:window.webContents.mainFrame}),isRollbackReady:isTerminalRollbackScopeCurrent,pinHooks:pinLifecycleHooks,windowFor:id=>nativeShells.get(id),getAppearance:()=>appearanceStore.read(),systemDark:()=>nativeTheme.shouldUseDarkColors,openWindow:invokeNativeWindow});
 ipcMain.handle('siren:window-dock',(event,method,payload)=>{
   if(pinTransition||accountTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)
     return {ok:false,code:'PROJECT_BUSY'};
@@ -1114,7 +1268,7 @@ async function nativeRenderAppearance(scope){
  if(!preference.ok&&preference.code!=='INVALID_APPEARANCE')throw Error('Appearance unavailable');
  return nativeAppearanceContract.resolve(preference.ok?preference.theme:'system',nativeTheme.shouldUseDarkColors);
 }
-ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,payload,store:appearanceStore,
+ipcMain.handle('siren:shell',async(event,method,payload)=>{const result=await invokeShell({event,method,payload,store:appearanceStore,
  context:()=>({projectName:snapshot?.project?.label||'Local workspace'}),
  capture:own=>{
   if(!localPin.state().unlocked||pinTransition||accountTransition||writes.selectionTransition||workspaceBarrier||nativeShellFailure)return null;
@@ -1136,7 +1290,8 @@ ipcMain.handle('siren:shell',(event,method,payload)=>invokeShell({event,method,p
   if(surface!=='home')window.webContents.send('siren:shell-module',surface);
   return {ok:true};
  },
-}));
+});if(method==='setAppearance'&&result?.ok===true){requestDocsDiagramScan();terminalRuntime?.appearanceChanged();}return result;});
+nativeTheme.on('updated',()=>{requestDocsDiagramScan();terminalRuntime?.appearanceChanged();});
 window.on('resize',()=>windowRegistry.resizeAttached());
 const presentationIPC=new NativePresentationIPC({registry:windowRegistry,sessionFor:()=>presentationSession,
  displays:()=>screen.getAllDisplays().slice(0,32).map((display,index)=>({id:String(display.id),label:typeof display.label==='string'&&display.label?display.label.slice(0,160):`Display ${index+1} · ${display.size.width} × ${display.size.height}`})),
@@ -1195,18 +1350,22 @@ window.on('close', event => {
     closeProgress('retire-views');
     await retireNativeViews();
     if(!await nativeLayoutMemory.flush())console.warn('SIREN_LAYOUT_WRITE_FAILED');
+    if(terminalRuntime)await terminalRuntime.shutdown();
     closeProgress('journal');
     if (processIdentity) await journal.recordSession({ event: 'clean-close', sessionId, version: app.getVersion(), processIdentity });
     closeProgress('window-close');
     closing = true; window.close();
-  })().catch(cause => {
+  })().catch(async cause => {
     console.warn('SIREN_CLOSE_FAILURE',JSON.stringify({stage:closeStage,elapsedMs:Date.now()-closeStarted,code:typeof cause?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(cause.code)?cause.code:'CLOSE_FAILED'}));
-    closeRequested = false;
-    pinTransition = false;
-    void rollbackNativePreparation();
-    try { windowRegistry.activateWorkspace(); } catch { /* Failed native destruction remains fenced. */ }
+    try{
+      await rollbackNativePreparation();
+      try { windowRegistry.activateWorkspace(); } catch { /* Failed native destruction remains fenced. */ }
+    }catch(rollbackCause){
+      console.warn('SIREN_CLOSE_ROLLBACK_FAILURE',JSON.stringify({code:typeof rollbackCause?.code==='string'&&/^[A-Z][A-Z0-9_]{0,63}$/.test(rollbackCause.code)?rollbackCause.code:'CLOSE_ROLLBACK_FAILED'}));
+    }finally{closeRequested=false;pinTransition=false;}
     dialog.showErrorBox('SIREN — Close delayed', 'Save/recovery did not complete. Export live work before forcing close.');
   });
 });
+requestDocsDiagramScan();
 app.on('window-all-closed', () => app.quit());
 }).catch(() => { dialog.showErrorBox('SIREN startup failed', 'The prototype could not start. Existing project files were retained.'); app.exit(1); });

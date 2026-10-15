@@ -10,9 +10,9 @@ import {buildProcessReader} from './build-process-reader.mjs';
 import {withPackageStaging} from './package-staging.mjs';
 
 const runtimeFiles = new Set(['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','electron.exe','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll']);
-const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
+const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/desktop-launch.mjs','src/preload.cjs','src/data-root.mjs','src/ipc.mjs','src/protocol.mjs','src/publisher-config.mjs',
   ...['contracts','store','ipc','render'].map(n=>`src/appearance/${n}.mjs`),'src/help/native.mjs',
-  ...['access','credentials','local-pin','pin-worker','pin-protection','pin-protocol','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
+  ...['access','credentials','local-pin','pin-worker','pin-protection','pin-protocol','pin-lifecycle','oidc','permit','service'].map(n=>`src/account/${n}.mjs`),
   ...['atomic','budgets','domain-validation','import-admission','import-status','import-validation','import-validator-window','io','migration','paths','selection','store'].map(n=>`src/projects/${n}.mjs`),
   ...['access','checkpoints','diagnostics','native-process','processes','sessions'].map(n=>`src/recovery/${n}.mjs`),
   ...['bundle-import','manifest','metrics','migration','readers','read-ipc','recovery','repository','text-model','ipc','analysis','diff-worker'].map(n=>`src/sources/${n}.mjs`),
@@ -20,6 +20,8 @@ const sourceFiles = new Set(['src/start.mjs','src/main.mjs','src/preload.cjs','s
   ...['readiness','registry','surface','dock-ipc','focus','layout','layout-memory','geometry','factory','entities','ipc','coordinator','primary','docs','domain','source-bridge','source-reads','source-analysis','source-context','working-sources','code-docs','docs-reads','docs-sources','docs-edits','diagram-reads','diagram-edits','diagram-export','diagram-vector-render','catalog','home-admission','readonly-seals','control','source-barrier','presentation','presentation-deck','presentation-render','presentation-ipc'].map(n=>`src/windows/${n}.mjs`), 'src/windows/preload.cjs','src/windows/presentation-preload.cjs','src/windows/docs-references.mjs','src/documents/context.mjs','src/documents/presentation-edits.mjs','src/windows/deck-navigation.mjs',
   'src/documents/export.mjs','src/windows/docs-export.mjs','src/documents/diagram-metadata.mjs','src/documents/diagram-layout.mjs',
   'src/documents/diagram-catalogue.mjs','src/windows/diagram-create.mjs','src/windows/diagram-catalogue.mjs',
+  ...['diagram-embeds','diagram-embed-publication','diagram-embed-export','diagram-embed-assets','diagram-selection','diagram-embed-bundle','diagram-embed-svg'].map(n=>`src/documents/${n}.mjs`),
+  'src/windows/docs-diagrams.mjs','src/windows/docs-diagram-refresh.mjs',
   'src/documents/presentation-notes.mjs','src/windows/presenter-export.mjs',
   ...['download','github','manifest','service'].map(n=>`src/updates/${n}.mjs`)]);
 export function allowedAppFile(path, production) {
