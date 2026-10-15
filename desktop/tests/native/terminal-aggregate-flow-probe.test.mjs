@@ -5,7 +5,7 @@ let probe,derive;try{({fixedAggregateFlowProbe:probe,deriveAggregateFlowSources:
 
 test('staged diagnostic runner resolves readback absolutely and preserves causal refusal gates',async()=>{
  const m=await import('./terminal-aggregate-flow-derive.mjs'),desktop=new URL('../../',import.meta.url),input=await readFile(new URL('./terminal-shell-flow.mjs',import.meta.url),'utf8'),runner=m.deriveAggregateFlowRunner({runner:input,desktop});
- const imported=runner.match(/import \{readShellFlowRecords\} from "([^"]+)";/);assert.ok(imported,'ABSOLUTE_READBACK_IMPORT_REQUIRED');assert.equal(imported[1],new URL('./terminal-shell-flow-readback.mjs',import.meta.url).href);assert.ok((await readFile(new URL(imported[1]))).length>0);
+ const imported=runner.match(/import \{readAggregateFlowRecords as readShellFlowRecords\} from "([^"]+)";/);assert.ok(imported,'AGGREGATE_ONLY_READBACK_IMPORT_REQUIRED');assert.equal(imported[1],new URL('./terminal-shell-flow-readback.mjs',import.meta.url).href);assert.ok((await readFile(new URL(imported[1]))).length>0);
  const parse=spawnSync(process.execPath,['--input-type=module','--check'],{input:runner,encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(parse.status,0,parse.stderr);
  const readback=runner.indexOf('Object.assign(receipt,await readShellFlowRecords'),cause=runner.indexOf('if(receipt.native?.error)'),missing=runner.indexOf("assert.deepEqual(receipt.missingRecords,[],'FLOW_STAGE_RECORDS_MISSING')"),qualify=runner.indexOf('receipt.qualified=');assert.ok(readback>=0&&cause>readback&&missing>cause&&qualify>missing);
  assert.ok(runner.includes("'terminal-shell-flow-readback'"));assert.ok(runner.includes('isAggregateFlowObserved(receipt)'));

@@ -1,11 +1,15 @@
 // Bounded CI-only failure evidence. Importing this module starts no process.
 import assert from 'node:assert/strict';
 const message=e=>String(e?.message??e).slice(0,4096);
-export async function readShellFlowRecords({fs,path}){
+export const readShellFlowRecords=args=>readFlowRecords(args,262144);
+// Eight sessions retain up to eight single-session native receipts. Companion
+// records and every ordinary single-session caller keep the original bound.
+export const readAggregateFlowRecords=args=>readFlowRecords(args,8*262144);
+async function readFlowRecords({fs,path},nativeBudget){
  const result={missingRecords:[]};
  for(const [key,name] of [['observer','observer-result'],['native','native-result'],['ready','flow-first-ready'],['finish','flow-finish-ready']]){
-  const file=name+'.json';
-  try{const st=await fs.lstat(path(file));assert.ok(st.isFile()&&!st.isSymbolicLink()&&st.size<=262144,'FLOW_RECORD_BUDGET');const bytes=await fs.readFile(path(file));assert.ok(bytes.length<=262144,'FLOW_RECORD_BUDGET');result[key]=JSON.parse(bytes);}
+  const file=name+'.json',budget=key==='native'?nativeBudget:262144;
+  try{const st=await fs.lstat(path(file));assert.ok(st.isFile()&&!st.isSymbolicLink()&&st.size<=budget,'FLOW_RECORD_BUDGET');const bytes=await fs.readFile(path(file));assert.ok(bytes.length<=budget,'FLOW_RECORD_BUDGET');result[key]=JSON.parse(bytes);}
   catch(e){if(e.code!=='ENOENT')throw e;result.missingRecords.push(file);}
  }
  return result;

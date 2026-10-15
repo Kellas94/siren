@@ -53,7 +53,7 @@ export function deriveAggregateFlowRunner({runner,desktop}){
  // revision has one additional module import that must resolve after staging.
  assert.ok(runnerSha==='f00b6016188d2199cb0ca50c5563fb7d6f3a391a26046383e38941f32d4ad205'||withReadback,'AGGREGATE_RUNNER_DRIFT');
  let s=once(runner,"new URL('../../',import.meta.url)",`new URL(${JSON.stringify(desktop.href)})`);
- if(withReadback)s=once(s,"import {readShellFlowRecords} from './terminal-shell-flow-readback.mjs';",`import {readShellFlowRecords} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-readback.mjs',desktop).href)};`);
+ if(withReadback)s=once(s,"import {readShellFlowRecords} from './terminal-shell-flow-readback.mjs';",`import {readAggregateFlowRecords as readShellFlowRecords} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-readback.mjs',desktop).href)};`);
  const imports="import {deriveShellFlowSources} from './terminal-shell-flow-derive.mjs';import {fixedShellFlowProbe} from './terminal-shell-flow-probe.mjs';import {runShellFlowMain} from './terminal-shell-flow-main.mjs';import {isShellFlowObserved} from './terminal-shell-flow-verdict.mjs';";
  s=once(s,imports,`import {deriveAggregateFlowSources,fixedAggregateFlowProbe} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-derive.mjs',desktop).href)};import {runAggregateFlowMain} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-main.mjs',desktop).href)};import {isAggregateFlowObserved} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href)};`);
  s=once(s,"evidence/terminal-shell-flow'","evidence/terminal-aggregate-flow'");
