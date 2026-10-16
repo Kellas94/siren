@@ -531,6 +531,16 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Retain owned Docs Activity raw journals
+        if: ${{ always() && matrix.group == 'desktop' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-native-desktop-docs-activity-journals
+          path: desktop/evidence/docs-activity-native/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   packaged_windows:
     name: Windows packaged workspaces
     runs-on: windows-latest
@@ -858,6 +868,16 @@ jobs:
         with:
           name: desktop-packaged-source-sync-journals
           path: desktop/evidence/source-sync/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Retain owned packaged Docs Activity raw journals
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-packaged-docs-activity-journals
+          path: desktop/evidence/docs-activity-native/*/raw-captures/**
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
