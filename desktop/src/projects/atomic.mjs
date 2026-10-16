@@ -11,12 +11,25 @@ export async function atomicWrite(path, bytes, { fault = async () => {}, selecti
   const handle = await open(temporary, 'wx', 0o600);
   let committed = false;
   try {
+    let writeError, writeFailed = false;
     try {
       await handle.writeFile(bytes);
       await fault(selection ? 'before-select-flush' : 'before-flush');
       await handle.sync();
       await fault(selection ? 'after-select-flush' : 'after-flush');
-    } finally { await handle.close(); }
+    } catch (error) {
+      writeFailed = true; writeError = error; throw error;
+    } finally {
+      try { await handle.close(); }
+      catch (closeError) {
+        if (!writeFailed) throw closeError;
+        const failure = new AggregateError([writeError, closeError], 'Atomic write failed and pending file close failed', { cause: writeError });
+        // Metadata access must not replace either captured failure.
+        try { const code = writeError?.code; if (code !== undefined) failure.code = code; }
+        catch { /* Preserve the exact failures even for hostile metadata. */ }
+        throw failure;
+      }
+    }
     await ownedDirectory(dirname(path));
     // Existing pointers must be ordinary owned files; never replace a junction/link.
     try { await ownedFile(path); } catch (e) { if (e.code !== 'ENOENT') throw e; }
