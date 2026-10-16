@@ -1,16 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdir,readFile,writeFile,readdir,symlink} from 'node:fs/promises';
+import {mkdir,mkdtemp,realpath,readFile,writeFile,readdir,symlink} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import {join,resolve,dirname,sep} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {admitFreshData,retainPrimaryFailure,evidenceStep} from './native/source-sync-evidence.mjs';
 const implementation=process.env.SIREN_ACTIVITY_EVIDENCE_IMPLEMENTATION;
 const {finalizeActivityEvidence,retainActivityRawEvidence,prepareActivityData,persistActivityResult}=await import(implementation?pathToFileURL(resolve(implementation)).href:'./native/docs-activity-evidence.mjs');
-const control=resolve(process.env.SIREN_ACTIVITY_CONTROL_ROOT??'');
+const override=process.env.SIREN_ACTIVITY_CONTROL_ROOT;
+const control=override===undefined?await mkdtemp(join(await realpath(tmpdir()),'siren-docs-activity-evidence-')):resolve(override);
 const allowed=resolve(dirname(fileURLToPath(import.meta.url)),'../../..');
-assert.ok(process.env.SIREN_ACTIVITY_CONTROL_ROOT&&control.startsWith(allowed+sep),'EXPLICIT_OWNED_CONTROL_ROOT_REQUIRED');
-await mkdir(control);
+if(override!==undefined){assert.ok(override&&control.startsWith(allowed+sep),'EXPLICIT_OWNED_CONTROL_ROOT_REQUIRED');await mkdir(control);}
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 async function fixture(name){
  const root=join(control,name),data=join(root,'data'),evidence=join(root,'evidence');await mkdir(evidence,{recursive:true});
