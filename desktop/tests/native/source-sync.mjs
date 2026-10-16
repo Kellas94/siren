@@ -8,22 +8,24 @@ import {SourceRepository} from '../../src/sources/repository.mjs';
 import {commitManifest} from '../../src/sources/manifest.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
+import {admitFreshData,retainPrimaryFailure,retainRawEvidence,evidenceStep,finalizeEvidence} from './source-sync-evidence.mjs';
 
 const evidenceAt=resolve('evidence/source-sync',new Date().toISOString().replaceAll(':','-'));await mkdir(evidenceAt,{recursive:true});const evidence=await realpath(evidenceAt);
 const packageAt=process.argv.indexOf('--package'),packageRoot=packageAt<0?null:resolve(process.argv[packageAt+1]||'');
-let packageReceipt=null,packageCopy=null;
+let packageReceipt=null,packageCopy=null;const dataAdmissions={};
 if(packageRoot){
  packageReceipt=JSON.parse(await readFile(join(packageRoot,'BUILD-IDENTITY.json'),'utf8'));assert.equal(packageReceipt.kind,'development-preview');assert.equal(packageReceipt.releaseAdmitted,false);
+ dataAdmissions.packageSource=await admitFreshData(join(packageRoot,'Data'));
  packageCopy=join(evidence,'Pachet-Știință-Sync');await cp(packageRoot,packageCopy,{recursive:true,errorOnExist:true,force:false});
  const archive=await readFile(join(packageCopy,'App','versions','0.1.0','resources','app.asar'));assert.equal(createHash('sha256').update(archive).digest('hex'),packageReceipt.appArchive.sha256);
 }
-const data=packageCopy?join(packageCopy,'Data'):join(evidence,'owned-data');await mkdir(data,{recursive:true});
-const paths=['src/main.mjs','src/sources/ipc.mjs','src/windows/working-sources.mjs','src/windows/coordinator.mjs','src/windows/preload.cjs','src/ui/windows/code.js','src/ui/code/source-changes.js','src/ui/code/editor.js','generated/windows/code.html','tests/native/source-sync.mjs','tests/native/attach-page.mjs'];
+const data=packageCopy?join(packageCopy,'Data'):join(evidence,'owned-data');dataAdmissions.ownedData=await admitFreshData(data);await mkdir(data,{recursive:true});
+const paths=['src/main.mjs','src/sources/ipc.mjs','src/windows/working-sources.mjs','src/windows/coordinator.mjs','src/windows/preload.cjs','src/ui/windows/code.js','src/ui/code/source-changes.js','src/ui/code/editor.js','generated/windows/code.html','tests/native/source-sync.mjs','tests/native/attach-page.mjs','tests/native/source-sync-evidence.mjs'];
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),capture=async()=>Object.fromEntries(await Promise.all(paths.map(async path=>[path,hash(await readFile(path))]))),inputs=await capture();
 const projects=new ProjectStore(data),sources=new SourceRepository(data),original=await projects.createProject({label:'Actual shared Code views',json:'{}'}),lineCount=process.argv.includes('--300k')?300000:100000;
 const text=Array.from({length:lineCount},(_,i)=>`value_${i} = ${i} # Python Ș😀`).join('\n')+'\n',ref=await sources.importSource({projectId:original.project.id,bytes:Buffer.from(text)});
 assert.equal((await commitManifest({projects,repository:sources,projectId:original.project.id,baseRevision:1,sourceRefs:[ref],metadata:{workpapers:[{id:'doc-a',title:'Keep Docs',blocks:[{kind:'knowledge',rows:[{id:'row-a',sourceRef:{sourceId:ref.sourceId,version:1,sha256:ref.sha256}}]}]}]},operationId:'initial-sync-source'})).ok,true);
-const selected=await projects.readProject(original.project.id),result={status:'ADVERSE',inputs,lineCount,cases:[],scope:'Actual native same-source working windows: clean coalesced refresh, dirty local retention, separate latest review, real explicit replacement confirmation/cancellation and all-view Lock. No concurrent merge or physical-monitor qualification.'};let driver;
+const selected=await projects.readProject(original.project.id),result={status:'ADVERSE',dataAdmissions,inputs,lineCount,cases:[],scope:'Actual native same-source working windows: clean coalesced refresh, dirty local retention, separate latest review, real explicit replacement confirmation/cancellation and all-view Lock. No concurrent merge or physical-monitor qualification.'};let driver;
 if(packageReceipt){await writeFile(join(data,'session-selection.json'),JSON.stringify({schema:1,accountId:null,projectId:original.project.id}));result.package={sourceCommit:packageReceipt.sourceCommit,archive:packageReceipt.appArchive,runtime:packageReceipt.runtimeBinary};}
 const keys=async(page,key,code,windowsVirtualKeyCode,modifiers=0)=>{for(const type of ['keyDown','keyUp'])await page.send('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode,modifiers});};
 const append=async(page,name,version)=>{const insertion=`\ndef ${name}(context: dict[str, int]) -> int:\n    return sum(context.values())\n`;await page.click('.cm-content');await keys(page,'End','End',35,2);await keys(page,'Enter','Enter',13);await page.send('Input.insertText',{text:insertion.slice(1)});await page.waitFor(`document.body.dataset.sourceReady==="true"&&Number(document.body.dataset.sourceVersion)===${version}`);return insertion;};
@@ -61,5 +63,22 @@ try{
  result.cases.push({name:'actual latest source opens separately without replacing local work; real confirmation cancellation retains text, explicit confirmation reloads latest and historical stored version remains exact',ok:true});
  await driver.click('#homeLock');await driver.waitFor('window.sirenDesktopBootstrap.mode==="locked"');assert.equal(await driver.evaluate('window.sirenDesktopBootstrap.snapshot'),null);assert.equal((await driver.send('Target.getTargets')).targetInfos.some(target=>target.url.startsWith('siren://app/windows/')),false);assert.deepEqual(await projects.readProject(original.project.id),selected);assert.deepEqual(await sources.exportSource({projectId:original.project.id,sourceId:ref.sourceId,version:7}),Buffer.from(text+one+two+three));
  result.cases.push({name:'actual all-view Lock commits three settled working views, destroys all four Code windows and preserves exact historical/current source and full project',ok:true});result.status='COMPLETE';
-}catch(cause){result.error={message:cause.message,stack:cause.stack};try{await driver?.screenshot(join(evidence,'failure.png'));result.runtimeLog=driver?.logs().slice(-5000);result.diagnostics=[];for(const target of (await driver.send('Target.getTargets')).targetInfos.filter(target=>target.url.startsWith('siren://app/windows/code.html'))){const page=await attachNativePage(driver,target.url);result.diagnostics.push(await page.evaluate('({url:location.href,status:document.getElementById("viewStatus")?.textContent,body:{...document.body.dataset},notice:document.getElementById("sourceChangesMessage")?.textContent,editor:document.querySelector(".siren-code-editor")?.textContent.slice(0,200)})'));await page.screenshot(join(evidence,'view-failure-'+result.diagnostics.length+'.png'));}}catch{}}
-finally{await driver?.close();result.afterInputs=await capture();result.inputsUnchanged=JSON.stringify(inputs)===JSON.stringify(result.afterInputs);if(!result.inputsUnchanged)result.status='ADVERSE';await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error?.message}));process.exitCode=result.status==='COMPLETE'?0:1;}
+}catch(cause){
+ retainPrimaryFailure(result,cause);
+ // Preserve owned raw journals immediately after the original test failure,
+ // before diagnostics or the original driver.close. This never retries Save.
+ await retainRawEvidence(result,{data,evidence},'beforeClose');
+ await evidenceStep(result,'failure-screenshot',()=>driver?.screenshot(join(evidence,'failure.png')));
+ result.runtimeLog=await evidenceStep(result,'failure-runtime-log',async()=>driver?.logs().slice(-5000));
+ result.diagnostics=[];
+ const targets=await evidenceStep(result,'failure-target-list',()=>driver?.send('Target.getTargets'));
+ const codeTargets=await evidenceStep(result,'failure-target-filter',async()=>{assert.ok(Array.isArray(targets?.targetInfos),'Owned target inventory unavailable');return targets.targetInfos.filter(target=>target.url.startsWith('siren://app/windows/code.html'));});
+ for(const target of codeTargets??[]){
+  await evidenceStep(result,'failure-code-view',async()=>{const page=await attachNativePage(driver,target.url);result.diagnostics.push(await page.evaluate('({url:location.href,status:document.getElementById("viewStatus")?.textContent,body:{...document.body.dataset},notice:document.getElementById("sourceChangesMessage")?.textContent,editor:document.querySelector(".siren-code-editor")?.textContent.slice(0,200)})'));await page.screenshot(join(evidence,'view-failure-'+result.diagnostics.length+'.png'));});
+ }
+}finally{
+ await finalizeEvidence({result,driver,data,evidence,captureInputs:capture,inputs});
+ await writeFile(join(evidence,'result.json'),JSON.stringify(result,null,2));
+ console.log(JSON.stringify({evidence,status:result.status,cases:result.cases.length,error:result.error?.message}));
+ process.exitCode=result.status==='COMPLETE'?0:1;
+}

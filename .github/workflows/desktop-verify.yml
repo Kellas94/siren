@@ -521,6 +521,16 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Retain owned source-sync raw journals
+        if: ${{ always() && matrix.group == 'sources' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-native-sources-source-sync-journals
+          path: desktop/evidence/source-sync/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   packaged_windows:
     name: Windows packaged workspaces
     runs-on: windows-latest
@@ -840,6 +850,16 @@ jobs:
             desktop/evidence/protected-storage-*/electron.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
+          retention-days: 14
+
+      - name: Retain owned packaged source-sync raw journals
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-packaged-source-sync-journals
+          path: desktop/evidence/source-sync/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 14
 
   qualification:
