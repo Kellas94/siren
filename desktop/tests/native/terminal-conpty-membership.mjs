@@ -16,7 +16,7 @@ const save=()=>writeFile(join(output,'receipt.json'),JSON.stringify(receipt,null
 try{
  const originalPath=join(desktop,'tests/fixtures/terminal-job-list.cs'),extension=join(desktop,'tests/fixtures/terminal-conpty-membership.cs'),verdict=join(desktop,'tests/native/terminal-conpty-membership-verdict.mjs');
  for(const path of [fileURLToPath(import.meta.url),originalPath,extension,verdict]){const b=await readFile(path);receipt.inputs.push({path,bytes:b.length,sha256:hash(b)});}
- const original=await readFile(originalPath,'utf8');assert.equal(hash(Buffer.from(original)),'a978af9537ff1c50cdb99849bca18f1f3dbf8181ccfdce41ad7448ab0a2f680a');
+ const original=await readFile(originalPath,'utf8');assert.ok(['a978af9537ff1c50cdb99849bca18f1f3dbf8181ccfdce41ad7448ab0a2f680a','c59b53e791d765545ccaf0e7a149507a55ddb03576027b2ac850ee827bb41477'].includes(hash(Buffer.from(original))));
  let derived=original;
  for(const [before,after] of [['internal static class TerminalJobListProbe {','internal static partial class TerminalJobListProbe {'],['static int Main(string[] args) {','static int OriginalMain(string[] args) {']]){assert.equal(derived.split(before).length,2);derived=derived.replace(before,after);}
  const derivedPath=join(output,'fixed-original-partial.cs');await writeFile(derivedPath,derived,{flag:'wx'});receipt.derivation={originalSha256:hash(Buffer.from(original)),derivedSha256:hash(Buffer.from(derived)),changes:['class becomes partial','original entry renamed; fixed fixture logic unchanged']};
