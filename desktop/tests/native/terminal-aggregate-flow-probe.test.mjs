@@ -107,9 +107,31 @@ test('mixed retained bytes gap tail selection and duplicate polls pass unchanged
  send(locked,4967232,'y'.repeat(32768),null,false);assert.equal(s.cursor,5000000);
  for(let i=0;i<1000;i++)send(locked,5000000,'',null,false);
  send(final,5000000,'z',null,false);for(let i=0;i<1000;i++)send(final,5000001,'',null,false);
- r.samples=JSON.parse(JSON.stringify(s.record.samples));assert.equal(r.samples.length,3);assert.equal(isAggregateStreamObserved(r,70000),true);
+ r.samples=JSON.parse(JSON.stringify(s.record.samples));assert.equal(r.samples.length,5);assert.equal(isAggregateStreamObserved(r,70000),true);
  for(const change of [v=>{v.samples[0].gap=null;},v=>{v.samples[0].tailGap=null;},v=>{v.samples[1].chunks[0].sequence++;},v=>{v.samples.at(-1).stats.inputWrites=3;}]){
   const bad=structuredClone(r);change(bad);assert.equal(isAggregateStreamObserved(bad,70000),false,change.toString());
  }
 });
+}
+
+// GitHub review4304145757: retain the first empty timepoint after evidence.
+{
+ const main=await readFile(new URL('./terminal-aggregate-flow-main.mjs',import.meta.url),'utf8');
+ const begin=main.indexOf('  function record(s,reply,tail){'),end=main.indexOf('  async function observe(s,tail=true)',begin);
+ assert(begin>=0&&end>begin);let tick=0;
+ const record=vm.runInNewContext('('+main.slice(begin,end).trim()+')',{assert,hash:s=>createHash('sha256').update(s).digest('hex'),now:()=>++tick,age:0},{timeout:1000});
+ for(const kind of ['chunk','gap','tail'])test('first empty poll after '+kind+' evidence survives; only following identical empties coalesce',()=>{
+  const s={cursor:0,last:null,record:{samples:[]},scanner:{append(){}}};
+  const stats={retainedUtf8Bytes:1,allocatedBytes:1,nextSequence:kind==='tail'?65536:1,inputWrites:1};
+  const chunks=kind==='chunk'?[{sequence:0,utf8Bytes:1,data:'x'}]:[];
+  const gap=kind==='gap'?{fromSequence:0,resumeSequence:1,droppedUtf8Bytes:1,resetParser:true}:null;
+  record(s,{result:{nextSequence:kind==='tail'?0:1,chunks,gap},stats:{...stats}},kind==='tail');
+  assert.equal(s.record.samples.length,1);const selected=s.cursor;
+  const empty=()=>({result:{nextSequence:selected,chunks:[],gap:null},stats:{...stats}});
+  record(s,empty(),false);assert.equal(s.record.samples.length,2,'First empty after evidence is a distinct timepoint');
+  assert.equal(s.record.samples[1].chunks.length,0);assert.equal(s.record.samples[1].gap,null);assert.equal(s.record.samples[1].tailGap,null);
+  assert.ok(s.record.samples[1].ageMs>s.record.samples[0].ageMs);
+  for(let i=0;i<1000;i++)record(s,empty(),false);
+  assert.equal(s.record.samples.length,2);assert.equal(s.cursor,selected);
+ });
 }

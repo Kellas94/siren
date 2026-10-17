@@ -58,7 +58,7 @@ export async function runAggregateFlowMain(config,preserveFailure){
    // trace information when every statistic is unchanged. Keep all data,
    // gaps, tail selections and state changes, and retain the hard100 limit.
    const previous=s.record.samples.at(-1);
-   if(r.chunks.length||r.gap||tailGap||!previous||JSON.stringify(previous.stats)!==JSON.stringify(t))s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});
+   if(r.chunks.length||r.gap||tailGap||!previous||previous.chunks.length||previous.gap||previous.tailGap||JSON.stringify(previous.stats)!==JSON.stringify(t))s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});
    assert.ok(s.record.samples.length<=100);return r.nextSequence;
   }
   async function observe(s,tail=true){const reply=await delivery.read(s.token);assert.equal(reply.ok,true,'AGGREGATE_CREDIT_READ');const end=record(s,reply.value,tail);assert.equal(delivery.ack(s.token,end).ok,true);if(s.cursor!==end){assert.equal(delivery.detach(s.token).ok,true);s.token=delivery.attach(s.slot,s.cursor).value;}return s.scanner;}
