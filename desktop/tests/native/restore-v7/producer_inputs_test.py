@@ -1,4 +1,4 @@
-"""Pure input contracts, no child process/application/filesystem probing."""
+"""Input contracts and mocked census file controls; no application/process query."""
 from pathlib import Path
 import copy,json,runpy,sys,unittest
 MODULE=Path(__file__).with_name('producer_inputs.py')
@@ -90,6 +90,79 @@ attach('runtime_negative_size',lambda c:c['runtimes']['node'].update(bytes=-1),'
 
 attach('receipt_app_unsupported_version',lambda c:c['package']['receipt'].update(appRelativePath='App/versions/12.34.56/SIREN.exe'),'DEVELOPMENT_PACKAGE_LAYOUT_REQUIRED')
 
+import ast, tempfile, types, subprocess, time, os, stat, hashlib
+from unittest.mock import patch
+CIM_RECORDS=[]
+HERE=Path(__file__).resolve().parent
+
+class CensusDiagnostics(unittest.TestCase):
+    def observe(self,mode):
+        # Execute actual maintained functions only; no module imports or processes.
+        source=(HERE/'producer_collector.py').read_text(encoding='utf8');tree=ast.parse(source)
+        selected=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in ['need','no_links','pin','save','census']]
+        ns=dict(Path=Path,hashlib=hashlib,json=json,os=os,stat=stat,subprocess=subprocess,time=time,POWERSHELL=Path('C:/inert-fixture/powershell.exe'))
+        exec(compile(ast.Module(body=selected,type_ignores=[]),'actual-maintained-census-functions','exec'),ns)
+        raw=json.dumps(dict(querySucceeded=True,totalObserved=1,nullExecutableFields=0,nullCommandFields=0,owned=[])).encode('utf8')
+        stderr=b'SIREN_CIM_STAGE|script-entered\r\nSIREN_CIM_STAGE|scope-read\r\n';code=0;seen={}
+        if mode=='markers-only':raw=b''
+        if mode=='malformed':raw=b'{bad'
+        if mode=='nonzero':code=3
+        if mode=='false-query':raw=b'{"querySucceeded":false,"owned":[]}'
+        with tempfile.TemporaryDirectory(prefix='siren-census-stage-') as folder:
+            root=Path(folder);scope=root/'scope.json';scope.write_text('{"processPrefixes":["C:/inert-fixture"]}',encoding='utf8')
+            def invoke(command,**kwargs):
+                self.assertEqual(command[:4],['C:\\inert-fixture\\powershell.exe','-NoProfile','-NonInteractive','-Command'])
+                self.assertEqual(kwargs,dict(capture_output=True,timeout=10,creationflags=subprocess.CREATE_NO_WINDOW));seen['script']=command[4]
+                if mode=='timeout':raise subprocess.TimeoutExpired(command,10,output=b'',stderr=stderr)
+                return types.SimpleNamespace(returncode=code,stdout=raw,stderr=stderr)
+            error=None;value=None
+            with patch.object(subprocess,'run',side_effect=invoke):
+                try:value=ns['census'](scope,root,'case',10)
+                except ValueError as e:error=str(e)
+            # The record and partial streams must exist before refusal escapes.
+            record=json.loads((root/'case.json').read_bytes());out=(root/'case-stdout.bin').read_bytes();err=(root/'case-stderr.bin').read_bytes()
+            row=dict(mode=mode,record=record,stdout=out.decode('utf8'),stderr=err.decode('utf8'),error=error,script=seen['script'])
+            CIM_RECORDS.append(row);return row,value
+
+    def test_five_fixed_flushed_markers_surround_unchanged_operations(self):
+        row,_=self.observe('success');script=row['script'];stages=['script-entered','scope-read','cim-returned','ownership-filtered','json-written']
+        positions=[]
+        for stage in stages:
+            marker="[Console]::Error.WriteLine('SIREN_CIM_STAGE|"+stage+"'); [Console]::Error.Flush();"
+            self.assertEqual(script.count(marker),1);positions.append(script.index(marker))
+        self.assertEqual(positions,sorted(positions))
+        self.assertLess(positions[0],script.index('$s=Get-Content'))
+        self.assertLess(script.index('$s=Get-Content'),positions[1]);self.assertLess(positions[1],script.index('$all=@(Get-CimInstance'))
+        self.assertLess(script.index('$all=@(Get-CimInstance'),positions[2]);self.assertLess(positions[2],script.index('$owned=@('))
+        self.assertLess(script.index('$owned=@('),positions[3]);self.assertLess(positions[3],script.index('@{querySucceeded=$true'))
+        self.assertLess(script.index('ConvertTo-Json -Depth 5 -Compress'),positions[4])
+        self.assertEqual(script.count('Get-CimInstance -ClassName Win32_Process -ErrorAction Stop'),1)
+        # Exact published39c script, after removing only the five diagnostics.
+        preserved=script
+        for stage in stages:
+            marker="[Console]::Error.WriteLine('SIREN_CIM_STAGE|"+stage+"'); [Console]::Error.Flush();"
+            preserved=preserved.replace('; '+marker,'') if stage=='json-written' else preserved.replace(marker+' ','')
+        preserved=preserved.replace(row['record']['scope']['path'],str(Path('C:/inert-fixture/scope.json')))
+        self.assertEqual(hashlib.sha256(preserved.encode('utf8')).hexdigest(),'9ea2f7c6604209855a42a4cb9f424b050adb6e6bccf49b257b0cd2647f60e2bc')
+
+    def test_timeout_partial_stages_and_exact_script_hash_precede_unchanged_refusal(self):
+        row,value=self.observe('timeout');self.assertIsNone(value);self.assertEqual(row['error'],'CIM_OBSERVATION_UNAVAILABLE')
+        self.assertEqual(row['record']['error']['type'],'TimeoutExpired');self.assertEqual(row['record']['timeoutSeconds'],10)
+        self.assertEqual(row['stdout'],'');self.assertEqual(row['stderr'],'SIREN_CIM_STAGE|script-entered\r\nSIREN_CIM_STAGE|scope-read\r\n')
+        self.assertEqual(row['record']['observationScriptSha256'],hashlib.sha256(row['script'].encode('utf8')).hexdigest())
+        self.assertNotIn('returncode',row['record'])
+
+    def test_valid_json_and_zero_exit_remain_required_and_unchanged(self):
+        row,value=self.observe('success');self.assertIsNone(row['error']);self.assertEqual(value['returncode'],0)
+        self.assertIs(value['querySucceeded'],True);self.assertEqual(value['owned'],[]);self.assertEqual(value['totalObserved'],1)
+        self.assertEqual(value['observationScriptSha256'],hashlib.sha256(row['script'].encode('utf8')).hexdigest())
+
+    def test_markers_cannot_admit_empty_malformed_nonzero_or_false_query(self):
+        for mode in ['markers-only','malformed','nonzero','false-query']:
+            with self.subTest(mode=mode):
+                row,value=self.observe(mode);self.assertIsNone(value);self.assertEqual(row['error'],'CIM_OBSERVATION_UNAVAILABLE')
+                self.assertIn('SIREN_CIM_STAGE|scope-read',row['stderr'])
+
 if __name__=='__main__':
-    suite=unittest.defaultTestLoader.loadTestsFromTestCase(Inputs);result=unittest.TextTestRunner(stream=sys.stderr,verbosity=2).run(suite)
-    print(json.dumps({'status':'PURE_CONTROLS_COMPLETE' if result.wasSuccessful() else 'ADVERSE','cases':result.testsRun,'failures':len(result.failures),'errors':len(result.errors),'records':RECORDS,'applicationExecuted':False},ensure_ascii=False));raise SystemExit(0 if result.wasSuccessful() else 1)
+    suite=unittest.TestSuite([unittest.defaultTestLoader.loadTestsFromTestCase(Inputs),unittest.defaultTestLoader.loadTestsFromTestCase(CensusDiagnostics)]);result=unittest.TextTestRunner(stream=sys.stderr,verbosity=2).run(suite)
+    print(json.dumps({'status':'PURE_CONTROLS_COMPLETE' if result.wasSuccessful() else 'ADVERSE','cases':result.testsRun,'failures':len(result.failures),'errors':len(result.errors),'records':RECORDS,'censusDiagnosticRecords':CIM_RECORDS,'applicationExecuted':False},ensure_ascii=False));raise SystemExit(0 if result.wasSuccessful() else 1)
