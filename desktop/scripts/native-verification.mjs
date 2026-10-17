@@ -11,7 +11,8 @@ export const nativeGroups=Object.freeze({
 const root=fileURLToPath(new URL('../',import.meta.url));
 function runScript(name){
  return new Promise((resolveResult,reject)=>{
-  const child=spawn(process.execPath,[fileURLToPath(new URL('../tests/native/'+name+'.mjs',import.meta.url))],{cwd:root,windowsHide:true,stdio:'inherit',shell:false});
+  const entry=name==='source-sync'?'source-sync-restore':name;
+  const child=spawn(process.execPath,[fileURLToPath(new URL('../tests/native/'+entry+'.mjs',import.meta.url))],{cwd:root,windowsHide:true,stdio:'inherit',shell:false});
   child.once('error',reject);child.once('exit',(code,signal)=>resolveResult({code,signal}));
  });
 }
