@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse,hashlib,json,os,re,runpy,shutil,struct,subprocess,sys,time
 HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
-from portable_support import REVIEW_MODE,need,safe,pin,read,save,snapshot,copy_app
+from portable_support import REVIEW_MODE,need,safe,pin,read,save,snapshot,copy_app,python_runtime_snapshot
 from package_owned_job import OwnedJob
 import producer_collector as collect
 from producer_inputs import plan_producer,absolute_path
@@ -79,7 +79,7 @@ def runtime_inputs(args,out,environment):
         if path==HERE:continue
         need(path.is_absolute() and path.is_relative_to(python_root),'UNBOUNDED_PYTHON_IMPORT_PATH')
         path_rows.append({'path':str(path),'absent':not path.exists()})
-    closure=snapshot(python_root)
+    closure=python_runtime_snapshot(python_root,sys.executable)
     save(out/'runtime-inputs.json',{'reviewMode':REVIEW_MODE,'runtimes':runtimes,'pythonVersion':sys.version,
          'pythonPrefix':str(python_root),'pythonSearchPath':path_rows,'pythonClosure':closure,
          'electron':pin(electron),'electronClosure':snapshot(electron.parent),'conhost':pin(args.conhost),

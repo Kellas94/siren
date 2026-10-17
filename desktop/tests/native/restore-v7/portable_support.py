@@ -16,7 +16,7 @@ def diagnostic_path(value):
 
 def safe(path):
     path=Path(path);need(path.is_absolute(),'ABSOLUTE_PATH_REQUIRED')
-    for node in (path,*path.parents):
+    for node in (*reversed(path.parents),path):
         info=node.lstat()
         if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&1024:
             requested,requested_cut=diagnostic_path(path);refused,refused_cut=diagnostic_path(node)
@@ -61,6 +61,41 @@ def snapshot(root,*,exclude=()):
                 files.append({'relativePath':name,**row})
     walk(root)
     return {'root':str(root.resolve()),'files':files,'directories':directories,'bytes':total,'excludedRootEntries':sorted(exclude)}
+
+def python_runtime_snapshot(root,executable):
+    root=safe(root);executable=Path(executable)
+    need(root.is_dir() and executable==root/'python.exe' and len(root.drive)==2 and root.drive.endswith(':') and '..' not in root.parts,'SELECTED_PYTHON_EXE_REQUIRED')
+    selected=pin(executable)
+    def observations():
+        rows=[]
+        for name in ['python3.exe','python3.12.exe']:
+            node=root/name;row={'relativePath':name,'path':str(node)}
+            try:info=node.lstat()
+            except FileNotFoundError:rows.append(dict(row,kind='absent'));continue
+            attributes=getattr(info,'st_file_attributes',0);tag=getattr(info,'st_reparse_tag',0)
+            row.update(fileAttributes=attributes,fileMode=info.st_mode,reparseTag=tag,bytes=info.st_size,modifiedNs=info.st_mtime_ns)
+            if not stat.S_ISLNK(info.st_mode) and not attributes&1024 and not tag:
+                need(stat.S_ISREG(info.st_mode),'PYTHON_ALIAS_REGULAR_FILE_REQUIRED')
+                rows.append(dict(row,kind='regular-file',file=pin(node)));continue
+            need(stat.S_ISLNK(info.st_mode) and attributes&1024 and not attributes&16 and tag==stat.IO_REPARSE_TAG_SYMLINK,'PYTHON_ALIAS_REPARSE_REFUSED')
+            target=os.readlink(node)
+            need(isinstance(target,str) and 0<len(target)<=32768,'PYTHON_ALIAS_TARGET_REFUSED')
+            # Read only the substitute-path text. Accept no dot, drive-relative,
+            # alias-chain or other normalization that could hide a different target.
+            device=target.startswith('\\\\?\\')
+            lexical=target[4:] if device else target
+            lexical=lexical.replace('/','\\')
+            need(lexical.casefold()==str(executable).replace('/','\\').casefold()
+                 or (not device and lexical.casefold()=='python.exe'),'PYTHON_ALIAS_TARGET_REFUSED')
+            rows.append(dict(row,kind='metadata-only-symlink',targetText=target,selectedTarget=selected,unselected=True))
+        return rows
+    before=observations();aliases=[row for row in before if row['kind']=='metadata-only-symlink']
+    result=snapshot(root,exclude=[row['relativePath'] for row in aliases])
+    need(before==observations(),'PYTHON_ALIAS_METADATA_DRIFT')
+    need(pin(executable)==selected,'SELECTED_PYTHON_RUNTIME_DRIFT')
+    result.update(launchAliasObservations=before,metadataOnlyLaunchAliases=aliases,selectedPython=selected,
+                  scope='Strict Python byte inventory except validated unused launch-alias metadata; aliases are not resolved, opened or executed.')
+    return result
 
 def copy_app(source,target):
     source=safe(source);target=Path(target);need(not target.exists(),'FRESH_COPY_TARGET_REQUIRED')
