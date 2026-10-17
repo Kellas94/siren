@@ -1,6 +1,7 @@
 """Physical portable-host boundaries, using fresh ordinary files, never SIREN."""
 from pathlib import Path
 import hashlib,json,os,runpy,tempfile,unittest
+from unittest.mock import patch
 
 MODULE=Path(__file__).with_name('portable_support.py')
 
@@ -38,6 +39,53 @@ class PortableBoundaryTests(unittest.TestCase):
         try:os.symlink(target,tree/'link')
         except OSError:self.skipTest('OS refused creation of test link')
         with self.assertRaisesRegex(ValueError,'LINK_REFUSED'):self.api['snapshot'](tree)
+    def junction_diagnostic(self,ancestor):
+        import _winapi
+        target=self.root/'target-Ș-😀';target.mkdir();secret=target/'payload.bin';secret.write_bytes(b'owned control bytes')
+        link=self.root/'junction-Ș-😀';_winapi.CreateJunction(str(target),str(link))
+        requested=link/'payload.bin' if ancestor else link
+        observed=link.lstat()
+        with patch.object(Path,'open',side_effect=AssertionError('REFUSED_PATH_MUST_NOT_BE_OPENED')) as opened:
+            with self.assertRaisesRegex(ValueError,'LINK_REFUSED') as caught:self.api['pin'](requested)
+            self.assertEqual(opened.call_count,0)
+        code,separator,raw=str(caught.exception).partition(' ')
+        self.assertEqual(code,'LINK_REFUSED');self.assertTrue(separator,'MISSING_REFUSED_PATH_DIAGNOSTIC')
+        detail=json.loads(raw)
+        self.assertEqual(detail['requestedPath'],str(requested));self.assertEqual(detail['refusedPath'],str(link))
+        self.assertEqual(detail['fileAttributes'],observed.st_file_attributes);self.assertTrue(detail['fileAttributes']&1024)
+        self.assertEqual(detail['fileMode'],observed.st_mode);self.assertEqual(detail['reparseTag'],observed.st_reparse_tag)
+        self.assertFalse(detail['requestedPathTruncated']);self.assertFalse(detail['refusedPathTruncated'])
+        self.assertEqual(secret.read_bytes(),b'owned control bytes');self.assertLess(len(str(caught.exception)),3000)
+        print(json.dumps({'control':'ancestor' if ancestor else 'direct','message':str(caught.exception),'noFileOpenBeforeRefusal':True,'targetUnchanged':True},ensure_ascii=True))
+    def test_direct_junction_refusal_retains_exact_diagnostic(self):self.junction_diagnostic(False)
+    def test_ancestor_junction_refusal_retains_exact_diagnostic(self):self.junction_diagnostic(True)
+    def test_refusal_diagnostic_fits_retained_primary_budget(self):
+        import _winapi
+        target=self.root/'target';target.mkdir();link=self.root/'junction';_winapi.CreateJunction(str(target),str(link))
+        observed=link.lstat();requested=self.root/('Ș😀'*2000)
+        with patch.object(Path,'lstat',return_value=observed),patch.object(Path,'open',side_effect=AssertionError('NO_FILE_READ')):
+            with self.assertRaisesRegex(ValueError,'LINK_REFUSED') as caught:self.api['safe'](requested)
+        code,separator,raw=str(caught.exception).partition(' ')
+        self.assertTrue(separator,'MISSING_BOUNDED_REFUSAL_DIAGNOSTIC');detail=json.loads(raw)
+        self.assertTrue(detail['requestedPathTruncated']);self.assertTrue(detail['refusedPathTruncated'])
+        self.assertTrue(str(requested).startswith(detail['requestedPath']));self.assertLessEqual(len(detail['requestedPath']),512)
+        self.assertLessEqual(len(json.dumps(detail['requestedPath'],ensure_ascii=True)),1024);self.assertLess(len(str(caught.exception)),3000)
+        print(json.dumps({'control':'synthetic-long-path-stat','messageCharacters':len(str(caught.exception)),'retentionCharacters':3000,'pathWasNotPhysicallyCreated':True,'noFileOpen':True}))
+    def test_escaped_and_supplementary_path_diagnostics_fit_primary_budget(self):
+        import _winapi
+        target=self.root/'target';target.mkdir();link=self.root/'junction';_winapi.CreateJunction(str(target),str(link))
+        observed=link.lstat();records=[]
+        for label,value in [('escaped-control',chr(1)*2000),('supplementary','😀'*2000),('backslash',('x'+os.sep)*2000)]:
+            requested=self.root/value
+            with patch.object(Path,'lstat',return_value=observed),patch.object(Path,'open',side_effect=AssertionError('NO_FILE_READ')):
+                with self.assertRaisesRegex(ValueError,'LINK_REFUSED') as caught:self.api['safe'](requested)
+            message=str(caught.exception);self.assertLess(len(message),3000,label)
+            detail=json.loads(message.partition(' ')[2])
+            for field in ['requestedPath','refusedPath']:
+                self.assertTrue(str(requested).startswith(detail[field]));self.assertLessEqual(len(json.dumps(detail[field],ensure_ascii=True)),1024)
+            self.assertTrue(detail['requestedPathTruncated']);self.assertTrue(detail['refusedPathTruncated'])
+            records.append({'kind':label,'messageCharacters':len(message),'pathWasNotPhysicallyCreated':True})
+        print(json.dumps({'control':'serialized-path-budget','records':records,'retentionCharacters':3000,'noFileOpen':True}))
     def stage(self):
         stage=self.root/'stage';stage.mkdir();host=stage/'host.py';host.write_bytes(b'host')
         runtime=self.root/'python.exe';runtime.write_bytes(b'exe')

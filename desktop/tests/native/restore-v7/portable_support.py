@@ -8,11 +8,23 @@ APP_EXCLUSIONS=frozenset({'evidence','dist','Data','.git'})
 def need(ok,code):
     if not ok:raise ValueError(code)
 
+def diagnostic_path(value):
+    # Two <=1024-character JSON strings plus fixed lstat fields fit the primary's 3000-character retention.
+    text=str(value);length=min(len(text),512)
+    while len(json.dumps(text[:length],ensure_ascii=True))>1024:length//=2
+    return text[:length],len(text)>length
+
 def safe(path):
     path=Path(path);need(path.is_absolute(),'ABSOLUTE_PATH_REQUIRED')
     for node in (path,*path.parents):
         info=node.lstat()
-        need(not stat.S_ISLNK(info.st_mode) and not getattr(info,'st_file_attributes',0)&1024,'LINK_REFUSED')
+        if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&1024:
+            requested,requested_cut=diagnostic_path(path);refused,refused_cut=diagnostic_path(node)
+            detail={'requestedPath':requested,'refusedPath':refused,
+                    'requestedPathTruncated':requested_cut,'refusedPathTruncated':refused_cut,
+                    'fileAttributes':getattr(info,'st_file_attributes',0),'fileMode':info.st_mode,
+                    'reparseTag':getattr(info,'st_reparse_tag',0),'isSymlink':stat.S_ISLNK(info.st_mode)}
+            raise ValueError('LINK_REFUSED '+json.dumps(detail,ensure_ascii=True,separators=(',',':')))
     return path
 
 def pin(path):
