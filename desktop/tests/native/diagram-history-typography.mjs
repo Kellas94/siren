@@ -12,6 +12,7 @@ import {AppearanceStore} from '../../src/appearance/store.mjs';
 import {launchDesktop,unlockDesktop} from './drive.mjs';
 import {attachNativePage} from './attach-page.mjs';
 import {copiedPackageContext} from './package-context.mjs';
+import {chooseNativeSelect} from './native-select-keyboard.mjs';
 
 // Actual Diagram controls, drafts, finite domain CAS and exact owned readback.
 // No product handlers, DOM.value, synthetic DOM events or persistence adapters.
@@ -24,10 +25,7 @@ const keys=async(page,key,code,windowsVirtualKeyCode,modifiers=0)=>{for(const ty
 const click=async(page,selector)=>{await page.evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'})`);await page.click(selector);};
 const replace=async(page,selector,value)=>{await click(page,selector);await keys(page,'a','KeyA',65,2);await page.send('Input.insertText',{text:value});};
 async function choose(page,selector,value,{refusedValue}={}){
- const options=await page.evaluate(`Array.from(document.querySelector(${JSON.stringify(selector)}).options).filter(o=>!o.disabled).map(o=>o.value)`),index=options.indexOf(value);assert.ok(index>=0&&options.length<=64,'Bounded real select option must exist');
- await click(page,selector);await keys(page,'Escape','Escape',27);const end=index>options.length/2;await keys(page,end?'End':'Home',end?'End':'Home',end?35:36);
- for(let i=0;i<(end?options.length-1-index:index);i++)await keys(page,end?'ArrowUp':'ArrowDown',end?'ArrowUp':'ArrowDown',end?38:40);
- await keys(page,'Tab','Tab',9);await page.waitFor(`document.querySelector(${JSON.stringify(selector)}).value===${JSON.stringify(refusedValue??value)}`);
+ return chooseNativeSelect(page,selector,value,{refusedValue,keys});
 }
 const result={status:'ADVERSE',author:'/root/media_batch_review',executor:process.env.GITHUB_ACTIONS==='true'?'GitHub Actions':process.env.SIREN_NATIVE_EXECUTOR==='/root'?'/root':'/root/media_batch_review',startedAt:new Date().toISOString(),cases:[],scope:'Actual native Diagram source/Build/Style semantic history, supported typography, exact saved/current CAS and optional-key absence, pending-field refusal, separate windows, same-renderer docking and common Lock. Bounded correctness fixture; no historical375341 timeout closure, stress maximum, physical monitor, hosted or release approval.'};
 let driver,working,peerWorking,packaged,phase='fixture';

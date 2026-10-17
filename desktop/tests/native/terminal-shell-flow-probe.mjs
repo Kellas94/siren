@@ -41,7 +41,7 @@ try {
  return Object.freeze({script,markers,minimumFloodMs:60000,naturalDeadlineMs:110000,generatedByteCap:128*1024*1024,freshCommand});
 }
 export function deriveShellFlowLongFixture(source){
- assert.equal(createHash('sha256').update(source).digest('hex'),'a978af9537ff1c50cdb99849bca18f1f3dbf8181ccfdce41ad7448ab0a2f680a','FIXTURE_SOURCE_DRIFT');
+ assert.ok(['a978af9537ff1c50cdb99849bca18f1f3dbf8181ccfdce41ad7448ab0a2f680a','c59b53e791d765545ccaf0e7a149507a55ddb03576027b2ac850ee827bb41477'].includes(createHash('sha256').update(source).digest('hex')),'FIXTURE_SOURCE_DRIFT');
  const anchor='Thread.Sleep(12000);return 0;';assert.equal(source.split(anchor).length,3,'LONG_FIXTURE_ANCHOR_DRIFT');
  // Separate source, including its unused historical owner mode. Original is
  // unchanged and its twelve-second observations retain their original gates.

@@ -2,6 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Duplex} from 'node:stream';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {types} from 'node:util';
+import vm from 'node:vm';
+import * as startup from '../src/terminal/startup-protocol.mjs';
+import * as commands from '../src/terminal/command-protocol.mjs';
 import {performance} from 'node:perf_hooks';
 import {TerminalSessionCommandChannel as Channel} from '../src/terminal/session-command-channel.mjs';
 import {encodeStartupRequest,encodeStartupReply} from '../src/terminal/startup-protocol.mjs';
@@ -76,8 +82,48 @@ test('absolute startup deadline includes authentication and retains only unknown
  assert.equal(await f.link.authenticated,false);assert.equal(await f.link.ready,false);const s=f.link.stats();assert.equal(s.unknownRequests,1);assert.equal(s.retainedStartupBytes,0);assert.ok(s.unknownMetadata.sha256);assert.equal(JSON.stringify(s).includes('DO_NOT_RETAIN_CONFIG'),false);cleanup(f);
 });
 
+// Only this regression evaluates the exact production body with owned time imports.
+// The real channel/protocols/Promise/Buffer brands and all other tests stay unchanged.
+function startupClock(){
+ let now=0,serial=0;const pending=new Map(),scheduled=[];
+ return {performance:{now:()=>now},scheduled,
+  setTimeout(fn,ms){assert.equal(typeof fn,'function');assert.ok(Number.isFinite(ms)&&ms>=0);const id=++serial;pending.set(id,{fn,due:now+ms});scheduled.push({due:now+ms,ms});return id;},
+  clearTimeout(id){pending.delete(id);},pending:()=>pending.size,
+  advanceTo(value,fire=true){assert.ok(value>=now);now=value;if(!fire)return;for(let i=0;i<64;i++){const due=[...pending].filter(([,v])=>v.due<=now).sort((a,b)=>a[1].due-b[1].due||a[0]-b[0]);if(!due.length)return;const [id,value]=due[0];pending.delete(id);value.fn();}assert.fail('bounded owned timer drain');}
+ };
+}
+async function clockedSessionLink(clock){
+ const source=await readFile(new URL('../src/terminal/session-link.mjs',import.meta.url),'utf8');
+ assert.equal(createHash('sha256').update(source).digest('hex'),'afd063ca99a957e21e9e6d22bd9d868f8c95df5adc40559ba59e1478c927c518','Exact reviewed production module required');
+ const imports=source.match(/^import .*;\r?$/gm)??[];assert.equal(imports.length,5);
+ assert.equal(source.split('const invoke=Reflect.apply,clock=performance.now.bind(performance),timer=setTimeout,cancel=clearTimeout;').length,2,'Exact captured time boundary');
+ assert.equal(source.split('export class TerminalSessionLink {').length,2);
+ const body=source.replace(/^import .*;\r?\n/gm,'').replace('export class TerminalSessionLink {','class TerminalSessionLink {');
+ const factory=vm.runInThisContext('(function({performance,types,TerminalSessionCommandChannel,STARTUP_LIMITS,validateStartupEnvelope,encodeStartupEnvelope,encodeStartupRequest,validateStartupReply,combineStartupPolicies,validateStartupModulePolicy,encodeTerminalCommandRequest,decodeTerminalCommandRequest,validateTerminalCommandReply,setTimeout,clearTimeout}){'+body+'\nreturn TerminalSessionLink;})',{filename:'exact-session-link-with-owned-time-imports'});
+ return factory({...startup,...commands,types,TerminalSessionCommandChannel:Channel,performance:clock.performance,setTimeout:clock.setTimeout,clearTimeout:clock.clearTimeout});
+}
+async function heldChunk(f,index){for(let i=0;i<8&&f.held.length<=index;i++)await tick();assert.equal(f.held.length,index+1,'Actual next chunk requires previous accepted ACK');assert.equal(f.held[index].q.type,'startup-chunk');assert.equal(f.held[index].q.index,index);return f.held[index];}
 test('chunk ACK progress never resets absolute startup deadline',async()=>{
- const f=fixture({delay:8,deadlineMs:25}),c=config();c.shell.env.BIG='x'.repeat(32768);await assert.rejects(f.link.prepare(c),failed('STARTUP_UNAVAILABLE'));assert.ok(f.seen.includes('startup-chunk'));assert.equal(f.seen.includes('startup-seal'),false);assert.equal(f.link.stats().retainedStartupBytes,0);cleanup(f);
+ for(const expiry of ['timer','correlated-late-ack']){
+  const clock=startupClock(),Link=await clockedSessionLink(clock),f=fixture({defer:true,holdPhase:'startup-chunk',deadlineMs:25});let refusal;
+  try{
+   f.link=new Link(f.opts);assert.equal(await f.link.authenticated,true);
+   const c=config();c.shell.env.BIG='x'.repeat(32768);const pending=f.link.prepare(c);refusal=assert.rejects(pending,failed('STARTUP_UNAVAILABLE'));refusal.catch(()=>{});
+   await heldChunk(f,0);assert.equal(f.begin.chunkCount,3);
+   for(let index=0;index<2;index++){clock.advanceTo(8*(index+1));const chunk=f.held[index];f.respond(chunk.q,chunk.wire);await heldChunk(f,index+1);assert.deepEqual(f.events,[]);assert.equal(f.link.stats().unknownRequests,0);}
+   assert.deepEqual(clock.scheduled,[{due:25,ms:25}],'Accepted ACK progress must not restart startup timer');
+   assert.equal(f.seen.includes('startup-seal'),false);
+   if(expiry==='timer')clock.advanceTo(25);
+   else{
+    clock.advanceTo(26,false);assert.deepEqual(f.events,[],'Owned timer deliberately has not run');
+    f.options.rawReply=true;f.options.rawPhase='startup-chunk';
+    const late=f.held[2];f.respond(late.q,late.wire); // Parser-correlated late ACK only; prior ACKs used creator.send; 26 < renewed 16+25.
+   }
+   assert.deepEqual(f.events,['unavailable'],'Original deadline fences synchronously, before any next Promise continuation');
+   await refusal;const stats=f.link.stats();assert.equal(stats.fenced,true);assert.equal(stats.retainedStartupBytes,0);assert.equal(stats.unknownRequests,1);assert.equal(stats.unknownMetadata.phase,'startup-chunk');assert.equal(stats.unknownMetadata.index,2);assert.equal(JSON.stringify(stats).includes('DO_NOT_RETAIN_CONFIG'),false);
+   assert.equal(f.seen.includes('startup-seal'),false);assert.equal(f.seen.includes('startup-start'),false);assert.equal(await f.link.ready,false);assert.equal(clock.pending(),0);
+  }finally{cleanup(f);if(refusal)await refusal;assert.equal(clock.pending(),0);}
+ }
 });
 
 test('prepared wait consumes the same deadline but command mode has no idle expiry',async()=>{

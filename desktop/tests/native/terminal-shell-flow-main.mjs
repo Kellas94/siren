@@ -4,10 +4,11 @@ export async function runShellFlowMain(config){
  const {app,utilityProcess}=await import('electron'),assert=(await import('node:assert/strict')).default;
  const fs=await import('node:fs/promises'),{join}=await import('node:path'),{createRequire}=await import('node:module'),{createHash}=await import('node:crypto'),{setTimeout:delay}=await import('node:timers/promises');
  const {createShellFlowController}=await import(config.controllerUrl),{createShellFlowMailbox}=await import(config.mailboxUrl),{ShellFlowMarkerScanner}=await import(config.probeUrl);
+ const {captureShellFlowFailure}=await import(config.readbackUrl);
  const now=()=>Number(process.hrtime.bigint()/1000000n),age=now(),hash=s=>createHash('sha256').update(s).digest('hex');
  app.setPath('userData',join(config.output,'profile'));await app.whenReady();
  const result={admitted:false,status:'FAILED',runtime:{...process.versions,arch:process.arch,platform:process.platform},samples:[],phase:'bootstrap'};
- const native=createRequire(import.meta.url)(config.addon),strong=globalThis.__shellFlowMain={};let host,hostOwner,session,sessionClosed=false,hostClosed=false,controller,workerAlive=true;
+ const native=createRequire(import.meta.url)(config.addon),strong=globalThis.__shellFlowMain={};let host,hostOwner,session,sessionClosed=false,hostClosed=false,controller,workerAlive=true,directory;
  const exited=s=>s.active===0&&!s.root.alive&&(!s.shell||!s.shell.alive)&&s.held.every(p=>!p.alive);
  const persist=async(path,value)=>{await fs.writeFile(path+'.pending',JSON.stringify(value),{flag:'wx'});await fs.rename(path+'.pending',path);};
  const wait=async(fn,ms=3000)=>{const deadline=now()+ms;for(;;){assert.ok(now()<deadline,'SHELL_FLOW_WAIT_DEADLINE');const value=await fn();assert.ok(now()<deadline,'SHELL_FLOW_WAIT_DEADLINE');if(value)return value;await delay(5);}};
@@ -19,7 +20,7 @@ export async function runShellFlowMain(config){
   const hello={},mark=native.mark();host=utilityProcess.fork(config.hostEntry,[],{serviceName:'SIREN fixed shell control',stdio:'pipe'});strong.host=host;
   host.stdout?.on('data',()=>{});host.stderr?.on('data',()=>{});host.on('message',m=>{hello[m.kind]=m;});
   await wait(()=>hello.hello);assert.equal(hello.hello.pid,host.pid);hostOwner=native.start(host.pid,config.electron,mark);strong.hostOwner=hostOwner;
-  const directory=join(config.output,'Șiren flow α');await fs.mkdir(directory);await fs.copyFile(config.fixture,join(directory,'fixed-shell-flow-child.exe'));
+  directory=join(config.output,'Șiren flow α');await fs.mkdir(directory);await fs.copyFile(config.fixture,join(directory,'fixed-shell-flow-child.exe'));
   await fs.writeFile(join(directory,'fixed-shell-flow.ps1'),config.probe.script,{flag:'wx'});
   await fs.writeFile(join(directory,'shell-flow-config.json'),JSON.stringify({packagePath:config.packagePath,shell:config.shell}),{flag:'wx'});
   result.phase='create';const rootMark=native.mark();session=native.createSession(hostOwner,config.electron,config.creator,directory);strong.session=session;
@@ -64,7 +65,9 @@ export async function runShellFlowMain(config){
   const stopping=now();native.stopSession(session,77);result.stopped=await wait(()=>{const s=native.snapshotSession(session);return exited(s)?s:null;});result.stopMs=now()-stopping;sessionClosed=native.closeSession(session)===true;assert.equal(sessionClosed,true);
   host.postMessage({kind:'exit'});await wait(()=>exited(native.snapshot(hostOwner)));hostClosed=native.close(hostOwner)===true;assert.equal(hostClosed,true);
   result.sessionClosed=sessionClosed;result.hostClosed=hostClosed;result.ageMs=now()-age;assert.ok(result.ageMs<100000);result.status='SHELL_FLOW_OBSERVED_NOT_ADMITTED';
- }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};try{if(session&&!sessionClosed)result.failureSession=native.snapshotSession(session);}catch(error){result.snapshotError=String(error);}}
+ }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};try{if(session&&!sessionClosed)result.failureSession=native.snapshotSession(session);}catch(error){result.snapshotError=String(error);}
+  try{result.failureDiagnostics=await captureShellFlowFailure({fs,path:directory?name=>join(directory,name):null,controller});}catch(error){result.diagnosticError=String(error).slice(0,4096);}
+ }
  finally{
   controller?.dispose();workerAlive=false;
   try{if(session&&!sessionClosed){native.stopSession(session,98);await wait(()=>exited(native.snapshotSession(session)));native.closeSession(session);}}catch(e){result.cleanupError=String(e.stack??e);result.status='FAILED';}

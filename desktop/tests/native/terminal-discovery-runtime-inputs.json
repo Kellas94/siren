@@ -58,8 +58,8 @@
     },
     {
       "path": "desktop/package.json",
-      "bytes": 1079,
-      "sha256": "3c0bf4d8fa257852a8c438f261bcaf77f032175f9f1c3457fbd1e78717d3b434"
+      "bytes": 1197,
+      "sha256": "14b3b150198ba6eb8c4f704faf76de69f57f0dcfd4f21c6cf62c9b106e0dcca4"
     },
     {
       "path": "desktop/runtime/terminal-provider/package-lock.json",
@@ -83,8 +83,8 @@
     },
     {
       "path": "desktop/src/navigation/window-labels.mjs",
-      "bytes": 4864,
-      "sha256": "fe3fe2883649b92fc62f751bad0f1a7c786d5777e0226636bab63e270db51f74"
+      "bytes": 5011,
+      "sha256": "478d084f779aa08de109ce9549a9977f712f29f4d7533ae4781c6a74ac86b933"
     },
     {
       "path": "desktop/src/projects/budgets.mjs",
@@ -118,8 +118,8 @@
     },
     {
       "path": "desktop/src/terminal/creator-startup.mjs",
-      "bytes": 13927,
-      "sha256": "f722efa0e86dc1c2453e1dbb0ac3da48f6311fdc861769a2ad8cb841066a6ff2"
+      "bytes": 14211,
+      "sha256": "6c11c4158427f7b3f62ae437c2d9219dde8ba7b6f27ab5877c456519add9cc5f"
     },
     {
       "path": "desktop/src/terminal/credits.mjs",
@@ -168,8 +168,8 @@
     },
     {
       "path": "desktop/src/terminal/production-access-transitions.mjs",
-      "bytes": 22082,
-      "sha256": "91f20e34bee93b7e762f6b1f3fc122917c783416336cdec48cbc686373b2094c"
+      "bytes": 22437,
+      "sha256": "42cffb942b3563a1877091419f35aa6f7c9418dee123b5b629a13b13d9c0e097"
     },
     {
       "path": "desktop/src/terminal/production-aggregate-gate.mjs",
@@ -183,8 +183,8 @@
     },
     {
       "path": "desktop/src/terminal/production-backend.mjs",
-      "bytes": 35048,
-      "sha256": "8526a477e0ff31f8c7d835b81c4aacda000bce830adf5e5fb5ce4614ea605d2c"
+      "bytes": 36217,
+      "sha256": "b6b8c09079966c359f7a6bf12312bc3f9599182f1f43f31795ee0e8b6525ca2e"
     },
     {
       "path": "desktop/src/terminal/production-control-channel.mjs",
@@ -213,8 +213,8 @@
     },
     {
       "path": "desktop/src/terminal/production-manager.mjs",
-      "bytes": 62952,
-      "sha256": "06fe61b8f195a7c8584fa4e179aa316a924af31a32986395a631326be855c090"
+      "bytes": 65701,
+      "sha256": "3e8335a0323d83fcade9e79be78ac9b65712fe22d6550c0e8a11dd2b84352e0e"
     },
     {
       "path": "desktop/src/terminal/production-ownership.mjs",
@@ -238,8 +238,8 @@
     },
     {
       "path": "desktop/src/terminal/profiles.mjs",
-      "bytes": 9475,
-      "sha256": "7e13976cb5caafd5ee7c0bd3fdd0bf9be276592cc2ce116455a31b53c63e9a43"
+      "bytes": 13724,
+      "sha256": "9de16f71e82765922b4cd396b90ce260fdc89303da81531718b116b78a9f951a"
     },
     {
       "path": "desktop/src/terminal/provider-lifetime.mjs",
@@ -253,8 +253,8 @@
     },
     {
       "path": "desktop/src/terminal/request-router.mjs",
-      "bytes": 14832,
-      "sha256": "10c52a6b77787bd4612e799dc15f757adac3b14bfd1df6cbd040451ec4fc76b4"
+      "bytes": 15686,
+      "sha256": "25cdbacc0b20c0df38108b3312b952897940e3d07f67384a7d7e7a331805ffbf"
     },
     {
       "path": "desktop/src/terminal/session-cleanup.mjs",
@@ -268,18 +268,18 @@
     },
     {
       "path": "desktop/src/terminal/session-link.mjs",
-      "bytes": 15207,
-      "sha256": "ed02213867341d953c60192c40a01741481ab1ed58800434f175dbc87985d063"
+      "bytes": 15629,
+      "sha256": "afd063ca99a957e21e9e6d22bd9d868f8c95df5adc40559ba59e1478c927c518"
     },
     {
       "path": "desktop/src/terminal/shutdown-graph.mjs",
-      "bytes": 15139,
-      "sha256": "fe84dbc5e6ecf85a71a6603c87b4705a475e9d1234b154b0b034102b6bf51491"
+      "bytes": 16279,
+      "sha256": "e4aa9de8e10ac17abce442dbd7c2cc9f36e7fa015403f708f5847e4bbb49fa3b"
     },
     {
       "path": "desktop/src/terminal/startup-protocol.mjs",
-      "bytes": 16374,
-      "sha256": "cd9dd768319221d38e3c6e73fae9c307b777dbd95a27afc7627ba32188479a80"
+      "bytes": 18190,
+      "sha256": "6db9983d2718b7745b2d1bf93abb471fee3a7d2bec47d409565ef589f760a329"
     },
     {
       "path": "desktop/src/terminal/three-lane-bootstrap-codec.mjs",
@@ -298,8 +298,8 @@
     },
     {
       "path": "desktop/src/windows/registry.mjs",
-      "bytes": 36940,
-      "sha256": "716aa26eeaa493c2b46792da14d8294319ede58db045ce4ec06d6a54b9c2a85d"
+      "bytes": 39876,
+      "sha256": "5aafc441a978d48778bd422721afd36a6a6f13cdf495779496abe7209f2f30fd"
     },
     {
       "path": "desktop/src/windows/surface.mjs",
@@ -378,8 +378,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
-      "bytes": 10731,
-      "sha256": "447787571c9b629cea67e84df1b68b68d48b6a3e626070dc1d6f5fb567176b37"
+      "bytes": 10732,
+      "sha256": "670e9a9e8722392aa22f8aff6fc06053343d30acca06ef182b955f8dccc66879"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
@@ -403,8 +403,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-inputs.json",
-      "bytes": 12601,
-      "sha256": "90f35929af8163144c03b5a15bd6890542d06a1f4d6557e21520f24f64c44f91"
+      "bytes": 12602,
+      "sha256": "7f91b8dd988fd4dcb7c76c39a8d73ad6a5bb68ffa5ebd16f36d5476e96a35f8b"
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
@@ -438,8 +438,8 @@
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime-inputs.json",
-      "bytes": 15445,
-      "sha256": "9520322f24a12ee57d450c0a286b4cd9286efaf31919e4e7f0430884d0a930c6"
+      "bytes": 15446,
+      "sha256": "d6066ac7b04a8629aa29b445c12e970a622518f0040daa2bcda3b7ca706ec078"
     },
     {
       "path": "desktop/tests/native/terminal-session-runtime-worker.mjs",
@@ -468,8 +468,8 @@
     },
     {
       "path": "desktop/tests/terminal-session-runtime-integration.test.mjs",
-      "bytes": 10427,
-      "sha256": "39331bcf9ff91c3e0e4e33fc7711ae4128ec7ca8a0815ac12cdc372b6fce0870"
+      "bytes": 10418,
+      "sha256": "7af5b09ed255010c0e55473095a8f61357086da44b6d6f249232d3a788a961a4"
     },
     {
       "path": "terminal-discovery-diagnostic-20261011/derivation-inputs/origin.json",

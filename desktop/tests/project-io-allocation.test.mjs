@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { open, readFile, writeFile, appendFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
 import { mkdtemp } from './fixtures/temporary.mjs';
 import { readOwnedBytes } from '../src/projects/io.mjs';
 
-const fixtures = fileURLToPath(new URL('../../project-io-scratch-allocation-20261012/fixtures/', import.meta.url));
+// Each real FileHandle case owns a fresh canonical temporary directory.
 const pattern = length => Buffer.from(Array.from({ length }, (_, i) => (i * 31 + Math.floor(i / 65536) * 73) % 256));
 async function fixture(t, bytes) {
-  const root = await mkdtemp(join(fixtures, 'read-'));
+  const root = await mkdtemp(join(tmpdir(), 'siren-project-io-allocation-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const path = join(root, 'bytes.bin');
   await writeFile(path, bytes);

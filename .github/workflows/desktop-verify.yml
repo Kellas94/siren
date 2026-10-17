@@ -21,6 +21,12 @@ jobs:
           node-version: '24.16.0'
           cache: npm
           cache-dependency-path: desktop/package-lock.json
+      - name: Fixed Python for owned Restore QA
+        id: qa_python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.10'
+          architecture: x64
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
       - name: Install pinned Electron runtime explicitly
@@ -29,11 +35,34 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
       - name: Build fixed native process reader
         run: node scripts/build-process-reader.mjs
+      - name: Owned Restore portable refusal controls
+        env:
+          SIREN_QA_PYTHON: ${{ steps.qa_python.outputs.python-path }}
+        run: |
+          New-Item -ItemType Directory -Path evidence/restore-v7-controls -ErrorAction Stop | Out-Null
+          & $env:SIREN_QA_PYTHON -B -I -S -X utf8 tests/native/restore-v7/producer_admission_test.py evidence/restore-v7-controls/admission.json *> evidence/restore-v7-controls/admission-output.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $env:SIREN_QA_PYTHON -B -I -S -X utf8 tests/native/restore-v7/route_derivation_test.py evidence/restore-v7-controls/route.json *> evidence/restore-v7-controls/route-output.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $env:SIREN_QA_PYTHON -B -I -S -X utf8 tests/native/restore-v7/producer_inputs_test.py *> evidence/restore-v7-controls/input-output.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $env:SIREN_QA_PYTHON -B -I -S -X utf8 tests/native/restore-v7/portable_support_test.py *> evidence/restore-v7-controls/physical-output.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $env:SIREN_QA_PYTHON -B -I -S -X utf8 tests/native/restore-v7/pipeline_host_test.py evidence/restore-v7-controls/owned-host *> evidence/restore-v7-controls/owned-host-output.txt
+          exit $LASTEXITCODE
       - name: Unit and protocol behavior (includes real 180-second timeout)
         # CI27 exhausted six minutes before the expanded suite completed.
         # Individual behavioral deadlines remain unchanged; keep this bounded.
@@ -46,18 +75,27 @@ jobs:
           foreach ($identityFile in $identityFiles) {
             if (-not (Test-Path -LiteralPath $identityFile -PathType Leaf)) { throw 'Required native identity test missing' }
           }
-          node --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
+          node --expose-gc --experimental-vm-modules --test --test-concurrency=1 --test-reporter=tap @identityFiles 2>&1 | Tee-Object -FilePath evidence/ci-native-identity.log
           $identityExit = $LASTEXITCODE
           $otherFiles = @(Get-ChildItem -LiteralPath tests -Filter '*.test.mjs' -File |
             Where-Object { $_.Name -notin @('process-identity-deadline.test.mjs', 'process-identity.test.mjs', 'process-reader-native.test.mjs', 'fixture-temp-alias.test.mjs') } |
             Sort-Object Name | ForEach-Object { "tests/$($_.Name)" })
           if ($otherFiles.Count -eq 0) { throw 'Required unit tests missing' }
-          node --test --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
+          node --expose-gc --experimental-vm-modules --test --test-concurrency=4 --test-reporter=tap @otherFiles 2>&1 | Tee-Object -FilePath evidence/ci-units.log
           $unitsExit = $LASTEXITCODE
           if ($identityExit -ne 0 -or $unitsExit -ne 0) { exit 1 }
           exit 0
       - name: Guarded renderer
         run: node build/renderer.mjs baseline/R78.html generated
+      - name: Retain portable refusal control evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-restore-v7-control-evidence
+          path: desktop/evidence/restore-v7-controls/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
       - name: Retain scoped test evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -251,6 +289,12 @@ jobs:
           node-version: '24.16.0'
           cache: npm
           cache-dependency-path: desktop/package-lock.json
+      - name: Fixed Python for owned Restore QA
+        id: qa_python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.10'
+          architecture: x64
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
       - name: Install pinned Electron runtime explicitly
@@ -259,6 +303,14 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
@@ -270,6 +322,8 @@ jobs:
         if: matrix.group == 'desktop'
         run: node tests/native/help-diagnostics.mjs
       - name: Actual development renderer and protected storage
+        env:
+          SIREN_QA_PYTHON: ${{ steps.qa_python.outputs.python-path }}
         run: node scripts/native-verification.mjs --group ${{ matrix.group }}
       - name: Actual first-session PIN crash recovery
         if: matrix.group == 'desktop'
@@ -505,6 +559,39 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Retain owned source-sync raw journals
+        if: ${{ always() && matrix.group == 'sources' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-native-sources-source-sync-journals
+          path: |
+            desktop/evidence/restore-v7-pipeline/*.bin
+            desktop/evidence/restore-v7-pipeline/*.json
+            desktop/evidence/restore-v7-pipeline/*/*.json
+            desktop/evidence/restore-v7-pipeline/*/*.bin
+            desktop/evidence/restore-v7-pipeline/*/producer/*.json
+            desktop/evidence/restore-v7-pipeline/*/producer/operation/**
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/result.json
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/*.png
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/*.log
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/raw-captures/**
+            desktop/evidence/restore-v7-pipeline/*/restore/*.json
+            desktop/evidence/restore-v7-pipeline/*/restore/operation/**
+            desktop/evidence/restore-v7-pipeline/*/restore/census/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Retain owned Docs Activity raw journals
+        if: ${{ always() && matrix.group == 'desktop' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-native-desktop-docs-activity-journals
+          path: desktop/evidence/docs-activity-native/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
   packaged_windows:
     name: Windows packaged workspaces
     runs-on: windows-latest
@@ -522,6 +609,12 @@ jobs:
           node-version: '24.16.0'
           cache: npm
           cache-dependency-path: desktop/package-lock.json
+      - name: Fixed Python for owned Restore QA
+        id: qa_python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.10'
+          architecture: x64
       - name: Locked dependencies
         run: npm ci --no-fund --no-update-notifier
       - name: Install pinned Electron runtime explicitly
@@ -530,10 +623,20 @@ jobs:
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
+          # Test-owned roots must use the canonical Windows spelling; strict
+          # application path/junction guards remain unchanged.
+          $canonicalTemp = & node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(await realpath(tmpdir()))'
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($canonicalTemp)) { throw 'Canonical TEMP discovery failed' }
+          "TEMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$canonicalTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:TEMP = $canonicalTemp
+          $env:TMP = $canonicalTemp
           node --input-type=module -e 'import{tmpdir}from"node:os";import{realpath}from"node:fs/promises";console.log(JSON.stringify({temporary:tmpdir(),canonical:await realpath(tmpdir())}))'
           node --test --test-reporter=tap tests/io.test.mjs
           exit $LASTEXITCODE
       - name: Development package identity (not publication or release admission)
+        env:
+          SIREN_QA_PYTHON: ${{ steps.qa_python.outputs.python-path }}
         run: |
           $sourceCommit = git rev-parse HEAD
           $packageJson = node scripts/package.mjs $sourceCommit
@@ -583,7 +686,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/source-link.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node tests/native/source-sync.mjs --package $preview.previewRoot
+          node tests/native/source-sync-restore.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tests/native/docs-edit.mjs --package $preview.previewRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -816,6 +919,39 @@ jobs:
             desktop/evidence/protected-storage-*/electron.log
             desktop/dist/*/BUILD-IDENTITY.json
           if-no-files-found: warn
+          retention-days: 14
+
+      - name: Retain owned packaged source-sync raw journals
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-packaged-source-sync-journals
+          path: |
+            desktop/evidence/restore-v7-pipeline/*.bin
+            desktop/evidence/restore-v7-pipeline/*.json
+            desktop/evidence/restore-v7-pipeline/*/*.json
+            desktop/evidence/restore-v7-pipeline/*/*.bin
+            desktop/evidence/restore-v7-pipeline/*/producer/*.json
+            desktop/evidence/restore-v7-pipeline/*/producer/operation/**
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/result.json
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/*.png
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/*.log
+            desktop/evidence/restore-v7-pipeline/*/producer/app/evidence/source-sync/*/raw-captures/**
+            desktop/evidence/restore-v7-pipeline/*/restore/*.json
+            desktop/evidence/restore-v7-pipeline/*/restore/operation/**
+            desktop/evidence/restore-v7-pipeline/*/restore/census/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Retain owned packaged Docs Activity raw journals
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-packaged-docs-activity-journals
+          path: desktop/evidence/docs-activity-native/*/raw-captures/**
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 14
 
   qualification:
