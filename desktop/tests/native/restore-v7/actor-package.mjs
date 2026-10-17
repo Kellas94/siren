@@ -60,7 +60,10 @@ async function targetFor(role){
 }
 async function openRecoveredViews(number){
  await phase('recovered-views-'+number);
- if(await driver.evaluate('location.href==="siren://app/app.html"'))await driver.click('#desktopHome');
+ if(await driver.evaluate('location.href==="siren://app/app.html"')){
+  await driver.waitFor('document.querySelector("#desktopHome")!==null && '+stablePointerExpression('#desktopHome'));
+  await driver.click('#desktopHome');
+ }
  await driver.waitFor('location.href==="siren://app/home.html" && window.sirenHomeView!=null');
  const verified=await verifyRestored(ctx,route,await ctx.projects.readProject(restored.project.id));result['verified'+number]=verified;
  await driver.click('#homeModule-code');const selector=`.home-library-items [data-entity-id="${verified.sourceV7.sourceId}"]`;

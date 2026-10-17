@@ -119,10 +119,12 @@ def launch_host(stage,out,environment):
             receipt['identityAfter']=collect.held_identity_after_exit(job,child,receipt['identityBefore'])
         if receipt['exitCode']!=0:
             value=read(stage/'host-result.json') if (stage/'host-result.json').exists() else {}
-            raise StageFailure(value.get('primaryError') or {'type':'HostExitFailure','exitCode':receipt['exitCode'],'message':'Host failure; raw streams retained'})
+            raise StageFailure(value.get('primaryError') or {'type':'HostExitFailure','exitCode':receipt['exitCode'],'message':'Host failure; raw streams retained'},value.get('finalErrors',[]))
         need(job.wait_empty(5)['closed'],'OUTER_HOST_FAMILY_NOT_EMPTY')
         receipt['result']=pin(stage/'host-result.json')
-    except BaseException as failure:receipt['primaryError']=getattr(failure,'observedPrimary',{'type':type(failure).__name__,'message':str(failure)[:3000]})
+    except BaseException as failure:
+        receipt['primaryError']=getattr(failure,'observedPrimary',{'type':type(failure).__name__,'message':str(failure)[:3000]})
+        receipt['finalErrors'].extend(getattr(failure,'observedSecondary',[]))
     finally:
         def unassigned_cleanup():
             if child is not None and not assigned and child.poll() is None:

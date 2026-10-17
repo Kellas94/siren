@@ -21,6 +21,37 @@ s.save(R/'host-result.json',{'status':'DUMMY_HOST_COMPLETE','primaryError':None,
 '''
 
 class HostBoundaries(unittest.TestCase):
+    def secondary_case(self,*,close_error=False,retention_error=False,early_error=False):
+        from types import SimpleNamespace
+        stage=self.stage();primary={'type':'ActorError','message':'CONTROL_ACTOR_PRIMARY'};secondary=[{'stage':'actor-check','message':'CONTROL_CHILD_SECONDARY'}]
+        child_receipt={'status':'ADVERSE','primaryError':primary,'finalErrors':secondary};save(stage/'host-result.json',child_receipt)
+        class Job:
+            def assign(self,child):return {'assignedActualHeldHandlePID':child.pid,'limitKillOnJobClose':True}
+            def accounting(self):return {'activeProcesses':0}
+            def close(self):
+                if close_error:raise RuntimeError('CONTROL_OUTER_CLOSE')
+        child=SimpleNamespace(pid=123,stdin=io.BytesIO(),wait=lambda **_:1,poll=lambda:1)
+        identity={'pid':123,'creationFiletime':134367365348652692}
+        actual_save=pipeline.save
+        def retained_save(path,value):
+            if retention_error and Path(path)==stage/'outer-host-result.json':raise PermissionError('CONTROL_OUTER_RETENTION')
+            return actual_save(path,value)
+        before=pipeline.StageFailure(primary,secondary) if early_error else None
+        diagnostic=io.StringIO()
+        with patch.object(pipeline,'OwnedJob',Job),patch.object(pipeline.subprocess,'Popen',return_value=child),patch.object(pipeline.collect,'held_identity',side_effect=before,return_value=identity),patch.object(pipeline.collect,'held_identity_after_exit',return_value=identity),patch.object(pipeline,'save',retained_save),contextlib.redirect_stderr(diagnostic):
+            with self.assertRaises(pipeline.StageFailure) as observed:pipeline.launch_host(stage,self.root,{})
+        self.assertEqual(observed.exception.observedPrimary,primary)
+        self.assertEqual(read(stage/'host-result.json'),child_receipt)
+        receipt=read(self.root/'producer-outer-host-fallback.json' if retention_error else stage/'outer-host-result.json')
+        self.assertEqual(receipt['primaryError'],primary);self.assertEqual(observed.exception.observedSecondary,receipt['finalErrors'])
+        self.assertEqual(receipt.get('identityBefore',identity)['creationFiletime'],134367365348652692)
+        return receipt
+    def test_child_secondary_reaches_outer_error_without_masking_primary(self):
+        receipt=self.secondary_case();self.assertEqual([r['message'] for r in receipt['finalErrors']],['CONTROL_CHILD_SECONDARY'])
+    def test_child_outer_close_and_retention_secondaries_keep_order(self):
+        receipt=self.secondary_case(close_error=True,retention_error=True);self.assertEqual([r['message'] for r in receipt['finalErrors']],['CONTROL_CHILD_SECONDARY','CONTROL_OUTER_CLOSE','CONTROL_OUTER_RETENTION'])
+    def test_early_observed_stage_secondary_is_not_lost(self):
+        receipt=self.secondary_case(early_error=True);self.assertEqual([r['message'] for r in receipt['finalErrors']],['CONTROL_CHILD_SECONDARY'])
     def setUp(self):
         self.root=ROOT/self._testMethodName;self.root.mkdir()
     def stage(self):

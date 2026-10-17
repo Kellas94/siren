@@ -53,7 +53,13 @@ export async function runAggregateFlowMain(config,preserveFailure){
   function record(s,reply,tail){
    const r=reply.result,t=reply.stats;assert.ok(t.retainedUtf8Bytes<=4194304&&t.allocatedBytes<=4194304);for(const c of r.chunks)s.scanner.append(c.sequence,c.data);
    const next=tail?Math.max(r.nextSequence,t.nextSequence-32768):r.nextSequence,tailGap=next>r.nextSequence?{fromSequence:r.nextSequence,toSequence:next,droppedUtf8Bytes:next-r.nextSequence,resetParser:true,reason:'fixed-probe-tail-selection'}:null;
-   s.cursor=next;s.last=t;s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});assert.ok(s.record.samples.length<=100);return r.nextSequence;
+   s.cursor=next;s.last=t;
+   // Empty polling may repeat at5ms during startup/fresh-unlock. It adds no
+   // trace information when every statistic is unchanged. Keep all data,
+   // gaps, tail selections and state changes, and retain the hard100 limit.
+   const previous=s.record.samples.at(-1);
+   if(r.chunks.length||r.gap||tailGap||!previous||JSON.stringify(previous.stats)!==JSON.stringify(t))s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});
+   assert.ok(s.record.samples.length<=100);return r.nextSequence;
   }
   async function observe(s,tail=true){const reply=await delivery.read(s.token);assert.equal(reply.ok,true,'AGGREGATE_CREDIT_READ');const end=record(s,reply.value,tail);assert.equal(delivery.ack(s.token,end).ok,true);if(s.cursor!==end){assert.equal(delivery.detach(s.token).ok,true);s.token=delivery.attach(s.slot,s.cursor).value;}return s.scanner;}
   // Allow producer output to accumulate, then retain a real no-ACK window.
