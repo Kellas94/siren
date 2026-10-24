@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "phase": "workspace-terminal-prefocus",
+  "status": "COMPLETE",
+  "reserved": true,
+  "requestStarted": true,
+  "requestReturned": true,
+  "primaryPresent": false,
+  "workspaceBefore": {
+    "webContentsId": 41,
+    "mainFrameUrl": "siren://app/app.html",
+    "windowId": "workspace1",
+    "role": "workspace",
+    "projectId": "project1",
+    "epoch": 7
+  },
+  "workspaceAfter": {
+    "webContentsId": 41,
+    "mainFrameUrl": "siren://app/app.html",
+    "windowId": "workspace1",
+    "role": "workspace",
+    "projectId": "project1",
+    "epoch": 7
+  },
+  "targetBefore": {
+    "windowId": "11111111-1111-4111-8111-111111111111",
+    "role": "terminal",
+    "projectId": "project1",
+    "epoch": 7,
+    "entityId": "terminal-entity1",
+    "state": "active"
+  },
+  "targetAfter": {
+    "windowId": "11111111-1111-4111-8111-111111111111",
+    "role": "terminal",
+    "projectId": "project1",
+    "epoch": 7,
+    "entityId": "terminal-entity1",
+    "state": "active"
+  },
+  "terminalBefore": {
+    "url": "siren://app/windows/terminal.html?windowId=11111111-1111-4111-8111-111111111111",
+    "roots": 1,
+    "busy": false,
+    "folder": "No folder selected.",
+    "status": "Ready",
+    "createDisabled": true,
+    "folderDisabled": false,
+    "context": {
+      "windowId": "11111111-1111-4111-8111-111111111111",
+      "role": "terminal",
+      "projectId": "project1",
+      "epoch": 7,
+      "mode": "normal",
+      "access": "write",
+      "available": true
+    },
+    "terminalWebContentsId": null,
+    "terminalWebContentsIdStatus": "UNKNOWN_NOT_EXPOSED",
+    "urlBasis": "PREPARED_UNIQUE_CDP_TARGET_URL"
+  },
+  "terminalAfter": {
+    "url": "siren://app/windows/terminal.html?windowId=11111111-1111-4111-8111-111111111111",
+    "roots": 1,
+    "busy": false,
+    "folder": "No folder selected.",
+    "status": "Ready",
+    "createDisabled": true,
+    "folderDisabled": false,
+    "context": {
+      "windowId": "11111111-1111-4111-8111-111111111111",
+      "role": "terminal",
+      "projectId": "project1",
+      "epoch": 7,
+      "mode": "normal",
+      "access": "write",
+      "available": true
+    },
+    "terminalWebContentsId": null,
+    "terminalWebContentsIdStatus": "UNKNOWN_NOT_EXPOSED",
+    "urlBasis": "PREPARED_UNIQUE_CDP_TARGET_URL"
+  },
+  "request": {
+    "windowId": "11111111-1111-4111-8111-111111111111"
+  },
+  "reply": {
+    "ok": true,
+    "focused": true
+  },
+  "scope": "EXISTING_WORKSPACE_WINDOW_FOCUS_API_ACK_ONLY",
+  "osForegroundProved": false,
+  "nativeDialogForegroundProved": false,
+  "comparisonWithFutureModal": "UNKNOWN"
+}
