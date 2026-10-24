@@ -10,10 +10,11 @@ import {CwdAuthority} from '../src/terminal/cwd.mjs';
 import {createShellProfileCatalogue} from '../src/terminal/profiles.mjs';
 const url=new URL('../src/terminal/desktop-native-filesystem.mjs',import.meta.url);
 let source;try{source=await readFile(url,'utf8');}catch(e){if(e.code!=='ENOENT')throw e;source='';}
+function cacheRequire(load){const require=path=>{const addon=load(path);require.cache[path]={filename:path,loaded:true,exports:addon};return addon;};require.cache=Object.create(null);require.resolve=path=>path;return require;}
 function isolated(load,guard=()=>true){
  assert(source,'Missing concrete fixed native filesystem adapter');
  const body=source.replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify(url.href));
- return vm.runInThisContext('(function(types,createRequire,fileURLToPath,URL){'+body+'\nreturn loadDesktopNativeFilesystemProvider;})')(types,()=>load,fileURLToPath,URL);
+ return vm.runInThisContext('(function(types,createRequire,fileURLToPath,URL){'+body+'\nreturn loadDesktopNativeFilesystemProvider;})')(types,()=>cacheRequire(load),fileURLToPath,URL);
 }
 const guarded=value=>Object.defineProperty(value,'then',{value:undefined});
 const retired=()=>guarded({retired:true,actualSettled:true,pending:0});
@@ -78,7 +79,8 @@ test('wrong Promise constructor/species descriptor shapes refuse before inherite
  const body=source.replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify(url.href));
  for(const key of ['constructor','species']){
   const result=await vm.runInNewContext(`(async()=>{
-   const types=utility,createRequire=()=>()=>({createFilesystemInspector:()=>native}),fileURLToPath=()=> 'fixed-candidate',URL=Url;
+   const fakeRequire=path=>{const addon={createFilesystemInspector:()=>native};fakeRequire.cache[path]={filename:path,loaded:true,exports:addon};return addon;};fakeRequire.cache=Object.create(null);fakeRequire.resolve=path=>path;
+   const types=utility,createRequire=()=>fakeRequire,fileURLToPath=()=> 'fixed-candidate',URL=Url;
    ${body}
    const native={getSystemDirectory(){return pending;},inspectDirectory(){},inspectFile(){},retire(){}};
    const a=await loadDesktopNativeFilesystemProvider({assertResourcesCurrent:()=>true});
