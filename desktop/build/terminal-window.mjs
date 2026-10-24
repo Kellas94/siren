@@ -1,5 +1,5 @@
-import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
-import {join,resolve,relative,isAbsolute} from 'node:path';
+import {mkdir,readFile,writeFile,cp,lstat,realpath} from 'node:fs/promises';
+import {join,resolve,relative,isAbsolute,dirname,parse,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
@@ -39,15 +39,34 @@ export async function buildTerminalWindow(outputDir,{dependenciesRoot=null}={}){
 export async function buildTerminalDesktopCandidate({outputDir,dependenciesRoot,baselinePath,expectedSha256,nativeSourceLayout=false}={}){
  if(typeof nativeSourceLayout!=='boolean')throw Error('Explicit native source layout choice required');
  const desktop=fileURLToPath(new URL('../',import.meta.url)),out=resolve(outputDir);
- const location=relative(desktop,out);
- if(!location||(!location.startsWith('..'+(process.platform==='win32'?'\\':'/'))&&!isAbsolute(location))||!dependenciesRoot)throw Error('Separate explicit candidate output required');
+ const contains=(parent,child)=>{const location=relative(parent,child);return !location||(!location.startsWith('..'+sep)&&location!=='..'&&!isAbsolute(location));};
+ if(out===parse(out).root||contains(desktop,out)||contains(out,desktop)||!dependenciesRoot)throw Error('Separate explicit candidate output required');
+ const packagePath=join(out,'package.json'),packageBytes=JSON.stringify({name:'siren-terminal-candidate',version:'0.1.0-dev.1',private:true,type:'module',main:'candidate-main.mjs'},null,2)+'\n';
+ // Bounded package admission before legacy build effects. This does not make
+ // the remaining builder outputs an atomic transaction or close namespace races.
+ async function checkAncestors(){
+  const ancestors=[];for(let current=out;;current=dirname(current)){ancestors.unshift(current);if(current===parse(current).root)break;}
+  for(const current of ancestors){
+   let info;try{info=await lstat(current);}catch(error){if(error.code==='ENOENT')break;throw error;}
+   if(info.isSymbolicLink()||!info.isDirectory())throw Error('Candidate output ancestry refused');
+   const actual=await realpath(current),same=process.platform==='win32'?actual.toLowerCase()===current.toLowerCase():actual===current;
+   if(!same)throw Error('Candidate output ancestry refused');
+  }
+ }
+ await checkAncestors();
+ try{await lstat(packagePath);throw Error('Candidate package already exists');}catch(error){if(error.code!=='ENOENT')throw error;}
+ await mkdir(out,{recursive:true});await checkAncestors();
+ await writeFile(packagePath,packageBytes,{encoding:'utf8',flag:'wx'});
  const {buildRenderer}=await import('./renderer.mjs');
  await buildRenderer({baselinePath,expectedSha256,outputDir:join(out,'generated')});
  await cp(join(desktop,'src'),join(out,'src'),{recursive:true});
  const preload=await readFile(join(desktop,'src/preload.cjs'),'utf8');
  await writeFile(join(out,'generated/terminal-launch-preload.cjs'),preload+"\ncontextBridge.exposeInMainWorld('sirenTerminalLauncher',Object.freeze({getCapability:()=>ipcRenderer.invoke('siren:terminal-capability'),open:()=>ipcRenderer.invoke('siren:terminal-launch')}));\n");
  const receipt=await buildTerminalWindow(join(out,'generated'),{dependenciesRoot});
- await writeFile(join(out,'candidate-main.mjs'),"import {configureDesktopLaunch} from './src/desktop-launch.mjs';\nimport {createDesktopTerminalCandidate} from './src/terminal/candidate-initializer.mjs';\nconfigureDesktopLaunch(createDesktopTerminalCandidate());\nawait import('./src/main.mjs');\n");
+ const candidateMain="if(process.argv.some(arg=>arg.startsWith('--siren-pin-worker'))){\n await import('./src/start.mjs');\n}else{\n const {configureDesktopLaunch}=await import('./src/desktop-launch.mjs');\n const {createDesktopTerminalCandidate}=await import('./src/terminal/candidate-initializer.mjs');\n configureDesktopLaunch(createDesktopTerminalCandidate());\n await import('./src/start.mjs');\n}\n";
+ await writeFile(join(out,'candidate-main.mjs'),candidateMain);
  const nativeLayout=nativeSourceLayout?await buildTerminalNativeSourceLayout({outputDir:join(out,'native-runtime')}):null;
- await writeFile(join(out,'terminal-candidate-receipt.json'),JSON.stringify({...receipt,nativeFactoryConfigured:false,normalPackageChanged:false,...(nativeLayout?{nativeSourceLayout:nativeLayout}:{})},null,2)+'\n');return receipt;
+ const actualPackage=await readFile(packagePath),actualMain=await readFile(join(out,'candidate-main.mjs'));
+ if(!actualPackage.equals(Buffer.from(packageBytes))||!actualMain.equals(Buffer.from(candidateMain)))throw Error('Candidate package/main readback mismatch');
+ await writeFile(join(out,'terminal-candidate-receipt.json'),JSON.stringify({...receipt,nativeFactoryConfigured:false,normalPackageChanged:false,...(nativeLayout?{nativeSourceLayout:nativeLayout}:{}),candidatePackageSha256:hash(actualPackage),candidateMainSha256:hash(actualMain)},null,2)+'\n');return receipt;
 }
