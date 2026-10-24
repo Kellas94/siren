@@ -258,8 +258,8 @@
     },
     {
       "path": "desktop/src/terminal/shutdown-graph.mjs",
-      "bytes": 16279,
-      "sha256": "e4aa9de8e10ac17abce442dbd7c2cc9f36e7fa015403f708f5847e4bbb49fa3b"
+      "bytes": 16639,
+      "sha256": "480c4ed1e6329bd5bc3e8f165bbc0037a24d11ac510f1e2f7222b0de70225074"
     },
     {
       "path": "desktop/src/terminal/startup-protocol.mjs",

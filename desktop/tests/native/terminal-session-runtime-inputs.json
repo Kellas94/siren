@@ -268,8 +268,8 @@
     },
     {
       "path": "desktop/src/terminal/shutdown-graph.mjs",
-      "bytes": 16279,
-      "sha256": "e4aa9de8e10ac17abce442dbd7c2cc9f36e7fa015403f708f5847e4bbb49fa3b"
+      "bytes": 16639,
+      "sha256": "480c4ed1e6329bd5bc3e8f165bbc0037a24d11ac510f1e2f7222b0de70225074"
     },
     {
       "path": "desktop/src/terminal/startup-protocol.mjs",
@@ -339,7 +339,7 @@
     {
       "path": "desktop/tests/native/terminal-session-filesystem-inputs.json",
       "bytes": 10732,
-      "sha256": "670e9a9e8722392aa22f8aff6fc06053343d30acca06ef182b955f8dccc66879"
+      "sha256": "caaf4d817b5720aa7479c7386ec95a671161392f5eb1b7490ce0bd7b8a6813d5"
     },
     {
       "path": "desktop/tests/native/terminal-session-filesystem-probe.mjs",
@@ -364,7 +364,7 @@
     {
       "path": "desktop/tests/native/terminal-session-provision-inputs.json",
       "bytes": 12602,
-      "sha256": "7f91b8dd988fd4dcb7c76c39a8d73ad6a5bb68ffa5ebd16f36d5476e96a35f8b"
+      "sha256": "b9f4092694e78db85ab57c8999d71475a17aad1eff429d088e4c33d3b31a9df3"
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",
