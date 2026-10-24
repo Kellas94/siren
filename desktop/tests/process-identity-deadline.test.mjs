@@ -30,7 +30,14 @@ async function delayedInspector(delayMs, observations) {
         assert.equal(args[0],String(pid));assert.equal(settings.timeout,10000);
         // Only the external process boundary adds latency. The fixed binary,
         // query PID and strict admission remain the actual production reader.
-        return runNative('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Sleep -Milliseconds ${delayMs}; & '${file.replaceAll("'","''")}' ${pid}`],settings);
+        // The parent directly owns and awaits each process. A separate fixed
+        // sleeper adds controlled latency; it never creates a native child.
+        // Only the remaining original 10-second budget reaches the real reader.
+        const started=performance.now();
+        await runNative(process.execPath,['-e','setTimeout(()=>{},Number(process.argv[1]));',String(delayMs)],settings);
+        const remaining=Math.floor(settings.timeout-(performance.now()-started));
+        assert.ok(remaining>0,'CONTROLLED_NATIVE_DEADLINE_EXHAUSTED');
+        return runNative(file,args,{...settings,timeout:remaining});
       }});
       observation.completed = true; observation.stdoutBytes = Buffer.byteLength(native.stdout);
       return native;

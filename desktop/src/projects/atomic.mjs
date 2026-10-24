@@ -11,12 +11,25 @@ export async function atomicWrite(path, bytes, { fault = async () => {}, selecti
   const handle = await open(temporary, 'wx', 0o600);
   let committed = false;
   try {
+    let writeError, writeFailed = false;
     try {
       await handle.writeFile(bytes);
       await fault(selection ? 'before-select-flush' : 'before-flush');
       await handle.sync();
       await fault(selection ? 'after-select-flush' : 'after-flush');
-    } finally { await handle.close(); }
+    } catch (error) {
+      writeFailed = true; writeError = error; throw error;
+    } finally {
+      try { await handle.close(); }
+      catch (closeError) {
+        if (!writeFailed) throw closeError;
+        const failure = new AggregateError([writeError, closeError], 'Atomic write failed and pending file close failed', { cause: writeError });
+        // Metadata access must not replace either captured failure.
+        try { const code = writeError?.code; if (code !== undefined) failure.code = code; }
+        catch { /* Preserve the exact failures even for hostile metadata. */ }
+        throw failure;
+      }
+    }
     await ownedDirectory(dirname(path));
     // Existing pointers must be ordinary owned files; never replace a junction/link.
     try { await ownedFile(path); } catch (e) { if (e.code !== 'ENOENT') throw e; }
@@ -51,7 +64,7 @@ export async function exclusiveWriter(directory, body, { ownerIdentity = { pid: 
   if (activeWriters.has(key)) throw busy();
   activeWriters.add(key);
   const path = join(directory, 'writer.lock');
-  let handle;
+  let handle, primaryError, primaryFailed = false;
   try {
     try { handle = await open(path, 'wx', 0o600); }
     catch (error) {
@@ -69,8 +82,20 @@ export async function exclusiveWriter(directory, body, { ownerIdentity = { pid: 
       await unlink(path); handle = await open(path, 'wx', 0o600);
     }
     await handle.writeFile(JSON.stringify(ownerIdentity)); await handle.sync(); return await body();
+  } catch (error) {
+    primaryFailed = true; primaryError = error; throw error;
   } finally {
-    try { if (handle) { await handle.close(); await unlink(await ownedFile(path)); } }
+    try {
+      try { if (handle) { await handle.close(); await unlink(await ownedFile(path)); } }
+      catch (cleanupError) {
+        if (!primaryFailed) throw cleanupError;
+        const failure = new AggregateError([primaryError, cleanupError], 'Project writer failed and lock cleanup failed', { cause: primaryError });
+        // Error metadata may itself be a throwing getter or Proxy trap.
+        try { const code = primaryError?.code; if (code !== undefined) failure.code = code; }
+        catch { /* Metadata access must not replace either captured failure. */ }
+        throw failure;
+      }
+    }
     finally { activeWriters.delete(key); }
   }
 }

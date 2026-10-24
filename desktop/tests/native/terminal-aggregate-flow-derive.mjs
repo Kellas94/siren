@@ -19,6 +19,33 @@ export function deriveAggregateFlowSources(input){
  d.host=once(d.host,'list->NumberOfProcessIdsInList>64','list->NumberOfProcessIdsInList>128');
  d.observerBase=once(d.observerBase,'count>=1&&count<=64','count>=1&&count<=128');
  let s=input.observerStage.replaceAll('\r\n','\n');
+ const oldMembers=`    static void SameFlowMembers(IntPtr safety,List<Held> held,string electron,string fixture,long created) {
+        var next=Hold(safety,electron,fixture,created);
+        try{
+            Require(next.Count==held.Count,"FLOW_MEMBERSHIP_CHANGED");
+            foreach(var p in next){var old=Find(held,p.pid);Require(old.image==p.image&&old.created==p.created,"FLOW_HELD_SET_CHANGED");}
+        }finally{foreach(var p in next)CloseHandle(p.handle);}
+    }`;
+ const observedMembers=`    static void SameFlowMembers(IntPtr safety,List<Held> held,string electron,string fixture,long created,Dictionary<string,object> result) {
+        List<Held> next=null;
+        try{
+            next=Hold(safety,electron,fixture,created);
+            try{
+                bool changed=next.Count!=held.Count;
+                foreach(var p in next){var old=held.Find(h=>h.pid==p.pid);if(old==null||old.image!=p.image||old.created!=p.created)changed=true;}
+                if(changed){
+                    var diagnostic=new Dictionary<string,object>{{"scope","PRE_CLEANUP_ADJACENT_NOT_ATOMIC"},{"expectedCount",held.Count},{"actualCount",next.Count}};
+                    diagnostic["expected"]=Observe(held);diagnostic["actual"]=Observe(next);diagnostic["adjacentActive"]=Active(safety);
+                    result["membershipFailure"]=diagnostic;
+                }
+            }catch(Exception diagnostic){result["membershipDiagnosticUnavailable"]=diagnostic.Message;}
+            Require(next.Count==held.Count,"FLOW_MEMBERSHIP_CHANGED");
+            foreach(var p in next){var old=Find(held,p.pid);Require(old.image==p.image&&old.created==p.created,"FLOW_HELD_SET_CHANGED");}
+        }catch{if(next==null)result["membershipDiagnosticUnavailable"]="LIVE_ROSTER_HOLD_FAILED";throw;}
+        finally{if(next!=null)foreach(var p in next)CloseHandle(p.handle);}
+    }`;
+ s=once(s,oldMembers,observedMembers);
+ const membersCall='SameFlowMembers(safety,held,electron,fixture,long.Parse(identity.created));';assert.equal(s.split(membersCall).length,3,'AGGREGATE_MEMBERSHIP_CALL_DRIFT');s=s.replaceAll(membersCall,'SameFlowMembers(safety,held,electron,fixture,long.Parse(identity.created),result);');
  const start=s.indexOf('    static List<uint> ValidateFlow('),end=s.indexOf('    static int Main(string[] args) {');assert.ok(start>=0&&end>start,'AGGREGATE_OBSERVER_ANCHOR_DRIFT');
  const validation=`    static List<uint> ValidateFlow(Dictionary<string,object> ready,List<Held> held,uint main,string electron,string fixture) {
         Require(Pid(ready["mainPid"])==main,"AGGREGATE_MAIN_IDENTITY");
@@ -48,10 +75,14 @@ export function deriveAggregateFlowSources(input){
  d.observerStage=once(s,'SHELL_FLOW_SAFETY_OBSERVED_NOT_ADMITTED','AGGREGATE_FLOW_SAFETY_OBSERVED_NOT_ADMITTED');return d;
 }
 export function deriveAggregateFlowRunner({runner,desktop}){
- assert.equal(sha(runner),'f00b6016188d2199cb0ca50c5563fb7d6f3a391a26046383e38941f32d4ad205','AGGREGATE_RUNNER_DRIFT');
+ const runnerSha=sha(runner),withReadback=runnerSha==='997d12125436573c15053fb11e41c08c32678cbbf8979eb78ca93043a135a49e';
+ // Keep the original immutable runner admitted; the reviewed diagnostic
+ // revision has one additional module import that must resolve after staging.
+ assert.ok(runnerSha==='f00b6016188d2199cb0ca50c5563fb7d6f3a391a26046383e38941f32d4ad205'||withReadback,'AGGREGATE_RUNNER_DRIFT');
  let s=once(runner,"new URL('../../',import.meta.url)",`new URL(${JSON.stringify(desktop.href)})`);
+ if(withReadback)s=once(s,"import {readShellFlowRecords} from './terminal-shell-flow-readback.mjs';",`import {readAggregateFlowRecords as readShellFlowRecords} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-readback.mjs',desktop).href)};`);
  const imports="import {deriveShellFlowSources} from './terminal-shell-flow-derive.mjs';import {fixedShellFlowProbe} from './terminal-shell-flow-probe.mjs';import {runShellFlowMain} from './terminal-shell-flow-main.mjs';import {isShellFlowObserved} from './terminal-shell-flow-verdict.mjs';";
- s=once(s,imports,`import {deriveAggregateFlowSources,fixedAggregateFlowProbe} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-derive.mjs',desktop).href)};import {runAggregateFlowMain} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-main.mjs',desktop).href)};import {isAggregateFlowObserved} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href)};`);
+ s=once(s,imports,`import {deriveAggregateFlowSources,fixedAggregateFlowProbe} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-derive.mjs',desktop).href)};import {runAggregateFlowMain,preserveFirstFailure} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-main.mjs',desktop).href)};import {isAggregateFlowObserved} from ${JSON.stringify(new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href)};`);
  s=once(s,"evidence/terminal-shell-flow'","evidence/terminal-aggregate-flow'");
  s=once(s,'One actual fixed PowerShell Session, input/Lock/unlock, >=60s bounded generated output and whole Safety Job kernel peak. No eight-interactive-session/global credits/xterm/PIN UI/package/production admission.','Eight fixed PowerShell Sessions, common bounded credits and >=60s overlap, shared input Lock, isolated Stop and whole Safety Job kernel peak. No product/xterm/PIN UI/package admission.');
  s=once(s,"const files=['terminal-shell-flow'","const files=['terminal-aggregate-flow-derive','terminal-aggregate-flow-main','terminal-aggregate-flow-delivery','terminal-aggregate-flow-verdict','build-terminal-aggregate-flow','terminal-shell-flow'");
@@ -62,7 +93,8 @@ export function deriveAggregateFlowRunner({runner,desktop}){
  s=once(s,"await fs.readFile(join(desktop,'tests/fixtures/terminal-shell-flow-observer.cs'),'utf8')","derived.observerStage");
  s=once(s,'probe:fixedShellFlowProbe()','probe:fixedAggregateFlowProbe()');
  s=once(s,'await fs.writeFile(creatorEntry,',`config.deliveryUrl=new URL('tests/native/terminal-aggregate-flow-delivery.mjs',pathToFileURL(desktop+'/')).href;\n await fs.writeFile(creatorEntry,`);
- s=once(s,'runShellFlowMain.toString()','runAggregateFlowMain.toString()');
+ s=once(s,'void (${runShellFlowMain.toString()})(${JSON.stringify(config)});','void (${runAggregateFlowMain.toString()})(${JSON.stringify(config)},${preserveFirstFailure.toString()});');
+ if(withReadback)s=once(s," assert.deepEqual(receipt.missingRecords,[],'FLOW_STAGE_RECORDS_MISSING');"," if(receipt.aggregateMainFailure)throw Object.assign(Error(receipt.aggregateMainFailure.error.message),{code:receipt.aggregateMainFailure.error.code});\n assert.deepEqual(receipt.missingRecords,[],'FLOW_STAGE_RECORDS_MISSING');");
  s=once(s,"[electron,output,output,join(output,'Șiren flow α','fixed-shell-flow-child.exe')]","[electron,output,output,fixture]");
  const copy=" const copiedFixture=join(output,'Șiren flow α','fixed-shell-flow-child.exe');await record(copiedFixture);assert.equal(receipt.inputs.at(-1).sha256,receipt.inputs.find(p=>p.path===fixture).sha256,'FLOW_COPIED_FIXTURE_CHANGED');";
  s=once(s,copy,' // All eight canary trees execute the same absolute, recorded fixed fixture.');
@@ -76,7 +108,7 @@ export function deriveAggregateFlowBuilder({builder,desktop,runnerPath}){
  s=once(s,'import {isShellFlowObserved}','import {isAggregateFlowObserved}');
  s=once(s,new URL('tests/native/terminal-shell-flow-verdict.mjs',desktop).href,new URL('tests/native/terminal-aggregate-flow-verdict.mjs',desktop).href);
  s=once(s,'isShellFlowObserved(r)','isAggregateFlowObserved(r)');
- s=once(s,'const names=[',"const names=['tests/native/terminal-aggregate-flow-derive.mjs','tests/native/terminal-aggregate-flow-main.mjs','tests/native/terminal-aggregate-flow-delivery.mjs','tests/native/terminal-aggregate-flow-verdict.mjs','tests/native/build-terminal-aggregate-flow.mjs','src/terminal/credits.mjs',");
+ s=once(s,'const names=[',"const names=['tests/native/terminal-aggregate-flow-derive.mjs','tests/native/terminal-aggregate-flow-main.mjs','tests/native/terminal-aggregate-flow-delivery.mjs','tests/native/terminal-aggregate-flow-verdict.mjs','tests/native/build-terminal-aggregate-flow.mjs','tests/native/terminal-shell-flow-readback.mjs','src/terminal/credits.mjs',");
  s=once(s,' const packagePath=join(desktop,'," for(const path of [fileURLToPath(import.meta.url),"+JSON.stringify(runnerPath)+"]){const bytes=await readFile(path);receipt.sources.push({path,bytes:bytes.length,sha256:hash(bytes)});}\n const packagePath=join(desktop,");
  s=once(s,"observerStage:await readFile(join(desktop,'tests/fixtures/terminal-session-composition-observer.cs')","observerStage:await readFile(join(desktop,'tests/fixtures/terminal-shell-flow-observer.cs')");
  s=once(s,"join(desktop,'tests/native/terminal-shell-flow.mjs')",JSON.stringify(runnerPath));

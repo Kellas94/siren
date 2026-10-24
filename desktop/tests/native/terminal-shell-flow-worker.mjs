@@ -21,16 +21,26 @@ async function runShellFlowWorker(directory){
  requireSelectedOsConpty({useConpty:term._agent?._useConpty,useConptyDll:term._agent?._useConptyDll});
  const core=createShellFlowCore({write:data=>term.write(data),resize:(cols,rows)=>term.resize(cols,rows)});globalThis.__shellFlow={term,core};
  let outputError=null,exit=null;
- term.onData(data=>{try{core.append(data);}catch(error){outputError=error;}});term.onExit(event=>{exit={exitCode:event.exitCode,signal:event.signal};});
  const now=()=>Number(process.hrtime.bigint()/1000000n),startedAt=now();
  const persist=async(name,record)=>{const text=JSON.stringify(record);assert.ok(Buffer.byteLength(text)<=262144,'TEST_REPLY_BUDGET');const file=join(directory,name);await writeFile(file+'.pending',text,{flag:'wx'});await rename(file+'.pending',file);};
- await persist('shell-flow-ready.json',{admitted:false,scope:'CI test worker ready only; ownership/input/Lock/flood qualification pending',workerPid:process.pid,rootPid:term.pid,runtime:{...process.versions,arch:process.arch,platform:process.platform},nodePty:manifest.version,windowsRelease,osConpty:true,useConptyDll:false,stats:core.stats()});
+ let terminalStateWrite;
+ const retainTerminalState=()=>{
+  if(terminalStateWrite)return;
+  terminalStateWrite=(async()=>{
+   const record={admitted:false,scope:'CI_WORKER_FIRST_TERMINAL_EVENT_ONLY',ptyExit:exit,outputError:outputError?String(outputError.message).slice(0,4096):null,stats:core.stats(),output:core.read({fromSequence:0})};
+   assert.ok(Buffer.byteLength(JSON.stringify(record))<=262144,'TEST_TERMINAL_STATE_BUDGET');
+   await persist('shell-flow-terminal-state.json',record);
+  })().catch(error=>{console.error('SHELL_FLOW_TERMINAL_STATE_WRITE_FAILED',String(error.message).slice(0,4096));});
+ };
+ term.onData(data=>{try{core.append(data);}catch(error){outputError=error;retainTerminalState();}});
+ term.onExit(event=>{exit={exitCode:event.exitCode,signal:event.signal};retainTerminalState();});
+ await persist('shell-flow-ready.json' ,{admitted:false,scope:'CI test worker ready only; ownership/input/Lock/flood qualification pending',workerPid:process.pid,rootPid:term.pid,runtime:{...process.versions,arch:process.arch,platform:process.platform},nodePty:manifest.version,windowsRelease,osConpty:true,useConptyDll:false,stats:core.stats()});
  // Strictly finite test mailbox, not the proposed production control transport.
  // Native external Safety/Session owners must own this worker before execution.
  for(let sequence=0;sequence<128;sequence++){
   const name=String(sequence).padStart(6,'0'),file=join(directory,'control-'+name+'.json');let packet;
   for(;;){
-   assert.ok(now()-startedAt<100000,'SHELL_FLOW_CONTROL_DEADLINE');if(outputError)throw outputError;assert.equal(exit,null,'SHELL_FLOW_ROOT_EXITED');
+   assert.ok(now()-startedAt<100000,'SHELL_FLOW_CONTROL_DEADLINE');if(outputError||exit!==null)await terminalStateWrite;if(outputError)throw outputError;assert.equal(exit,null,'SHELL_FLOW_ROOT_EXITED');
    try{const st=await lstat(file);assert.ok(st.isFile()&&!st.isSymbolicLink()&&st.size<=65536,'TEST_CONTROL_FILE_REFUSED');const bytes=await readFile(file);assert.ok(bytes.length<=65536);packet=JSON.parse(bytes);break;}catch(error){if(error.code!=='ENOENT')throw error;}await delay(5);
   }
   assert.equal(packet.sequence,sequence);let result;
@@ -38,7 +48,7 @@ async function runShellFlowWorker(directory){
   if(packet.kind==='gate'){assert.equal(keys,'generation,kind,open,sequence');result=core.applyGate({generation:packet.generation,open:packet.open});}
   else if(packet.kind==='input'){assert.equal(keys,'data,generation,kind,sequence');result=core.submit(packet.generation,packet.data);}
   else if(packet.kind==='resize'){assert.equal(keys,'cols,generation,kind,rows,sequence');result=core.fit(packet.generation,packet.cols,packet.rows);}
-  else if(packet.kind==='snapshot'){assert.equal(keys,'fromSequence,kind,sequence');result=core.read({fromSequence:packet.fromSequence});}
+  else if(packet.kind==='snapshot'){assert.equal(keys,'fromSequence,kind,sequence');result={...core.read({fromSequence:packet.fromSequence}),ptyExit:exit,outputError:outputError?String(outputError.message).slice(0,4096):null};}
   else if(packet.kind==='complete'){assert.equal(keys,'kind,sequence');result={stats:core.stats()};}
   else throw Error('TEST_CONTROL_KIND_REFUSED');
   await persist('reply-'+name+'.json',{admitted:false,sequence,kind:packet.kind,result,stats:core.stats(),ageMs:now()-startedAt});

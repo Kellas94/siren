@@ -30,8 +30,16 @@ function isolated(loader){
  return vm.runInThisContext('(function(types,path,WindowRegistry,loadDesktopNativeFilesystemProvider,supportedProviderPromise,desktopNativeRuntimeResourcePaths){'+body+'\nreturn createDesktopNativeProviders;})')(types,win32,WindowRegistry,loader,supportedProviderPromise,desktopNativeRuntimeResourcePaths);
 }
 function concreteLoader(s){
+ const fixed=fileURLToPath(new URL('../native/terminal-filesystem-candidate/build/Release/siren_terminal_filesystem_candidate.node',import.meta.url)),cache=Object.create(null);
+ function requireFixed(selected){
+  assert.equal(selected,fixed);assert.equal(Object.hasOwn(cache,fixed),false);s.loads++;
+  const exports={createFilesystemInspector:()=>s.native};
+  cache[fixed]={id:fixed,filename:fixed,loaded:true,exports};return exports;
+ }
+ requireFixed.cache=cache;
+ requireFixed.resolve=selected=>{assert.equal(selected,fixed);return fixed;};
  const body=fsSource.replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify(new URL('../src/terminal/desktop-native-filesystem.mjs',import.meta.url).href));
- return vm.runInThisContext('(function(types,createRequire,fileURLToPath,URL){'+body+'\nreturn loadDesktopNativeFilesystemProvider;})')(types,()=>()=>{s.loads++;return {createFilesystemInspector:()=>s.native};},fileURLToPath,URL);
+ return vm.runInThisContext('(function(types,createRequire,fileURLToPath,URL){'+body+'\nreturn loadDesktopNativeFilesystemProvider;})')(types,()=>requireFixed,fileURLToPath,URL);
 }
 let resources;
 async function resource(){

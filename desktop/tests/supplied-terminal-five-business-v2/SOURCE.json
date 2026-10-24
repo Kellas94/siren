@@ -1,0 +1,1802 @@
+{
+  "moduleRows": [
+    {
+      "name": "ordinary_direct_capture_core",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_core.py",
+      "bytes": 26093,
+      "sha256": "5adec48b25224594a4e9050c76f8f6c9b22761b0de7c04184cbcf723332e81d6",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_fixed_plan",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\fixed_launch_plan.py",
+      "bytes": 4521,
+      "sha256": "5e97dca2e460af988f3e49c2f4f8d868a52feb0692088a0635f6cdd63a40f4cf",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_finish_reader",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_finish.py",
+      "bytes": 15522,
+      "sha256": "20a46a145642feef69cfff43acb8c6ea26d9026f80d854b04c8670b5c6546477",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_owner_reader",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_owner.py",
+      "bytes": 8300,
+      "sha256": "3cff52147f36a7ffc6005e7316183dd9470500b2962fded02ae5e5b156e0874c",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_resource_base",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\resource_backend.py",
+      "bytes": 13091,
+      "sha256": "0d87016ef049c9846fef3602530f7a532697a789cd6623a3e11b9c6942a546b6",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_coordinator_base",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\edge_coordinator.py",
+      "bytes": 14625,
+      "sha256": "0cefd5939bc0e2cf836e8a6412cfbe7ef529ab16f8f08686e1bdca09f0e439ad",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_startup_storage",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\startup_storage.py",
+      "bytes": 8619,
+      "sha256": "28490c276b327a784d6a8097879ce4d56a213b9113884243cbea9677d13dcd57",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_capture_finish",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_finish.py",
+      "bytes": 12444,
+      "sha256": "c38983d9d43400961b032e9286c2074cbf7586900358b7be0125ceb607721eb0",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_process_owner",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\owned_process.py",
+      "bytes": 22101,
+      "sha256": "630395b4344c0955422deac75e5b2ccea0653b9565735f6a67e1b3842b61b6e8",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_file_backend",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\file_backend.py",
+      "bytes": 11389,
+      "sha256": "3c3fab6e53580a73d5d15cd1fefd4d243b3f424544032fac05b1ef870289ad60",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_finish_coordinator",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\finish_coordinator.py",
+      "bytes": 22001,
+      "sha256": "8bdd5ecbd9de1f65c7f0736d5fbd53c88b8bbb48f18ff000f93c0e4f5e4bf3c3",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_caller_adapter",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\caller_adapter.py",
+      "bytes": 28367,
+      "sha256": "1849d1f8696e3b81432e193df7cab50ccb5274e63e589aa060d3663097364ec2",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_fake_resources",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_resources.py",
+      "bytes": 5013,
+      "sha256": "83d743a435bf990e501dbc94f93c8a40c1e5468516b47e9576c8f9349c706946",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_fake_files",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_files.py",
+      "bytes": 2483,
+      "sha256": "e924d4e46a943d3ea8e18a7529d72a25fc483290f57172898e76a10cb8af92fb",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_context",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_context.py",
+      "bytes": 14940,
+      "sha256": "b71c46d696f554ca7a589de1620eaa8ea3d6775b1ce3c9eb8a5e99ad5d0efa09",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_results",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_results.py",
+      "bytes": 28570,
+      "sha256": "f82bf715bd77e78f3f327495261a8be7a4be9e5a6f976fe78029ed831f45c912",
+      "package": false
+    },
+    {
+      "name": "ordinary_described_error",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\described_error.py",
+      "bytes": 1659,
+      "sha256": "ab18ac195395479322bd39ee00b7eac21fdfd6a03cf3e61a99916995f81f44b7",
+      "package": false
+    },
+    {
+      "name": "ordinary_external_profile_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-entry-continuation-v1-20261023\\candidate-source-v2\\external_profile_v1.py",
+      "bytes": 10454,
+      "sha256": "fea9cc179b2940f3395bbebce63a1e2627af00f723263dd2fac9cea755f04592",
+      "package": false
+    },
+    {
+      "name": "ordinary_external_supply_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-supply-v1-20261023\\candidate-source-v3\\external_supply_v1.py",
+      "bytes": 8729,
+      "sha256": "ffb778ad3c3ba65a0ad540ae6eab2de673b0e015f16c02dd396685e4cd8db231",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_timing_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\timing_policy_v1.py",
+      "bytes": 10624,
+      "sha256": "600b3f0e1b0ca99b7d606932e312c1a6df6b8e6a6313de107301221312c1ae28",
+      "package": false
+    },
+    {
+      "name": "ordinary_direct_timing_results_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\timing_results_v2.py",
+      "bytes": 10669,
+      "sha256": "ab3e12bf5a0e51b807473c22d6055d729e15cfb86fea3dd625e75dd97df194e9",
+      "package": false
+    },
+    {
+      "name": "ordinary_external_execution_policy_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-execution-v1-20261024\\candidate-source\\execution_policy_v1.py",
+      "bytes": 7626,
+      "sha256": "e24b3396e54fa7b090f1959f8c851e9a5d852a80794cea21971bf97521f294c9",
+      "package": false
+    },
+    {
+      "name": "ordinary_external_parent_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-execution-v1-20261024\\candidate-source\\external_parent_v1.py",
+      "bytes": 5246,
+      "sha256": "69d9020ab12b1e339cf4b1c3fd31c36a52b6a7e84a6b2c9853023db058f58a56",
+      "package": false
+    },
+    {
+      "name": "ordinary_business_domain_v1",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-c0-publication-domain-v1-20261024\\candidate-source\\business_domain_v1.py",
+      "bytes": 4039,
+      "sha256": "11cf237c1f34eb27094d627d95734b135fe8a5c24cc26be51c1efd4a124a653c",
+      "package": false
+    },
+    {
+      "name": "ordinary_five_role_execution_v2",
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\five_role_execution_v2.py",
+      "bytes": 5631,
+      "sha256": "1aab072119bc19be51413c300caba3b648a42b09ceeb454204fc9066d30439c5",
+      "package": false
+    }
+  ],
+  "businessBundle": {
+    "kind": "SIREN_SUPPLIED_BUSINESS_CHECKED_BUNDLE_V1",
+    "moduleRows": [
+      {
+        "name": "ordinary_picker_contracts",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\controller_contracts.py",
+        "bytes": 8399,
+        "sha256": "d01708323e703c8900e939691981c5ceec3d44f22e282bcc930aac6ba4ab4275",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_route",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\direct_route.py",
+        "bytes": 13088,
+        "sha256": "ceabdd2a3fc8c7da3d3fd51717837be7c9307b3473ad1752ade20be7ead49f64",
+        "package": false
+      },
+      {
+        "name": "context.reference.folder_dialog_driver",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\reference\\folder_dialog_driver.py",
+        "bytes": 9145,
+        "sha256": "92d3c9145383697b11312f930a35ef6d75a23127f65775c30907748e0f4737ca",
+        "package": false
+      },
+      {
+        "name": "context.observer.adapter",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\observer\\adapter.py",
+        "bytes": 7563,
+        "sha256": "421025ecd992c05cd694c4872ee4920a45779250fdaa58283728e03fe0359aa5",
+        "package": false
+      },
+      {
+        "name": "context.observer.native",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\observer\\native.py",
+        "bytes": 5904,
+        "sha256": "c83b167f1d0a3d42220c7af7034004648e5638bcb474d8b1ab2c8804ac383ef4",
+        "package": false
+      },
+      {
+        "name": "topology.native",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\topology\\native.py",
+        "bytes": 1505,
+        "sha256": "a2f3980d08c7fb54e09205c8db67b583de663cc0b7e21f7b02d4cc540dd866f6",
+        "package": false
+      },
+      {
+        "name": "escape_cancel",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-fixed-escape-cancel-transport-20261018\\escape_cancel\\__init__.py",
+        "bytes": 5809,
+        "sha256": "2d8e2b54cfcca89d50b5eb6d865e50662444dc07f73293fa8f03763e15017270",
+        "package": true
+      },
+      {
+        "name": "escape_cancel.native",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-fixed-escape-cancel-transport-20261018\\escape_cancel\\native.py",
+        "bytes": 2796,
+        "sha256": "98ccdf4a8d274aac4a700193e5044e8dbe63a68f116bbf4d5812471e1453d708",
+        "package": false
+      },
+      {
+        "name": "ordinary_shared_dialog_clock",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-dialog-clock-v2-20261018\\dialog_clock.py",
+        "bytes": 2454,
+        "sha256": "dff0f952a510687ef71df0cb8b4e1c4d8f4f0ae6cf9815095f544e68ea82b305",
+        "package": false
+      },
+      {
+        "name": "ordinary_window_foreground_cache_window",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-window-foreground-cache-core-v1-20261021\\provenance.py",
+        "bytes": 12200,
+        "sha256": "18e734c848c1b33ff9e1762392114329047b0f516d7fa44d9f3a42e1cf09c399",
+        "package": false
+      },
+      {
+        "name": "ordinary_window_foreground_cache_foreground",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-window-foreground-cache-core-v1-20261021\\foreground.py",
+        "bytes": 7861,
+        "sha256": "a251fb97a0d8a72c8df345cc3c2d0df2208608072195353cbda62b6f0675e63b",
+        "package": false
+      },
+      {
+        "name": "ordinary_address_focus_core",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-address-focus-discriminator-core-v8-20261021\\focus.py",
+        "bytes": 24959,
+        "sha256": "a0660b90f7efda90698f5f4046bed04625a08ca76ceeb8ddd53e0bc65b83c316",
+        "package": false
+      },
+      {
+        "name": "ordinary_address_focus_native",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-address-focus-native-binding-v1-20261021\\focus_native.py",
+        "bytes": 9703,
+        "sha256": "57df5f5968a819cbf05de43fc98e0baf1dbf02088ddf9b5fef79d93e0c90fe5a",
+        "package": false
+      },
+      {
+        "name": "ordinary_closed_picker_consumer",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-receipt-target-binding-v2-20261023\\candidate\\subject.py",
+        "bytes": 10658,
+        "sha256": "0ba39e4bce621f08129738709cc0574a6ac0963d00f0f6b8d0822964bef45427",
+        "package": false
+      },
+      {
+        "name": "fixture_consumer_data",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-receipt-target-binding-v2-20261023\\candidate\\maintained-tests.py",
+        "bytes": 14437,
+        "sha256": "70a90ebd3c3576204d816c8630aca01c033b6571d5e871e174e84f2bfe17b9bd",
+        "package": false
+      },
+      {
+        "name": "ordinary_cancel_evidence",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\cancel_evidence.py",
+        "bytes": 5744,
+        "sha256": "e67c9df64d571b4bf8d450e9378a91fc8fda4603e9d72d4f699ce27497df155f",
+        "package": false
+      },
+      {
+        "name": "ordinary_route_evidence",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\route_evidence.py",
+        "bytes": 6652,
+        "sha256": "8217f9f2fe14fe47115efe78a85c80f1d616006c099bc2d0c9a538e356d87a92",
+        "package": false
+      },
+      {
+        "name": "ordinary_focus_evidence",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\focus_evidence.py",
+        "bytes": 36685,
+        "sha256": "edb196416de1920bcf059216dbc3e55afee8b97d8e4e595786afa3a212ce6a2e",
+        "package": false
+      },
+      {
+        "name": "siren_c1_foreground_observation",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-c1-foreground-observation-20261018\\foreground.py",
+        "bytes": 6079,
+        "sha256": "4e9bdf42e65d63ccd286e545b3432fa53c950486640e27c2c581ed4aaf5f199a",
+        "package": false
+      },
+      {
+        "name": "siren_owned_dialog_readiness",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-enumeration-lifetime-policy-v2-20261019\\candidate\\readiness.py",
+        "bytes": 9446,
+        "sha256": "7ae0f7adb5af9bab6eedd23c12940ab009ada4f74bd0e00b06aadfdb83c47f6b",
+        "package": false
+      },
+      {
+        "name": "image_route_retention",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-route-retention-policy-v3-20261019\\retention.py",
+        "bytes": 9991,
+        "sha256": "4372bdc603ac78bb98039acd359af78c08f28b7692cb7578a2f3a2c94bc1fcdf",
+        "package": false
+      },
+      {
+        "name": "image_route_support",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-result-integration-v4-20261023\\source\\route_support.py",
+        "bytes": 3562,
+        "sha256": "8ae04a15e91cac1ad4da2678e26e3404cbe26ba5e8215d2865637815e0d1f44f",
+        "package": false
+      },
+      {
+        "name": "ordinary_business_publication_reader_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\publication_reader_v1.py",
+        "bytes": 6027,
+        "sha256": "e6426d96c8fdda66d2e0801973ab988bbc8eb84fdcaca3030dbae766872a9af6",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_c0_run_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-finite-c0-supplied-v1-20261024\\candidate-source\\c0_supplied_v1.py",
+        "bytes": 12962,
+        "sha256": "26c480b3ffd472e658186794c21a1f4f07a44f7fcfc8ea889e80a8fb3f0061b3",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_c0_report_reader_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-c0-report-reader-v1-20261024\\candidate-source\\c0_report_reader_v2.py",
+        "bytes": 11677,
+        "sha256": "e91d619cec2a6fdd1edc93359277dd4a66b7f694c6e6bcfd120557b074404c07",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_t0_run_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-t0-supplied-v1-20261024\\candidate-source\\t0_supplied_v1.py",
+        "bytes": 13489,
+        "sha256": "0a0b5d1540edec0fb53d4056f12a5e91488fefa80e5ef14889d56acd7a697430",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_c0_five_business_v2",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\c0_supplied_five_business_v2.py",
+        "bytes": 25690,
+        "sha256": "830d7d227352be134040b6aac5a5cc55f46a9964c7773195b1653936ad59a4ec",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_c0_report_reader_five_business_v2",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\c0_report_reader_five_business_v2.py",
+        "bytes": 22304,
+        "sha256": "7f78ba4c347ed389be40fa5202cdc2ce27475289ebaa7a36f6bd86474d35a2fa",
+        "package": false
+      },
+      {
+        "name": "ordinary_supplied_t0_five_business_v2",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\t0_supplied_five_business_v2.py",
+        "bytes": 26870,
+        "sha256": "0a5546639730013020a29d411e93c3d9bb45b83e1396ab2e28207681e9a00920",
+        "package": false
+      }
+    ],
+    "packages": [
+      "context",
+      "context.reference",
+      "context.observer",
+      "topology"
+    ],
+    "bridgeRows": [
+      {
+        "name": "ordinary_direct_capture_core",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_core.py",
+        "bytes": 26093,
+        "sha256": "5adec48b25224594a4e9050c76f8f6c9b22761b0de7c04184cbcf723332e81d6",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_fixed_plan",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\fixed_launch_plan.py",
+        "bytes": 4521,
+        "sha256": "5e97dca2e460af988f3e49c2f4f8d868a52feb0692088a0635f6cdd63a40f4cf",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_finish_reader",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_finish.py",
+        "bytes": 15522,
+        "sha256": "20a46a145642feef69cfff43acb8c6ea26d9026f80d854b04c8670b5c6546477",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_owner_reader",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_owner.py",
+        "bytes": 8300,
+        "sha256": "3cff52147f36a7ffc6005e7316183dd9470500b2962fded02ae5e5b156e0874c",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_resource_base",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\resource_backend.py",
+        "bytes": 13091,
+        "sha256": "0d87016ef049c9846fef3602530f7a532697a789cd6623a3e11b9c6942a546b6",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_coordinator_base",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\edge_coordinator.py",
+        "bytes": 14625,
+        "sha256": "0cefd5939bc0e2cf836e8a6412cfbe7ef529ab16f8f08686e1bdca09f0e439ad",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_startup_storage",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\startup_storage.py",
+        "bytes": 8619,
+        "sha256": "28490c276b327a784d6a8097879ce4d56a213b9113884243cbea9677d13dcd57",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_capture_finish",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_finish.py",
+        "bytes": 12444,
+        "sha256": "c38983d9d43400961b032e9286c2074cbf7586900358b7be0125ceb607721eb0",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_process_owner",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\owned_process.py",
+        "bytes": 22101,
+        "sha256": "630395b4344c0955422deac75e5b2ccea0653b9565735f6a67e1b3842b61b6e8",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_file_backend",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\file_backend.py",
+        "bytes": 11389,
+        "sha256": "3c3fab6e53580a73d5d15cd1fefd4d243b3f424544032fac05b1ef870289ad60",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_finish_coordinator",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\finish_coordinator.py",
+        "bytes": 22001,
+        "sha256": "8bdd5ecbd9de1f65c7f0736d5fbd53c88b8bbb48f18ff000f93c0e4f5e4bf3c3",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_caller_adapter",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\caller_adapter.py",
+        "bytes": 28367,
+        "sha256": "1849d1f8696e3b81432e193df7cab50ccb5274e63e589aa060d3663097364ec2",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_context",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_context.py",
+        "bytes": 14940,
+        "sha256": "b71c46d696f554ca7a589de1620eaa8ea3d6775b1ce3c9eb8a5e99ad5d0efa09",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_results",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_results.py",
+        "bytes": 28570,
+        "sha256": "f82bf715bd77e78f3f327495261a8be7a4be9e5a6f976fe78029ed831f45c912",
+        "package": false
+      },
+      {
+        "name": "ordinary_described_error",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\described_error.py",
+        "bytes": 1659,
+        "sha256": "ab18ac195395479322bd39ee00b7eac21fdfd6a03cf3e61a99916995f81f44b7",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_fake_resources",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_resources.py",
+        "bytes": 5013,
+        "sha256": "83d743a435bf990e501dbc94f93c8a40c1e5468516b47e9576c8f9349c706946",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_fake_files",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_files.py",
+        "bytes": 2483,
+        "sha256": "e924d4e46a943d3ea8e18a7529d72a25fc483290f57172898e76a10cb8af92fb",
+        "package": false
+      },
+      {
+        "name": "ordinary_external_profile_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-entry-continuation-v1-20261023\\candidate-source-v2\\external_profile_v1.py",
+        "bytes": 10454,
+        "sha256": "fea9cc179b2940f3395bbebce63a1e2627af00f723263dd2fac9cea755f04592",
+        "package": false
+      },
+      {
+        "name": "ordinary_business_domain_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-c0-publication-domain-v1-20261024\\candidate-source\\business_domain_v1.py",
+        "bytes": 4039,
+        "sha256": "11cf237c1f34eb27094d627d95734b135fe8a5c24cc26be51c1efd4a124a653c",
+        "package": false
+      },
+      {
+        "name": "ordinary_direct_timing_results_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\timing_results_v2.py",
+        "bytes": 10669,
+        "sha256": "ab3e12bf5a0e51b807473c22d6055d729e15cfb86fea3dd625e75dd97df194e9",
+        "package": false
+      },
+      {
+        "name": "ordinary_external_execution_policy_v1",
+        "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-execution-v1-20261024\\candidate-source\\execution_policy_v1.py",
+        "bytes": 7626,
+        "sha256": "e24b3396e54fa7b090f1959f8c851e9a5d852a80794cea21971bf97521f294c9",
+        "package": false
+      }
+    ],
+    "qualifiedReference": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\SOURCE.json",
+      "bytes": 51814,
+      "sha256": "897cc65a8e85f72ebccec3ab501e4e88619eb2b624707cc80fb73bb2f2f68e43"
+    },
+    "wholeSourceGatePassed": false,
+    "nativeEligibility": false
+  },
+  "symbols": {
+    "C0": "ordinary_direct_capture_core",
+    "P": "ordinary_direct_fixed_plan",
+    "R": "ordinary_direct_finish_reader",
+    "DR": "ordinary_direct_owner_reader",
+    "B0": "ordinary_direct_resource_base",
+    "Q0": "ordinary_direct_coordinator_base",
+    "T": "ordinary_direct_startup_storage",
+    "C": "ordinary_direct_capture_finish",
+    "S": "ordinary_direct_process_owner",
+    "B": "ordinary_direct_file_backend",
+    "Q": "ordinary_direct_finish_coordinator",
+    "A": "ordinary_direct_caller_adapter",
+    "K": "ordinary_direct_fake_resources",
+    "U": "ordinary_direct_fake_files",
+    "CX": "ordinary_direct_context",
+    "DX": "ordinary_direct_results",
+    "E": "ordinary_described_error",
+    "F": "ordinary_external_profile_v1",
+    "SUP": "ordinary_external_supply_v1",
+    "TM": "ordinary_direct_timing_v1",
+    "TR": "ordinary_direct_timing_results_v1",
+    "XP": "ordinary_external_execution_policy_v1",
+    "EP": "ordinary_external_parent_v1",
+    "BD": "ordinary_business_domain_v1",
+    "CC": "ordinary_picker_contracts",
+    "DROUTE": "ordinary_direct_route",
+    "MODEL": "context.reference.folder_dialog_driver",
+    "ADAPTER": "context.observer.adapter",
+    "NATIVE": "context.observer.native",
+    "TOPOLOGY": "topology.native",
+    "CANONICAL": "escape_cancel",
+    "ESCAPE": "escape_cancel.native",
+    "CLOCK": "ordinary_shared_dialog_clock",
+    "QUERY": "ordinary_window_foreground_cache_window",
+    "FG": "ordinary_window_foreground_cache_foreground",
+    "FOCUS": "ordinary_address_focus_core",
+    "FNATIVE": "ordinary_address_focus_native",
+    "CONSUMER": "ordinary_closed_picker_consumer",
+    "CF": "fixture_consumer_data",
+    "CANCEL": "ordinary_cancel_evidence",
+    "REM": "ordinary_route_evidence",
+    "FEM": "ordinary_focus_evidence",
+    "FOREGROUND": "siren_c1_foreground_observation",
+    "READINESS": "siren_owned_dialog_readiness",
+    "RETENTION": "image_route_retention",
+    "SUPPORT": "image_route_support",
+    "PUB": "ordinary_business_publication_reader_v1",
+    "C0RUN": "ordinary_supplied_c0_run_v1",
+    "C0READ": "ordinary_supplied_c0_report_reader_v1",
+    "T0RUN": "ordinary_supplied_t0_run_v1",
+    "EP2": "ordinary_five_role_execution_v2",
+    "C0V2": "ordinary_supplied_c0_five_business_v2",
+    "C0FIVE_READ": "ordinary_supplied_c0_report_reader_five_business_v2",
+    "T0V2": "ordinary_supplied_t0_five_business_v2"
+  },
+  "selections": [
+    "PARENT_SEED_CODE",
+    "FOCUS_SEED_CODE",
+    "GUARD_WORLD_CODE",
+    "NATIVE_WORLD_CODE",
+    "GUARD_PORTS_CODE",
+    "INNER_ROUTE_CODE",
+    "INNER_ROOT_CODE",
+    "OUTER_ROOT_CODE",
+    "FIVE_INNER_PRODUCER_CODE",
+    "FIVE_OUTER_PRODUCER_CODE"
+  ],
+  "commonFunctions": [
+    "read_bytes",
+    "_original_direct_edge",
+    "direct_normal_exit",
+    "_direct_original_staged_bodies",
+    "direct_edge_value",
+    "direct_edge_clean",
+    "direct_receipt_files",
+    "direct_retained_streams",
+    "remaining",
+    "envelope",
+    "direct_pump",
+    "held_direct_identity",
+    "live_direct",
+    "_direct_saved_capture_bodies",
+    "_direct_child_bodies",
+    "_direct_group_receipt_artifacts",
+    "inner_direct_completion",
+    "outer_direct_completion",
+    "supplied_direct_go",
+    "direct_binding_matches",
+    "_read_pinned_body",
+    "bind_five_role_business_v2",
+    "remaining_five_v2",
+    "direct_binding_matches_five_v2",
+    "bind_five_role_ports_v2",
+    "_five_business_call_v2",
+    "write_five_v2",
+    "publish_five_v2",
+    "read_five_v2",
+    "read_bytes_five_v2",
+    "pin_five_v2",
+    "wait_file_five_v2",
+    "_five_identity_observation_v2",
+    "_five_reraise_operation_error_v2",
+    "_original_direct_edge_five_v2",
+    "direct_normal_exit_five_v2",
+    "_direct_original_staged_bodies_five_v2",
+    "direct_edge_value_five_v2",
+    "direct_edge_clean_five_v2",
+    "direct_receipt_files_five_v2",
+    "direct_retained_streams_five_v2",
+    "_direct_saved_capture_bodies_five_v2",
+    "_direct_child_bodies_five_v2",
+    "_direct_group_receipt_artifacts_five_v2",
+    "inner_direct_completion_five_v2",
+    "outer_direct_completion_five_v2",
+    "direct_pump_five_v2",
+    "held_direct_identity_five_v2",
+    "live_direct_five_v2"
+  ],
+  "readerFunctions": [
+    "need",
+    "direct_context_files",
+    "direct_capture_files"
+  ],
+  "plannedTests": [
+    "SemanticChecks.test_00_native_constructor_and_effect_guards",
+    "IntegratedChecks.test_actual_new_business_c0_report_revalidation_and_t0_observation",
+    "IntegratedAdverseChecks.test_clean_owner_does_not_hide_adverse_missing_or_foreign_business",
+    "IntegratedAdverseChecks.test_cross_protocol_readers_refuse_without_widening_v1",
+    "IntegratedAdverseChecks.test_late_or_throwing_observation_delivery_keeps_original_sealed_bytes",
+    "IntegratedAdverseChecks.test_missing_owner_eof_retains_original_read_and_blocks_report",
+    "IntegratedAdverseChecks.test_nonzero_and_still_active_owner_are_not_report_completion",
+    "IntegratedAdverseChecks.test_original_clock_failure_after_report_read_stays_sticky",
+    "IntegratedAdverseChecks.test_pre_parent_failure_reserves_actor_across_both_protocols",
+    "IntegratedAdverseChecks.test_report_rechecks_floor_body_order_and_original_producer",
+    "T0Checks.test_original_c0_exit_late_stderr_and_report_all_join"
+  ],
+  "logicalDeclarationPin": {
+    "path": "C:\\Claude\\SIREN_WORK\\terminal-operational-four-stage-candidate-v1-20261022\\capture-external-declaration-v1.json",
+    "bytes": 11082,
+    "sha256": "211c8eea6a44517fc025d14dfba076bb570332b495c600d947f0e03f254d50e5"
+  },
+  "kind": "COHERENT_C0_T0_FIVE_BUSINESS_PORTABLE_SOURCE_V2",
+  "canonicalPaths": {
+    "root": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2",
+    "source": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\SOURCE.json",
+    "runner": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\runner.py",
+    "invoker": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\invoke.py",
+    "review": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\peer-source-review.json"
+  },
+  "inputs": {
+    "FIVE_INNER_PRODUCER_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-producers-v4\\inner-producer-v2.py",
+      "bytes": 17115,
+      "sha256": "70ff4509fef714491665bfaf18cec870ed32dff550ab81cf03e0fc9403b9735a"
+    },
+    "FIVE_OUTER_PRODUCER_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-producers-v4\\outer-producer-v2.py",
+      "bytes": 4400,
+      "sha256": "eddc9bf0b96e0e911de42f7d0a9a180a07adff49279637b67176a5b29715f8d1"
+    },
+    "FOCUS_SEED_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\focus_seed.py",
+      "bytes": 3992,
+      "sha256": "450b2056102b81fb4864018e731dd6f6aca376f7fce7dbdbf136836a76476aad"
+    },
+    "GUARD_PORTS_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\guard_ports.py",
+      "bytes": 2262,
+      "sha256": "98eba6f30b1fd5fd2fb3433d2b13e53e639484cc5f3d7fbc831e5a24cb32718c"
+    },
+    "GUARD_WORLD_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\guard_world.py",
+      "bytes": 2973,
+      "sha256": "4431a4dab662ba135e30e70f3101fcf09c5aa9d739a703871130e426f07987a9"
+    },
+    "INNER_ROOT_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\inner_root_selection.py",
+      "bytes": 1455,
+      "sha256": "ce612e5552917992da7ec99ac935332f40c5d8afd9213edba3c2ae01625e72ec"
+    },
+    "INNER_ROUTE_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\inner_route_selection.py",
+      "bytes": 14297,
+      "sha256": "d824ab2831e5caa2607e04cc856f24213e8b5843de5808d98d4cb5719a5630d9"
+    },
+    "NATIVE_WORLD_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\native_world.py",
+      "bytes": 3999,
+      "sha256": "1b0b9496fddaaa39ffb54b0aa1c1565b63fae69cc8ea14da81fa3ddba1675bc0"
+    },
+    "OUTER_ROOT_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\outer_root_selection.py",
+      "bytes": 588,
+      "sha256": "7c352eb250b7fcdb9c82d9ff3b94b0e66aedfeefce2f4a81b61d6230ff24451b"
+    },
+    "PARENT_SEED_CODE": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\parent_seed.py",
+      "bytes": 2863,
+      "sha256": "b86c03e3ae54637b3eb9665dadc744413438177bedffd78365938eccfeddf719"
+    },
+    "bridge_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-bridge-v1-20261024\\bridge_fixture.py",
+      "bytes": 4845,
+      "sha256": "335af19ba89d620d093f95ce582fc4b91d4738e205375bd2688e2d0c20dfb5e8"
+    },
+    "business_bundle": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\business-bundle.json",
+      "bytes": 16039,
+      "sha256": "3427bc9e3ca20a2b76e9353ebf208db4963c40937446d4a4151855bbb8edc4a3"
+    },
+    "business_controls": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\business_controls-v2.py",
+      "bytes": 14688,
+      "sha256": "f6281be5b2ed17c80e260fc6a47c537c10ee42c30f8c49903dd4bb59ff27114c"
+    },
+    "business_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\business_fixture-v4.py",
+      "bytes": 10507,
+      "sha256": "dc2c3748c8e499509ce15528c69d2e3a889c7644376ed55adcfab2b1c19d8638"
+    },
+    "c0_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-finite-c0-supplied-v1-20261024\\c0_fixture.py",
+      "bytes": 8010,
+      "sha256": "170236cf8e09be4285961cf01d11327c66b87a73b31729861c317275b35ba03b"
+    },
+    "common_source": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-common-v4\\controller_common.py",
+      "bytes": 60051,
+      "sha256": "441d60bbf5823a18b55610fc0ff938ca499952a280c0add0412b763950d4232a"
+    },
+    "context.observer.adapter": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\observer\\adapter.py",
+      "bytes": 7563,
+      "sha256": "421025ecd992c05cd694c4872ee4920a45779250fdaa58283728e03fe0359aa5"
+    },
+    "context.observer.native": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\observer\\native.py",
+      "bytes": 5904,
+      "sha256": "c83b167f1d0a3d42220c7af7034004648e5638bcb474d8b1ab2c8804ac383ef4"
+    },
+    "context.reference.folder_dialog_driver": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\context\\reference\\folder_dialog_driver.py",
+      "bytes": 9145,
+      "sha256": "92d3c9145383697b11312f930a35ef6d75a23127f65775c30907748e0f4737ca"
+    },
+    "context_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-business-semantic-bundle-v1-20261024\\candidate-v2\\context_fixture.py",
+      "bytes": 3942,
+      "sha256": "da6c4b8af7ff1e7f29c8e878e1c6e3ee1fcdb8feb4a1cd514b17e5e62cc11385"
+    },
+    "declaration": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate\\declaration.json",
+      "bytes": 11082,
+      "sha256": "211c8eea6a44517fc025d14dfba076bb570332b495c600d947f0e03f254d50e5"
+    },
+    "escape_cancel": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-fixed-escape-cancel-transport-20261018\\escape_cancel\\__init__.py",
+      "bytes": 5809,
+      "sha256": "2d8e2b54cfcca89d50b5eb6d865e50662444dc07f73293fa8f03763e15017270"
+    },
+    "escape_cancel.native": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-fixed-escape-cancel-transport-20261018\\escape_cancel\\native.py",
+      "bytes": 2796,
+      "sha256": "98ccdf4a8d274aac4a700193e5044e8dbe63a68f116bbf4d5812471e1453d708"
+    },
+    "five_api": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\api_controls.py",
+      "bytes": 3061,
+      "sha256": "54283ea5eed981d417298a74bdfe8f50709d64aaa1ce041b0588c0116442884d"
+    },
+    "fixture_consumer_data": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-receipt-target-binding-v2-20261023\\candidate\\maintained-tests.py",
+      "bytes": 14437,
+      "sha256": "70a90ebd3c3576204d816c8630aca01c033b6571d5e871e174e84f2bfe17b9bd"
+    },
+    "focus_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-integration-v5\\focus_fixture.py",
+      "bytes": 10099,
+      "sha256": "a88f6379b536400b397fe14fb7fa4c1d5818de3113a34584c7b43cab266c0b88"
+    },
+    "grouped_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-business-semantic-bundle-v1-20261024\\candidate-v2\\grouped_fixture.py",
+      "bytes": 8437,
+      "sha256": "f6070be2b6fac0712fe53b3eff0d55258dfa3292c427fc8f87b6b763508a837a"
+    },
+    "image_route_retention": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-route-retention-policy-v3-20261019\\retention.py",
+      "bytes": 9991,
+      "sha256": "4372bdc603ac78bb98039acd359af78c08f28b7692cb7578a2f3a2c94bc1fcdf"
+    },
+    "image_route_support": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-result-integration-v4-20261023\\source\\route_support.py",
+      "bytes": 3562,
+      "sha256": "8ae04a15e91cac1ad4da2678e26e3404cbe26ba5e8215d2865637815e0d1f44f"
+    },
+    "integration_adverse_controls": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\integration-adverse-controls.py",
+      "bytes": 7649,
+      "sha256": "f0d8c1f300772374011d5cfe6b46c0f3bf5bc606c3403149489008f3f99d79d1"
+    },
+    "integration_binding": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-binding.py",
+      "bytes": 322,
+      "sha256": "6f9f9ac11e4f7e405cdf385185e02d01631bc0ba9d7c3709b529008c3da1de88"
+    },
+    "integration_business_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\business_fixture.py",
+      "bytes": 7507,
+      "sha256": "5b3bf2c3f9a9839e3c0fef4165806038428174049735d024beac2619181dd3e0"
+    },
+    "integration_c0_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\c0_fixture.py",
+      "bytes": 5907,
+      "sha256": "0b7ccb1a0f632cd2158cae7fe5604a8809b2bf33a89d365c11e6beee863d48ab"
+    },
+    "integration_controls": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\integration-controls.py",
+      "bytes": 4432,
+      "sha256": "894bd27ba1dfbba0764729f6fd9909c46f70d139dee8a2cef179303f9a8bf414"
+    },
+    "integration_focus_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\focus_fixture.py",
+      "bytes": 10325,
+      "sha256": "e53aa62947a5faa59140bf247bb10036554da3aec8dbf47c3683c44dd201e16d"
+    },
+    "integration_t0_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\t0_fixture.py",
+      "bytes": 6961,
+      "sha256": "2a8e466406b6e3ecc3499c112941773816abfabf7ab30bd1f2f86d642bc8a2f4"
+    },
+    "loader": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-operational-native-stack-buffer-cohort-v1-20261022\\core.py",
+      "bytes": 8040,
+      "sha256": "501ad69e30e64e40378486ff1883092f9e58da1dbbd24c07fe5c0af5f6871df2"
+    },
+    "maintained_inner": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-producers-v4\\run-owned-inner.py",
+      "bytes": 45889,
+      "sha256": "c3a9eba163bf5cc945175cb7b89da05d9ff5458b8e5e2506370377a3e2e8ea30"
+    },
+    "maintained_outer": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-producers-v4\\run-controller.py",
+      "bytes": 14794,
+      "sha256": "5c5a0eb11332319098d2de13cb026bde37f5871330aff43e40560dc9ad39cb19"
+    },
+    "ordinary_address_focus_core": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-address-focus-discriminator-core-v8-20261021\\focus.py",
+      "bytes": 24959,
+      "sha256": "a0660b90f7efda90698f5f4046bed04625a08ca76ceeb8ddd53e0bc65b83c316"
+    },
+    "ordinary_address_focus_native": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-address-focus-native-binding-v1-20261021\\focus_native.py",
+      "bytes": 9703,
+      "sha256": "57df5f5968a819cbf05de43fc98e0baf1dbf02088ddf9b5fef79d93e0c90fe5a"
+    },
+    "ordinary_business_domain_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-c0-publication-domain-v1-20261024\\candidate-source\\business_domain_v1.py",
+      "bytes": 4039,
+      "sha256": "11cf237c1f34eb27094d627d95734b135fe8a5c24cc26be51c1efd4a124a653c"
+    },
+    "ordinary_business_publication_reader_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\publication_reader_v1.py",
+      "bytes": 6027,
+      "sha256": "e6426d96c8fdda66d2e0801973ab988bbc8eb84fdcaca3030dbae766872a9af6"
+    },
+    "ordinary_cancel_evidence": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\cancel_evidence.py",
+      "bytes": 5744,
+      "sha256": "e67c9df64d571b4bf8d450e9378a91fc8fda4603e9d72d4f699ce27497df155f"
+    },
+    "ordinary_closed_picker_consumer": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-receipt-target-binding-v2-20261023\\candidate\\subject.py",
+      "bytes": 10658,
+      "sha256": "0ba39e4bce621f08129738709cc0574a6ac0963d00f0f6b8d0822964bef45427"
+    },
+    "ordinary_described_error": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\described_error.py",
+      "bytes": 1659,
+      "sha256": "ab18ac195395479322bd39ee00b7eac21fdfd6a03cf3e61a99916995f81f44b7"
+    },
+    "ordinary_direct_caller_adapter": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\caller_adapter.py",
+      "bytes": 28367,
+      "sha256": "1849d1f8696e3b81432e193df7cab50ccb5274e63e589aa060d3663097364ec2"
+    },
+    "ordinary_direct_capture_core": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_core.py",
+      "bytes": 26093,
+      "sha256": "5adec48b25224594a4e9050c76f8f6c9b22761b0de7c04184cbcf723332e81d6"
+    },
+    "ordinary_direct_capture_finish": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\capture_finish.py",
+      "bytes": 12444,
+      "sha256": "c38983d9d43400961b032e9286c2074cbf7586900358b7be0125ceb607721eb0"
+    },
+    "ordinary_direct_context": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_context.py",
+      "bytes": 14940,
+      "sha256": "b71c46d696f554ca7a589de1620eaa8ea3d6775b1ce3c9eb8a5e99ad5d0efa09"
+    },
+    "ordinary_direct_coordinator_base": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\edge_coordinator.py",
+      "bytes": 14625,
+      "sha256": "0cefd5939bc0e2cf836e8a6412cfbe7ef529ab16f8f08686e1bdca09f0e439ad"
+    },
+    "ordinary_direct_fake_files": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_files.py",
+      "bytes": 2483,
+      "sha256": "e924d4e46a943d3ea8e18a7529d72a25fc483290f57172898e76a10cb8af92fb"
+    },
+    "ordinary_direct_fake_resources": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\fake_resources.py",
+      "bytes": 5013,
+      "sha256": "83d743a435bf990e501dbc94f93c8a40c1e5468516b47e9576c8f9349c706946"
+    },
+    "ordinary_direct_file_backend": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\file_backend.py",
+      "bytes": 11389,
+      "sha256": "3c3fab6e53580a73d5d15cd1fefd4d243b3f424544032fac05b1ef870289ad60"
+    },
+    "ordinary_direct_finish_coordinator": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\finish_coordinator.py",
+      "bytes": 22001,
+      "sha256": "8bdd5ecbd9de1f65c7f0736d5fbd53c88b8bbb48f18ff000f93c0e4f5e4bf3c3"
+    },
+    "ordinary_direct_finish_reader": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_finish.py",
+      "bytes": 15522,
+      "sha256": "20a46a145642feef69cfff43acb8c6ea26d9026f80d854b04c8670b5c6546477"
+    },
+    "ordinary_direct_fixed_plan": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\fixed_launch_plan.py",
+      "bytes": 4521,
+      "sha256": "5e97dca2e460af988f3e49c2f4f8d868a52feb0692088a0635f6cdd63a40f4cf"
+    },
+    "ordinary_direct_owner_reader": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\read_owner.py",
+      "bytes": 8300,
+      "sha256": "3cff52147f36a7ffc6005e7316183dd9470500b2962fded02ae5e5b156e0874c"
+    },
+    "ordinary_direct_process_owner": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\owned_process.py",
+      "bytes": 22101,
+      "sha256": "630395b4344c0955422deac75e5b2ccea0653b9565735f6a67e1b3842b61b6e8"
+    },
+    "ordinary_direct_resource_base": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dual-cutoff-v1-20261024\\candidate-source\\resource_backend.py",
+      "bytes": 13091,
+      "sha256": "0d87016ef049c9846fef3602530f7a532697a789cd6623a3e11b9c6942a546b6"
+    },
+    "ordinary_direct_results": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\direct_results.py",
+      "bytes": 28570,
+      "sha256": "f82bf715bd77e78f3f327495261a8be7a4be9e5a6f976fe78029ed831f45c912"
+    },
+    "ordinary_direct_route": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\direct_route.py",
+      "bytes": 13088,
+      "sha256": "ceabdd2a3fc8c7da3d3fd51717837be7c9307b3473ad1752ade20be7ead49f64"
+    },
+    "ordinary_direct_startup_storage": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\startup_storage.py",
+      "bytes": 8619,
+      "sha256": "28490c276b327a784d6a8097879ce4d56a213b9113884243cbea9677d13dcd57"
+    },
+    "ordinary_direct_timing_results_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\timing_results_v2.py",
+      "bytes": 10669,
+      "sha256": "ab3e12bf5a0e51b807473c22d6055d729e15cfb86fea3dd625e75dd97df194e9"
+    },
+    "ordinary_direct_timing_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\timing_policy_v1.py",
+      "bytes": 10624,
+      "sha256": "600b3f0e1b0ca99b7d606932e312c1a6df6b8e6a6313de107301221312c1ae28"
+    },
+    "ordinary_external_execution_policy_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-execution-v1-20261024\\candidate-source\\execution_policy_v1.py",
+      "bytes": 7626,
+      "sha256": "e24b3396e54fa7b090f1959f8c851e9a5d852a80794cea21971bf97521f294c9"
+    },
+    "ordinary_external_parent_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-parent-execution-v1-20261024\\candidate-source\\external_parent_v1.py",
+      "bytes": 5246,
+      "sha256": "69d9020ab12b1e339cf4b1c3fd31c36a52b6a7e84a6b2c9853023db058f58a56"
+    },
+    "ordinary_external_profile_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-entry-continuation-v1-20261023\\candidate-source-v2\\external_profile_v1.py",
+      "bytes": 10454,
+      "sha256": "fea9cc179b2940f3395bbebce63a1e2627af00f723263dd2fac9cea755f04592"
+    },
+    "ordinary_external_supply_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-external-supply-v1-20261023\\candidate-source-v3\\external_supply_v1.py",
+      "bytes": 8729,
+      "sha256": "ffb778ad3c3ba65a0ad540ae6eab2de673b0e015f16c02dd396685e4cd8db231"
+    },
+    "ordinary_five_role_execution_v2": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-clock-v2-20261024\\candidate-source-v2\\five_role_execution_v2.py",
+      "bytes": 5631,
+      "sha256": "1aab072119bc19be51413c300caba3b648a42b09ceeb454204fc9066d30439c5"
+    },
+    "ordinary_focus_evidence": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate-consumers-v2\\focus_evidence.py",
+      "bytes": 36685,
+      "sha256": "edb196416de1920bcf059216dbc3e55afee8b97d8e4e595786afa3a212ce6a2e"
+    },
+    "ordinary_picker_contracts": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\controller_contracts.py",
+      "bytes": 8399,
+      "sha256": "d01708323e703c8900e939691981c5ceec3d44f22e282bcc930aac6ba4ab4275"
+    },
+    "ordinary_route_evidence": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\route_evidence.py",
+      "bytes": 6652,
+      "sha256": "8217f9f2fe14fe47115efe78a85c80f1d616006c099bc2d0c9a538e356d87a92"
+    },
+    "ordinary_shared_dialog_clock": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-dialog-clock-v2-20261018\\dialog_clock.py",
+      "bytes": 2454,
+      "sha256": "dff0f952a510687ef71df0cb8b4e1c4d8f4f0ae6cf9815095f544e68ea82b305"
+    },
+    "ordinary_supplied_c0_five_business_v2": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\c0_supplied_five_business_v2.py",
+      "bytes": 25690,
+      "sha256": "830d7d227352be134040b6aac5a5cc55f46a9964c7773195b1653936ad59a4ec"
+    },
+    "ordinary_supplied_c0_report_reader_five_business_v2": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\c0_report_reader_five_business_v2.py",
+      "bytes": 22304,
+      "sha256": "7f78ba4c347ed389be40fa5202cdc2ce27475289ebaa7a36f6bd86474d35a2fa"
+    },
+    "ordinary_supplied_c0_report_reader_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-c0-report-reader-v1-20261024\\candidate-source\\c0_report_reader_v2.py",
+      "bytes": 11677,
+      "sha256": "e91d619cec2a6fdd1edc93359277dd4a66b7f694c6e6bcfd120557b074404c07"
+    },
+    "ordinary_supplied_c0_run_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-finite-c0-supplied-v1-20261024\\candidate-source\\c0_supplied_v1.py",
+      "bytes": 12962,
+      "sha256": "26c480b3ffd472e658186794c21a1f4f07a44f7fcfc8ea889e80a8fb3f0061b3"
+    },
+    "ordinary_supplied_t0_five_business_v2": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate-source-v2\\t0_supplied_five_business_v2.py",
+      "bytes": 26870,
+      "sha256": "0a5546639730013020a29d411e93c3d9bb45b83e1396ab2e28207681e9a00920"
+    },
+    "ordinary_supplied_t0_run_v1": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-t0-supplied-v1-20261024\\candidate-source\\t0_supplied_v1.py",
+      "bytes": 13489,
+      "sha256": "0a0b5d1540edec0fb53d4056f12a5e91488fefa80e5ef14889d56acd7a697430"
+    },
+    "ordinary_window_foreground_cache_foreground": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-window-foreground-cache-core-v1-20261021\\foreground.py",
+      "bytes": 7861,
+      "sha256": "a251fb97a0d8a72c8df345cc3c2d0df2208608072195353cbda62b6f0675e63b"
+    },
+    "ordinary_window_foreground_cache_window": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-window-foreground-cache-core-v1-20261021\\provenance.py",
+      "bytes": 12200,
+      "sha256": "18e734c848c1b33ff9e1762392114329047b0f516d7fa44d9f3a42e1cf09c399"
+    },
+    "prefocus_body": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-result-integration-v4-20261023\\source\\prefocus-fixture.json",
+      "bytes": 2675,
+      "sha256": "538e189147c782dffbd4d638af57dd482c2beeb6d6cee5463a7dee369c605c15"
+    },
+    "reader_source": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\grouped-source\\inspect-completed.py",
+      "bytes": 14902,
+      "sha256": "9415085a53351ee7610a6c9fc347046eb94400bbf689a9ab6509077be941766f"
+    },
+    "result_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-maintained-direct-context-integration-v1-20261023\\result_fixture.py",
+      "bytes": 4389,
+      "sha256": "910364cd6a9d78cbb8c7ec11e9ea64cc72ee8a34e5fc2c44099e48b27f07dd93"
+    },
+    "semantic_controls": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-business-semantic-bundle-v1-20261024\\semantic_controls.py",
+      "bytes": 5498,
+      "sha256": "c865d633a9a6badb59c12dc72128c8b20dfb4b3cbe15fda869766a34c79882a8"
+    },
+    "siren_c1_foreground_observation": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-c1-foreground-observation-20261018\\foreground.py",
+      "bytes": 6079,
+      "sha256": "4e9bdf42e65d63ccd286e545b3432fa53c950486640e27c2c581ed4aaf5f199a"
+    },
+    "siren_owned_dialog_readiness": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-enumeration-lifetime-policy-v2-20261019\\candidate\\readiness.py",
+      "bytes": 9446,
+      "sha256": "7ae0f7adb5af9bab6eedd23c12940ab009ada4f74bd0e00b06aadfdb83c47f6b"
+    },
+    "source_plan": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate\\source-plan.json",
+      "bytes": 8744,
+      "sha256": "e329701e0ff94ec41caf4839fdc262bf72afdc772918e166f0c18a936d08ddb6"
+    },
+    "t0_controls": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-t0-supplied-v1-20261024\\t0_controls.py",
+      "bytes": 8672,
+      "sha256": "b3feaa1a6435837323f2faa47c081b8a0698e8b2902e5e9f9e106ea40685e44f"
+    },
+    "t0_fixture": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-t0-supplied-v1-20261024\\t0_fixture.py",
+      "bytes": 9672,
+      "sha256": "68d4f90a073b0bde6492f919d1d62485b510034678ef64f556405eeede98d9b3"
+    },
+    "topology.native": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-readonly-dialog-topology-20261018\\topology\\native.py",
+      "bytes": 1505,
+      "sha256": "a2f3980d08c7fb54e09205c8db67b583de663cc0b7e21f7b02d4cc540dd866f6"
+    },
+    "runner": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\runner.py",
+      "bytes": 15618,
+      "sha256": "a0efdb682cb85f9e601d87f0c45741e61d610f75999f481399b952640125094b"
+    },
+    "invoker": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\invoke.py",
+      "bytes": 3967,
+      "sha256": "842fb3a8a1e65f6955bef866949272d5a8cf7920c6072fe9552a5d9ce348e675"
+    }
+  },
+  "hostMap": {
+    "FIVE_INNER_PRODUCER_CODE": {
+      "relativePath": "inputs/FIVE_INNER_PRODUCER_CODE.py",
+      "bytes": 17115,
+      "sha256": "70ff4509fef714491665bfaf18cec870ed32dff550ab81cf03e0fc9403b9735a"
+    },
+    "FIVE_OUTER_PRODUCER_CODE": {
+      "relativePath": "inputs/FIVE_OUTER_PRODUCER_CODE.py",
+      "bytes": 4400,
+      "sha256": "eddc9bf0b96e0e911de42f7d0a9a180a07adff49279637b67176a5b29715f8d1"
+    },
+    "FOCUS_SEED_CODE": {
+      "relativePath": "inputs/FOCUS_SEED_CODE.py",
+      "bytes": 3992,
+      "sha256": "450b2056102b81fb4864018e731dd6f6aca376f7fce7dbdbf136836a76476aad"
+    },
+    "GUARD_PORTS_CODE": {
+      "relativePath": "inputs/GUARD_PORTS_CODE.py",
+      "bytes": 2262,
+      "sha256": "98eba6f30b1fd5fd2fb3433d2b13e53e639484cc5f3d7fbc831e5a24cb32718c"
+    },
+    "GUARD_WORLD_CODE": {
+      "relativePath": "inputs/GUARD_WORLD_CODE.py",
+      "bytes": 2973,
+      "sha256": "4431a4dab662ba135e30e70f3101fcf09c5aa9d739a703871130e426f07987a9"
+    },
+    "INNER_ROOT_CODE": {
+      "relativePath": "inputs/INNER_ROOT_CODE.py",
+      "bytes": 1455,
+      "sha256": "ce612e5552917992da7ec99ac935332f40c5d8afd9213edba3c2ae01625e72ec"
+    },
+    "INNER_ROUTE_CODE": {
+      "relativePath": "inputs/INNER_ROUTE_CODE.py",
+      "bytes": 14297,
+      "sha256": "d824ab2831e5caa2607e04cc856f24213e8b5843de5808d98d4cb5719a5630d9"
+    },
+    "NATIVE_WORLD_CODE": {
+      "relativePath": "inputs/NATIVE_WORLD_CODE.py",
+      "bytes": 3999,
+      "sha256": "1b0b9496fddaaa39ffb54b0aa1c1565b63fae69cc8ea14da81fa3ddba1675bc0"
+    },
+    "OUTER_ROOT_CODE": {
+      "relativePath": "inputs/OUTER_ROOT_CODE.py",
+      "bytes": 588,
+      "sha256": "7c352eb250b7fcdb9c82d9ff3b94b0e66aedfeefce2f4a81b61d6230ff24451b"
+    },
+    "PARENT_SEED_CODE": {
+      "relativePath": "inputs/PARENT_SEED_CODE.py",
+      "bytes": 2863,
+      "sha256": "b86c03e3ae54637b3eb9665dadc744413438177bedffd78365938eccfeddf719"
+    },
+    "bridge_fixture": {
+      "relativePath": "inputs/bridge_fixture.py",
+      "bytes": 4845,
+      "sha256": "335af19ba89d620d093f95ce582fc4b91d4738e205375bd2688e2d0c20dfb5e8"
+    },
+    "business_bundle": {
+      "relativePath": "inputs/business_bundle.json",
+      "bytes": 16039,
+      "sha256": "3427bc9e3ca20a2b76e9353ebf208db4963c40937446d4a4151855bbb8edc4a3"
+    },
+    "business_controls": {
+      "relativePath": "inputs/business_controls.py",
+      "bytes": 14688,
+      "sha256": "f6281be5b2ed17c80e260fc6a47c537c10ee42c30f8c49903dd4bb59ff27114c"
+    },
+    "business_fixture": {
+      "relativePath": "inputs/business_fixture.py",
+      "bytes": 10507,
+      "sha256": "dc2c3748c8e499509ce15528c69d2e3a889c7644376ed55adcfab2b1c19d8638"
+    },
+    "c0_fixture": {
+      "relativePath": "inputs/c0_fixture.py",
+      "bytes": 8010,
+      "sha256": "170236cf8e09be4285961cf01d11327c66b87a73b31729861c317275b35ba03b"
+    },
+    "common_source": {
+      "relativePath": "inputs/common_source.py",
+      "bytes": 60051,
+      "sha256": "441d60bbf5823a18b55610fc0ff938ca499952a280c0add0412b763950d4232a"
+    },
+    "context.observer.adapter": {
+      "relativePath": "inputs/context__dot__observer__dot__adapter.py",
+      "bytes": 7563,
+      "sha256": "421025ecd992c05cd694c4872ee4920a45779250fdaa58283728e03fe0359aa5"
+    },
+    "context.observer.native": {
+      "relativePath": "inputs/context__dot__observer__dot__native.py",
+      "bytes": 5904,
+      "sha256": "c83b167f1d0a3d42220c7af7034004648e5638bcb474d8b1ab2c8804ac383ef4"
+    },
+    "context.reference.folder_dialog_driver": {
+      "relativePath": "inputs/context__dot__reference__dot__folder_dialog_driver.py",
+      "bytes": 9145,
+      "sha256": "92d3c9145383697b11312f930a35ef6d75a23127f65775c30907748e0f4737ca"
+    },
+    "context_fixture": {
+      "relativePath": "inputs/context_fixture.py",
+      "bytes": 3942,
+      "sha256": "da6c4b8af7ff1e7f29c8e878e1c6e3ee1fcdb8feb4a1cd514b17e5e62cc11385"
+    },
+    "declaration": {
+      "relativePath": "inputs/declaration.json",
+      "bytes": 11082,
+      "sha256": "211c8eea6a44517fc025d14dfba076bb570332b495c600d947f0e03f254d50e5"
+    },
+    "escape_cancel": {
+      "relativePath": "inputs/escape_cancel.py",
+      "bytes": 5809,
+      "sha256": "2d8e2b54cfcca89d50b5eb6d865e50662444dc07f73293fa8f03763e15017270"
+    },
+    "escape_cancel.native": {
+      "relativePath": "inputs/escape_cancel__dot__native.py",
+      "bytes": 2796,
+      "sha256": "98ccdf4a8d274aac4a700193e5044e8dbe63a68f116bbf4d5812471e1453d708"
+    },
+    "five_api": {
+      "relativePath": "inputs/five_api.py",
+      "bytes": 3061,
+      "sha256": "54283ea5eed981d417298a74bdfe8f50709d64aaa1ce041b0588c0116442884d"
+    },
+    "fixture_consumer_data": {
+      "relativePath": "inputs/fixture_consumer_data.py",
+      "bytes": 14437,
+      "sha256": "70a90ebd3c3576204d816c8630aca01c033b6571d5e871e174e84f2bfe17b9bd"
+    },
+    "focus_fixture": {
+      "relativePath": "inputs/focus_fixture.py",
+      "bytes": 10099,
+      "sha256": "a88f6379b536400b397fe14fb7fa4c1d5818de3113a34584c7b43cab266c0b88"
+    },
+    "grouped_fixture": {
+      "relativePath": "inputs/grouped_fixture.py",
+      "bytes": 8437,
+      "sha256": "f6070be2b6fac0712fe53b3eff0d55258dfa3292c427fc8f87b6b763508a837a"
+    },
+    "image_route_retention": {
+      "relativePath": "inputs/image_route_retention.py",
+      "bytes": 9991,
+      "sha256": "4372bdc603ac78bb98039acd359af78c08f28b7692cb7578a2f3a2c94bc1fcdf"
+    },
+    "image_route_support": {
+      "relativePath": "inputs/image_route_support.py",
+      "bytes": 3562,
+      "sha256": "8ae04a15e91cac1ad4da2678e26e3404cbe26ba5e8215d2865637815e0d1f44f"
+    },
+    "integration_adverse_controls": {
+      "relativePath": "inputs/integration_adverse_controls.py",
+      "bytes": 7649,
+      "sha256": "f0d8c1f300772374011d5cfe6b46c0f3bf5bc606c3403149489008f3f99d79d1"
+    },
+    "integration_binding": {
+      "relativePath": "inputs/integration_binding.py",
+      "bytes": 322,
+      "sha256": "6f9f9ac11e4f7e405cdf385185e02d01631bc0ba9d7c3709b529008c3da1de88"
+    },
+    "integration_business_fixture": {
+      "relativePath": "inputs/integration_business_fixture.py",
+      "bytes": 7507,
+      "sha256": "5b3bf2c3f9a9839e3c0fef4165806038428174049735d024beac2619181dd3e0"
+    },
+    "integration_c0_fixture": {
+      "relativePath": "inputs/integration_c0_fixture.py",
+      "bytes": 5907,
+      "sha256": "0b7ccb1a0f632cd2158cae7fe5604a8809b2bf33a89d365c11e6beee863d48ab"
+    },
+    "integration_controls": {
+      "relativePath": "inputs/integration_controls.py",
+      "bytes": 4432,
+      "sha256": "894bd27ba1dfbba0764729f6fd9909c46f70d139dee8a2cef179303f9a8bf414"
+    },
+    "integration_focus_fixture": {
+      "relativePath": "inputs/integration_focus_fixture.py",
+      "bytes": 10325,
+      "sha256": "e53aa62947a5faa59140bf247bb10036554da3aec8dbf47c3683c44dd201e16d"
+    },
+    "integration_t0_fixture": {
+      "relativePath": "inputs/integration_t0_fixture.py",
+      "bytes": 6961,
+      "sha256": "2a8e466406b6e3ecc3499c112941773816abfabf7ab30bd1f2f86d642bc8a2f4"
+    },
+    "loader": {
+      "relativePath": "inputs/loader.py",
+      "bytes": 8040,
+      "sha256": "501ad69e30e64e40378486ff1883092f9e58da1dbbd24c07fe5c0af5f6871df2"
+    },
+    "maintained_inner": {
+      "relativePath": "inputs/maintained_inner.py",
+      "bytes": 45889,
+      "sha256": "c3a9eba163bf5cc945175cb7b89da05d9ff5458b8e5e2506370377a3e2e8ea30"
+    },
+    "maintained_outer": {
+      "relativePath": "inputs/maintained_outer.py",
+      "bytes": 14794,
+      "sha256": "5c5a0eb11332319098d2de13cb026bde37f5871330aff43e40560dc9ad39cb19"
+    },
+    "ordinary_address_focus_core": {
+      "relativePath": "inputs/ordinary_address_focus_core.py",
+      "bytes": 24959,
+      "sha256": "a0660b90f7efda90698f5f4046bed04625a08ca76ceeb8ddd53e0bc65b83c316"
+    },
+    "ordinary_address_focus_native": {
+      "relativePath": "inputs/ordinary_address_focus_native.py",
+      "bytes": 9703,
+      "sha256": "57df5f5968a819cbf05de43fc98e0baf1dbf02088ddf9b5fef79d93e0c90fe5a"
+    },
+    "ordinary_business_domain_v1": {
+      "relativePath": "inputs/ordinary_business_domain_v1.py",
+      "bytes": 4039,
+      "sha256": "11cf237c1f34eb27094d627d95734b135fe8a5c24cc26be51c1efd4a124a653c"
+    },
+    "ordinary_business_publication_reader_v1": {
+      "relativePath": "inputs/ordinary_business_publication_reader_v1.py",
+      "bytes": 6027,
+      "sha256": "e6426d96c8fdda66d2e0801973ab988bbc8eb84fdcaca3030dbae766872a9af6"
+    },
+    "ordinary_cancel_evidence": {
+      "relativePath": "inputs/ordinary_cancel_evidence.py",
+      "bytes": 5744,
+      "sha256": "e67c9df64d571b4bf8d450e9378a91fc8fda4603e9d72d4f699ce27497df155f"
+    },
+    "ordinary_closed_picker_consumer": {
+      "relativePath": "inputs/ordinary_closed_picker_consumer.py",
+      "bytes": 10658,
+      "sha256": "0ba39e4bce621f08129738709cc0574a6ac0963d00f0f6b8d0822964bef45427"
+    },
+    "ordinary_described_error": {
+      "relativePath": "inputs/ordinary_described_error.py",
+      "bytes": 1659,
+      "sha256": "ab18ac195395479322bd39ee00b7eac21fdfd6a03cf3e61a99916995f81f44b7"
+    },
+    "ordinary_direct_caller_adapter": {
+      "relativePath": "inputs/ordinary_direct_caller_adapter.py",
+      "bytes": 28367,
+      "sha256": "1849d1f8696e3b81432e193df7cab50ccb5274e63e589aa060d3663097364ec2"
+    },
+    "ordinary_direct_capture_core": {
+      "relativePath": "inputs/ordinary_direct_capture_core.py",
+      "bytes": 26093,
+      "sha256": "5adec48b25224594a4e9050c76f8f6c9b22761b0de7c04184cbcf723332e81d6"
+    },
+    "ordinary_direct_capture_finish": {
+      "relativePath": "inputs/ordinary_direct_capture_finish.py",
+      "bytes": 12444,
+      "sha256": "c38983d9d43400961b032e9286c2074cbf7586900358b7be0125ceb607721eb0"
+    },
+    "ordinary_direct_context": {
+      "relativePath": "inputs/ordinary_direct_context.py",
+      "bytes": 14940,
+      "sha256": "b71c46d696f554ca7a589de1620eaa8ea3d6775b1ce3c9eb8a5e99ad5d0efa09"
+    },
+    "ordinary_direct_coordinator_base": {
+      "relativePath": "inputs/ordinary_direct_coordinator_base.py",
+      "bytes": 14625,
+      "sha256": "0cefd5939bc0e2cf836e8a6412cfbe7ef529ab16f8f08686e1bdca09f0e439ad"
+    },
+    "ordinary_direct_fake_files": {
+      "relativePath": "inputs/ordinary_direct_fake_files.py",
+      "bytes": 2483,
+      "sha256": "e924d4e46a943d3ea8e18a7529d72a25fc483290f57172898e76a10cb8af92fb"
+    },
+    "ordinary_direct_fake_resources": {
+      "relativePath": "inputs/ordinary_direct_fake_resources.py",
+      "bytes": 5013,
+      "sha256": "83d743a435bf990e501dbc94f93c8a40c1e5468516b47e9576c8f9349c706946"
+    },
+    "ordinary_direct_file_backend": {
+      "relativePath": "inputs/ordinary_direct_file_backend.py",
+      "bytes": 11389,
+      "sha256": "3c3fab6e53580a73d5d15cd1fefd4d243b3f424544032fac05b1ef870289ad60"
+    },
+    "ordinary_direct_finish_coordinator": {
+      "relativePath": "inputs/ordinary_direct_finish_coordinator.py",
+      "bytes": 22001,
+      "sha256": "8bdd5ecbd9de1f65c7f0736d5fbd53c88b8bbb48f18ff000f93c0e4f5e4bf3c3"
+    },
+    "ordinary_direct_finish_reader": {
+      "relativePath": "inputs/ordinary_direct_finish_reader.py",
+      "bytes": 15522,
+      "sha256": "20a46a145642feef69cfff43acb8c6ea26d9026f80d854b04c8670b5c6546477"
+    },
+    "ordinary_direct_fixed_plan": {
+      "relativePath": "inputs/ordinary_direct_fixed_plan.py",
+      "bytes": 4521,
+      "sha256": "5e97dca2e460af988f3e49c2f4f8d868a52feb0692088a0635f6cdd63a40f4cf"
+    },
+    "ordinary_direct_owner_reader": {
+      "relativePath": "inputs/ordinary_direct_owner_reader.py",
+      "bytes": 8300,
+      "sha256": "3cff52147f36a7ffc6005e7316183dd9470500b2962fded02ae5e5b156e0874c"
+    },
+    "ordinary_direct_process_owner": {
+      "relativePath": "inputs/ordinary_direct_process_owner.py",
+      "bytes": 22101,
+      "sha256": "630395b4344c0955422deac75e5b2ccea0653b9565735f6a67e1b3842b61b6e8"
+    },
+    "ordinary_direct_resource_base": {
+      "relativePath": "inputs/ordinary_direct_resource_base.py",
+      "bytes": 13091,
+      "sha256": "0d87016ef049c9846fef3602530f7a532697a789cd6623a3e11b9c6942a546b6"
+    },
+    "ordinary_direct_results": {
+      "relativePath": "inputs/ordinary_direct_results.py",
+      "bytes": 28570,
+      "sha256": "f82bf715bd77e78f3f327495261a8be7a4be9e5a6f976fe78029ed831f45c912"
+    },
+    "ordinary_direct_route": {
+      "relativePath": "inputs/ordinary_direct_route.py",
+      "bytes": 13088,
+      "sha256": "ceabdd2a3fc8c7da3d3fd51717837be7c9307b3473ad1752ade20be7ead49f64"
+    },
+    "ordinary_direct_startup_storage": {
+      "relativePath": "inputs/ordinary_direct_startup_storage.py",
+      "bytes": 8619,
+      "sha256": "28490c276b327a784d6a8097879ce4d56a213b9113884243cbea9677d13dcd57"
+    },
+    "ordinary_direct_timing_results_v1": {
+      "relativePath": "inputs/ordinary_direct_timing_results_v1.py",
+      "bytes": 10669,
+      "sha256": "ab3e12bf5a0e51b807473c22d6055d729e15cfb86fea3dd625e75dd97df194e9"
+    },
+    "ordinary_direct_timing_v1": {
+      "relativePath": "inputs/ordinary_direct_timing_v1.py",
+      "bytes": 10624,
+      "sha256": "600b3f0e1b0ca99b7d606932e312c1a6df6b8e6a6313de107301221312c1ae28"
+    },
+    "ordinary_external_execution_policy_v1": {
+      "relativePath": "inputs/ordinary_external_execution_policy_v1.py",
+      "bytes": 7626,
+      "sha256": "e24b3396e54fa7b090f1959f8c851e9a5d852a80794cea21971bf97521f294c9"
+    },
+    "ordinary_external_parent_v1": {
+      "relativePath": "inputs/ordinary_external_parent_v1.py",
+      "bytes": 5246,
+      "sha256": "69d9020ab12b1e339cf4b1c3fd31c36a52b6a7e84a6b2c9853023db058f58a56"
+    },
+    "ordinary_external_profile_v1": {
+      "relativePath": "inputs/ordinary_external_profile_v1.py",
+      "bytes": 10454,
+      "sha256": "fea9cc179b2940f3395bbebce63a1e2627af00f723263dd2fac9cea755f04592"
+    },
+    "ordinary_external_supply_v1": {
+      "relativePath": "inputs/ordinary_external_supply_v1.py",
+      "bytes": 8729,
+      "sha256": "ffb778ad3c3ba65a0ad540ae6eab2de673b0e015f16c02dd396685e4cd8db231"
+    },
+    "ordinary_five_role_execution_v2": {
+      "relativePath": "inputs/ordinary_five_role_execution_v2.py",
+      "bytes": 5631,
+      "sha256": "1aab072119bc19be51413c300caba3b648a42b09ceeb454204fc9066d30439c5"
+    },
+    "ordinary_focus_evidence": {
+      "relativePath": "inputs/ordinary_focus_evidence.py",
+      "bytes": 36685,
+      "sha256": "edb196416de1920bcf059216dbc3e55afee8b97d8e4e595786afa3a212ce6a2e"
+    },
+    "ordinary_picker_contracts": {
+      "relativePath": "inputs/ordinary_picker_contracts.py",
+      "bytes": 8399,
+      "sha256": "d01708323e703c8900e939691981c5ceec3d44f22e282bcc930aac6ba4ab4275"
+    },
+    "ordinary_route_evidence": {
+      "relativePath": "inputs/ordinary_route_evidence.py",
+      "bytes": 6652,
+      "sha256": "8217f9f2fe14fe47115efe78a85c80f1d616006c099bc2d0c9a538e356d87a92"
+    },
+    "ordinary_shared_dialog_clock": {
+      "relativePath": "inputs/ordinary_shared_dialog_clock.py",
+      "bytes": 2454,
+      "sha256": "dff0f952a510687ef71df0cb8b4e1c4d8f4f0ae6cf9815095f544e68ea82b305"
+    },
+    "ordinary_supplied_c0_five_business_v2": {
+      "relativePath": "inputs/ordinary_supplied_c0_five_business_v2.py",
+      "bytes": 25690,
+      "sha256": "830d7d227352be134040b6aac5a5cc55f46a9964c7773195b1653936ad59a4ec"
+    },
+    "ordinary_supplied_c0_report_reader_five_business_v2": {
+      "relativePath": "inputs/ordinary_supplied_c0_report_reader_five_business_v2.py",
+      "bytes": 22304,
+      "sha256": "7f78ba4c347ed389be40fa5202cdc2ce27475289ebaa7a36f6bd86474d35a2fa"
+    },
+    "ordinary_supplied_c0_report_reader_v1": {
+      "relativePath": "inputs/ordinary_supplied_c0_report_reader_v1.py",
+      "bytes": 11677,
+      "sha256": "e91d619cec2a6fdd1edc93359277dd4a66b7f694c6e6bcfd120557b074404c07"
+    },
+    "ordinary_supplied_c0_run_v1": {
+      "relativePath": "inputs/ordinary_supplied_c0_run_v1.py",
+      "bytes": 12962,
+      "sha256": "26c480b3ffd472e658186794c21a1f4f07a44f7fcfc8ea889e80a8fb3f0061b3"
+    },
+    "ordinary_supplied_t0_five_business_v2": {
+      "relativePath": "inputs/ordinary_supplied_t0_five_business_v2.py",
+      "bytes": 26870,
+      "sha256": "0a5546639730013020a29d411e93c3d9bb45b83e1396ab2e28207681e9a00920"
+    },
+    "ordinary_supplied_t0_run_v1": {
+      "relativePath": "inputs/ordinary_supplied_t0_run_v1.py",
+      "bytes": 13489,
+      "sha256": "0a0b5d1540edec0fb53d4056f12a5e91488fefa80e5ef14889d56acd7a697430"
+    },
+    "ordinary_window_foreground_cache_foreground": {
+      "relativePath": "inputs/ordinary_window_foreground_cache_foreground.py",
+      "bytes": 7861,
+      "sha256": "a251fb97a0d8a72c8df345cc3c2d0df2208608072195353cbda62b6f0675e63b"
+    },
+    "ordinary_window_foreground_cache_window": {
+      "relativePath": "inputs/ordinary_window_foreground_cache_window.py",
+      "bytes": 12200,
+      "sha256": "18e734c848c1b33ff9e1762392114329047b0f516d7fa44d9f3a42e1cf09c399"
+    },
+    "prefocus_body": {
+      "relativePath": "inputs/prefocus_body.json",
+      "bytes": 2675,
+      "sha256": "538e189147c782dffbd4d638af57dd482c2beeb6d6cee5463a7dee369c605c15"
+    },
+    "reader_source": {
+      "relativePath": "inputs/reader_source.py",
+      "bytes": 14902,
+      "sha256": "9415085a53351ee7610a6c9fc347046eb94400bbf689a9ab6509077be941766f"
+    },
+    "result_fixture": {
+      "relativePath": "inputs/result_fixture.py",
+      "bytes": 4389,
+      "sha256": "910364cd6a9d78cbb8c7ec11e9ea64cc72ee8a34e5fc2c44099e48b27f07dd93"
+    },
+    "semantic_controls": {
+      "relativePath": "inputs/semantic_controls.py",
+      "bytes": 5498,
+      "sha256": "c865d633a9a6badb59c12dc72128c8b20dfb4b3cbe15fda869766a34c79882a8"
+    },
+    "siren_c1_foreground_observation": {
+      "relativePath": "inputs/siren_c1_foreground_observation.py",
+      "bytes": 6079,
+      "sha256": "4e9bdf42e65d63ccd286e545b3432fa53c950486640e27c2c581ed4aaf5f199a"
+    },
+    "siren_owned_dialog_readiness": {
+      "relativePath": "inputs/siren_owned_dialog_readiness.py",
+      "bytes": 9446,
+      "sha256": "7ae0f7adb5af9bab6eedd23c12940ab009ada4f74bd0e00b06aadfdb83c47f6b"
+    },
+    "source_plan": {
+      "relativePath": "inputs/source_plan.json",
+      "bytes": 8744,
+      "sha256": "e329701e0ff94ec41caf4839fdc262bf72afdc772918e166f0c18a936d08ddb6"
+    },
+    "t0_controls": {
+      "relativePath": "inputs/t0_controls.py",
+      "bytes": 8672,
+      "sha256": "b3feaa1a6435837323f2faa47c081b8a0698e8b2902e5e9f9e106ea40685e44f"
+    },
+    "t0_fixture": {
+      "relativePath": "inputs/t0_fixture.py",
+      "bytes": 9672,
+      "sha256": "68d4f90a073b0bde6492f919d1d62485b510034678ef64f556405eeede98d9b3"
+    },
+    "topology.native": {
+      "relativePath": "inputs/topology__dot__native.py",
+      "bytes": 1505,
+      "sha256": "a2f3980d08c7fb54e09205c8db67b583de663cc0b7e21f7b02d4cc540dd866f6"
+    },
+    "runner": {
+      "relativePath": "runner.py",
+      "bytes": 15618,
+      "sha256": "a0efdb682cb85f9e601d87f0c45741e61d610f75999f481399b952640125094b"
+    },
+    "invoker": {
+      "relativePath": "invoke.py",
+      "bytes": 3967,
+      "sha256": "842fb3a8a1e65f6955bef866949272d5a8cf7920c6072fe9552a5d9ce348e675"
+    }
+  },
+  "programs": [
+    "bridge_fixture",
+    "context_fixture",
+    "result_fixture",
+    "grouped_fixture",
+    "focus_fixture",
+    "semantic_controls",
+    "c0_fixture",
+    "t0_fixture",
+    "t0_controls",
+    "five_api",
+    "business_fixture",
+    "business_controls",
+    "integration_business_fixture",
+    "integration_focus_fixture",
+    "integration_c0_fixture",
+    "integration_t0_fixture",
+    "integration_binding",
+    "integration_controls",
+    "integration_adverse_controls"
+  ],
+  "loadedClasses": [
+    "SemanticChecks",
+    "T0Checks",
+    "FiveRoleAPIChecks",
+    "BusinessChecks",
+    "IntegratedChecks",
+    "IntegratedAdverseChecks"
+  ],
+  "allTests": [
+    "BusinessChecks.test_actual_saved_child_substitution_is_refused_and_not_healed",
+    "BusinessChecks.test_actual_v2_production_from_readiness_through_literal_publication",
+    "BusinessChecks.test_available_nonzero_and_259_are_not_semantic_completion",
+    "BusinessChecks.test_expired_business_before_pick_dispatches_no_operation",
+    "BusinessChecks.test_expired_port_has_no_dispatch_and_records_actual_refusal",
+    "BusinessChecks.test_fractional_initial_sample_keeps_existing_exact_ten_second_refusal",
+    "BusinessChecks.test_late_identity_observation_preserves_value_and_original_error",
+    "BusinessChecks.test_late_inner_write_keeps_delivered_literal_and_local_adverse_state_separate",
+    "BusinessChecks.test_late_saved_body_is_retained_without_installing_clean_cache",
+    "BusinessChecks.test_legacy_readers_and_new_readers_keep_separate_contracts",
+    "BusinessChecks.test_missing_ui_eof_retains_pending_reads_despite_available_exit",
+    "BusinessChecks.test_one_use_entries_refuse_before_more_effects_or_rewrites",
+    "BusinessChecks.test_original_focus_error_prevents_c1_and_complete_publication",
+    "BusinessChecks.test_original_inner_wait_before_publication_remains_unknown_not_exit",
+    "BusinessChecks.test_raw_type_bound_and_typed_pin_validation_do_not_trust_fixture_guards",
+    "BusinessChecks.test_shared_original_provider_receipt_floor_budget_and_deferred_eof",
+    "BusinessChecks.test_sticky_original_clock_cannot_recover_with_later_valid_scalar",
+    "BusinessChecks.test_wrong_domain_timing_retirement_and_exit_literals_refuse",
+    "FiveRoleAPIChecks.test_edge_reader_api_exists",
+    "FiveRoleAPIChecks.test_existing_v1_refuses_child_parent_before_sample_or_claim",
+    "FiveRoleAPIChecks.test_parent_factory_api_exists",
+    "FiveRoleAPIChecks.test_timed_reader_api_exists",
+    "FiveRoleAPIChecks.test_timing_type_api_exists",
+    "IntegratedAdverseChecks.test_clean_owner_does_not_hide_adverse_missing_or_foreign_business",
+    "IntegratedAdverseChecks.test_cross_protocol_readers_refuse_without_widening_v1",
+    "IntegratedAdverseChecks.test_late_or_throwing_observation_delivery_keeps_original_sealed_bytes",
+    "IntegratedAdverseChecks.test_missing_owner_eof_retains_original_read_and_blocks_report",
+    "IntegratedAdverseChecks.test_nonzero_and_still_active_owner_are_not_report_completion",
+    "IntegratedAdverseChecks.test_original_clock_failure_after_report_read_stays_sticky",
+    "IntegratedAdverseChecks.test_pre_parent_failure_reserves_actor_across_both_protocols",
+    "IntegratedAdverseChecks.test_report_rechecks_floor_body_order_and_original_producer",
+    "IntegratedChecks.test_actual_new_business_c0_report_revalidation_and_t0_observation",
+    "SemanticChecks.test_00_native_constructor_and_effect_guards",
+    "SemanticChecks.test_actual_focus_cancel_retirement_and_outer_semantics",
+    "SemanticChecks.test_actual_saved_child_substitution_refuses",
+    "SemanticChecks.test_clean_capture_cannot_hide_adverse_semantic_proof",
+    "SemanticChecks.test_focus_primary_failure_has_no_cancel_or_quit_publication",
+    "SemanticChecks.test_real_external_header_and_business_expectations_stay_separate",
+    "SemanticChecks.test_wrong_business_source_refuses_same_capture",
+    "T0Checks.test_available_nonzero_and_259_exit_never_reuse_complete_report",
+    "T0Checks.test_late_inline_or_read_return_cannot_extend_original_cutoffs",
+    "T0Checks.test_missing_eof_keeps_original_pending_read_and_no_report_gate",
+    "T0Checks.test_nested_publication_reentry_and_failed_delivery_never_rewrite",
+    "T0Checks.test_original_c0_exit_late_stderr_and_report_all_join",
+    "T0Checks.test_original_factory_errors_and_one_use_are_retained",
+    "T0Checks.test_owner_observation_api_exists",
+    "T0Checks.test_owner_timeout_retains_original_4200_and_1000_cleanup",
+    "T0Checks.test_partial_construction_and_cleanup_do_not_replace_primary",
+    "T0Checks.test_receipt_floor_and_same_origin_future_report_cannot_reset_time",
+    "T0Checks.test_report_unavailable_tampered_and_wrong_producer_or_roster_refuse",
+    "T0Checks.test_sticky_original_clock_failure_before_work_and_after_read"
+  ],
+  "interpreterPolicy": {
+    "implementation": "cpython",
+    "version": [
+      3,
+      12,
+      10
+    ],
+    "platform": "win32",
+    "pointerBytes": 8,
+    "executable": {
+      "bytes": 104952,
+      "sha256": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a"
+    }
+  },
+  "bundleMetadata": {
+    "sourceDataFiles": 92,
+    "sourceDataBytes": 1007498,
+    "hostInputs": 94,
+    "nativeModules": 25,
+    "businessModules": 29,
+    "bridges": 21,
+    "logicalLabelsAreVirtual": true,
+    "physicalInputs": "Closed relative host map beneath the actual subtree root; Python interpreter/stdlib remain an explicit external dependency.",
+    "partialSourceMembershipUnbound": true
+  },
+  "originReferences": {
+    "kind": "DECLARED_BUILD_ORIGIN_NOT_PORTABLE_RUNTIME_INPUTS",
+    "source": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\SOURCE.json",
+      "bytes": 107560,
+      "sha256": "df49255d521b9562a48d3f0af6ac50c374e2899ccaa95ae3290ee50a604cd2a6"
+    },
+    "data": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\DATA.json",
+      "bytes": 7343089,
+      "sha256": "bc112292e00ca36069eebfcb1e040d84d55405246d910a48118cdb33dd3bf518"
+    },
+    "dataReview": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\candidate\\peer-data-review.json",
+      "bytes": 6061,
+      "sha256": "b8ed232d2cf7482b3a02974d5c029dd65f03a151ece30a0e579f85b3731ecc38"
+    },
+    "builder": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\build-portable-v4.py",
+      "bytes": 10952,
+      "sha256": "8b8200f7c05a657b6c1746baafe47f9cab33666d7e4894a33ec041c130250af3"
+    },
+    "runnerTemplate": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-runner-template-v2.py",
+      "bytes": 15618,
+      "sha256": "a0efdb682cb85f9e601d87f0c45741e61d610f75999f481399b952640125094b"
+    },
+    "invokerTemplate": {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\invoke-template.py",
+      "bytes": 3967,
+      "sha256": "842fb3a8a1e65f6955bef866949272d5a8cf7920c6072fe9552a5d9ce348e675"
+    }
+  },
+  "actualNativePorts": false,
+  "physicalCapture": false,
+  "sourceCustody": false,
+  "nativeEligibility": false,
+  "wholeSourceGatePassed": false,
+  "wholeAttempt": false,
+  "innerClockMigrationComplete": false,
+  "auxiliaryFiles": [
+    {
+      "relativePath": "README.md",
+      "bytes": 2787,
+      "sha256": "1f1a74bb6251e6d1c6ab1d911492d95ed96146cdb3d95f1fd3c90873d564228c"
+    },
+    {
+      "relativePath": ".gitignore",
+      "bytes": 43,
+      "sha256": "ee8a57c7bc82d45a05c2e158b7c45643e7bcc24f6f3c7947e193bd426320a3e1"
+    }
+  ]
+}

@@ -1,5 +1,15 @@
 // Inert import. Only the isolated hosted runner serializes this function as main.
-export async function runAggregateFlowMain(config){
+export async function preserveFirstFailure({persist,path,mainPid,phase,ageMs,error}){
+ const bounded=(value,limit)=>String(value??'').slice(0,limit).toWellFormed();
+ try{
+  if(!Number.isSafeInteger(mainPid)||mainPid<=0||!Number.isFinite(ageMs)||ageMs<0)throw Error('FLOW_MAIN_FAILURE_RECORD_REFUSED');
+  const original=String(error?.message??error??''),message=bounded(original,512);
+  const record={schema:1,admitted:false,status:'FAILED',scope:'AGGREGATE_MAIN_FIRST_FAILURE',mainPid,phase:bounded(phase,64),ageMs,error:{code:error?.code==null?null:bounded(error.code,64),message,messageTruncated:message!==original}};
+  if(Buffer.byteLength(JSON.stringify(record))>4096)throw Error('FLOW_MAIN_FAILURE_RECORD_REFUSED');
+  await persist(path,record);return {saved:true};
+ }catch(cause){return {saved:false,error:{code:cause?.code==null?null:bounded(cause.code,64),message:bounded(cause?.message??cause,512)}};}
+}
+export async function runAggregateFlowMain(config,preserveFailure){
  const {app,utilityProcess}=await import('electron'),assert=(await import('node:assert/strict')).default;
  const fs=await import('node:fs/promises'),{join}=await import('node:path'),{createRequire}=await import('node:module'),{createHash}=await import('node:crypto'),{setTimeout:delay}=await import('node:timers/promises');
  const {createShellFlowController}=await import(config.controllerUrl),{createShellFlowMailbox}=await import(config.mailboxUrl),{ShellFlowMarkerScanner}=await import(config.probeUrl),{createAggregateFlowDelivery}=await import(config.deliveryUrl);
@@ -43,7 +53,13 @@ export async function runAggregateFlowMain(config){
   function record(s,reply,tail){
    const r=reply.result,t=reply.stats;assert.ok(t.retainedUtf8Bytes<=4194304&&t.allocatedBytes<=4194304);for(const c of r.chunks)s.scanner.append(c.sequence,c.data);
    const next=tail?Math.max(r.nextSequence,t.nextSequence-32768):r.nextSequence,tailGap=next>r.nextSequence?{fromSequence:r.nextSequence,toSequence:next,droppedUtf8Bytes:next-r.nextSequence,resetParser:true,reason:'fixed-probe-tail-selection'}:null;
-   s.cursor=next;s.last=t;s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});assert.ok(s.record.samples.length<=100);return r.nextSequence;
+   s.cursor=next;s.last=t;
+   // Empty polling may repeat at5ms during startup/fresh-unlock. It adds no
+   // trace information when every statistic is unchanged. Keep all data,
+   // gaps, tail selections and state changes, and retain the hard100 limit.
+   const previous=s.record.samples.at(-1);
+   if(r.chunks.length||r.gap||tailGap||!previous||previous.chunks.length||previous.gap||previous.tailGap||JSON.stringify(previous.stats)!==JSON.stringify(t))s.record.samples.push({ageMs:now()-age,stats:t,gap:r.gap??null,tailGap,chunks:r.chunks.map(c=>({sequence:c.sequence,utf8Bytes:c.utf8Bytes,sha256:hash(c.data)}))});
+   assert.ok(s.record.samples.length<=100);return r.nextSequence;
   }
   async function observe(s,tail=true){const reply=await delivery.read(s.token);assert.equal(reply.ok,true,'AGGREGATE_CREDIT_READ');const end=record(s,reply.value,tail);assert.equal(delivery.ack(s.token,end).ok,true);if(s.cursor!==end){assert.equal(delivery.detach(s.token).ok,true);s.token=delivery.attach(s.slot,s.cursor).value;}return s.scanner;}
   // Allow producer output to accumulate, then retain a real no-ACK window.
@@ -75,7 +91,10 @@ export async function runAggregateFlowMain(config){
    if(s.slot===0){result.siblingsAfterFirstStop=slots.slice(1).map(q=>native.snapshotSession(q.session));for(const t of result.siblingsAfterFirstStop)assert.ok(t.active===t.held.length&&t.held.every(p=>p.alive)&&t.root.alive&&t.shell.alive);}
   }
   host.postMessage({kind:'exit'});await wait(()=>exited(native.snapshot(hostOwner)));hostClosed=native.close(hostOwner)===true;assert.equal(hostClosed,true);result.hostClosed=true;result.ageMs=now()-age;assert.ok(result.ageMs<100000);result.status='AGGREGATE_FLOW_OBSERVED_NOT_ADMITTED';
- }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};}
+ }catch(e){result.error={code:e.code,message:e.message,stack:e.stack};
+  try{const saved=await preserveFailure({persist,path:join(config.output,'flow-main-failure.json'),mainPid:process.pid,phase:result.phase,ageMs:now()-age,error:result.error});if(!saved.saved)result.failureReceiptError=saved.error;}
+  catch(writeError){result.failureReceiptError={message:String(writeError?.message??writeError).slice(0,512)};}
+ }
  finally{
   delivery?.suspend();for(const s of strong.slots){s.controller?.dispose();s.alive=false;try{if(!s.closed){native.stopSession(s.session,98);await wait(()=>exited(native.snapshotSession(s.session)));native.closeSession(s.session);}}catch(e){result.cleanupError=String(e.stack??e);result.status='FAILED';}}
   try{if(hostOwner&&!hostClosed){native.stop(hostOwner,98);await wait(()=>exited(native.snapshot(hostOwner)));native.close(hostOwner);}}catch(e){result.hostCleanupError=String(e.stack??e);result.status='FAILED';}

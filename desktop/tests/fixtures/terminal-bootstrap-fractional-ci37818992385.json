@@ -1,0 +1,1885 @@
+{
+  "admitted": false,
+  "negative": false,
+  "status": "SESSION_COMPOSITION_OBSERVED_NOT_ADMITTED",
+  "runtime": {
+    "node": "24.21.0",
+    "acorn": "8.18.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.8",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "149",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.7",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.4",
+    "tz": "2025c",
+    "undici": "7.29.1",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "15.2.124.28-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "44.5.1",
+    "chrome": "152.0.7977.130",
+    "arch": "x64",
+    "platform": "win32"
+  },
+  "groups": [
+    {
+      "label": "A",
+      "directory": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\A",
+      "before": {
+        "active": 8,
+        "root": {
+          "pid": 6548,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551843317579",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 1424,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551843695588",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 2252,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551843905719",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 8096,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844236226",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 2768,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844248912",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 2544,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844258236",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 3304,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844507280",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 5324,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844528703",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 6548,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551843317579",
+            "alive": true,
+            "exitCode": 259
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": {
+          "pid": 2252,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551843905719",
+          "alive": true,
+          "exitCode": 259
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "ready": {
+        "workerPid": 6548,
+        "rootPid": 2252,
+        "runtime": {
+          "electron": "44.5.1",
+          "node": "24.21.0",
+          "modules": "149",
+          "napi": "10",
+          "arch": "x64",
+          "platform": "win32"
+        },
+        "nodePty": "1.1.0",
+        "windowsRelease": "10.0.26100",
+        "osConpty": true,
+        "useConptyDll": false,
+        "receivedBytes": 248,
+        "retainedBytes": 248,
+        "inputWrites": 0,
+        "rssBytes": 65728512,
+        "helperListObserved": true,
+        "helperExitCode": 0,
+        "helperPid": 4752,
+        "consolePids": [
+          4752,
+          2252
+        ]
+      },
+      "fixturePids": {
+        "root": 2252,
+        "branch": 8096,
+        "grandchild": 3304,
+        "detached": 2768
+      },
+      "creatorEnvironment": {
+        "pid": 6548,
+        "cwd": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\A",
+        "keys": [
+          "ComSpec",
+          "ELECTRON_RUN_AS_NODE",
+          "PATH",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "windir"
+        ],
+        "values": {
+          "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+          "ELECTRON_RUN_AS_NODE": "1",
+          "PATH": "C:\\Windows\\system32;C:\\Windows",
+          "SystemRoot": "C:\\Windows",
+          "TEMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\A",
+          "TMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\A",
+          "windir": "C:\\Windows"
+        }
+      },
+      "bootstrap": {
+        "expected": {
+          "sessionId": "probe-a",
+          "channelId": "bootstrap-a",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-090593cfc92d11854144177e1bf7db36",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-2fcc6bd088c54e7462a83da3f0349c15",
+          "controlSha256": "4262607aeab8e9222529db0e3effe84676186b015880f4dd2080e05f3e2cbc6a",
+          "dataSha256": "9c1d8ff53f1a38837cd9516b148fabf889e37ef5039c1db61b4862adfa1f8651"
+        },
+        "observed": {
+          "sessionId": "probe-a",
+          "channelId": "bootstrap-a",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-090593cfc92d11854144177e1bf7db36",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-2fcc6bd088c54e7462a83da3f0349c15",
+          "controlSha256": "4262607aeab8e9222529db0e3effe84676186b015880f4dd2080e05f3e2cbc6a",
+          "dataSha256": "9c1d8ff53f1a38837cd9516b148fabf889e37ef5039c1db61b4862adfa1f8651",
+          "stdinClosed": true,
+          "pid": 6548
+        }
+      }
+    },
+    {
+      "label": "B",
+      "directory": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\B",
+      "before": {
+        "active": 8,
+        "root": {
+          "pid": 6472,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551844902559",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 3372,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845277262",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 1360,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845472286",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 5280,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845716228",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 1136,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845730655",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 7048,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845738828",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 7820,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551846004359",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 3220,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551846029714",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 6472,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551844902559",
+            "alive": true,
+            "exitCode": 259
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": {
+          "pid": 1360,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551845472286",
+          "alive": true,
+          "exitCode": 259
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "ready": {
+        "workerPid": 6472,
+        "rootPid": 1360,
+        "runtime": {
+          "electron": "44.5.1",
+          "node": "24.21.0",
+          "modules": "149",
+          "napi": "10",
+          "arch": "x64",
+          "platform": "win32"
+        },
+        "nodePty": "1.1.0",
+        "windowsRelease": "10.0.26100",
+        "osConpty": true,
+        "useConptyDll": false,
+        "receivedBytes": 248,
+        "retainedBytes": 248,
+        "inputWrites": 0,
+        "rssBytes": 65921024,
+        "helperListObserved": true,
+        "helperExitCode": 0,
+        "helperPid": 8908,
+        "consolePids": [
+          8908,
+          1360
+        ]
+      },
+      "fixturePids": {
+        "root": 1360,
+        "branch": 5280,
+        "grandchild": 7820,
+        "detached": 1136
+      },
+      "creatorEnvironment": {
+        "pid": 6472,
+        "cwd": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\B",
+        "keys": [
+          "ComSpec",
+          "ELECTRON_RUN_AS_NODE",
+          "PATH",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "windir"
+        ],
+        "values": {
+          "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+          "ELECTRON_RUN_AS_NODE": "1",
+          "PATH": "C:\\Windows\\system32;C:\\Windows",
+          "SystemRoot": "C:\\Windows",
+          "TEMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\B",
+          "TMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\B",
+          "windir": "C:\\Windows"
+        }
+      },
+      "bootstrap": {
+        "expected": {
+          "sessionId": "probe-b",
+          "channelId": "bootstrap-b",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-25df121a6f22590f4caed743cb809473",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-ab1cbe1294e8ac20bad7b175775f8ab5",
+          "controlSha256": "a30c38d9cacdebae344dedf541601d544181256892b754f36affd9ffc366bc58",
+          "dataSha256": "6d44540c52a3ad4826dd7a9bc532ec89c51b3b058fd665109853dbe6200b8185"
+        },
+        "observed": {
+          "sessionId": "probe-b",
+          "channelId": "bootstrap-b",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-25df121a6f22590f4caed743cb809473",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-ab1cbe1294e8ac20bad7b175775f8ab5",
+          "controlSha256": "a30c38d9cacdebae344dedf541601d544181256892b754f36affd9ffc366bc58",
+          "dataSha256": "6d44540c52a3ad4826dd7a9bc532ec89c51b3b058fd665109853dbe6200b8185",
+          "stdinClosed": true,
+          "pid": 6472
+        }
+      }
+    },
+    {
+      "label": "C",
+      "directory": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\C",
+      "before": {
+        "active": 8,
+        "root": {
+          "pid": 8468,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551867235054",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 3604,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551867616863",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 3752,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551867812707",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 7792,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868050909",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 1544,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868065305",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 8480,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551868073403",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 740,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868347108",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 6872,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551868369173",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 8468,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551867235054",
+            "alive": true,
+            "exitCode": 259
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": {
+          "pid": 3752,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551867812707",
+          "alive": true,
+          "exitCode": 259
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "ready": {
+        "workerPid": 8468,
+        "rootPid": 3752,
+        "runtime": {
+          "electron": "44.5.1",
+          "node": "24.21.0",
+          "modules": "149",
+          "napi": "10",
+          "arch": "x64",
+          "platform": "win32"
+        },
+        "nodePty": "1.1.0",
+        "windowsRelease": "10.0.26100",
+        "osConpty": true,
+        "useConptyDll": false,
+        "receivedBytes": 248,
+        "retainedBytes": 248,
+        "inputWrites": 0,
+        "rssBytes": 68591616,
+        "helperListObserved": true,
+        "helperExitCode": 0,
+        "helperPid": 6124,
+        "consolePids": [
+          6124,
+          3752
+        ]
+      },
+      "fixturePids": {
+        "root": 3752,
+        "branch": 7792,
+        "grandchild": 740,
+        "detached": 1544
+      },
+      "creatorEnvironment": {
+        "pid": 8468,
+        "cwd": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\C",
+        "keys": [
+          "ComSpec",
+          "ELECTRON_RUN_AS_NODE",
+          "PATH",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "windir"
+        ],
+        "values": {
+          "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+          "ELECTRON_RUN_AS_NODE": "1",
+          "PATH": "C:\\Windows\\system32;C:\\Windows",
+          "SystemRoot": "C:\\Windows",
+          "TEMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\C",
+          "TMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\C",
+          "windir": "C:\\Windows"
+        }
+      },
+      "bootstrap": {
+        "expected": {
+          "sessionId": "probe-c",
+          "channelId": "bootstrap-c",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-b6b7b8328542a4a6b5365ca2c3006765",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-460b5068c86c0b20aa582b520d4c942e",
+          "controlSha256": "741552b77216da9f325f3080a28c9d502c36fb4420e433cf453a3c4cb6623e5d",
+          "dataSha256": "d996bf68c52a9351d7f1eda2ad2a33d93d7596752059ea7c2cd1c06408b02ff4"
+        },
+        "observed": {
+          "sessionId": "probe-c",
+          "channelId": "bootstrap-c",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-b6b7b8328542a4a6b5365ca2c3006765",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-460b5068c86c0b20aa582b520d4c942e",
+          "controlSha256": "741552b77216da9f325f3080a28c9d502c36fb4420e433cf453a3c4cb6623e5d",
+          "dataSha256": "d996bf68c52a9351d7f1eda2ad2a33d93d7596752059ea7c2cd1c06408b02ff4",
+          "stdinClosed": true,
+          "pid": 8468
+        }
+      }
+    },
+    {
+      "label": "D",
+      "directory": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\D",
+      "before": {
+        "active": 8,
+        "root": {
+          "pid": 5508,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551868722150",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 8104,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869104554",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 8212,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869315451",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 8100,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869562140",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 3088,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869575394",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 7156,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869582720",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 7420,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869867412",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 4800,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869895325",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 5508,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551868722150",
+            "alive": true,
+            "exitCode": 259
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": {
+          "pid": 8212,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551869315451",
+          "alive": true,
+          "exitCode": 259
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "ready": {
+        "workerPid": 5508,
+        "rootPid": 8212,
+        "runtime": {
+          "electron": "44.5.1",
+          "node": "24.21.0",
+          "modules": "149",
+          "napi": "10",
+          "arch": "x64",
+          "platform": "win32"
+        },
+        "nodePty": "1.1.0",
+        "windowsRelease": "10.0.26100",
+        "osConpty": true,
+        "useConptyDll": false,
+        "receivedBytes": 248,
+        "retainedBytes": 248,
+        "inputWrites": 0,
+        "rssBytes": 68542464,
+        "helperListObserved": true,
+        "helperExitCode": 0,
+        "helperPid": 2760,
+        "consolePids": [
+          2760,
+          8212
+        ]
+      },
+      "fixturePids": {
+        "root": 8212,
+        "branch": 8100,
+        "grandchild": 7420,
+        "detached": 3088
+      },
+      "creatorEnvironment": {
+        "pid": 5508,
+        "cwd": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\D",
+        "keys": [
+          "ComSpec",
+          "ELECTRON_RUN_AS_NODE",
+          "PATH",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "windir"
+        ],
+        "values": {
+          "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+          "ELECTRON_RUN_AS_NODE": "1",
+          "PATH": "C:\\Windows\\system32;C:\\Windows",
+          "SystemRoot": "C:\\Windows",
+          "TEMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\D",
+          "TMP": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\D",
+          "windir": "C:\\Windows"
+        }
+      },
+      "bootstrap": {
+        "expected": {
+          "sessionId": "probe-d",
+          "channelId": "bootstrap-d",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-85d1c9d764b62e098b7c17bb8b10cae2",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-7128d653dfefa6624b18f2c7017c5d6a",
+          "controlSha256": "f816207a8416f6dce72da9f8dc3f6fd8e5fc59a610454f75b5d2fd13e7c9c275",
+          "dataSha256": "3912696b9b7d9d7e85e1099e601fd3126fae7fb5f02d43d0d94e10bf0d49fa3f"
+        },
+        "observed": {
+          "sessionId": "probe-d",
+          "channelId": "bootstrap-d",
+          "controlPipe": "\\\\.\\pipe\\siren-terminal-control-85d1c9d764b62e098b7c17bb8b10cae2",
+          "dataPipe": "\\\\.\\pipe\\siren-terminal-data-7128d653dfefa6624b18f2c7017c5d6a",
+          "controlSha256": "f816207a8416f6dce72da9f8dc3f6fd8e5fc59a610454f75b5d2fd13e7c9c275",
+          "dataSha256": "3912696b9b7d9d7e85e1099e601fd3126fae7fb5f02d43d0d94e10bf0d49fa3f",
+          "stdinClosed": true,
+          "pid": 5508
+        }
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "label": "A",
+      "snapshot": {
+        "active": 0,
+        "root": {
+          "pid": 6548,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551843317579",
+          "alive": false,
+          "exitCode": 77
+        },
+        "held": [
+          {
+            "pid": 1424,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551843695588",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2252,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551843905719",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 8096,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844236226",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2768,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844248912",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2544,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844258236",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 3304,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844507280",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 5324,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844528703",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 6548,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551843317579",
+            "alive": false,
+            "exitCode": 77
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": true,
+        "monitorTerminateSucceeded": false,
+        "stopping": true,
+        "shell": {
+          "pid": 2252,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551843905719",
+          "alive": false,
+          "exitCode": 77
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": true,
+        "shellMonitorTerminated": false
+      },
+      "closed": true
+    },
+    {
+      "label": "B",
+      "snapshot": {
+        "active": 0,
+        "root": {
+          "pid": 6472,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551844902559",
+          "alive": false,
+          "exitCode": 80
+        },
+        "held": [
+          {
+            "pid": 3372,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845277262",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1360,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845472286",
+            "alive": false,
+            "exitCode": 51
+          },
+          {
+            "pid": 5280,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845716228",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1136,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845730655",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7048,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845738828",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7820,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551846004359",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 3220,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551846029714",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 6472,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551844902559",
+            "alive": false,
+            "exitCode": 80
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": true,
+        "monitorTerminateSucceeded": false,
+        "stopping": true,
+        "shell": {
+          "pid": 1360,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551845472286",
+          "alive": false,
+          "exitCode": 51
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": true,
+        "shellMonitorTerminated": true
+      },
+      "closed": true
+    },
+    {
+      "label": "C",
+      "snapshot": {
+        "active": 0,
+        "root": {
+          "pid": 8468,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551867235054",
+          "alive": false,
+          "exitCode": 79
+        },
+        "held": [
+          {
+            "pid": 3604,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551867616863",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 3752,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551867812707",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 7792,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868050909",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 1544,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868065305",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 8480,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551868073403",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 740,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551868347108",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 6872,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551868369173",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 8468,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551867235054",
+            "alive": false,
+            "exitCode": 79
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": true,
+        "monitorTerminateSucceeded": true,
+        "stopping": false,
+        "shell": {
+          "pid": 3752,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551867812707",
+          "alive": false,
+          "exitCode": 79
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": true,
+        "shellMonitorTerminated": false
+      },
+      "closed": true
+    },
+    {
+      "label": "D",
+      "snapshot": {
+        "active": 0,
+        "root": {
+          "pid": 5508,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551868722150",
+          "alive": false,
+          "exitCode": 79
+        },
+        "held": [
+          {
+            "pid": 8104,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869104554",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 8212,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869315451",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 8100,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869562140",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 3088,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869575394",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 7156,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869582720",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 7420,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551869867412",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 4800,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551869895325",
+            "alive": false,
+            "exitCode": 79
+          },
+          {
+            "pid": 5508,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551868722150",
+            "alive": false,
+            "exitCode": 79
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": true,
+        "monitorTerminateSucceeded": true,
+        "stopping": false,
+        "shell": {
+          "pid": 8212,
+          "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+          "createdFileTime": "134359551869315451",
+          "alive": false,
+          "exitCode": 79
+        },
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": true,
+        "shellMonitorTerminated": false
+      },
+      "closed": true
+    }
+  ],
+  "parentEnvironmentSeeded": [
+    "SIREN_PRIVATE_ENV_CANARY",
+    "OPENAI_API_KEY",
+    "PRIVATE_APPLICATION_SECRET"
+  ],
+  "rejectedBootstrapPackets": [
+    "empty",
+    "oversized",
+    "magic"
+  ],
+  "phase": "fixtures-D",
+  "startup": [
+    {
+      "label": "A",
+      "phase": "created",
+      "snapshot": {
+        "active": 1,
+        "root": {
+          "pid": 6548,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551843317579",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": false,
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "host": {
+        "active": 2,
+        "root": {
+          "pid": 9180,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551842778660",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false
+      }
+    },
+    {
+      "label": "B",
+      "phase": "created",
+      "snapshot": {
+        "active": 1,
+        "root": {
+          "pid": 6472,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551844902559",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": false,
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "host": {
+        "active": 10,
+        "root": {
+          "pid": 9180,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551842778660",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false
+      }
+    },
+    {
+      "label": "C",
+      "phase": "created",
+      "snapshot": {
+        "active": 1,
+        "root": {
+          "pid": 8468,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551867235054",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": false,
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "host": {
+        "active": 2,
+        "root": {
+          "pid": 9180,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551842778660",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 9180,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551842778660",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 1424,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551843695588",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2252,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551843905719",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 8096,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844236226",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2768,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844248912",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2544,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844258236",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 3304,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844507280",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 5324,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844528703",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 6548,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551843317579",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 3372,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845277262",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1360,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845472286",
+            "alive": false,
+            "exitCode": 51
+          },
+          {
+            "pid": 5280,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845716228",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1136,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845730655",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7048,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845738828",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7820,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551846004359",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 3220,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551846029714",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 6472,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551844902559",
+            "alive": false,
+            "exitCode": 80
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false
+      }
+    },
+    {
+      "label": "D",
+      "phase": "created",
+      "snapshot": {
+        "active": 1,
+        "root": {
+          "pid": 5508,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551868722150",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false,
+        "shell": false,
+        "hostPid": 9180,
+        "atomicBeforeResume": true,
+        "shellMonitorFired": false,
+        "shellMonitorTerminated": false
+      },
+      "host": {
+        "active": 10,
+        "root": {
+          "pid": 9180,
+          "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+          "createdFileTime": "134359551842778660",
+          "alive": true,
+          "exitCode": 259
+        },
+        "held": [
+          {
+            "pid": 9180,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551842778660",
+            "alive": true,
+            "exitCode": 259
+          },
+          {
+            "pid": 1424,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551843695588",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2252,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551843905719",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 8096,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844236226",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2768,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844248912",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 2544,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844258236",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 3304,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551844507280",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 5324,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551844528703",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 6548,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551843317579",
+            "alive": false,
+            "exitCode": 77
+          },
+          {
+            "pid": 3372,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845277262",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1360,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845472286",
+            "alive": false,
+            "exitCode": 51
+          },
+          {
+            "pid": 5280,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845716228",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 1136,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551845730655",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7048,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551845738828",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 7820,
+            "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+            "createdFileTime": "134359551846004359",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 3220,
+            "image": "C:\\Windows\\System32\\conhost.exe",
+            "createdFileTime": "134359551846029714",
+            "alive": false,
+            "exitCode": 80
+          },
+          {
+            "pid": 6472,
+            "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+            "createdFileTime": "134359551844902559",
+            "alive": false,
+            "exitCode": 80
+          }
+        ],
+        "killOnClose": true,
+        "breakaway": false,
+        "inheritable": false,
+        "monitorFired": false,
+        "monitorTerminateSucceeded": false,
+        "stopping": false
+      }
+    }
+  ],
+  "stoppedA": {
+    "active": 0,
+    "root": {
+      "pid": 6548,
+      "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+      "createdFileTime": "134359551843317579",
+      "alive": false,
+      "exitCode": 77
+    },
+    "held": [
+      {
+        "pid": 1424,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551843695588",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 2252,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551843905719",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 8096,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551844236226",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 2768,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551844248912",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 2544,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551844258236",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 3304,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551844507280",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 5324,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551844528703",
+        "alive": false,
+        "exitCode": 77
+      },
+      {
+        "pid": 6548,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551843317579",
+        "alive": false,
+        "exitCode": 77
+      }
+    ],
+    "killOnClose": true,
+    "breakaway": false,
+    "inheritable": false,
+    "monitorFired": true,
+    "monitorTerminateSucceeded": false,
+    "stopping": true,
+    "shell": {
+      "pid": 2252,
+      "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+      "createdFileTime": "134359551843905719",
+      "alive": false,
+      "exitCode": 77
+    },
+    "hostPid": 9180,
+    "atomicBeforeResume": true,
+    "shellMonitorFired": true,
+    "shellMonitorTerminated": false
+  },
+  "stopMs": 15.18999999999994,
+  "asyncRetirement": {
+    "closed": true,
+    "elapsedMs": 15.18999999999994,
+    "ticks": 0,
+    "maxGapMs": 15.19279999999992
+  },
+  "otherAlive": {
+    "active": 8,
+    "root": {
+      "pid": 6472,
+      "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+      "createdFileTime": "134359551844902559",
+      "alive": true,
+      "exitCode": 259
+    },
+    "held": [
+      {
+        "pid": 3372,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551845277262",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 1360,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845472286",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 5280,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845716228",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 1136,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845730655",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 7048,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551845738828",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 7820,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551846004359",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 3220,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551846029714",
+        "alive": true,
+        "exitCode": 259
+      },
+      {
+        "pid": 6472,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551844902559",
+        "alive": true,
+        "exitCode": 259
+      }
+    ],
+    "killOnClose": true,
+    "breakaway": false,
+    "inheritable": false,
+    "monitorFired": false,
+    "monitorTerminateSucceeded": false,
+    "stopping": false,
+    "shell": {
+      "pid": 1360,
+      "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+      "createdFileTime": "134359551845472286",
+      "alive": true,
+      "exitCode": 259
+    },
+    "hostPid": 9180,
+    "atomicBeforeResume": true,
+    "shellMonitorFired": false,
+    "shellMonitorTerminated": false
+  },
+  "blockedRootMs": 2000,
+  "rootB": {
+    "active": 0,
+    "root": {
+      "pid": 6472,
+      "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+      "createdFileTime": "134359551844902559",
+      "alive": false,
+      "exitCode": 80
+    },
+    "held": [
+      {
+        "pid": 3372,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551845277262",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 1360,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845472286",
+        "alive": false,
+        "exitCode": 51
+      },
+      {
+        "pid": 5280,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845716228",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 1136,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551845730655",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 7048,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551845738828",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 7820,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551846004359",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 3220,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551846029714",
+        "alive": false,
+        "exitCode": 80
+      },
+      {
+        "pid": 6472,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551844902559",
+        "alive": false,
+        "exitCode": 80
+      }
+    ],
+    "killOnClose": true,
+    "breakaway": false,
+    "inheritable": false,
+    "monitorFired": true,
+    "monitorTerminateSucceeded": false,
+    "stopping": true,
+    "shell": {
+      "pid": 1360,
+      "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+      "createdFileTime": "134359551845472286",
+      "alive": false,
+      "exitCode": 51
+    },
+    "hostPid": 9180,
+    "atomicBeforeResume": true,
+    "shellMonitorFired": true,
+    "shellMonitorTerminated": true
+  },
+  "rootWaitMs": 2000,
+  "blockedHostMs": 2000,
+  "hostLoss": {
+    "active": 0,
+    "root": {
+      "pid": 9180,
+      "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+      "createdFileTime": "134359551842778660",
+      "alive": false,
+      "exitCode": 0
+    },
+    "held": [
+      {
+        "pid": 9180,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551842778660",
+        "alive": false,
+        "exitCode": 0
+      },
+      {
+        "pid": 3604,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551867616863",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 3752,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551867812707",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 7792,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551868050909",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 1544,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551868065305",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 8480,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551868073403",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 740,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551868347108",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 6872,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551868369173",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 8468,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551867235054",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 8104,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551869104554",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 8212,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551869315451",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 8100,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551869562140",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 3088,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551869575394",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 7156,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551869582720",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 7420,
+        "image": "D:\\a\\siren\\siren\\desktop\\evidence\\terminal-bootstrap-async-observation\\SIREN env Ω space-2026-10-08T17-46-22.814Z-929e6ac2-038c-4e0e-b9fc-3ca5e570fac1\\fixed-composition-child.exe",
+        "createdFileTime": "134359551869867412",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 4800,
+        "image": "C:\\Windows\\System32\\conhost.exe",
+        "createdFileTime": "134359551869895325",
+        "alive": false,
+        "exitCode": 79
+      },
+      {
+        "pid": 5508,
+        "image": "D:\\a\\siren\\siren\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "createdFileTime": "134359551868722150",
+        "alive": false,
+        "exitCode": 79
+      }
+    ],
+    "killOnClose": true,
+    "breakaway": false,
+    "inheritable": false,
+    "monitorFired": true,
+    "monitorTerminateSucceeded": true,
+    "stopping": false
+  },
+  "fixtureAgeMs": 4773,
+  "hostClosed": true
+}

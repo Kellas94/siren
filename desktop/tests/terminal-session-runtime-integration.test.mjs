@@ -15,7 +15,7 @@ test('actual controller root expression yields canonical resource root without t
  const expression=match[1].replace('import.meta.url','moduleUrl');
  const root=runInNewContext(expression,{fileURLToPath,URL,resolve,moduleUrl:new URL('./native/terminal-session-runtime.mjs',import.meta.url).href});
  assert.equal(root,resolve(root),'resource inspector refuses trailing empty path components');
- assert.equal(win32.basename(root),'portable');
+ assert.equal(root,resolve(fileURLToPath(new URL('../../',import.meta.url))),'resource root follows the repository location, including renamed checkouts');
 });
 test('actual pre-Lock observation reads existing held capabilities without recapturing them',()=>{
  const start=worker.indexOf('const beforeSession='),end=worker.indexOf('const expected=',start);assert.ok(start>0&&end>start);

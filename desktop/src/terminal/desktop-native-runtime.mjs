@@ -2,7 +2,7 @@
 // Adapter callbacks are trusted private MAIN prerequisites, NOT renderer APIs.
 import {types} from 'node:util';
 import {WindowRegistry} from '../windows/registry.mjs';
-import {createTerminalShutdownGraph,shutdownTerminalGraph,captureTerminalGraphAuthorities} from './shutdown-graph.mjs';
+import {createTerminalShutdownGraph,shutdownTerminalGraph,captureTerminalGraphAuthorities,captureTerminalGraphShutdownRequest} from './shutdown-graph.mjs';
 import {supportedProviderPromise} from './provider-lifetime.mjs';
 import {recheckDesktopNativeRuntimeResources,desktopNativeRuntimeResourcePaths} from './desktop-native-runtime-resources.mjs';
 const apply=Reflect.apply;
@@ -14,7 +14,10 @@ function callbacks(v,keys){const r=data(v,keys);if(!r||Object.values(r).some(f=>
 function promise(p){if(!supportedProviderPromise(p))failure('DESKTOP_NATIVE_SETTLEMENT_UNKNOWN');return p;}
 export function createDesktopNativeRuntimeOwner(options={},...extra){
  const o=data(options,[])??data(options,['adapter']);if(extra.length||!o)failure('DESKTOP_NATIVE_ADAPTER_REFUSED');
- const adapter=o.adapter==null?null:callbacks(o.adapter,['captureResources','verifyResourceClosure','reserveHost','providers','isCurrent']);
+ const adapterKeys=['captureResources','verifyResourceClosure','reserveHost','providers','isCurrent'];
+ // Future MAIN bindings supply the sixth callback. Legacy construction remains
+ // compatible, but entered providers without retirement cannot verify cleanup.
+ const adapter=o.adapter==null?null:callbacks(o.adapter,data(o.adapter,[...adapterKeys,'retireProviders'])?[...adapterKeys,'retireProviders']:adapterKeys);
  // One real startup attempt. Allocate all settlement promises while private,
  // before public methods can be reentered by native Promise-init hooks.
  const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
@@ -27,14 +30,40 @@ export function createDesktopNativeRuntimeOwner(options={},...extra){
   if(c.retirement)return c.retirement;
   c.retirement=retirement.promise;
   state='retiring';
-  // Reserve before reentrant private retirement callbacks. Request both lanes
+  // Select the actual graph operation before allocating observer promises.
+  // shutdown() copies its input; recapture that stored immutable request so
+  // emergency retirement shares the same object, code, deadline and ID.
+  const fallback=()=>frozen({code:77,deadlineMs:5000,shutdownId:'desktop_native_'+ ++serial});
+  const jsRequired=!!(c.graph&&c.started);let jsActual=null,requestVerified=!jsRequired;
+  if(jsRequired){
+   try{
+    c.shutdownRequest=captureTerminalGraphShutdownRequest(c.graph)??fallback();
+    jsActual=shutdownTerminalGraph(c.graph,c.shutdownRequest);
+    const actual=captureTerminalGraphShutdownRequest(c.graph);
+    if(actual){c.shutdownRequest=actual;requestVerified=true;}
+   }catch{}
+  }
+  c.shutdownRequest??=fallback();
+  // Reserve before reentrant private retirement callbacks. Request every lane
   // before awaiting either: an unknown graph join must not suppress emergency
   // utility/native retirement, and that retirement cannot prove the JS join.
+  // Keep this deferral: a reentrant reserveHost must first return its capability.
   void Promise.resolve().then(async()=>{
-   const jsWork=(async()=>{if(!c.graph||!c.started)return true;try{const p=c.graphHandle.snapshot().requested?c.graphHandle.actualSettled:shutdownTerminalGraph(c.graph,{code:77,deadlineMs:5000,shutdownId:'desktop_native_'+ ++serial});const r=await promise(p);return r?.actualSettled===true&&r.unknown===false;}catch{return false;}})();
-   const nativeWork=(async()=>{if(!c.host)return !c.reservationEntered;try{const result=await promise(apply(c.host.retire,c.host.receiver,[]));const r=data(result,['utilityExited','nativeCleanupVerified']);return r?.utilityExited===true&&r.nativeCleanupVerified===true;}catch{return false;}})();
-   const [js,native]=await Promise.all([jsWork,nativeWork]);
-   c.parts=js&&native;completed(c);
+   const jsWork=(async()=>{if(!jsRequired)return true;if(!requestVerified)return false;try{const r=await promise(jsActual);return r?.actualSettled===true&&r.unknown===false;}catch{return false;}})();
+   const nativeWork=(async()=>{if(!c.host)return !c.reservationEntered;try{const result=await promise(apply(c.host.retire,c.host.receiver,[c.shutdownRequest]));const r=data(result,['utilityExited','nativeCleanupVerified']);return r?.utilityExited===true&&r.nativeCleanupVerified===true;}catch{return false;}})();
+   const providerWork=(async()=>{
+    if(!adapter?.retireProviders)return !c.providersEntered;
+    try{
+     const pending=apply(adapter.retireProviders,undefined,[]);
+     // Owner settlements cannot be returned as provider settlements: disposal
+     // itself joins this lane, so accepting them would create a self-dependency.
+     if([started.promise,finished.promise,retirement.promise,disposal.promise].includes(pending))return false;
+     const result=await promise(pending),r=data(result,['retired','actualSettled','pending','nativeExecutionAdmitted']);
+     return r?.retired===true&&r.actualSettled===true&&r.pending===0&&r.nativeExecutionAdmitted===false;
+    }catch{return false;}
+   })();
+   const [js,native,providers]=await Promise.all([jsWork,nativeWork,providerWork]);
+   c.parts=js&&native&&providers;completed(c);
   }).then(()=>retirement.resolve(),()=>{c.parts=false;completed(c);retirement.resolve();});return c.retirement;
  }
  function createGraph(value,...args){
@@ -51,7 +80,7 @@ export function createDesktopNativeRuntimeOwner(options={},...extra){
   const access=callbacks(p.access,['prepareWorkspace','retireViews','rollbackWorkspace','isReady']);
   if(disposed)failure('DESKTOP_NATIVE_RUNTIME_UNAVAILABLE');
   const context=frozen({registry:p.registry,projectId:p.projectId,grant});
-  const c=cell={pending:true,done:finished.promise,graph:null,host:null,started:false,clean:false,reservationEntered:false,retirement:null};state='starting';validating=false;ownsValidation=false;
+  const c=cell={pending:true,done:finished.promise,graph:null,host:null,started:false,clean:false,reservationEntered:false,providersEntered:false,retirement:null};state='starting';validating=false;ownsValidation=false;
   const current=()=>{
    if(disposed||cell!==c||c.retirement)return false;
    const answer=apply(adapter.isCurrent,undefined,[context]);
@@ -63,6 +92,7 @@ export function createDesktopNativeRuntimeOwner(options={},...extra){
    const resources=await promise(apply(adapter.captureResources,undefined,[]));
    const paths=desktopNativeRuntimeResourcePaths(resources);if(!paths||!current()||!await recheckDesktopNativeRuntimeResources(resources))failure('DESKTOP_NATIVE_RESOURCE_REFUSED');
    if(!current()||await promise(apply(adapter.verifyResourceClosure,undefined,[resources]))!==true||!current())failure('DESKTOP_NATIVE_RESOURCE_REFUSED');
+   c.providersEntered=true;
    const providers=await promise(apply(adapter.providers,undefined,[context,resources]));
    const provider=data(providers,['cwd','profiles','policy']);if(!provider||!current()||!await recheckDesktopNativeRuntimeResources(resources)||!current())failure('DESKTOP_NATIVE_PROVIDERS_REFUSED');
    const pp=data(provider.profiles,['getSystemDirectory','inspectExecutable','readEnvironment','privateEnvironmentKeys','modulePathPolicy','inspectModuleDirectory']);
@@ -99,7 +129,10 @@ export function createDesktopNativeRuntimeOwner(options={},...extra){
  function dispose(...args){
   if(args.length)return Promise.reject(Error('DESKTOP_NATIVE_REQUEST_REFUSED'));
   if(disposed)return disposal.promise;disposed=true;
-  if(!cell){disposal.resolve(frozen({ok:true,cleanupVerified:true,nativeExecutionAdmitted:false}));return disposal.promise;}
+  // The private provider binding may already own resources before graph start.
+  // Idle disposal uses the same single retirement cell, reserved before any
+  // promise/callback reentry; it must join that binding's actual retirement too.
+  cell??={pending:false,done:finished.promise,graph:null,host:null,started:false,clean:false,reservationEntered:false,providersEntered:false,retirement:null};
   const c=cell,work=retire(c);
   void (async()=>{if(c.pending)await c.done;await work;completed(c);return frozen({ok:c.clean,cleanupVerified:c.clean,nativeExecutionAdmitted:false});})().then(disposal.resolve,()=>{c.clean=false;state='blocked';disposal.resolve(frozen({ok:false,cleanupVerified:false,nativeExecutionAdmitted:false}));});
   return disposal.promise;
