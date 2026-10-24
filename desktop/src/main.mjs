@@ -1,4 +1,4 @@
-import {takeDesktopLaunch} from './desktop-launch.mjs';
+import {takeDesktopLaunch,captureDesktopLaunchDataPreference} from './desktop-launch.mjs';
 import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen, nativeTheme } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -98,18 +98,24 @@ import { buildDiagnostics } from './recovery/diagnostics.mjs';
 import { release as osRelease } from 'node:os';
 
 const initializeTerminalCandidate=takeDesktopLaunch();
+const terminalDataPreference=captureDesktopLaunchDataPreference(initializeTerminalCandidate);
 let terminalRuntime=null;
 const here = dirname(fileURLToPath(import.meta.url));
 const rendererRoot = resolve(here, '../generated');
 protocol.registerSchemesAsPrivileged([{ scheme: 'siren', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 // Dev paths are separate from packaged/user data. No fallback silently changes the data root.
 const devArgument = prefix => !app.isPackaged ? process.argv.find(a => a.startsWith(prefix))?.slice(prefix.length) : undefined;
-const preferred = app.isPackaged ? resolve(dirname(app.getPath('exe')), '../../..', 'Data') : resolve(devArgument('--siren-test-root=') || resolve(here, '../.dev-data'));
+if(terminalDataPreference){
+ if(app.isPackaged)throw Error('Fixed private desktop launch requires unpackaged startup');
+ for(const argument of process.argv.filter(value=>value.startsWith('--siren-test-root='))){if(resolve(argument.slice('--siren-test-root='.length)).toLowerCase()!==resolve(terminalDataPreference.preferredDataRoot).toLowerCase())throw Error('Conflicting fixed private data root refused');}
+}
+const preferred = terminalDataPreference ? terminalDataPreference.preferredDataRoot : app.isPackaged ? resolve(dirname(app.getPath('exe')), '../../..', 'Data') : resolve(devArgument('--siren-test-root=') || resolve(here, '../.dev-data'));
+const protectedDataOptions=terminalDataPreference ? Object.freeze({protectedRuntimeRoot:terminalDataPreference.protectedRuntimeRoot}) : undefined;
 let dataRoot = null;
-try { dataRoot = await writableDataRoot(preferred); app.setPath('userData', dataRoot); } catch { /* user choice occurs after ready */ }
+try { dataRoot = await writableDataRoot(preferred,protectedDataOptions); app.setPath('userData', dataRoot); } catch { /* user choice occurs after ready */ }
 // Do not top-level await ready: the ESM entry must finish before Electron emits ready.
 app.whenReady().then(async () => {
-if (!dataRoot) dataRoot = await chooseDataRoot({ preferred, choose: async () => {
+if (!dataRoot) dataRoot = await chooseDataRoot({ preferred, ...protectedDataOptions, choose: async () => {
   const reply = await dialog.showOpenDialog({ title: 'SIREN — Choose a writable data folder', message: 'The portable data folder cannot be used. Select a folder explicitly, or cancel without opening a project.', properties: ['openDirectory', 'createDirectory'] });
   return reply.canceled ? null : reply.filePaths[0];
 } });
