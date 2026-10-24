@@ -49,7 +49,7 @@
     {
       "path": "desktop/package-lock.json",
       "bytes": 47469,
-      "sha256": "2c887168ab1ff14bef19b7e05a1b76856569e6f393d7477e5aba2658bf0d8247"
+      "sha256": "7e379ab07d403908da0e2b3f700fe9298d7dedd2a66208523054d9628d449ebb"
     },
     {
       "path": "desktop/package.json",
@@ -364,7 +364,7 @@
     {
       "path": "desktop/tests/native/terminal-session-provision-inputs.json",
       "bytes": 12602,
-      "sha256": "b9f4092694e78db85ab57c8999d71475a17aad1eff429d088e4c33d3b31a9df3"
+      "sha256": "64bfc57eb30693fc9535a54991c24402b95a77a316f3d93b9f3dd3823c147f2f"
     },
     {
       "path": "desktop/tests/native/terminal-session-provision-paths.mjs",

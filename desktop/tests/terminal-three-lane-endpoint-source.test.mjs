@@ -112,7 +112,7 @@ function candidate(){assert.equal(typeof api.deriveThreeLaneEndpointOwnership,'f
 const section=(s,start,end)=>{const a=s.indexOf(start),b=s.indexOf(end,a+start.length);assert.ok(a>=0&&b>a,'Expected unique source section');return s.slice(a,b);};
 const tags=s=>[...s.matchAll(/const napi_type_tag \w+=\{([^}]+)\};/g)].map(m=>m[1]);
 
-const historicalBaselinePath=path=>path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':path==='desktop/tests/fixtures/terminal-job-list.cs'?'./fixtures/terminal-peer-job-list-baseline.cs':path==='desktop/tests/native/terminal-session-composition-derive.mjs'?'./fixtures/terminal-peer-session-composition-baseline.mjs':'../../'+path;
+const historicalBaselinePath=path=>path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':path==='desktop/package-lock.json'?'./fixtures/terminal-peer-package-lock-baseline.json':path==='desktop/tests/fixtures/terminal-job-list.cs'?'./fixtures/terminal-peer-job-list-baseline.cs':path==='desktop/tests/native/terminal-session-composition-derive.mjs'?'./fixtures/terminal-peer-session-composition-baseline.mjs':'../../'+path;
 function assertHistoricalRow(row,bytes){assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
 
 async function unchanged94(){
@@ -265,7 +265,7 @@ test('runner compatibility refuses dependency, engine, other-script and command 
 
 
 test('each historical Terminal baseline row is exact data and refuses independent byte corruption',async t=>{
- for(const logical of ['desktop/tests/native/terminal-session-composition-derive.mjs','desktop/tests/fixtures/terminal-job-list.cs'])await t.test(logical,async()=>{
+ for(const logical of ['desktop/tests/native/terminal-session-composition-derive.mjs','desktop/tests/fixtures/terminal-job-list.cs','desktop/package-lock.json'])await t.test(logical,async()=>{
   const row=baseline.rows.find(value=>value.path===logical);assert.ok(row);
   const historical=await readFile(new URL(historicalBaselinePath(logical),import.meta.url));assertHistoricalRow(row,historical);
   const appended=Buffer.concat([historical,Buffer.from('\n')]),changed=Buffer.from(historical);changed[0]^=1;
