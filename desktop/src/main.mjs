@@ -1,5 +1,6 @@
 import {takeDesktopLaunch,captureDesktopLaunchDataPreference} from './desktop-launch.mjs';
-import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen, nativeTheme } from 'electron';
+import { app, BrowserWindow, BaseWindow, WebContentsView, ipcMain, protocol, net, session, dialog, shell, safeStorage, Menu, screen, nativeTheme, utilityProcess } from 'electron';
+import {types} from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { join, basename } from 'node:path';
@@ -177,6 +178,9 @@ const grants = new Set(selectedId ? [selectedId] : []);
 const recoveryAccess = new RecoveryAccess({ projects, recovery, grants });
 const writes = new Set();
 let requestDocsDiagramScan=()=>{};
+// Changes only after an actual selection/account owner commit, never for PIN,
+// input epochs or editor revisions. Old captures cannot survive committed ABA.
+let terminalCommittedOwner = {};
 const selected = async (next,{isCurrent}={}) => {
   const guarded=typeof isCurrent==='function';let accepted=false;
   const operation=(async()=>{
@@ -187,11 +191,13 @@ const selected = async (next,{isCurrent}={}) => {
     if(guarded&&accepted){
       // The pointer was already published. Do not claim the old selection was
       // restored; expose an uncertain, write-fenced selection for recovery.
+      terminalCommittedOwner={};
       selectedId=next.project.id;grants.add(selectedId);snapshot=null;nativeReadonly=true;mode='recovery';reason='Imported project selection could not be confirmed; preserve/export work and reopen a verified copy';
       bootstrap={mode,reason,snapshot:null,recoveryProjectId:selectedId,readonly:true,localAccess:true,selectionGeneration:(bootstrap.selectionGeneration||0)+1};
       throw Object.assign(Error('Imported project selection is unconfirmed'),{code:'SELECTION_UNCONFIRMED',cause});
     }throw cause;
   }
+  terminalCommittedOwner={};
   selectedId = next.project.id; grants.add(selectedId); snapshot = next;
   account.policy.opened(selectedId);
   mode = nativeReadonly ? 'readonly' : 'normal'; reason = nativeReadonly ? reason : null;
@@ -308,7 +314,7 @@ const services = {
         await retireNativeViews();
         if(terminalRuntime)await terminalRuntime.shutdown();
       } });
-      if (state.ok !== false) { grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode, reason, snapshot: null, recoveryProjectId: null, readonly: true }; committed = true; }
+      if (state.ok !== false) { terminalCommittedOwner={}; grants.clear(); selectedId = null; snapshot = null; bootstrap = { mode, reason, snapshot: null, recoveryProjectId: null, readonly: true }; committed = true; }
       return state;
     } finally {
       accountQuiesced = false;
@@ -331,7 +337,7 @@ const services = {
       accountQuiesced = true; await Promise.all([...writes]);
       await retireNativeViews();
       if(terminalRuntime)await terminalRuntime.shutdown();
-      const state = await account.logout(); bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
+      const state = await account.logout(); terminalCommittedOwner={}; bootstrap = { ...bootstrap, readonly: true }; committed = true; return state;
     } finally {
       accountQuiesced = false;
       try {
@@ -372,6 +378,7 @@ const services = {
       await assertImportComplete(projects,id);requireImport();
       return openOwnedSelection({ projectId: id, projects, grants, selected, recoverySelected: async projectId => {
         await atomicWrite(join(dataRoot, 'session-selection.json'), Buffer.from(JSON.stringify({ schema: 1, projectId, accountId: account.accountId })));
+        terminalCommittedOwner={};
         selectedId = projectId; snapshot = null; mode = 'recovery'; reason = 'The selected project is damaged; open a verified recovered copy';
         bootstrap = { mode, reason, snapshot: null, recoveryProjectId: projectId, readonly: true, localAccess: true, selectionGeneration: (bootstrap.selectionGeneration || 0) + 1 };
       } });
@@ -1256,7 +1263,110 @@ const invokeNativeWindow=async (event, method, payload) => {
   return result;
 };
 ipcMain.handle('siren:windows',invokeNativeWindow);
-if(initializeTerminalCandidate)terminalRuntime=initializeTerminalCandidate({registry:windowRegistry,ipcMain,getProjectId:()=>selectedId,isReady:()=>Boolean(selectedId&&snapshot&&localPin.state().unlocked&&mode==='normal'&&!nativeReadonly&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure),workspaceEvent:()=>({sender:window.webContents,senderFrame:window.webContents.mainFrame}),isRollbackReady:isTerminalRollbackScopeCurrent,pinHooks:pinLifecycleHooks,windowFor:id=>nativeShells.get(id),getAppearance:()=>appearanceStore.read(),systemDark:()=>nativeTheme.shouldUseDarkColors,openWindow:invokeNativeWindow});
+if(initializeTerminalCandidate){
+  // Private MAIN capabilities only. Nothing here constructs a native backend
+  // or crosses the preload/renderer boundary; the unavailable factory remains.
+  const nativeMethods=Object.fromEntries(['isCurrent','eventFor','capturePrimary','capture','captureAdmissionGuard','surfaceFor'].map(key=>[key,Object.getOwnPropertyDescriptor(WindowRegistry.prototype,key).value]));
+  const nativeCall=(name,...args)=>Reflect.apply(nativeMethods[name],windowRegistry,args);
+  const nativeRecord=value=>Object.freeze(Object.assign(Object.create(null),value));
+  const nativeData=(value,keys)=>{
+    if(!value||typeof value!=='object'||types.isProxy(value)||![null,Object.prototype].includes(Object.getPrototypeOf(value)))return null;
+    const names=Reflect.ownKeys(value);if(names.length!==keys.length||names.some(key=>!keys.includes(key)))return null;
+    const result=Object.create(null);for(const key of keys){const d=Object.getOwnPropertyDescriptor(value,key);if(!d?.enumerable||!Object.hasOwn(d,'value'))return null;result[key]=d.value;}return result;
+  };
+  const nativeReady=()=>Boolean(selectedId&&snapshot&&mode==='normal'&&!nativeReadonly&&nativeWindowAdmissionEnabled());
+  const nativeAppReady=()=>{try{return app.isReady()===true;}catch{return false;}};
+  const nativeUnlocked=()=>{try{return localPin.state().unlocked===true;}catch{return false;}};
+  const nativeGrant=grant=>{
+    try{return Boolean(grant&&!types.isProxy(grant)&&nativeCall('isCurrent',grant)===true&&grant.projectId===selectedId&&['workspace','terminal'].includes(grant.role));}catch{return false;}
+  };
+  const nativeMode=grant=>{try{if(!nativeGrant(grant))return null;const value=mode==='normal'&&!nativeReadonly?'normal':mode==='recovery'?'recovery':'readonly';return nativeGrant(grant)&&value===(mode==='normal'&&!nativeReadonly?'normal':mode==='recovery'?'recovery':'readonly')?value:null;}catch{return null;}};
+  const nativeCanExecute=grant=>{
+    try{return nativeReady()&&nativeGrant(grant)&&nativeUnlocked()&&nativeReady()&&nativeGrant(grant)&&nativeUnlocked()&&nativeReady()&&nativeGrant(grant)&&nativeReady();}catch{return false;}
+  };
+  const nativeCaptureIncarnation=value=>{
+    try{
+      const c=nativeData(value,['registry','projectId','grant']);
+      if(!c||c.registry!==windowRegistry||c.projectId!==selectedId)return null;
+      const token=terminalCommittedOwner,accountId=account.accountId;
+      if(!nativeGrant(c.grant)||c.grant.role!=='workspace'||!nativeCanExecute(c.grant)||!nativeAppReady())return null;
+      const event=nativeCall('eventFor',c.grant),owner=window,contents=owner.webContents,frame=contents.mainFrame;
+      if(!event||event.sender!==contents||event.senderFrame!==frame)return null;
+      const primary=nativeCall('capturePrimary',{sender:contents,senderFrame:frame}),guard=primary&&nativeCall('captureAdmissionGuard',primary);
+      if(!guard||!guard.isCurrent()||!nativeCanExecute(c.grant))return null;
+      const identity={owner,contents,frame,windowId:owner.id,contentsId:contents.id,url:contents.getURL(),frameUrl:frame.url,processId:frame.processId,routingId:frame.routingId,projectId:c.projectId,account,accountId,token};
+      if(!Number.isSafeInteger(identity.windowId)||identity.windowId<=0||!Number.isSafeInteger(identity.contentsId)||identity.contentsId<=0||!Number.isSafeInteger(identity.processId)||identity.processId<0||!Number.isSafeInteger(identity.routingId)||identity.routingId<0||typeof identity.url!=='string'||identity.url!==identity.frameUrl)return null;
+      // Reconcile the complete identity together, after trusted observations.
+      // Temporary input policy deliberately does not define this lifetime.
+      const matchesIdentity=()=>window===identity.owner&&window.webContents===identity.contents&&contents.mainFrame===identity.frame&&owner.id===identity.windowId&&contents.id===identity.contentsId&&frame.url===identity.frameUrl&&frame.processId===identity.processId&&frame.routingId===identity.routingId&&selectedId===identity.projectId&&account===identity.account&&(accountTransition||account.accountId===identity.accountId)&&terminalCommittedOwner===identity.token;
+      const observeIdentity=()=>{const url=contents.getURL();return !owner.isDestroyed()&&!contents.isDestroyed()&&url===identity.url&&matchesIdentity();};
+      let retired=false;
+      const isCurrent=()=>{
+        if(retired)return false;
+        try{if(!observeIdentity())retired=true;}catch{retired=true;}
+        return !retired;
+      };
+      // Readiness/PIN producers precede the last identity observation. Recheck
+      // genuine admission afterward, then reconcile liveness and every identity
+      // field together; no new policy producer follows that final reconciliation.
+      if(!nativeAppReady()||!nativeCanExecute(c.grant)||!nativeUnlocked()||!isCurrent()||!guard.isCurrent()||!nativeGrant(c.grant)||owner.isDestroyed()||contents.isDestroyed()||!nativeReady()||!matchesIdentity())return null;
+      return nativeRecord({isCurrent});
+    }catch{return null;}
+  };
+  const nativeEnvironmentKeys=Object.freeze(['SystemRoot','PATH','PATHEXT','USERPROFILE','APPDATA','LOCALAPPDATA','TEMP','TMP','ProgramFiles','ProgramFiles(x86)','CommonProgramFiles','CommonProgramFiles(x86)','ProgramData','ComSpec','USERNAME','USERDOMAIN','HOMEDRIVE','HOMEPATH','SystemDrive','windir']);
+  const nativeEnvironmentNames=new Map(nativeEnvironmentKeys.map(key=>[key.toUpperCase(),key]));
+  const nativeReadEnvironment=()=>{
+    const refuse=()=>{throw Error('TERMINAL_MAIN_ENVIRONMENT_REFUSED');},environment=process.env;
+    // Node's actual process.env has a host-object prototype. Inspect only own
+    // selected DATA descriptors; the returned snapshot is an ordinary record.
+    if(!environment||typeof environment!=='object'||types.isProxy(environment)||types.isPromise(environment))return refuse();
+    const names=Reflect.ownKeys(environment);if(names.length>512)return refuse();
+    const selected=new Map();for(const name of names){if(typeof name!=='string')continue;const upper=name.toUpperCase();if(!nativeEnvironmentNames.has(upper))continue;if(selected.has(upper))return refuse();const d=Object.getOwnPropertyDescriptor(environment,name);if(!d?.enumerable||!Object.hasOwn(d,'value'))return refuse();selected.set(upper,d.value);}
+    const result=Object.create(null);let bytes=0,units=1;
+    for(const key of nativeEnvironmentKeys){const upper=key.toUpperCase();if(!selected.has(upper))continue;const text=selected.get(upper);if(typeof text!=='string'||text.length>32768||!text.isWellFormed()||text.includes('\0'))return refuse();bytes+=Buffer.byteLength(key+'='+text+'\0','utf8');units+=key.length+text.length+2;if(bytes>262144||units>32767)return refuse();result[key]=text;}
+    if(!result.SystemRoot||!result.PATH)return refuse();return Object.freeze(result);
+  };
+  const nativeParentFor=contents=>{
+    try{
+      if(!contents||types.isProxy(contents)||contents.isDestroyed())return null;
+      const frame=contents.mainFrame;if(!frame||types.isProxy(frame))return null;
+      const workspace=window;
+      if(contents===workspace.webContents){const grant=nativeCall('capturePrimary',{sender:contents,senderFrame:frame}),admission=grant&&nativeCall('captureAdmissionGuard',grant);return admission&&!workspace.isDestroyed()&&!contents.isDestroyed()&&nativeCall('isCurrent',grant)&&admission.isCurrent()&&window===workspace&&workspace.webContents===contents&&contents.mainFrame===frame?workspace:null;}
+      for(const view of nativeShells.values()){
+        if(!view||types.isProxy(view)||view.webContents!==contents||view.isDestroyed())continue;
+        const grant=nativeCall('capture',{sender:contents,senderFrame:frame});if(!grant||!nativeCall('isCurrent',grant))return null;
+        const admission=nativeCall('captureAdmissionGuard',grant);if(!admission)return null;
+        const surface=nativeCall('surfaceFor',view);if(!surface||surface.webContents!==contents)return null;
+        const placement=surface.placement(),parent=placement==='attached'?window:placement==='detached'?surface.window:null;
+        if(!parent||types.isProxy(parent)||parent.isDestroyed()||contents.isDestroyed()||contents.mainFrame!==frame||view.webContents!==contents||!nativeCall('isCurrent',grant)||nativeCall('surfaceFor',view)!==surface||surface.placement()!==placement||!admission.isCurrent()||window!==workspace||view.webContents!==contents||contents.mainFrame!==frame)return null;
+        return parent;
+      }
+    }catch{}return null;
+  };
+  const nativeOwnsParent=parent=>{
+    if(!parent||types.isProxy(parent))return false;
+    if(nativeParentFor(window.webContents)===parent)return true;
+    for(const view of nativeShells.values())if(nativeParentFor(view.webContents)===parent)return true;
+    return false;
+  };
+  const nativeShowOpenDialog=async(parent,options)=>{
+    const o=nativeData(options,['properties']),list=o?.properties;
+    if(!o||types.isProxy(list)||!Array.isArray(list)||Object.getPrototypeOf(list)!==Array.prototype||list.length!==1||Reflect.ownKeys(list).length!==2)throw Error('TERMINAL_MAIN_DIALOG_REFUSED');
+    const property=Object.getOwnPropertyDescriptor(list,'0');
+    if(!property?.enumerable||!Object.hasOwn(property,'value')||property.value!=='openDirectory'||!nativeOwnsParent(parent))throw Error('TERMINAL_MAIN_DIALOG_REFUSED');
+    const pending=dialog.showOpenDialog(parent,{properties:['openDirectory']});
+    if(types.isProxy(pending)||!types.isPromise(pending))throw Error('TERMINAL_MAIN_DIALOG_REFUSED');
+    // Once the actual dialog has entered, retain its settlement even if a
+    // trusted callback already retired its parent during that call.
+    const admitted=nativeOwnsParent(parent);
+    const answer=await pending,r=nativeData(answer,['canceled','filePaths']);
+    if(!admitted||!nativeOwnsParent(parent)||!r||typeof r.canceled!=='boolean'||types.isProxy(r.filePaths)||!Array.isArray(r.filePaths)||Object.getPrototypeOf(r.filePaths)!==Array.prototype||r.filePaths.length>2||Reflect.ownKeys(r.filePaths).length!==r.filePaths.length+1)throw Error('TERMINAL_MAIN_DIALOG_REFUSED');
+    const paths=[];for(let i=0;i<r.filePaths.length;i++){const d=Object.getOwnPropertyDescriptor(r.filePaths,String(i)),text=d&&Object.hasOwn(d,'value')?d.value:null;if(!d?.enumerable||typeof text!=='string'||!text.isWellFormed()||text.length>32768||text.includes('\0'))throw Error('TERMINAL_MAIN_DIALOG_REFUSED');paths.push(text);}
+    return nativeRecord({canceled:r.canceled,filePaths:Object.freeze(paths)});
+  };
+  const nativeMain=nativeRecord({dataDirectory:dataRoot,utilityProcess,appReady:nativeAppReady,isUnlocked:nativeUnlocked,getMode:nativeMode,canExecute:nativeCanExecute,captureIncarnation:nativeCaptureIncarnation,readEnvironment:nativeReadEnvironment,privateEnvironmentKeys:Object.freeze(['ELECTRON_RUN_AS_NODE','NODE_OPTIONS','NODE_PATH']),parentForWebContents:nativeParentFor,showOpenDialog:nativeShowOpenDialog});
+  terminalRuntime=initializeTerminalCandidate({registry:windowRegistry,ipcMain,getProjectId:()=>selectedId,isReady:()=>Boolean(selectedId&&snapshot&&localPin.state().unlocked&&mode==='normal'&&!nativeReadonly&&!pinTransition&&!accountTransition&&!writes.selectionTransition&&!accountQuiesced&&!writes.selectionQuiesced&&!nativeShellFailure),workspaceEvent:()=>({sender:window.webContents,senderFrame:window.webContents.mainFrame}),isRollbackReady:isTerminalRollbackScopeCurrent,pinHooks:pinLifecycleHooks,windowFor:id=>nativeShells.get(id),getAppearance:()=>appearanceStore.read(),systemDark:()=>nativeTheme.shouldUseDarkColors,openWindow:invokeNativeWindow,nativeMain});
+}
 ipcMain.handle('siren:window-dock',(event,method,payload)=>{
   if(pinTransition||accountTransition||writes.selectionTransition||writes.viewClosing||workspaceBarrier||accountQuiesced||nativeShellFailure)
     return {ok:false,code:'PROJECT_BUSY'};
