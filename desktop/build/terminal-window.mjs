@@ -3,6 +3,7 @@ import {join,resolve,relative,isAbsolute,dirname,parse,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
+import {types} from 'node:util';
 import {build} from 'esbuild';
 import {readHelpBrowser} from './help.mjs';
 import {readDesktopChrome} from './chrome.mjs';
@@ -36,8 +37,28 @@ export async function buildTerminalWindow(outputDir,{dependenciesRoot=null}={}){
 
 // Fixed reviewed initializer import, no user/renderer/env/CLI module path. This
 // candidate remains unavailable until its private native factory is qualified.
-export async function buildTerminalDesktopCandidate({outputDir,dependenciesRoot,baselinePath,expectedSha256,nativeSourceLayout=false}={}){
+export async function buildTerminalDesktopCandidate(options={}){
+ const selectorRefused=()=>{throw Error('BOOTSTRAP_ARGUMENT_REFUSED');};
+ if(options===null||types.isProxy(options))selectorRefused();
+ const selected=Object.getOwnPropertyDescriptor(options,'nativeBootstrap');
+ let prototype=Object.getPrototypeOf(options),depth=0;while(prototype!==null){if(types.isProxy(prototype)||++depth>64||Object.getOwnPropertyDescriptor(prototype,'nativeBootstrap'))selectorRefused();prototype=Object.getPrototypeOf(prototype);}
+ if(selected&&(!selected.enumerable||!Object.hasOwn(selected,'value')))selectorRefused();
+ const nativeBootstrap=selected?.value;
+ const {outputDir,dependenciesRoot,baselinePath,expectedSha256,nativeSourceLayout=false}=options;
  if(typeof nativeSourceLayout!=='boolean')throw Error('Explicit native source layout choice required');
+ if(selected!==undefined){
+  const refused=()=>{throw Error('BOOTSTRAP_ARGUMENT_REFUSED');};if(nativeSourceLayout)refused();
+  const data=(value,keys)=>{if(!value||typeof value!=='object'||types.isProxy(value)||![Object.prototype,null].includes(Object.getPrototypeOf(value)))refused();const names=Reflect.ownKeys(value);if(names.length!==keys.length||names.some(k=>!keys.includes(k)))refused();const out=Object.create(null);for(const key of keys){const d=Object.getOwnPropertyDescriptor(value,key);if(!d?.enumerable||!Object.hasOwn(d,'value'))refused();out[key]=d.value;}return out;};
+  const v=data(nativeBootstrap,['schema','runtimeManifestBytes','applicationRosterBytes','approvedSourceBuildReceiptBytes','expectedPins']);if(v.schema!==1)refused();
+  const pins=data(v.expectedPins,['runtimeTreeSha256','applicationRosterSha256','approvedSourceBuildReceiptSha256']);if(Object.values(pins).some(p=>typeof p!=='string'||!/^[a-f0-9]{64}$/.test(p)))refused();
+  const typed=Object.getPrototypeOf(Uint8Array.prototype),length=Object.getOwnPropertyDescriptor(typed,'length').get,backing=Object.getOwnPropertyDescriptor(typed,'buffer').get;
+  const bytes=(value,max)=>{if(types.isProxy(value)||!Buffer.isBuffer(value)||Object.getPrototypeOf(value)!==Buffer.prototype)refused();const n=length.call(value);if(n<1||n>max||types.isSharedArrayBuffer(backing.call(value)))refused();const out=Buffer.alloc(n);Uint8Array.prototype.set.call(out,value);return out;};
+  const captured=Object.freeze({schema:1,runtimeManifestBytes:bytes(v.runtimeManifestBytes,16777216),applicationRosterBytes:bytes(v.applicationRosterBytes,16777216),approvedSourceBuildReceiptBytes:bytes(v.approvedSourceBuildReceiptBytes,1048576),expectedPins:Object.freeze({...pins})});
+  if(hash(captured.runtimeManifestBytes)!==pins.runtimeTreeSha256||hash(captured.applicationRosterBytes)!==pins.applicationRosterSha256||hash(captured.approvedSourceBuildReceiptBytes)!==pins.approvedSourceBuildReceiptSha256)refused();
+  // Snapshot every caller-owned byte and scalar before the first await. The
+  // new authority graph is imported only for this explicitly selected branch.
+  const {buildTerminalNativeBootstrap}=await import('./terminal-native-bootstrap.mjs');return buildTerminalNativeBootstrap({outputDir,nativeBootstrap:captured});
+ }
  const desktop=fileURLToPath(new URL('../',import.meta.url)),out=resolve(outputDir);
  const contains=(parent,child)=>{const location=relative(parent,child);return !location||(!location.startsWith('..'+sep)&&location!=='..'&&!isAbsolute(location));};
  if(out===parse(out).root||contains(desktop,out)||contains(out,desktop)||!dependenciesRoot)throw Error('Separate explicit candidate output required');
