@@ -37,7 +37,7 @@ try{
  const deps=join(work,'electron-deps');await mkdir(deps);for(const name of ['package.json','package-lock.json'])await copyFile(join(root,'desktop',name),join(deps,name));
  const npm=join(dirname(process.execPath),'node_modules/npm/bin/npm-cli.js'),gyp=join(dirname(process.execPath),'node_modules/npm/node_modules/node-gyp');assert.equal(JSON.parse(await readFile(join(gyp,'package.json'),'utf8')).version,'12.3.0');
  await phase('locked-electron-packages',process.execPath,[npm,'--prefix',deps,'ci','--ignore-scripts','--no-audit','--no-fund'],root);
- const electronRoot=join(deps,'node_modules/electron');assert.equal(JSON.parse(await readFile(join(electronRoot,'package.json'),'utf8')).version,'44.5.1');
+ const electronRoot=join(deps,'node_modules/electron');assert.equal(JSON.parse(await readFile(join(electronRoot,'package.json'),'utf8')).version,'44.9.3');
  await phase('electron-distribution',process.execPath,[join(electronRoot,'install.js')],root);receipt.electronExecutable=await pin(join(electronRoot,'dist/electron.exe'));
  const provider=join(application,'desktop/runtime/terminal-provider');await phase('locked-provider-packages',process.execPath,[npm,'--prefix',provider,'ci','--ignore-scripts','--no-audit','--no-fund'],root);
  const locator=join(process.env['ProgramFiles(x86)'],'Microsoft Visual Studio/Installer/vswhere.exe');
@@ -48,7 +48,7 @@ try{
  for(const [folder,target] of targets){
   const candidate=join(work,folder);await mkdir(candidate);const build={folder,target,source:[],trackedInputs:[]};receipt.builds.push(build);
   for(const name of ['ownership.cc','peer-endpoints.inc','binding.gyp']){const original=join(root,'desktop/native',folder,name);build.source.push(await pin(original));await copyFile(original,join(candidate,name));}
-  await phase(folder+'-configure',process.execPath,[join(gyp,'bin/node-gyp.js'),'configure','--target=44.5.1','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(work,'headers'),'--msvs_version=2026','--verbose'],candidate);
+  await phase(folder+'-configure',process.execPath,[join(gyp,'bin/node-gyp.js'),'configure','--target=44.9.3','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(work,'headers'),'--msvs_version=2026','--verbose'],candidate);
   await phase(folder+'-compile',msbuild,['build/'+target+'.vcxproj','/p:SolutionDir='+join(candidate,'build')+'/', '/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+versions[0],'/p:WindowsTargetPlatformVersion=10.0.26100.0','/p:TrackFileAccess=true','/verbosity:diagnostic'],candidate);
   const project=await readFile(join(candidate,'build',target+'.vcxproj'),'utf8');assert.ok(project.includes('win_delay_load_hook.cc'));assert.match(project,/<DelayLoadDLLs>node.exe(?:;|<)/i);
   const tracked=new Set();async function walk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){const path=join(directory,entry.name);if(entry.isDirectory())await walk(path);else if(/\.read\.\d+\.tlog$/i.test(entry.name)){const bytes=await readFile(path);await copyFile(path,join(out,folder+'-'+entry.name));for(const line of bytes.toString('utf16le').replace(/^\uFEFF/,'').split(/\r?\n/)){for(const name of line.trim().replace(/^\^/,'').split('|'))if(/^[A-Za-z]:[\\/]/.test(name))tracked.add(name);}}}}await walk(join(candidate,'build'));

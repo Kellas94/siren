@@ -174,7 +174,7 @@
     {
       "path": "desktop/src/terminal/production-creator.mjs",
       "bytes": 17385,
-      "sha256": "ce39f27f03d463e05c866aad65f51545798cdbf902add06a4ee67b461e7240d0"
+      "sha256": "f5d3de1617d60b9d95e4b1d4c96bc677e2e327fe858e6a63c38ec3295473814e"
     },
     {
       "path": "desktop/src/terminal/production-gate-link.mjs",

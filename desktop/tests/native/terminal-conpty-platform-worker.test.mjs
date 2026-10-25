@@ -15,7 +15,7 @@ async function observe({platform='win32',arch='x64',windowsVersion='10.0.26100',
  };
  let failure;try{await runInNewContext('(async()=>{'+source+'})()',{
   assert,join,isAbsolute,release:()=>windowsVersion,requireQualifiedConptyPlatform,requireSelectedOsConpty,
-  process:{argv:['electron','worker','C:\\probe'],pid:321,platform,arch,env:{ELECTRON_RUN_AS_NODE:'1'},versions:{electron:'44.5.1',modules:'149'}},
+  process:{argv:['electron','worker','C:\\probe'],pid:321,platform,arch,env:{ELECTRON_RUN_AS_NODE:'1'},versions:{electron:'44.9.3',modules:'149'}},
   createRequire:()=>fakeRequire,readFile:async()=>Buffer.from(JSON.stringify({fixture:'C:\\fixed.exe',packagePath:'C:\\package.json'})),writeFile:async(_path,data)=>{errors.push(JSON.parse(data));},Buffer
  },{timeout:1000});}catch(error){failure=error.message;}
  return{failure,loads,spawns,errors};

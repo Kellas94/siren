@@ -18,7 +18,7 @@ export function createDesktopNativeHostLoader(options,...extra){
  const snapshot=()=>frozen({state,configuredTreeVerified:state==='ready',hostAddonCacheVerified:state==='ready',completeRuntimeClosure:false,loadedModuleProvenanceVerified:false,nativeExecutionAdmitted:false});
  function environment(){
   const p=desktopNativeRuntimeResourcePaths(o.resources);
-  return p?.directory===directory&&process.platform==='win32'&&process.arch==='x64'&&process.type==='browser'&&process.versions.electron==='44.5.1'&&process.versions.modules==='149'&&process.versions.napi==='10'&&process.execPath===p.executable;
+  return p?.directory===directory&&process.platform==='win32'&&process.arch==='x64'&&process.type==='browser'&&process.versions.electron==='44.9.3'&&process.versions.modules==='149'&&process.versions.napi==='10'&&process.execPath===p.executable;
  }
  function cacheCurrent(){
   try{

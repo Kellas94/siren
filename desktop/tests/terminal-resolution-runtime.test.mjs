@@ -33,7 +33,9 @@ async function collect(mode,{failed=false,state=bytes(),missing=false,mutate=()=
 
 test('corrected workers derive exact fixture import and recorded timing additions from immutable V1',async()=>{
  const original=await readFile(new URL('./native/terminal-cmdlet-runtime-worker.mjs',import.meta.url),'utf8');
- assert.equal(createHash('sha256').update(original).digest('hex'),'26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33');
+ assert.equal(original.split("'44.9.3'").length-1,2,'Exactly creator and utility runtime literals migrate');
+ const historical=original.replaceAll("'44.9.3'","'44.5.1'");
+ assert.equal(createHash('sha256').update(historical).digest('hex'),'26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33','Runtime inverse must restore immutable V1 exactly');
  for(const [file,adapter] of [['original','createOriginalResolutionFixture'],['qualified','createQualifiedResolutionFixture']]){
   const s=await readFile(new URL('./native/terminal-resolution-'+file+'-worker.mjs',import.meta.url),'utf8');
   let expected=original.replace("import {createSingleCmdletFixture} from './terminal-cmdlet-fixture.mjs';","import {"+adapter+" as createSingleCmdletFixture} from './terminal-resolution-observation.mjs';");const mapping=JSON.parse(await readFile(new URL('./fixtures/terminal-resolution-worker-derivation.json',import.meta.url),'utf8'));assert.equal(mapping.revision,'RS1_RS2_RS3_CORRECTION_V2');assert.equal(mapping.workerLiteralReplacements.length,7);for(const {before,after} of mapping.workerLiteralReplacements){assert.equal(expected.split(before).length,2);expected=expected.replace(before,after);}assert.equal(s,expected);new SourceTextModule(s);

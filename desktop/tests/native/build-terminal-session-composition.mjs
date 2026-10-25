@@ -49,7 +49,7 @@ try{
  for(const path of [join(gypRoot,'package.json'),join(gypRoot,'LICENSE'),join(gypRoot,'src/win_delay_load_hook.cc'),join(gypRoot,'bin/node-gyp.js'),join(sdk[0],'um/Windows.h'),join(sdk[0],'um/jobapi2.h'),join(sdk[0],'um/threadpoollegacyapiset.h'),join(sdk[0],'um/processthreadsapi.h'),join(sdkRoot,'Lib/10.0.26100.0/um/x64/kernel32.lib'),join(msvcRoot,'lib/x64/delayimp.lib')]){
   const b=await readFile(path);receipt.toolInputs.push({path,bytes:b.length,sha256:hash(b)});
  }
- await phase('configure',process.execPath,[join(gypRoot,'bin/node-gyp.js'),'configure','--target=44.5.1','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(output,'headers'),'--msvs_version=2026','--verbose'],candidate);
+ await phase('configure',process.execPath,[join(gypRoot,'bin/node-gyp.js'),'configure','--target=44.9.3','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(output,'headers'),'--msvs_version=2026','--verbose'],candidate);
  await phase('compile',msbuild,[join(candidate,'build/binding.sln'),'/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+version,'/p:WindowsTargetPlatformVersion=10.0.26100.0','/verbosity:diagnostic'],candidate);
  async function walk(root){for(const entry of await readdir(root,{withFileTypes:true})){const path=join(root,entry.name);if(entry.isDirectory())await walk(path);else if(entry.isFile()){const b=await readFile(path);receipt.buildInputs.push({path,bytes:b.length,sha256:hash(b)});}else throw Error('LINKED_BUILD_INPUT');}}
  await walk(join(output,'headers'));

@@ -32,6 +32,13 @@ jobs:
       - name: Install pinned Electron runtime explicitly
         timeout-minutes: 5
         run: npm run runtime:install
+      - name: Verify exact Electron runtime compatibility
+        timeout-minutes: 1
+        env:
+          ELECTRON_RUN_AS_NODE: '1'
+        run: |
+          & .\node_modules\electron\dist\electron.exe scripts/verify-electron-runtime.mjs
+          exit $LASTEXITCODE
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
@@ -300,6 +307,13 @@ jobs:
       - name: Install pinned Electron runtime explicitly
         timeout-minutes: 5
         run: npm run runtime:install
+      - name: Verify exact Electron runtime compatibility
+        timeout-minutes: 1
+        env:
+          ELECTRON_RUN_AS_NODE: '1'
+        run: |
+          & .\node_modules\electron\dist\electron.exe scripts/verify-electron-runtime.mjs
+          exit $LASTEXITCODE
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |
@@ -620,6 +634,13 @@ jobs:
       - name: Install pinned Electron runtime explicitly
         timeout-minutes: 5
         run: npm run runtime:install
+      - name: Verify exact Electron runtime compatibility
+        timeout-minutes: 1
+        env:
+          ELECTRON_RUN_AS_NODE: '1'
+        run: |
+          & .\node_modules\electron\dist\electron.exe scripts/verify-electron-runtime.mjs
+          exit $LASTEXITCODE
       - name: Diagnose owned temporary fixture paths
         timeout-minutes: 1
         run: |

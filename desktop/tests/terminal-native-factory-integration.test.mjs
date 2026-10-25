@@ -46,7 +46,7 @@ function nativeWorldFactory(runtime){
   record.counters.utility++;record.counters.fork++;trace('utility-fork');const child=new globalThis.__factoryEmitter();child.pid=nextPid++;
   child.postMessage=value=>{if(value.kind==='retire'){trace('utility-retire');const hook=record.factoryControl.onUtilityRetire;record.factoryControl.onUtilityRetire=null;hook?.();if(!record.factoryControl.holdExit)queueMicrotask(()=>child.emit('exit',0));}};
   child.kill=()=>{trace('utility-kill');if(!record.factoryControl.holdExit)queueMicrotask(()=>child.emit('exit',0));return true;};
-  record.releaseExit=()=>{trace('controlled-exit-release');child.emit('exit',0);};record.releaseUtility=()=>{trace('controlled-utility-release');child.emit('spawn');child.emit('message',{schema:'siren-desktop-utility-host/v1',pid:child.pid,electron:'44.5.1',modules:'149',napi:'10'});};if(!record.factoryControl.holdUtility)queueMicrotask(record.releaseUtility);return child;
+  record.releaseExit=()=>{trace('controlled-exit-release');child.emit('exit',0);};record.releaseUtility=()=>{trace('controlled-utility-release');child.emit('spawn');child.emit('message',{schema:'siren-desktop-utility-host/v1',pid:child.pid,electron:'44.9.3',modules:'149',napi:'10'});};if(!record.factoryControl.holdUtility)queueMicrotask(record.releaseUtility);return child;
  }
  return {host,filesystem,utilityFork,cache};
 }
@@ -125,7 +125,7 @@ async function harness(record){
  replace("const evidence=path.resolve(process.env.SIREN_BOOTSTRAP_EVIDENCE??path.join(desktop,'../bootstrap-producer-test-evidence'));",'const evidence='+JSON.stringify(path.join(caseOutput,'fixtures'))+';');
  replace("app:{isPackaged:false,getAppPath:","app:{isReady:()=>true,isPackaged:false,getAppPath:");
  replace('console,setTimeout,clearTimeout,setImmediate,clearImmediate,queueMicrotask,process:','console,performance,setTimeout,clearTimeout,setImmediate,clearImmediate,queueMicrotask,process:');
- replace("process:{platform:process.platform,versions:{},argv:","process:{platform:'win32',arch:'x64',type:'browser',pid:process.pid,env:{SystemRoot:'C:\\\\Windows',PATH:'C:\\\\Windows\\\\System32'},versions:{electron:'44.5.1',modules:'149',napi:'10'},argv:");
+ replace("process:{platform:process.platform,versions:{},argv:","process:{platform:'win32',arch:'x64',type:'browser',pid:process.pid,env:{SystemRoot:'C:\\\\Windows',PATH:'C:\\\\Windows\\\\System32'},versions:{electron:'44.9.3',modules:'149',napi:'10'},argv:");
  replace("if(id==='node:module')return synth(id,{createRequire:()=>name=>{counters.nativeLoader++;if(name==='original-fs')throw Error('UNEXPECTED ORIGINAL FS IN NODE FIXTURE');counters.addon++;throw Error('NATIVE REQUIRE REFUSED');}});", "if(id==='node:module')return synth(id,{createRequire:()=>fixedNativeRequire(context,record,f)});");
  replace("utilityProcess:{fork(){counters.utility++;counters.fork++;throw Error('UTILITY FORK REFUSED');}}", "utilityProcess:{fork(...args){return fixedUtilityFork(context,record,f,...args);}}");
  const from="   if(filename.endsWith(path.sep+'src'+path.sep+'main.mjs'))return synth(id,{},()=>{";

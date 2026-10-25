@@ -24,7 +24,7 @@ export async function runAggregateFlowMain(config,preserveFailure){
  const stage=async(label,value)=>{await persist(join(config.output,'flow-'+label+'-ready.json'),{mainPid:process.pid,...value});await wait(async()=>{try{return await fs.readFile(join(config.output,'flow-'+label+'-go.request'),'utf8')==='go';}catch(e){if(e.code!=='ENOENT')throw e;}},5000);};
  const watchdog=setTimeout(()=>app.exit(94),100000);
  try{
-  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.arch,'x64');
+  assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.arch,'x64');
   const hello={},mark=native.mark();host=utilityProcess.fork(config.hostEntry,[],{serviceName:'SIREN aggregate fixed control',stdio:'pipe'});strong.host=host;
   host.stdout?.on('data',()=>{});host.stderr?.on('data',()=>{});host.on('message',m=>{hello[m.kind]=m;});await wait(()=>hello.hello);assert.equal(hello.hello.pid,host.pid);
   hostOwner=native.start(host.pid,config.electron,mark);strong.hostOwner=hostOwner;

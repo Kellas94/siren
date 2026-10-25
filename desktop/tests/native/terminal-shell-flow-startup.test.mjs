@@ -18,7 +18,7 @@ async function exercise({exitAfterInput=false}={}){
   writeFile:async(p,data)=>{saved.set(p,JSON.parse(data));if(p.endsWith('shell-flow-ready.json.pending'))term.data('ready\r\n');if(p.endsWith('reply-000001.json.pending')&&exitAfterInput)term.exited({exitCode:5,signal:0});if(p.endsWith('reply-000002.json.pending'))term.data('fixed command completed while locked\r\n');},
   rename:async(a,b)=>{saved.set(b,saved.get(a));},
  }};
- const process={pid:30,versions:{electron:'44.5.1',node:'24.21.0',modules:'149',napi:'10'},arch:'x64',platform:'win32',env:{SystemRoot:'C:/Windows',PATH:'fixed',NODE_OPTIONS:'bad',NODE_PATH:'bad',ELECTRON_RUN_AS_NODE:'1',ELECTRON_EXTRA_LAUNCH_ARGS:'bad'},hrtime:{bigint:()=>1000000n}};
+ const process={pid:30,versions:{electron:'44.9.3',node:'24.22.0',modules:'149',napi:'10'},arch:'x64',platform:'win32',env:{SystemRoot:'C:/Windows',PATH:'fixed',NODE_OPTIONS:'bad',NODE_PATH:'bad',ELECTRON_RUN_AS_NODE:'1',ELECTRON_EXTRA_LAUNCH_ARGS:'bad'},hrtime:{bigint:()=>1000000n}};
  let error;try{await vm.runInNewContext('('+fn+')',{seams,process,Buffer,console,setTimeout:()=>1})(directory);}catch(e){if(!exitAfterInput)throw e;error=e;}
  return {writes,resizes,spawned,saved,directory,shell,error};
 }

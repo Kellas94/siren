@@ -88,3 +88,11 @@ test('actual original Lock fixture results qualify isolated current parent class
  for(const mutate of [o=>o.lockResult.lockRefusedNewInput=false,o=>o.lockResult.records.find(r=>r.name==='lock-and-input-refusal').value.refused.ok=true,o=>o.lockResult.records.find(r=>r.name==='completed-while-locked').value.completed='b'.repeat(32),o=>o.lockResult.records.find(r=>r.name==='same-session-after-lock').value.session.shell.createdFileTime='9999',o=>o.lockResult.records.find(r=>r.name==='fresh-lease-history').value.output='',o=>o.lockResult.records.find(r=>r.name==='fresh-lease-history').value.second.generation=0]){const changed=structuredClone(observed);mutate(changed);assert.throws(()=>classify(changed,expected));}
  }finally{await h.dispose();}
 });
+
+test('current generated build and worker target corrected Electron while inverse restores historical donors',async()=>{
+ const source={};for(const key of ['provision','driver','worker'])source[key]=await readFile(new URL('./terminal-system-seeded-'+key+'.mjs',import.meta.url),'utf8');
+ const result=api.deriveCurrentRuntimeLockScripts(source);
+ for(const file of result.files){assert.doesNotMatch(file.text,/44\.5\.1/);assert.equal(api.restoreCurrentRuntimeLockScript(file),source[file.map.kind]);}
+ assert.match(result.files[0].text,/version==='44\.9\.3'/);assert.match(result.files[0].text,/--target=44\.9\.3/);
+ assert.match(result.files[2].text,/process\.versions\.electron,'44\.9\.3'/);assert.match(result.files[2].text,/ready:true,electron:'44\.9\.3'/);
+});

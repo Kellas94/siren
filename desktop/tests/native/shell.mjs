@@ -20,7 +20,7 @@ try {
   await driver.waitFor('document.readyState === "complete" && document.getElementById("brandVersion")?.textContent === "v1.131.0"');
   await driver.waitFor('!!document.querySelector("svg .node")');
   const runtime = await driver.evaluate('({userAgent:navigator.userAgent, title:document.title, version:document.getElementById("brandVersion").textContent, node:typeof require, process:typeof process, methods:Object.keys(window.sirenDesktop).sort()})');
-  assert.equal(runtime.node, 'undefined'); assert.equal(runtime.process, 'undefined'); assert.match(runtime.userAgent, /Electron\/44\.5\.1/);
+  assert.equal(runtime.node, 'undefined'); assert.equal(runtime.process, 'undefined'); assert.match(runtime.userAgent, /Electron\/44\.9\.3/);
   assert.equal(runtime.methods.includes('exec'), false); assert.equal(runtime.methods.includes('readFile'), false); checks.push('actual-renderer-isolation');
   const attack = await driver.evaluate(`(async()=>({extra:await sirenDesktop.saveProject({projectId:'../secret',baseRevision:0,json:'{}',purpose:'workspace'}),frame:await (async()=>{const f=document.createElement('iframe');f.srcdoc='<p>hostile</p>';document.body.append(f);await new Promise(r=>setTimeout(r,100));const x=typeof f.contentWindow.sirenDesktop;f.remove();return x})(),window:window.open('https://example.com')===null,protocol:(await fetch('siren://app/%252e%252e/secret')).status}))()`);
   assert.equal(attack.extra.ok, false); assert.equal(attack.extra.code, 'REQUEST_REFUSED'); assert.equal(attack.frame, 'undefined'); assert.equal(attack.window, true); assert.equal(attack.protocol, 403); checks.push('hostile-renderer-boundaries');

@@ -22,7 +22,7 @@ async function exercise(config){
  const {createRequire}=await import('node:module'),{release}=await import('node:os');
  const runtime={versions:process.versions,arch:process.arch,os:release(),pid:process.pid},observations={opened:0,closed:0,verifiedDestroyed:0,globalHandleCountIsDiagnosticOnly:true};
  try{
-  assert.equal(runtime.versions.electron,'44.5.1');assert.equal(runtime.versions.modules,'149');assert.equal(runtime.versions.napi,'10');assert.equal(runtime.arch,'x64');
+  assert.equal(runtime.versions.electron,'44.9.3');assert.equal(runtime.versions.modules,'149');assert.equal(runtime.versions.napi,'10');assert.equal(runtime.arch,'x64');
   const require=createRequire(import.meta.url),native=require(config.addon),metrics=require(config.metricsAddon);
   observations.beforeHandles=metrics.processHandleCount();
   const canary=native.create();observations.opened++;

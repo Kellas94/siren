@@ -7,7 +7,7 @@ const rows=a=>Array.isArray(a)&&a.length>0&&a.length<=64&&a.every(processRow)&&n
 const sameSet=(a,b)=>rows(a)&&rows(b)&&a.length===b.length&&a.every(p=>b.some(q=>same(p,q)));
 const observed=(p,held)=>held.some(q=>same(p,q)&&p.alive===q.alive&&p.exitCode===q.exitCode);
 const guards=(s,negative)=>s?.killOnClose===!negative&&s.breakaway===false&&s.inheritable===false;
-const runtime=r=>r?.electron==='44.5.1'&&r.node==='24.21.0'&&r.modules==='149'&&r.napi==='10'&&r.arch==='x64'&&r.platform==='win32';
+const runtime=r=>r?.electron==='44.9.3'&&r.node==='24.22.0'&&r.modules==='149'&&r.napi==='10'&&r.arch==='x64'&&r.platform==='win32';
 export function isComposedMainLossObserved(r,negative=false){
  try {
   if(typeof negative!=='boolean'||r?.admitted!==false||r.status!=='COMPOSED_MAIN_LOSS_OBSERVED_NOT_ADMITTED'||r.guardEnabled!==!negative||['error','cleanupError'].some(k=>Object.hasOwn(r,k)))return false;

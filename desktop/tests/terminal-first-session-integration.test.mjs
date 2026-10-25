@@ -2,7 +2,7 @@
 // never a full MAIN/Electron boot. Native boundaries remain explicitly inert.
 import test,{after} from 'node:test';
 import * as vm from 'node:vm';
-import {createFirstSessionNativeWorld} from './fixtures/terminal-first-session-native.mjs';
+import {createFirstSessionNativeWorld} from './fixtures/terminal-first-session-native-electron44-9-3.mjs';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
@@ -98,7 +98,7 @@ async function harness(record){
  replace("const evidence=path.resolve(process.env.SIREN_BOOTSTRAP_EVIDENCE??path.join(desktop,'../bootstrap-producer-test-evidence'));",'const evidence='+JSON.stringify(path.join(caseOutput,'fixtures'))+';');
  replace("app:{isPackaged:false,getAppPath:","app:{isReady:()=>true,isPackaged:false,getAppPath:");
  replace('console,setTimeout,clearTimeout,setImmediate,clearImmediate,queueMicrotask,process:','console,performance,setTimeout,clearTimeout,setImmediate,clearImmediate,queueMicrotask,process:');
- replace("process:{platform:process.platform,versions:{},argv:","process:{platform:'win32',arch:'x64',type:'browser',pid:process.pid,env:{SystemRoot:'C:\\\\Windows',PATH:'C:\\\\Windows\\\\System32'},versions:{electron:'44.5.1',modules:'149',napi:'10'},argv:");
+ replace("process:{platform:process.platform,versions:{},argv:","process:{platform:'win32',arch:'x64',type:'browser',pid:process.pid,env:{SystemRoot:'C:\\\\Windows',PATH:'C:\\\\Windows\\\\System32'},versions:{electron:'44.9.3',modules:'149',napi:'10'},argv:");
  replace("if(id==='node:module')return synth(id,{createRequire:()=>name=>{counters.nativeLoader++;if(name==='original-fs')throw Error('UNEXPECTED ORIGINAL FS IN NODE FIXTURE');counters.addon++;throw Error('NATIVE REQUIRE REFUSED');}});", "if(id==='node:module')return synth(id,{createRequire:()=>fixedNativeRequire(context,record,f)});");
  replace("utilityProcess:{fork(){counters.utility++;counters.fork++;throw Error('UTILITY FORK REFUSED');}}", "utilityProcess:{fork(...args){return fixedUtilityFork(context,record,f,...args);}}");
  const from="   if(filename.endsWith(path.sep+'src'+path.sep+'main.mjs'))return synth(id,{},()=>{";

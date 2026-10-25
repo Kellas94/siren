@@ -26,7 +26,7 @@ async function setup(change=()=>{}){
  const options={utilityProcess:{fork(...args){calls.push(['fork',...args]);entered();return child;}},isReady:()=>ready,mark:()=>7n,isCurrent:()=>current,timers:clock.api};
  const s={r,child,clock,calls,options,forked,entered,setCurrent:v=>current=v,setReady:v=>ready=v};change(s);s.launcher=module.createDesktopNativeUtilityLauncher(options);return s;
 }
-const hello=child=>({schema,pid:child.pid,electron:'44.5.1',modules:'149',napi:'10'});
+const hello=child=>({schema,pid:child.pid,electron:'44.9.3',modules:'149',napi:'10'});
 async function launched(s){const reserved=s.launcher.reserveUtilityHost(s.r.receipt);reserved.ready.catch(()=>{});await bounded(Promise.race([s.forked,reserved.ready]));return reserved;}
 async function complete(s,reserved){s.child.spawn();s.child.emit('message',hello(s.child));return reserved.ready;}
 
@@ -54,11 +54,11 @@ test('dependency getters/proxies refuse without invoking them; mark must be actu
 
 function hostRuntime(change=()=>{}){
  const port=new EventEmitter(),sent=[],exits=[],cleared=[],intervals=[];port.postMessage=v=>sent.push(v);
- const options={type:'utility',platform:'win32',arch:'x64',pid:321,electron:'44.5.1',modules:'149',napi:'10',parentPort:port,exit:code=>exits.push(code)};
+ const options={type:'utility',platform:'win32',arch:'x64',pid:321,electron:'44.9.3',modules:'149',napi:'10',parentPort:port,exit:code=>exits.push(code)};
  const timers={setInterval(fn,ms){intervals.push({fn,ms});return intervals.length;},clearInterval:id=>cleared.push(id)};change(options);return {options,timers,port,sent,exits,cleared,intervals};
 }
 test('fixed child handshake and sole retirement message, no command execution or path transfer',()=>{
- const f=hostRuntime(),h=entry.startDesktopNativeUtilityHost(f.options,f.timers);assert.deepEqual(f.sent,[{schema,pid:321,electron:'44.5.1',modules:'149',napi:'10'}]);assert.equal(f.intervals[0].ms,1000);
+ const f=hostRuntime(),h=entry.startDesktopNativeUtilityHost(f.options,f.timers);assert.deepEqual(f.sent,[{schema,pid:321,electron:'44.9.3',modules:'149',napi:'10'}]);assert.equal(f.intervals[0].ms,1000);
  for(const data of [{schema,kind:'input',data:'Write-Output unsafe'}, {schema,kind:'retire',path:'other'},null])f.port.emit('message',{data,ports:[]});assert.deepEqual(f.exits,[]);
  f.port.emit('message',{data:{schema,kind:'retire'},ports:[]});h.stop();assert.deepEqual(f.exits,[0]);assert.deepEqual(f.cleared,[1]);assert.equal(f.port.listenerCount('message'),0);
 });
@@ -105,4 +105,19 @@ test('spawn PID getter reentrant retirement cannot publish a spawned identity',a
  const s=await setup(),r=await launched(s);Object.defineProperty(s.child,'pid',{configurable:true,get(){r.retire();return 123;}});
  s.child.emit('spawn');assert.equal(r.snapshot().spawned,false);await assert.rejects(r.ready,/RETIRED/);
  s.child.emit('exit',0);assert.equal((await r.retire()).utilityExited,true);
+});
+
+test('corrected exact utility runtime accepts44.9.3 and refuses former or alternative44 patches',()=>{
+ const current=hostRuntime(o=>{o.electron='44.9.3';});
+ const host=entry.startDesktopNativeUtilityHost(current.options,current.timers);
+ assert.equal(current.sent[0].electron,'44.9.3');host.stop();
+ for(const version of ['44.5.1','44.9.1','44.9.2','44.9.4','44.999.0']){
+  const old=hostRuntime(o=>{o.electron=version;});
+  assert.throws(()=>entry.startDesktopNativeUtilityHost(old.options,old.timers),/CONTEXT_REFUSED/);
+  assert.equal(old.intervals.length,0);assert.equal(old.port.listenerCount('message'),0);
+ }
+});
+
+test('parent readiness refuses former Electron and other same-major patches with exact ABI unchanged',async()=>{
+ for(const electron of ['44.5.1','44.9.1','44.9.4']){const s=await setup(),r=await launched(s);s.child.spawn();s.child.emit('message',{...hello(s.child),electron});await assert.rejects(r.ready,/HANDSHAKE_REFUSED/);s.child.exit(1);assert.equal((await r.retire()).utilityExited,true);}
 });

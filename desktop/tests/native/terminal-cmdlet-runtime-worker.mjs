@@ -85,7 +85,7 @@ export async function startRuntimeProbe(config){
  assertFixedControl(control);
  assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.GITHUB_REPOSITORY,'Kellas94/siren');
  assert.equal(process.env.GITHUB_REF,'refs/heads/probe/terminal-session-20261010');assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
- assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
+ assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
  assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
  const result={scope:'HOSTED_SINGLE_CMDLET_DIAGNOSTIC',status:'STARTED',control,run,commit,
   nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
@@ -184,7 +184,7 @@ export async function startRuntimeProbe(config){
   host=utilityProcess.fork(hostEntry,[],{serviceName:'SIREN bounded single-cmdlet host',stdio:'pipe'});
   hostExit=new Promise((resolve,reject)=>{host.once('exit',code=>resolve(code));host.once('error',reject);});hostExit.catch(()=>{});
   host.stdout?.setEncoding('utf8');host.stderr?.setEncoding('utf8');host.stdout?.on('data',chunk=>hostOut+=chunk);host.stderr?.on('data',chunk=>hostErr+=chunk);
-  const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
+  const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');assert.deepEqual(ready,{ready:true,electron:'44.9.3',modules:'149',napi:'10'});
   const system=await helper('system'),systemRoot=dirname(system);
   graph=createTerminalShutdownGraph({projectId:'project1',registry,native:facade,hostProcessIdentity:{pid:host.pid,image:process.execPath,since:mark},
    ownership:{isCurrent:()=>true,onUnavailable:value=>observeOwnership('unavailable',value),onVerified:value=>observeOwnership('verified',value)},

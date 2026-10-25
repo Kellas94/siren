@@ -54,7 +54,7 @@ export const PRODUCTION_CREATOR_CANDIDATE_BRANCH='refs/heads/probe/terminal-prod
 export function requireProductionCreatorRuntime(value,...extra){
  const r=fields(value,['platform','arch','electron','modules','napi','electronRunAsNode','windowsVersion']);
  const match=r&&typeof r.windowsVersion==='string'&&r.windowsVersion.length<=64&&/^10\.0\.(0|[1-9][0-9]*)$/.exec(r.windowsVersion),build=match?Number(match[1]):NaN;
- if(extra.length||!r||r.platform!=='win32'||r.arch!=='x64'||r.electron!=='44.5.1'||r.modules!=='149'||r.napi!=='10'||r.electronRunAsNode!=='1'||!integer(build)||build<18309||build>0xffffffff)throw Error('PRODUCTION_CREATOR_RUNTIME_REFUSED');return true;
+ if(extra.length||!r||r.platform!=='win32'||r.arch!=='x64'||r.electron!=='44.9.3'||r.modules!=='149'||r.napi!=='10'||r.electronRunAsNode!=='1'||!integer(build)||build<18309||build>0xffffffff)throw Error('PRODUCTION_CREATOR_RUNTIME_REFUSED');return true;
 }
 /** Eligibility for the isolated candidate entry, never product admission. The
  * entry supplies actual process metadata; a pure test fixture cannot launch it.

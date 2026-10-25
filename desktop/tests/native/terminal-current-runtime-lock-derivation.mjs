@@ -26,6 +26,12 @@ export function deriveCurrentRuntimeLockRawSupport(sources){
 }
 export function deriveCurrentRuntimeLockScripts({provision,driver,worker}){
  const p=editor('provision',provision),d=editor('driver',driver),w=editor('worker',worker);
+ // Historical donor bodies stay pinned; only this current derivative targets the corrected runtime.
+ p.edit('corrected-electron-package',".version==='44.5.1'",".version==='44.9.3'");
+ p.edit('corrected-electron-headers','--target=44.5.1','--target=44.9.3');
+ w.edit('corrected-creator-runtime',"process.versions.electron,'44.5.1'","process.versions.electron,'44.9.3'");
+ w.edit('corrected-utility-runtime',"ready:true,electron:'44.5.1'","ready:true,electron:'44.9.3'");
+
  p.edit('remove-historical-profile-materializer',"import {generateSystemSeededProfileMaterialization} from './terminal-system-seeded-materialization.mjs';","import {materializeCurrentRuntimeLockSources,verifyCurrentRuntimeLockSources} from './terminal-current-runtime-lock-sources.mjs';");
  const required=[...CURRENT_LOCK_DIAGNOSTICS,'desktop/tests/native/terminal-current-runtime-lock-current-sources.json','desktop/package.json','desktop/package-lock.json','desktop/tests/fixtures/terminal-filesystem-evidence.cs','desktop/tests/fixtures/terminal-session-process-observer.cs'];
  p.section('current-input-roster','const SCOPE=', 'const TARGETS=',`const SCOPE='CURRENT_RUNTIME_LOCK_BUILD_SOURCE_PINS';\nconst REQUIRED=${JSON.stringify(required)};\nconst PAIR_DIAGNOSTICS=${JSON.stringify(CURRENT_LOCK_DIAGNOSTICS)};\nconst FIXED=new Map();\n`);
