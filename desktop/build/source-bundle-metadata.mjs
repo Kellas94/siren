@@ -1,13 +1,16 @@
+import {createDiagramMetadataContract} from '../src/documents/diagram-metadata.mjs';
+
 // Installed inside the hash-pinned frozen validator's lexical scope. Native
 // preflight owns manifest/reference/byte verification; this gate owns metadata
 // semantics. It never returns the detached placeholder/sanitizer projection.
-function installBundleMetadata(){
+function installBundleMetadata(createMetadataContract){
  const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
  const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
  const clone=value=>JSON.parse(JSON.stringify(value));
  const refuse=path=>{throw Error('Source bundle metadata refused: '+path);};
  const put=(target,key,value)=>Object.defineProperty(target,key,{value,enumerable:true,writable:true,configurable:true});
  const words=value=>value.split(' ').filter(Boolean);
+ const nativeMetadata=createMetadataContract();
  function pick(value,keys,children={}){
   if(!object(value))refuse('record');const result={};
   for(const key of words(keys))if(own(value,key))put(result,key,children[key]?children[key](value[key]):clone(value[key]));
@@ -132,8 +135,25 @@ function installBundleMetadata(){
   }
   unchanged(projected,sanitizePresentation(clone(projected)),'presentation');
  }
+ function nodeMetadata(value){
+  if(!object(value)||Object.keys(value).length>500||!nativeMetadata.validate(value,value))refuse('diagram.nodeMetadata');
+  for(const [id,node]of Object.entries(value)){
+   if(id.length>50000||!/^[A-Za-z_][\w.-]*$/.test(id)||!object(node))refuse('diagram.nodeMetadata node');
+   // Native annotations retain unknown and managed-invalid imported fields as
+   // immutable data. Only editable strings enter the classic validation view;
+   // the original node and all nested source pointers are returned untouched.
+   const projected={};for(const [key,entry]of Object.entries(node))if(nativeMetadata.canEditField(key,entry)&&entry!=='')put(projected,key,entry);
+   if(Object.keys(projected).length){
+    // Never pass an authored node ID to the classic sanitizer's plain-object
+    // setter. A fixed inert ID also preserves nodes named __proto__ as data.
+    const clean=sanitizeNodeMetadata({A:clone(projected)});
+    unchanged(projected,clean.A,'diagram.nodeMetadata.'+id);
+   }
+  }
+ }
  function styles(diagram){
   for(const [key,get]of Object.entries(diagramValidators))if(own(diagram,key)){
+   if(key==='nodeMetadata'){nodeMetadata(diagram[key]);continue;}
    const candidate=clone(diagram[key]),clean=get()(clone(candidate));unchanged(candidate,clean,'diagram.'+key);
   }
   if(own(diagram,'presentation'))presentation(diagram.presentation);
@@ -195,4 +215,4 @@ function installBundleMetadata(){
   }finally{state=previous;busy=false;}
  };
 }
-export const bundleMetadataHelper=`(${installBundleMetadata.toString()})();`;
+export const bundleMetadataHelper=`(${installBundleMetadata.toString()})(${createDiagramMetadataContract.toString()});`;
