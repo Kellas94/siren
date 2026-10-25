@@ -69,7 +69,7 @@ def runtime_inputs(args,out,environment):
     put(out/'node-version-stdout.bin',node_version.stdout);put(out/'node-version-stderr.bin',node_version.stderr)
     need(node_version.returncode==0 and node_version.stdout.strip()==b'v24.16.0','PINNED_NODE_24_16_0_REQUIRED')
     electron=args.app/'node_modules/electron/dist/electron.exe'
-    need(read(args.app/'node_modules/electron/package.json')['version']=='44.5.1','PINNED_ELECTRON_44_5_1_REQUIRED')
+    need(read(args.app/'node_modules/electron/package.json')['version']=='44.9.3','PINNED_ELECTRON_44_9_3_REQUIRED')
     python_root=Path(sys.base_prefix);safe(python_root)
     need(Path(sys.prefix)==python_root,'VIRTUAL_ENVIRONMENT_REFUSED')
     # No-site isolated sys.path can name an absent python312.zip; retain that absence.
