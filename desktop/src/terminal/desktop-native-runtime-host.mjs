@@ -16,7 +16,7 @@ function method(object,key){
 }
 export function startDesktopNativeUtilityHost(value,timing={setInterval,clearInterval},...extra){
  const r=data(value,['type','platform','arch','pid','electron','modules','napi','parentPort','exit']),t=data(timing,['setInterval','clearInterval']);
- if(extra.length||!r||r.type!=='utility'||r.platform!=='win32'||r.arch!=='x64'||r.electron!=='44.5.1'||r.modules!=='149'||r.napi!=='10'||!Number.isInteger(r.pid)||r.pid<=0||r.pid>0xffffffff||typeof r.exit!=='function'||types.isProxy(r.exit)||!t||Object.values(t).some(fn=>typeof fn!=='function'||types.isProxy(fn)))throw Error('UTILITY_HOST_CONTEXT_REFUSED');
+ if(extra.length||!r||r.type!=='utility'||r.platform!=='win32'||r.arch!=='x64'||r.electron!=='44.9.3'||r.modules!=='149'||r.napi!=='10'||!Number.isInteger(r.pid)||r.pid<=0||r.pid>0xffffffff||typeof r.exit!=='function'||types.isProxy(r.exit)||!t||Object.values(t).some(fn=>typeof fn!=='function'||types.isProxy(fn)))throw Error('UTILITY_HOST_CONTEXT_REFUSED');
  const on=method(r.parentPort,'on'),remove=method(r.parentPort,'removeListener'),send=method(r.parentPort,'postMessage');
  let retired=false,interval=null;
  function stop(code=0){if(retired)return;retired=true;try{remove('message',receive);}finally{if(interval!==null)t.clearInterval(interval);apply(r.exit,undefined,[code]);}}

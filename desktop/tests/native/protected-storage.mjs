@@ -20,5 +20,5 @@ const sentinel = output.split(/\r?\n/).filter(line => line.startsWith('{')).map(
 assert.ok(sentinel, 'Empty successful GUI launch is not a completed test');
 assert.equal(sentinel.evidence,evidence,'Only this actual owned probe may publish evidence');
 const result = JSON.parse(await readFile(join(sentinel.evidence, 'result.json')));
-assert.equal(result.completed, true); assert.equal(result.electron, '44.5.1'); assert.ok(result.ciphertextBytes > 0);
+assert.equal(result.completed, true); assert.equal(result.electron, '44.9.3'); assert.ok(result.ciphertextBytes > 0);
 console.log(JSON.stringify(sentinel));

@@ -40,7 +40,7 @@ async function main(config){
   const h=utilityProcess.fork(config.hostEntry,[JSON.stringify({fixture:config.fixture,directory})],{serviceName:'SIREN fixed main-loss '+label,stdio:'pipe'});hosts.push(h);h.stdout?.on('data',()=>{});h.stderr?.on('data',()=>{});
   const state={};h.on('message',m=>{state[m.kind]=m;});h.on('exit',code=>{state.exited=code;});
   await wait(()=>state.hello);assert.equal(state.hello.pid,h.pid);assert.notEqual(h.pid,process.pid);
-  for(const r of [process.versions,state.hello.versions]){assert.equal(r.electron,'44.5.1');assert.equal(r.node,'24.21.0');assert.equal(r.modules,'149');assert.equal(r.napi,'10');}assert.equal(state.hello.arch,'x64');assert.equal(process.arch,'x64');
+  for(const r of [process.versions,state.hello.versions]){assert.equal(r.electron,'44.9.3');assert.equal(r.node,'24.22.0');assert.equal(r.modules,'149');assert.equal(r.napi,'10');}assert.equal(state.hello.arch,'x64');assert.equal(process.arch,'x64');
   let owner;if(native){owner=native.start(h.pid,config.executable,mark);owners.push(owner);const initial=native.snapshot(owner);assert.equal(initial.root.pid,h.pid);assert.equal(initial.active,1);assert.equal(initial.killOnClose,true);assert.equal(initial.breakaway,false);assert.equal(initial.inheritable,false);}
   // In the intentional negative ONLY this inner guard is omitted. The external
   // observer's non-breakaway safety Job already contains main and every child.
@@ -78,7 +78,7 @@ receipt.outerExitCode=exitCode;await writeFile(join(output,'observer.log'),stdou
 try{receipt.observer=JSON.parse(await readFile(join(output,'observer-result.json'),'utf8'));receipt.observer.outerExitObserved=receipt.outerExitObserved;receipt.observer.outerExitCode=exitCode;}
 catch(error){receipt.readbackError=error.message;}
 receipt.inputsUnchanged=true;for(const input of receipt.inputs){try{if(hash(await readFile(input.path))!==input.sha256)receipt.inputsUnchanged=false;}catch{receipt.inputsUnchanged=false;}}
-const runtime=r=>r?.versions?.electron==='44.5.1'&&r.versions.node==='24.21.0'&&r.versions.modules==='149'&&r.versions.napi==='10'&&r.arch==='x64';
+const runtime=r=>r?.versions?.electron==='44.9.3'&&r.versions.node==='24.22.0'&&r.versions.modules==='149'&&r.versions.napi==='10'&&r.arch==='x64';
 receipt.runtimeVerified=runtime(receipt.observer?.ready?.runtime)&&receipt.observer.ready.groups.every(g=>runtime(g.hostRuntime));
 receipt.qualified=!receipt.outerDeadlineExceeded&&!receipt.outputTruncated&&receipt.inputsUnchanged&&receipt.runtimeVerified&&(negative?isExpectedMainOwnerLossRefusal(receipt.observer):isMainOwnerLossComplete(receipt.observer));
 receipt.status=receipt.qualified?(negative?'EXPECTED_MAIN_OWNER_LOSS_REFUSAL_VERIFIED':'MAIN_OWNER_LOSS_PASSED'):'FAILED';

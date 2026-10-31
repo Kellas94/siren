@@ -7,7 +7,7 @@ if((& $taskNode --version) -ne 'v24.16.0' -or $LASTEXITCODE -ne 0){throw 'EXACT_
 $taskOut=Join-Path $taskRoot ('desktop/evidence/terminal-electron-roster/'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
 New-Item -ItemType Directory -Path $taskOut -ErrorAction Stop | Out-Null
 function Task-Pin([string]$TaskPath){$taskFile=Get-Item -LiteralPath $TaskPath;return [ordered]@{path=$taskFile.FullName;bytes=$taskFile.Length;sha256=(Get-FileHash -LiteralPath $TaskPath -Algorithm SHA256).Hash.ToLowerInvariant()}}
-$taskReceipt=[ordered]@{scope='ELECTRON_TARGET_BUILD_ONLY';status='STARTED_NOT_QUALIFIED';nativeExecutionAdmitted=$false;commit=$env:GITHUB_SHA;run=$env:GITHUB_RUN_ID;attempt=$env:GITHUB_RUN_ATTEMPT;image=$env:ImageVersion;target='44.5.1';arch='x64';napi=10;delayLoadHook=$false;inputs=@();trackedInputs=@();startedUtc=[DateTime]::UtcNow.ToString('o')}
+$taskReceipt=[ordered]@{scope='ELECTRON_TARGET_BUILD_ONLY';status='STARTED_NOT_QUALIFIED';nativeExecutionAdmitted=$false;commit=$env:GITHUB_SHA;run=$env:GITHUB_RUN_ID;attempt=$env:GITHUB_RUN_ATTEMPT;image=$env:ImageVersion;target='44.9.3';arch='x64';napi=10;delayLoadHook=$false;inputs=@();trackedInputs=@();startedUtc=[DateTime]::UtcNow.ToString('o')}
 try{
  $taskCandidate=Join-Path $taskOut 'candidate';$taskDeps=Join-Path $taskOut 'deps'
  New-Item -ItemType Directory -Path $taskCandidate,$taskDeps | Out-Null
@@ -18,7 +18,7 @@ try{
  $taskNpm=Join-Path (Split-Path -Parent $taskNode) 'node_modules/npm/bin/npm-cli.js'
  & $taskNode $taskNpm --prefix $taskDeps ci --ignore-scripts --no-audit --no-fund 2>&1 | Tee-Object -FilePath (Join-Path $taskOut 'npm-ci.txt');if($LASTEXITCODE -ne 0){throw 'LOCKED_DEPENDENCY_INSTALL_FAILED'}
  $taskElectronPackage=Join-Path $taskDeps 'node_modules/electron/package.json'
- if((Get-Content -LiteralPath $taskElectronPackage -Raw | ConvertFrom-Json).version -ne '44.5.1'){throw 'EXACT_ELECTRON_REQUIRED'}
+ if((Get-Content -LiteralPath $taskElectronPackage -Raw | ConvertFrom-Json).version -ne '44.9.3'){throw 'EXACT_ELECTRON_REQUIRED'}
  $taskInstall=Join-Path $taskDeps 'node_modules/electron/install.js'
  & $taskNode $taskInstall 2>&1 | Tee-Object -FilePath (Join-Path $taskOut 'electron-install.txt');if($LASTEXITCODE -ne 0){throw 'ELECTRON_DISTRIBUTION_INSTALL_FAILED'}
  $taskReceipt.executable=Task-Pin (Join-Path $taskDeps 'node_modules/electron/dist/electron.exe')
@@ -34,7 +34,7 @@ try{
  foreach($taskPath in @($taskNode,$taskNpm,$taskInstall,$taskElectronPackage,$taskHook,$taskLocator,$taskMsbuild,$taskPython,$PSCommandPath)){$taskReceipt.inputs+=,(Task-Pin $taskPath)}
  Push-Location -LiteralPath $taskCandidate
  try{
-  & $taskNode (Join-Path $taskGyp 'bin/node-gyp.js') configure --target=44.5.1 --arch=x64 --dist-url=https://electronjs.org/headers ('--devdir='+(Join-Path $taskOut 'headers')) --msvs_version=2026 ('--python='+$taskPython) --verbose 2>&1 | Tee-Object -FilePath (Join-Path $taskOut 'configure.txt');if($LASTEXITCODE -ne 0){throw 'ELECTRON_CONFIGURATION_FAILED'}
+  & $taskNode (Join-Path $taskGyp 'bin/node-gyp.js') configure --target=44.9.3 --arch=x64 --dist-url=https://electronjs.org/headers ('--devdir='+(Join-Path $taskOut 'headers')) --msvs_version=2026 ('--python='+$taskPython) --verbose 2>&1 | Tee-Object -FilePath (Join-Path $taskOut 'configure.txt');if($LASTEXITCODE -ne 0){throw 'ELECTRON_CONFIGURATION_FAILED'}
   & $taskMsbuild 'build/siren_terminal_host_roster_candidate.vcxproj' ('/p:SolutionDir='+(Join-Path $taskCandidate 'build')+'/') /p:Configuration=Release /p:Platform=x64 ('/p:VCToolsVersion='+$taskMsvc) /p:WindowsTargetPlatformVersion=10.0.26100.0 /p:TrackFileAccess=true /verbosity:diagnostic 2>&1 | Tee-Object -FilePath (Join-Path $taskOut 'compile.txt');if($LASTEXITCODE -ne 0){throw 'ELECTRON_TARGET_COMPILE_FAILED'}
  }finally{Pop-Location}
  $taskProject=Get-Content -LiteralPath (Join-Path $taskCandidate 'build/siren_terminal_host_roster_candidate.vcxproj') -Raw

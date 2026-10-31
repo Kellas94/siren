@@ -34,7 +34,9 @@ test('each result is bound to original or module-qualified fixture identity',()=
 test('qualified worker changes only its fixed fixture import from immutable V1 worker',async()=>{
  const original=await readFile(new URL('./native/terminal-cmdlet-runtime-worker.mjs',import.meta.url),'utf8');
  const qualified=await readFile(new URL('./native/terminal-discovery-worker.mjs',import.meta.url),'utf8');
- assert.equal(createHash('sha256').update(original).digest('hex'),'26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33');
+ assert.equal(original.split("'44.9.3'").length-1,2,'Exactly creator and utility runtime literals migrate');
+ const historical=original.replaceAll("'44.9.3'","'44.5.1'");
+ assert.equal(createHash('sha256').update(historical).digest('hex'),'26da5371f6af6e53aade79ebc340d7687596a1b5bbd427dc13cc35caa7f2ab33','Runtime inverse must restore immutable V1 exactly');
  assert.equal(qualified,original.replace("import {createSingleCmdletFixture} from './terminal-cmdlet-fixture.mjs';","import {createQualifiedSingleCmdletFixture as createSingleCmdletFixture} from './terminal-discovery-fixture.mjs';"));
  new SourceTextModule(qualified);new SourceTextModule(source);
 });

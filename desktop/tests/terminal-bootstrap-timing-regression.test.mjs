@@ -1,6 +1,6 @@
 // Owner regression against immutable failed CI; no native execution or mutation.
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {isSessionCompositionObserved} from './native/terminal-session-composition-verdict.mjs';
+import {isSessionCompositionObserved} from './fixtures/terminal-peer-terminal-session-composition-verdict-baseline.mjs';
 // Exact original failed native record, retained as a deterministic test fixture.
 const bytes=await readFile(new URL('./fixtures/terminal-bootstrap-fractional-ci37818992385.json',import.meta.url));
 const {createHash}=await import('node:crypto');

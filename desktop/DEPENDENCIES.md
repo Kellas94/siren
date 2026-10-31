@@ -1,4 +1,26 @@
-# Development dependency decisions — 2 October 2026
+# Development dependency decisions
+
+## Current runtime update — 25 October 2026
+
+The current lock selects Electron 44.9.3 within the 44 series. GHSA-jr5w-w6x2-84p9
+lists 44.9.1 as the first fixed 44 release. This corrective update also changes the
+embedded Node/Chromium versions; ABI/N-API equality alone is not compatibility proof.
+The CI compatibility observation requires Electron 44.9.3, Node 24.22.0,
+Chromium 152.0.7977.167, V8 15.2.124.43-electron.0, ABI 149 and N-API 10 on Windows/x64.
+Existing native prerequisites still compile and exercise their declared boundaries;
+this observation does not qualify complete Terminal or installed application behavior.
+
+The npm undici 7.30.1 fix and its optional/development classification are retained.
+Node's embedded undici has separate provenance. The Electron install remains explicit
+after npm ci, and the dated decisions below remain historical.
+
+Sources: [advisory](https://github.com/electron/electron/security/advisories/GHSA-jr5w-w6x2-84p9),
+[44.9.3 release](https://releases.electronjs.org/release/v44.9.3),
+[npm manifest](https://github.com/electron/electron/blob/v44.9.3/npm/package.json),
+[current supplemental notices](licenses/README.md).
+
+## Historical decisions — 2 October 2026
+
 
 Electron 44.5.1's installed npm manifest exposes `install-electron` and has no
 automatic install lifecycle script. Fresh setups run `npm run runtime:install`

@@ -26,7 +26,7 @@ export function isAggregateStreamObserved(r,age){try{
 export function isAggregateFlowObserved(value){try{
  const {native:r,observer:o,ready,finish}=value;
  if(r.admitted!==false||o.admitted!==false||r.status!=='AGGREGATE_FLOW_OBSERVED_NOT_ADMITTED'||o.status!=='AGGREGATE_FLOW_SAFETY_OBSERVED_NOT_ADMITTED'||r.error||o.error||r.cleanupError||r.hostCleanupError||o.cleanupError||!equal(ready,o.ready)||!equal(finish,o.finish))return false;
- if(r.runtime.electron!=='44.5.1'||r.runtime.modules!=='149'||r.runtime.arch!=='x64'||r.runtime.platform!=='win32'||!n(r.ageMs)||r.ageMs>=100000||!n(o.ageMs)||o.ageMs>=100000||o.cleanupVerified!==true||o.safetyOpenAtObservation!==true||o.activeBeforeSafetyCleanup!==0||r.hostClosed!==true)return false;
+ if(r.runtime.electron!=='44.9.3'||r.runtime.modules!=='149'||r.runtime.arch!=='x64'||r.runtime.platform!=='win32'||!n(r.ageMs)||r.ageMs>=100000||!n(o.ageMs)||o.ageMs>=100000||o.cleanupVerified!==true||o.safetyOpenAtObservation!==true||o.activeBeforeSafetyCleanup!==0||r.hostClosed!==true)return false;
  if(!Array.isArray(r.slots)||r.slots.length!==8||ready.slots.length!==8||finish.slots.length!==8||!equal(ready.host,r.hostBefore)||ready.mainPid!==finish.mainPid||ready.mainPid!==o.main.pid||o.main.alive!==true)return false;
  if(r.ninth.code!=='SESSION_CAPACITY_REFUSED'||r.ninth.bootstrapPresent!==false||r.lockSynchronous!==true||r.oldAckRefused!==8||r.blockedReadTransportCalls!==0)return false;
  const all=new Set();let frequency,started=0,finished=Number.MAX_SAFE_INTEGER;

@@ -17,7 +17,7 @@ export async function startRuntimeProbe(config){
  assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.GITHUB_REPOSITORY,'Kellas94/siren');
  assert.equal(process.env.GITHUB_REF,'refs/heads/probe/terminal-session-20261010');
  assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');
- assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
+ assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');
  assert.equal(process.execPath,electronExecutable);assert.equal(app.isReady(),true);
  const result={scope:'BOUNDED_ACTUAL_ELECTRON_SESSION_MAIN_DISPATCH',status:'STARTED',run,commit,
   nativeExecutionAdmitted:false,productActivation:false,fullMatrixQualified:false,rendererInputQualified:false,packagedQualified:false,
@@ -92,7 +92,7 @@ export async function startRuntimeProbe(config){
   hostExit=new Promise((resolve,reject)=>{host.once('exit',code=>resolve(code));host.once('error',reject);});hostExit.catch(()=>{});
   let hostOut='',hostErr='';host.stdout?.on('data',b=>hostOut+=b);host.stderr?.on('data',b=>hostErr+=b);
   const ready=await bounded(new Promise(resolve=>host.once('message',resolve)),10000,'UTILITY_READY');
-  assert.deepEqual(ready,{ready:true,electron:'44.5.1',modules:'149',napi:'10'});
+  assert.deepEqual(ready,{ready:true,electron:'44.9.3',modules:'149',napi:'10'});
   const system=await helper('system'),systemRoot=dirname(system);
   graph=createTerminalShutdownGraph({projectId:'project1',registry,native:facade,hostProcessIdentity:{pid:host.pid,image:process.execPath,since:mark},
    ownership:{isCurrent:()=>true,onUnavailable:value=>observeOwnership('unavailable',value),onVerified:value=>observeOwnership('verified',value)},

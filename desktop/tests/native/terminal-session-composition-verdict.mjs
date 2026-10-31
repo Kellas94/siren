@@ -4,7 +4,7 @@ const int=n=>Number.isSafeInteger(n)&&n>=0;
 const identity=p=>p&&int(p.pid)&&p.pid>0&&typeof p.image==='string'&&p.image.length>0&&/^[1-9][0-9]{0,19}$/.test(p.createdFileTime)&&typeof p.alive==='boolean'&&int(p.exitCode)&&p.exitCode<=0xffffffff&&(p.alive?p.exitCode===259:true);
 const same=(a,b)=>identity(a)&&identity(b)&&a.pid===b.pid&&a.image===b.image&&a.createdFileTime===b.createdFileTime;
 const observed=(s,p)=>identity(p)&&s.held.some(q=>same(p,q)&&p.alive===q.alive&&p.exitCode===q.exitCode);
-const runtime=r=>r?.electron==='44.5.1'&&r.node==='24.21.0'&&r.modules==='149'&&r.napi==='10'&&r.arch==='x64'&&r.platform==='win32';
+const runtime=r=>r?.electron==='44.9.3'&&r.node==='24.22.0'&&r.modules==='149'&&r.napi==='10'&&r.arch==='x64'&&r.platform==='win32';
 const guards=s=>s?.killOnClose===true&&s.breakaway===false&&s.inheritable===false;
 const rows=s=>Array.isArray(s?.held)&&s.held.length>=5&&s.held.length<=64&&s.held.every(identity)&&new Set(s.held.map(p=>p.pid)).size===s.held.length;
 const sessionRows=s=>rows(s)&&observed(s,s.root)&&observed(s,s.shell);

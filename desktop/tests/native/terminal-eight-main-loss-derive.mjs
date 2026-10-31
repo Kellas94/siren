@@ -38,7 +38,7 @@ function relocate(source,desktop){
  return s;
 }
 export function deriveEightMainLossRunner({runner,desktop}){
- assert.equal(sha(runner),'3cdecfae06e0292bc772c686b6a84f73fa00a5c8cf9fc0b11b45c70c5a60780c','EIGHT_MAIN_LOSS_RUNNER_DRIFT');
+ assert.equal(sha(runner),'5b1fcb6eca49d98ec976d3b07192c4b9ef6f9bab404bf9ba83e656b68b65ffd5','EIGHT_MAIN_LOSS_RUNNER_DRIFT');
  let s=relocate(runner,desktop);
  s=once(s,'evidence/terminal-composition-eight','evidence/terminal-eight-main-loss');
  s=once(s,'{mainPid:process.pid,held:hostSnapshot.held}','{mainPid:process.pid,held:hostSnapshot.held,hostSnapshot,groups:owned,capacity:result.capacity,runtime:result.runtime,negative:config.negative,fixtureAgeMs:now()-age}');
@@ -55,7 +55,7 @@ export function deriveEightMainLossRunner({runner,desktop}){
  return s;
 }
 export function deriveEightMainLossBuilder({builder,desktop}){
- assert.equal(sha(builder),'240dfa6f8564f9e6d03d6a2bd1250f02c4bdacf03c0c6eda04ce3d4d5fb4a285','EIGHT_MAIN_LOSS_BUILDER_DRIFT');
+ assert.equal(sha(builder),'f9fe910d7ba89ff0c46f414390bc87bd5c798a2ed2b0f097a79d84099d89fece','EIGHT_MAIN_LOSS_BUILDER_DRIFT');
  let s=relocate(builder,desktop);
  s=once(s,'const names=[','const names=[fileURLToPath(import.meta.url).slice(desktop.length),'+inputs);
  s=s.replaceAll('terminal_composition_eight','terminal_eight_main_loss');

@@ -10,7 +10,7 @@ assert.equal(process.argv.length,3);const directory=process.argv[2];assert.equal
 try {
 const configBytes=await readFile(join(directory,'electron-config.json'));assert.ok(configBytes.length<65536);
 const config=JSON.parse(configBytes);for(const p of [config.fixture,config.packagePath])assert.equal(isAbsolute(p),true);
-assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.env.ELECTRON_RUN_AS_NODE,'1');
+assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.env.ELECTRON_RUN_AS_NODE,'1');
 const windowsRelease=release();requireQualifiedConptyPlatform({platform:process.platform,arch:process.arch,windowsVersion:windowsRelease});
 const require=createRequire(config.packagePath),manifest=require('node-pty/package.json');assert.equal(manifest.version,'1.1.0');
 const pty=require('node-pty'),env=Object.fromEntries(Object.entries(process.env).filter(([k])=>!['NODE_OPTIONS','NODE_PATH','ELECTRON_RUN_AS_NODE','ELECTRON_NO_ASAR','ELECTRON_EXTRA_LAUNCH_ARGS'].includes(k.toUpperCase())));

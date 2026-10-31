@@ -61,7 +61,7 @@ try{
   for(const name of ['package.json','LICENSE','src/win_delay_load_hook.cc','bin/node-gyp.js']){
     const bytes=await readFile(join(gypRoot,name));receipt.nodeGyp.inputs.push({name,bytes:bytes.length,sha256:hash(bytes)});
   }
-  await phase('configure',process.execPath,[join(gypRoot,'bin/node-gyp.js'),'configure','--target=44.5.1','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(output,'headers'),'--msvs_version=2026','--verbose'],candidate);
+  await phase('configure',process.execPath,[join(gypRoot,'bin/node-gyp.js'),'configure','--target=44.9.3','--arch=x64','--dist-url=https://electronjs.org/headers','--devdir='+join(output,'headers'),'--msvs_version=2026','--verbose'],candidate);
   await phase('compile',msbuild,[join(candidate,'build/binding.sln'),'/p:Configuration=Release','/p:Platform=x64','/p:VCToolsVersion='+version,'/p:WindowsTargetPlatformVersion=10.0.26100.0','/verbosity:diagnostic'],candidate);
   const binary=join(candidate,'build/Release/terminal_ownership_probe.node'),bytes=await readFile(binary);
   assert.equal(bytes.subarray(0,2).toString(),'MZ');assert.equal(bytes.readUInt16LE(bytes.readUInt32LE(60)+4),0x8664);

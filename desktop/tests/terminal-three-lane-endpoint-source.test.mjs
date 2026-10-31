@@ -112,7 +112,7 @@ function candidate(){assert.equal(typeof api.deriveThreeLaneEndpointOwnership,'f
 const section=(s,start,end)=>{const a=s.indexOf(start),b=s.indexOf(end,a+start.length);assert.ok(a>=0&&b>a,'Expected unique source section');return s.slice(a,b);};
 const tags=s=>[...s.matchAll(/const napi_type_tag \w+=\{([^}]+)\};/g)].map(m=>m[1]);
 
-const historicalBaselinePath=path=>path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':path==='desktop/package-lock.json'?'./fixtures/terminal-peer-package-lock-baseline.json':path==='desktop/tests/fixtures/terminal-job-list.cs'?'./fixtures/terminal-peer-job-list-baseline.cs':path==='desktop/tests/native/terminal-session-composition-derive.mjs'?'./fixtures/terminal-peer-session-composition-baseline.mjs':'../../'+path;
+const historicalBaselinePath=path=>path==='desktop/tests/native/terminal-minimal-env.test.mjs'?'./fixtures/terminal-peer-terminal-minimal-env.test-baseline.mjs':path==='desktop/tests/native/terminal-electron-broker-worker.mjs'?'./fixtures/terminal-peer-terminal-electron-broker-worker-baseline.mjs':path==='desktop/tests/native/terminal-session-composition.mjs'?'./fixtures/terminal-peer-terminal-session-composition-baseline.mjs':path==='desktop/tests/native/terminal-session-composition-verdict.mjs'?'./fixtures/terminal-peer-terminal-session-composition-verdict-baseline.mjs':path==='desktop/tests/native/terminal-session-composition-test-fixture.mjs'?'./fixtures/terminal-peer-terminal-session-composition-test-fixture-baseline.mjs':path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':path==='desktop/package-lock.json'?'./fixtures/terminal-peer-package-lock-baseline.json':path==='desktop/tests/fixtures/terminal-job-list.cs'?'./fixtures/terminal-peer-job-list-baseline.cs':path==='desktop/tests/native/terminal-session-composition-derive.mjs'?'./fixtures/terminal-peer-session-composition-baseline.mjs':'../../'+path;
 function assertHistoricalRow(row,bytes){assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
 
 async function unchanged94(){
@@ -238,7 +238,9 @@ test('all 94 frozen peer inputs are unchanged after repeated successful and refu
 function assertCurrentRunnerCompatibility(current,historical){
  const {scripts:currentScripts,...currentFields}=current;
  const {scripts:historicalScripts,...historicalFields}=historical;
- assert.deepEqual(currentFields,historicalFields,'Non-script package fields must retain their historical values');
+ assert.equal(currentFields.devDependencies.electron,'44.9.3','Current corrected runtime is exact');
+ const expectedFields=structuredClone(historicalFields);expectedFields.devDependencies.electron='44.9.3';
+ assert.deepEqual(currentFields,expectedFields,'Only the exact corrected Electron dependency may differ from historical non-script fields');
  const {test:currentTest,verify:currentVerify,...currentOtherScripts}=currentScripts;
  const {test:historicalTest,verify:historicalVerify,...historicalOtherScripts}=historicalScripts;
  assert.deepEqual(currentOtherScripts,historicalOtherScripts,'Only test and verify scripts may differ');
@@ -249,7 +251,7 @@ function assertCurrentRunnerCompatibility(current,historical){
 
 // Current runner compatibility is a separate source-only assertion. It does not
 // repin the historical peer baseline or admit the current native application.
-test('current package preserves historical fields except the two required runner scripts',async()=>{
+test('current package preserves historical fields except corrected Electron and the two required runner scripts',async()=>{
  const historical=JSON.parse(await read('./fixtures/terminal-peer-package-baseline.json'));
  const current=JSON.parse(await read('../package.json'));
  assertCurrentRunnerCompatibility(current,historical);
@@ -265,7 +267,7 @@ test('runner compatibility refuses dependency, engine, other-script and command 
 
 
 test('each historical Terminal baseline row is exact data and refuses independent byte corruption',async t=>{
- for(const logical of ['desktop/tests/native/terminal-session-composition-derive.mjs','desktop/tests/fixtures/terminal-job-list.cs','desktop/package-lock.json'])await t.test(logical,async()=>{
+ for(const logical of ['desktop/tests/native/terminal-session-composition-derive.mjs','desktop/tests/fixtures/terminal-job-list.cs','desktop/package-lock.json','desktop/tests/native/terminal-electron-broker-worker.mjs','desktop/tests/native/terminal-session-composition.mjs','desktop/tests/native/terminal-session-composition-verdict.mjs','desktop/tests/native/terminal-session-composition-test-fixture.mjs','desktop/tests/native/terminal-minimal-env.test.mjs'])await t.test(logical,async()=>{
   const row=baseline.rows.find(value=>value.path===logical);assert.ok(row);
   const historical=await readFile(new URL(historicalBaselinePath(logical),import.meta.url));assertHistoricalRow(row,historical);
   const appended=Buffer.concat([historical,Buffer.from('\n')]),changed=Buffer.from(historical);changed[0]^=1;

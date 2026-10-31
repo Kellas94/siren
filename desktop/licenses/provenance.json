@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "electronVersion": "44.5.1",
-  "chromiumNoticeSha256": "7b328b8c7463ac9bfc7dc648c751533517c8441a0b5b21047d6c0b2620e60d70",
+  "electronVersion": "44.9.3",
+  "chromiumNoticeSha256": "e6e6b1f9cb0f32235412be113de7716333e88121f9159a0ea0ff3be652021af7",
   "notices": [
     {
       "name": "better_any",

@@ -17,7 +17,7 @@ async function exercise(config,role){
  const digest=async p=>createHash('sha256').update(await readFile(p)).digest('hex');
  const result={role,pid:process.pid,runtime:{...process.versions,arch:process.arch,platform:process.platform,electronRunAsNode:!!process.env.ELECTRON_RUN_AS_NODE,processType:process.type},status:'FAILED'};
  try{
-  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');assert.equal(process.arch,'x64');assert.equal(process.platform,'win32');assert.equal(result.runtime.electronRunAsNode,false);
+  assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');assert.equal(process.arch,'x64');assert.equal(process.platform,'win32');assert.equal(result.runtime.electronRunAsNode,false);
   result.addonSha256=await digest(config.addon);result.executableSha256=await digest(process.execPath);assert.equal(result.addonSha256,config.addonSha256);assert.equal(result.executableSha256,config.executableSha256);
   const native=createRequire(import.meta.url)(config.addon);
   const names=['createPeerSession','createPeerListeners','acceptPeerLane','connectPeerLane','peerRead','peerWrite','assertPeerCurrent','closePeerEndpoint','closePeerListeners','peerSnapshot','consumePeerBootstrap','closePeerWitness','captureHostShutdownPeerRoster','captureHostShutdownExpectation','stopAndCloseHostAsync','stopAndCloseSessionAsync','createBootstrappedSession','createSession','watchRoot','captureSession','snapshotSession','stopSession','closeSession','captureCompositionHost','mark','start','capture','snapshot','stop','close'];

@@ -21,6 +21,56 @@ s.save(R/'host-result.json',{'status':'DUMMY_HOST_COMPLETE','primaryError':None,
 '''
 
 class HostBoundaries(unittest.TestCase):
+    def runtime_case(self,version='44.9.3',*,node_version=b'v24.16.0\r\n',package=None):
+        from types import SimpleNamespace
+        app=self.root/'runtime-app';electron=app/'node_modules/electron'
+        (electron/'dist').mkdir(parents=True)
+        (electron/'package.json').write_text(json.dumps({'version':version}) if package is None else package,encoding='utf8')
+        (electron/'dist/electron.exe').write_bytes(b'INERT RUNTIME FIXTURE, NEVER EXECUTED')
+        node=self.root/'node.exe';node.write_bytes(b'INERT NODE FIXTURE, NEVER EXECUTED')
+        shell=self.root/'powershell.exe';shell.write_bytes(b'INERT POWERSHELL FIXTURE, NEVER EXECUTED')
+        conhost=self.root/'conhost.exe';conhost.write_bytes(b'INERT CONSOLE FIXTURE, NEVER EXECUTED')
+        out=self.root/'observed';out.mkdir()
+        args=SimpleNamespace(app=app,output=out,node=str(node),powershell=str(shell),conhost=str(conhost))
+        response=SimpleNamespace(returncode=0,stdout=node_version,stderr=b'')
+        closure={'files':[pin(sys.executable)],'scope':'controlled closure fixture; no native qualification'}
+        with patch.object(pipeline.subprocess,'run',return_value=response) as run,patch.object(pipeline,'python_runtime_snapshot',return_value=closure):
+            try:value=pipeline.runtime_inputs(args,out,{})
+            finally:
+                self.assertEqual(run.call_count,1)
+                self.assertEqual(run.call_args.args[0],[str(node),'--version'])
+                self.assertEqual(run.call_args.kwargs['timeout'],10)
+        return out,value
+    def test_current_electron_runtime_reaches_pinned_input_receipt(self):
+        out,(runtimes,rows)=self.runtime_case()
+        receipt=read(out/'runtime-inputs.json')
+        self.assertEqual(receipt['runtimes'],runtimes)
+        self.assertEqual(receipt['electron'],pin(self.root/'runtime-app/node_modules/electron/dist/electron.exe'))
+        self.assertEqual(len(receipt['electronClosure']['files']),1)
+        self.assertEqual(rows,[pin(sys.executable),*runtimes.values(),pin(self.root/'conhost.exe')])
+        self.assertEqual((out/'node-version-stdout.bin').read_bytes(),b'v24.16.0\r\n')
+        self.assertEqual((out/'node-version-stderr.bin').read_bytes(),b'')
+    def test_previous_electron_runtime_is_refused(self):
+        with self.assertRaisesRegex(ValueError,'PINNED_ELECTRON_44_9_3_REQUIRED'):self.runtime_case('44.5.1')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_other_corrective_electron_runtime_is_refused(self):
+        with self.assertRaisesRegex(ValueError,'PINNED_ELECTRON_44_9_3_REQUIRED'):self.runtime_case('44.9.1')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_other_major_electron_runtime_is_refused(self):
+        with self.assertRaisesRegex(ValueError,'PINNED_ELECTRON_44_9_3_REQUIRED'):self.runtime_case('45.0.0')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_node_version_cannot_substitute_for_electron_version(self):
+        with self.assertRaisesRegex(ValueError,'PINNED_ELECTRON_44_9_3_REQUIRED'):self.runtime_case('24.16.0')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_electron_version_cannot_substitute_for_external_node_version(self):
+        with self.assertRaisesRegex(ValueError,'PINNED_NODE_24_16_0_REQUIRED'):self.runtime_case(node_version=b'v24.22.0\n')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_missing_electron_version_cannot_publish_receipt(self):
+        with self.assertRaises(KeyError):self.runtime_case(package='{}')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
+    def test_duplicate_electron_version_cannot_publish_receipt(self):
+        with self.assertRaisesRegex(ValueError,'DUPLICATE_JSON_KEY'):self.runtime_case(package='{"version":"44.5.1","version":"44.9.3"}')
+        self.assertFalse((self.root/'observed/runtime-inputs.json').exists())
     def secondary_case(self,*,close_error=False,retention_error=False,early_error=False):
         from types import SimpleNamespace
         stage=self.stage();primary={'type':'ActorError','message':'CONTROL_ACTOR_PRIMARY'};secondary=[{'stage':'actor-check','message':'CONTROL_CHILD_SECONDARY'}]

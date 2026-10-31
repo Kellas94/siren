@@ -13,7 +13,7 @@ async function runShellFlowWorker(directory){
  const configBytes=await readFile(configFile);assert.ok(configBytes.length<=65536);const config=JSON.parse(configBytes);
  assert.deepEqual(Object.keys(config).sort(),['packagePath','shell']);assert.equal(isAbsolute(config.packagePath),true);
  const shell=join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');assert.equal(resolve(config.shell).toLowerCase(),resolve(shell).toLowerCase());
- assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.env.ELECTRON_RUN_AS_NODE,'1');
+ assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.env.ELECTRON_RUN_AS_NODE,'1');
  const windowsRelease=release();requireQualifiedConptyPlatform({platform:process.platform,arch:process.arch,windowsVersion:windowsRelease});
  const require=createRequire(config.packagePath),manifest=require('node-pty/package.json');assert.equal(manifest.version,'1.1.0');
  const pty=require('node-pty'),env=Object.fromEntries(Object.entries(process.env).filter(([k])=>!/^(NODE_|ELECTRON_)/i.test(k)));

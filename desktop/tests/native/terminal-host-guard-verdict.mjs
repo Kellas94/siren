@@ -1,5 +1,5 @@
 // Verdicts consume actual captured process handles/accounting; no PID-tree kill.
-const runtime=r=>r?.versions?.electron==='44.5.1'&&r.versions.node==='24.21.0'&&r.versions.modules==='149'&&r.versions.napi==='10'&&r.arch==='x64';
+const runtime=r=>r?.versions?.electron==='44.9.3'&&r.versions.node==='24.22.0'&&r.versions.modules==='149'&&r.versions.napi==='10'&&r.arch==='x64';
 const member=p=>Number.isInteger(p?.pid)&&p.pid>0&&typeof p.image==='string'&&p.image.length>0&&/^[1-9][0-9]+$/.test(p.createdFileTime)&&typeof p.alive==='boolean'&&Number.isInteger(p.exitCode);
 const flags=s=>s?.killOnClose===true&&s.breakaway===false&&s.inheritable===false;
 const identity=(a,b)=>member(a)&&member(b)&&a.pid===b.pid&&a.image===b.image&&a.createdFileTime===b.createdFileTime;

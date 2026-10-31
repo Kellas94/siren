@@ -71,7 +71,7 @@ async function main(config){
  }
  const watchdog=setTimeout(()=>app.exit(94),25000);
  try{
-  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.arch,'x64');
+  assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.arch,'x64');
   const mark=native.mark(),hello={};
   host=utilityProcess.fork(config.hostEntry,[],{serviceName:'SIREN test composition control',stdio:'pipe'});strong.host=host;host.stdout?.on('data',()=>{});host.stderr?.on('data',()=>{});host.on('message',m=>{hello[m.kind]=m;});
   await wait(()=>hello.hello);assert.equal(hello.hello.pid,host.pid);hostOwner=native.start(host.pid,config.electron,mark);strong.hostOwner=hostOwner;

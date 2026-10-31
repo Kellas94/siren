@@ -1,11 +1,11 @@
 # Pinned supplemental Chromium notice
 
-Electron 44.5.1's Windows x64 `LICENSES.chromium.html` contains only the
+Electron 44.9.3's Windows x64 `LICENSES.chromium.html` contains only the
 relative reference `../LICENCE-Apache` for `better_any`. Preserve that original
 runtime notice unchanged. Its SHA-256 is
-`7b328b8c7463ac9bfc7dc648c751533517c8441a0b5b21047d6c0b2620e60d70`.
+`e6e6b1f9cb0f32235412be113de7716333e88121f9159a0ea0ff3be652021af7`.
 
-Chromium 152.0.7977.130's [component metadata](https://github.com/chromium/chromium/blob/152.0.7977.130/third_party/rust/better_any/v0_2/README.chromium)
+Chromium 152.0.7977.167's [component metadata](https://github.com/chromium/chromium/blob/152.0.7977.167/third_party/rust/better_any/v0_2/README.chromium)
 identifies better_any 0.2.1 at revision
 `66802eb68397c7dbdaf3be9f5ab51e7506d238ed`. The metadata is preserved here.
 The [upstream license at that exact revision](https://github.com/rrevenantt/better_any/blob/66802eb68397c7dbdaf3be9f5ab51e7506d238ed/LICENCE-Apache)

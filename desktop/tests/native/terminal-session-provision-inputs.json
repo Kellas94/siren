@@ -39,12 +39,12 @@
     {
       "path": "desktop/package-lock.json",
       "bytes": 47469,
-      "sha256": "7e379ab07d403908da0e2b3f700fe9298d7dedd2a66208523054d9628d449ebb"
+      "sha256": "0b57c31b1ae2de077534d17a4ee940cda690882077d9e059dc82bcb35a3991d1"
     },
     {
       "path": "desktop/package.json",
       "bytes": 1197,
-      "sha256": "14b3b150198ba6eb8c4f704faf76de69f57f0dcfd4f21c6cf62c9b106e0dcca4"
+      "sha256": "34bc502ee9ebd2d2359e768a919b6215b8c98598ed4c7b12c6a99e9b3afaf4fd"
     },
     {
       "path": "desktop/runtime/terminal-provider/package-lock.json",
@@ -184,7 +184,7 @@
     {
       "path": "desktop/src/terminal/production-creator.mjs",
       "bytes": 17385,
-      "sha256": "ce39f27f03d463e05c866aad65f51545798cdbf902add06a4ee67b461e7240d0"
+      "sha256": "f5d3de1617d60b9d95e4b1d4c96bc677e2e327fe858e6a63c38ec3295473814e"
     },
     {
       "path": "desktop/src/terminal/production-gate-link.mjs",
@@ -344,7 +344,7 @@
     {
       "path": "desktop/tests/native/terminal-session-provision.mjs",
       "bytes": 11135,
-      "sha256": "5099c6f7e0efeebe61724d68549c952cd8056a1f55d763cece36fc42d008f912"
+      "sha256": "55e1d2e5c38859b7ceeeb02a915377ab28f81f42baf0406ae930806498d8fa60"
     }
   ],
   "nativeExecutionAdmitted": false

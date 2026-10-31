@@ -51,7 +51,7 @@ async function main(config){
  const owners=[],hosts=[];let native;
  const wait=async fn=>{const deadline=Date.now()+3000;for(;;){const value=fn();if(value)return value;if(Date.now()>deadline)throw Error('HOST_GUARD_WAIT_DEADLINE');await delay(10);}};
  try{
-  assert.equal(process.versions.electron,'44.5.1');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');assert.equal(process.arch,'x64');
+  assert.equal(process.versions.electron,'44.9.3');assert.equal(process.versions.modules,'149');assert.equal(process.versions.napi,'10');assert.equal(process.arch,'x64');
   native=createRequire(import.meta.url)(config.addon);
   async function start(label){
    const directory=join(config.output,label);await mkdir(directory);const mark=native.mark();

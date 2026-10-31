@@ -17,7 +17,7 @@ export function deriveShellFlowSources({host,fixture,extension,observerBase}){
  return {host:composed.host,fixture:deriveShellFlowLongFixture(fixture),observerBase:observer};
 }
 export function deriveShellFlowBuilder({builder,desktop}){
- assert.equal(sha(builder),'240dfa6f8564f9e6d03d6a2bd1250f02c4bdacf03c0c6eda04ce3d4d5fb4a285','SHELL_FLOW_BUILDER_DRIFT');
+ assert.equal(sha(builder),'f9fe910d7ba89ff0c46f414390bc87bd5c798a2ed2b0f097a79d84099d89fece','SHELL_FLOW_BUILDER_DRIFT');
  let s=once(builder,"new URL('../../',import.meta.url)",`new URL(${JSON.stringify(desktop.href)})`);
  s=once(s,"import {deriveEightComposition} from './terminal-composition-eight-derive.mjs';",`import {deriveShellFlowSources as deriveEightComposition} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-derive.mjs',desktop).href)};`);
  s=once(s,"import {isEightCompositionObserved} from './terminal-composition-eight-verdict.mjs';",`import {isShellFlowObserved} from ${JSON.stringify(new URL('tests/native/terminal-shell-flow-verdict.mjs',desktop).href)};`);

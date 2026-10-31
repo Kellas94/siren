@@ -27,7 +27,7 @@ test('new workflow has a distinct push branch and cannot repeat historical workf
  assert.match(candidate,/if: always\(\)/);assert.match(candidate,/persist-credentials: false/);assert.doesNotMatch(candidate,/npm run start|npm test/);
 });
 test('generated builder/runner/workflow preserve pinned parents and implement explicit new env observation',async()=>{
- assert.equal(typeof derive.deriveMinimalEnvironmentCi,'function');const inputs={builder:await read('desktop/tests/native/build-terminal-ownership-candidate.mjs'),runner:await read('desktop/tests/native/terminal-session-composition.mjs'),workflow:await read('.github/workflows/terminal-ownership-candidate.yml')};
+ assert.equal(typeof derive.deriveMinimalEnvironmentCi,'function');const inputs={builder:await read('desktop/tests/native/build-terminal-ownership-candidate.mjs'),runner:await read('desktop/tests/fixtures/terminal-peer-terminal-session-composition-baseline.mjs'),workflow:await read('.github/workflows/terminal-ownership-candidate.yml')};
  const r=derive.deriveMinimalEnvironmentCi(inputs);for(const [kind,path] of Object.entries({builder:'desktop/tests/native/build-terminal-minimal-env.mjs',runner:'desktop/tests/native/terminal-minimal-env.mjs',workflow:'.github/workflows/terminal-minimal-env.yml'}))assert.equal(await read(path),r[kind]);
  assert.throws(()=>derive.deriveMinimalEnvironmentCi({...inputs,runner:inputs.runner+'\n'}),/INPUT_DRIFT/);
  assert.match(r.runner,/creatorEnvironment/);assert.match(r.runner,/SIREN_PRIVATE_ENV_CANARY/);assert.match(r.builder,/siren_terminal_ownership_minimal_env\.node/);assert.match(r.runner,/requireCandidateCi\(/);

@@ -88,7 +88,7 @@ export function createDesktopNativeUtilityLauncher(value,...extra){
   function onMessage(value){
    if(retired||exitObserved)return;
    const hello=data(value,['schema','pid','electron','modules','napi']);
-   if(helloEntered||!spawned||!hello||hello.schema!==schema||hello.pid!==childPid||hello.electron!=='44.5.1'||hello.modules!=='149'||hello.napi!=='10'){fail('UTILITY_HANDSHAKE_REFUSED');return;}
+   if(helloEntered||!spawned||!hello||hello.schema!==schema||hello.pid!==childPid||hello.electron!=='44.9.3'||hello.modules!=='149'||hello.napi!=='10'){fail('UTILITY_HANDSHAKE_REFUSED');return;}
    helloEntered=true;
    void Promise.resolve().then(async()=>{
     try{if(!current())throw Error('UTILITY_STALE');if(!await recheckDesktopNativeRuntimeResources(resources))throw Error('UTILITY_RESOURCE_REFUSED');if(!current())throw Error('UTILITY_STALE');

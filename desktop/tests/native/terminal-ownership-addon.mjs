@@ -23,7 +23,7 @@ async function exercise(config){
   const {release}=await import('node:os');
   const runtime={versions:process.versions,arch:process.arch,os:release(),pid:process.pid};
   try{
-    assert.equal(runtime.versions.electron,'44.5.1');assert.equal(runtime.versions.modules,'149');assert.equal(runtime.versions.napi,'10');assert.equal(runtime.arch,'x64');
+    assert.equal(runtime.versions.electron,'44.9.3');assert.equal(runtime.versions.modules,'149');assert.equal(runtime.versions.napi,'10');assert.equal(runtime.arch,'x64');
     const native=createRequire(import.meta.url)(config.addon);
     const before=native.processHandleCount(),job=native.createJob(),info=native.describeJob(job);
     assert.equal(info.killOnClose,true);assert.equal(info.inheritable,false);assert.equal(info.activeProcesses,0);

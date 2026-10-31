@@ -16,7 +16,7 @@ export function deriveComposedMainLossHost(host){
  return host.replaceAll(flag,'\n#ifndef SIREN_TEST_DISABLE_COMPOSED_KILL_ON_CLOSE\n'+flag+'\n#endif\n');
 }
 export function deriveComposedMainLossRunner({runner,desktop}){
- assert.equal(sha(runner),'92210151a252b3c0f10559129abe67e88b0d81e3e586cef42c801c07161b14d2','MAIN_LOSS_RUNNER_DRIFT');
+ assert.equal(sha(runner),'0fe51d85b0b38aca2ec11209be5c1d79d1fc7e85ee4512027b7bcd2e5055036f','MAIN_LOSS_RUNNER_DRIFT');
  let s=relocated(runner,desktop);
  s=once(s,"evidence/terminal-session-composition","evidence/terminal-composed-main-loss");
  s=once(s,'{mainPid:process.pid,held:hostSnapshot.held}','{mainPid:process.pid,held:hostSnapshot.held,hostSnapshot,groups:owned,runtime:result.runtime,negative:config.negative,fixtureAgeMs:Date.now()-age}');
@@ -37,7 +37,7 @@ export function deriveComposedMainLossRunner({runner,desktop}){
  return s;
 }
 export function deriveComposedMainLossBuilder({builder,desktop}){
- assert.equal(sha(builder),'5a4bc27b28c844fc143dd15aa0bd582024cb44bcd24d72744e200778c8eb9190','MAIN_LOSS_BUILDER_DRIFT');
+ assert.equal(sha(builder),'f168e75a803d0c81b6c4276234a40d488906f67068936f7c98c973e9a2b85ca1','MAIN_LOSS_BUILDER_DRIFT');
  let s=relocated(builder,desktop);
  s=once(s,'import {deriveSessionComposition}', 'import {deriveSessionComposition as baseDeriveSessionComposition}');
  s=once(s,'// CI-only isolated prototype;',`import {deriveComposedMainLossHost} from ${JSON.stringify(new URL('tests/native/terminal-composed-main-loss-derive.mjs',desktop).href)};\nconst deriveSessionComposition=args=>{const original=baseDeriveSessionComposition(args);return {...original,host:deriveComposedMainLossHost(original.host)};};\n// CI-only isolated prototype;`);
