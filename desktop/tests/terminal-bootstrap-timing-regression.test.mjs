@@ -1,8 +1,11 @@
 // Owner regression against immutable failed CI; no native execution or mutation.
-import test from 'node:test';import assert from 'node:assert/strict';import {readFile,readdir} from 'node:fs/promises';
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {isSessionCompositionObserved} from './native/terminal-session-composition-verdict.mjs';
-const base=new URL('../evidence/workspace-surface/ci37818992385/original/desktop/evidence/terminal-bootstrap-async-observation/',import.meta.url);
-const name=(await readdir(base))[0],native=JSON.parse(await readFile(new URL(name+'/native-result.json',base),'utf8'));
+// Exact original failed native record, retained as a deterministic test fixture.
+const bytes=await readFile(new URL('./fixtures/terminal-bootstrap-fractional-ci37818992385.json',import.meta.url));
+const {createHash}=await import('node:crypto');
+assert.equal(createHash('sha256').update(bytes).digest('hex'),'57b4a52bc26c05096ba5b37691548812a04528809f6700eba382b5df8b65cd98');
+const native=JSON.parse(bytes.toString('utf8'));
 test('original failed CI retains fractional timing; one counterfactual isolates legacy format mismatch',()=>{
  assert.equal(Number.isInteger(native.stopMs),false);assert.equal(isSessionCompositionObserved(native),false);
  const copy=structuredClone(native);copy.stopMs=Math.ceil(copy.stopMs);assert.equal(isSessionCompositionObserved(copy),true);

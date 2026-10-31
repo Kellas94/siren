@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdir,mkdtemp,readFile,writeFile,rm,lstat,symlink,readdir} from 'node:fs/promises';
-import {join,resolve,dirname,relative,isAbsolute} from 'node:path';
+import {mkdir,mkdtemp,readFile,writeFile,rm,lstat,realpath,symlink,readdir} from 'node:fs/promises';
+import {join,resolve,dirname,relative,isAbsolute,parse,sep} from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
+import {types} from 'node:util';
 import {DESKTOP_NATIVE_RESOURCE_PATHS,captureDesktopNativeRuntimeResources,desktopNativeRuntimeResourcePaths} from '../src/terminal/desktop-native-runtime-resources.mjs';
 const desktop=fileURLToPath(new URL('../',import.meta.url)),parent=resolve(desktop,'../terminal-native-layout-20261012/fixtures');
 const hash=b=>createHash('sha256').update(b).digest('hex');
@@ -47,7 +48,9 @@ test('closed layout arguments refuse proxies and accessors without executing the
 async function candidateHarness(){
  const text=await readFile(join(desktop,'build/terminal-window.mjs'),'utf8'),body=text.slice(text.indexOf('export async function buildTerminalDesktopCandidate')).replace('export async function','async function').replace('fileURLToPath(new URL(\'../\',import.meta.url))',JSON.stringify(desktop)).replace("await import('./renderer.mjs')",'rendererModule');
  const calls=[],saved=[],windowReceipt=Object.freeze({nativeAdmission:false}),layout=Object.freeze({completeRuntimeClosure:false,nativeExecutionAdmitted:false});
- const context={resolve,relative,isAbsolute,join,process:{platform:process.platform},cp:async()=>calls.push('copy-app-source'),readFile:async()=>Buffer.from('INERT PRELOAD'),writeFile:async(path,text)=>saved.push([path,text]),buildRenderer:async()=>calls.push('renderer'),buildTerminalWindow:async()=>windowReceipt,buildTerminalNativeSourceLayout:async options=>{calls.push(['layout',options]);return layout;}};
+ // Function-extraction boundary only: bind real ancestor observations and
+ // directory creation; retain/read back inert writes without building an app.
+ const context={types,resolve,relative,isAbsolute,join,dirname,parse,sep,lstat,realpath,mkdir,Buffer,hash,process:{platform:process.platform},cp:async()=>calls.push('copy-app-source'),readFile:async path=>{const row=saved.findLast(row=>row[0]===path);return Buffer.from(row?row[1]:'INERT PRELOAD');},writeFile:async(path,text)=>saved.push([path,text]),buildRenderer:async()=>calls.push('renderer'),buildTerminalWindow:async()=>windowReceipt,buildTerminalNativeSourceLayout:async options=>{calls.push(['layout',options]);return layout;}};
  context.rendererModule={buildRenderer:context.buildRenderer};
  vm.runInNewContext(body+'\nthis.run=buildTerminalDesktopCandidate;',context);return {context,calls,saved,layout,windowReceipt};
 }

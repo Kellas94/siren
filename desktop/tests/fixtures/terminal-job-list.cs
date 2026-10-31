@@ -109,7 +109,9 @@ internal static class TerminalJobListProbe {
         if(mode=="root") { StartFixture("branch",directory,false);StartFixture("detached",directory,true); }
         else if(mode=="branch")StartFixture("grandchild",directory,false);
         else if(mode!="grandchild" && mode!="detached")return 2;
-        File.WriteAllText(Path.Combine(directory,mode+".ready"),Process.GetCurrentProcess().Id.ToString());
+        string ready=Path.Combine(directory,mode+".ready"),pending=ready+"."+Guid.NewGuid().ToString("N")+".pending";
+        File.WriteAllText(pending,Process.GetCurrentProcess().Id.ToString());
+        File.Move(pending,ready);
         Thread.Sleep(12000);return 0;
     }
     static bool Member(IntPtr process,IntPtr job) { bool result;Require(IsProcessInJob(process,job,out result),"QUERY_MEMBERSHIP");return result; }

@@ -1,8 +1,9 @@
-import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
-import {join,resolve,relative,isAbsolute} from 'node:path';
+import {mkdir,readFile,writeFile,cp,lstat,realpath} from 'node:fs/promises';
+import {join,resolve,relative,isAbsolute,dirname,parse,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {Script} from 'node:vm';
+import {types} from 'node:util';
 import {build} from 'esbuild';
 import {readHelpBrowser} from './help.mjs';
 import {readDesktopChrome} from './chrome.mjs';
@@ -36,18 +37,57 @@ export async function buildTerminalWindow(outputDir,{dependenciesRoot=null}={}){
 
 // Fixed reviewed initializer import, no user/renderer/env/CLI module path. This
 // candidate remains unavailable until its private native factory is qualified.
-export async function buildTerminalDesktopCandidate({outputDir,dependenciesRoot,baselinePath,expectedSha256,nativeSourceLayout=false}={}){
+export async function buildTerminalDesktopCandidate(options={}){
+ const selectorRefused=()=>{throw Error('BOOTSTRAP_ARGUMENT_REFUSED');};
+ if(options===null||types.isProxy(options))selectorRefused();
+ const selected=Object.getOwnPropertyDescriptor(options,'nativeBootstrap');
+ let prototype=Object.getPrototypeOf(options),depth=0;while(prototype!==null){if(types.isProxy(prototype)||++depth>64||Object.getOwnPropertyDescriptor(prototype,'nativeBootstrap'))selectorRefused();prototype=Object.getPrototypeOf(prototype);}
+ if(selected&&(!selected.enumerable||!Object.hasOwn(selected,'value')))selectorRefused();
+ const nativeBootstrap=selected?.value;
+ const {outputDir,dependenciesRoot,baselinePath,expectedSha256,nativeSourceLayout=false}=options;
  if(typeof nativeSourceLayout!=='boolean')throw Error('Explicit native source layout choice required');
+ if(selected!==undefined){
+  const refused=()=>{throw Error('BOOTSTRAP_ARGUMENT_REFUSED');};if(nativeSourceLayout)refused();
+  const data=(value,keys)=>{if(!value||typeof value!=='object'||types.isProxy(value)||![Object.prototype,null].includes(Object.getPrototypeOf(value)))refused();const names=Reflect.ownKeys(value);if(names.length!==keys.length||names.some(k=>!keys.includes(k)))refused();const out=Object.create(null);for(const key of keys){const d=Object.getOwnPropertyDescriptor(value,key);if(!d?.enumerable||!Object.hasOwn(d,'value'))refused();out[key]=d.value;}return out;};
+  const v=data(nativeBootstrap,['schema','runtimeManifestBytes','applicationRosterBytes','approvedSourceBuildReceiptBytes','expectedPins']);if(v.schema!==1)refused();
+  const pins=data(v.expectedPins,['runtimeTreeSha256','applicationRosterSha256','approvedSourceBuildReceiptSha256']);if(Object.values(pins).some(p=>typeof p!=='string'||!/^[a-f0-9]{64}$/.test(p)))refused();
+  const typed=Object.getPrototypeOf(Uint8Array.prototype),length=Object.getOwnPropertyDescriptor(typed,'length').get,backing=Object.getOwnPropertyDescriptor(typed,'buffer').get;
+  const bytes=(value,max)=>{if(types.isProxy(value)||!Buffer.isBuffer(value)||Object.getPrototypeOf(value)!==Buffer.prototype)refused();const n=length.call(value);if(n<1||n>max||types.isSharedArrayBuffer(backing.call(value)))refused();const out=Buffer.alloc(n);Uint8Array.prototype.set.call(out,value);return out;};
+  const captured=Object.freeze({schema:1,runtimeManifestBytes:bytes(v.runtimeManifestBytes,16777216),applicationRosterBytes:bytes(v.applicationRosterBytes,16777216),approvedSourceBuildReceiptBytes:bytes(v.approvedSourceBuildReceiptBytes,1048576),expectedPins:Object.freeze({...pins})});
+  if(hash(captured.runtimeManifestBytes)!==pins.runtimeTreeSha256||hash(captured.applicationRosterBytes)!==pins.applicationRosterSha256||hash(captured.approvedSourceBuildReceiptBytes)!==pins.approvedSourceBuildReceiptSha256)refused();
+  // Snapshot every caller-owned byte and scalar before the first await. The
+  // new authority graph is imported only for this explicitly selected branch.
+  const {buildTerminalNativeBootstrap}=await import('./terminal-native-bootstrap.mjs');return buildTerminalNativeBootstrap({outputDir,nativeBootstrap:captured});
+ }
  const desktop=fileURLToPath(new URL('../',import.meta.url)),out=resolve(outputDir);
- const location=relative(desktop,out);
- if(!location||(!location.startsWith('..'+(process.platform==='win32'?'\\':'/'))&&!isAbsolute(location))||!dependenciesRoot)throw Error('Separate explicit candidate output required');
+ const contains=(parent,child)=>{const location=relative(parent,child);return !location||(!location.startsWith('..'+sep)&&location!=='..'&&!isAbsolute(location));};
+ if(out===parse(out).root||contains(desktop,out)||contains(out,desktop)||!dependenciesRoot)throw Error('Separate explicit candidate output required');
+ const packagePath=join(out,'package.json'),packageBytes=JSON.stringify({name:'siren-terminal-candidate',version:'0.1.0-dev.1',private:true,type:'module',main:'candidate-main.mjs'},null,2)+'\n';
+ // Bounded package admission before legacy build effects. This does not make
+ // the remaining builder outputs an atomic transaction or close namespace races.
+ async function checkAncestors(){
+  const ancestors=[];for(let current=out;;current=dirname(current)){ancestors.unshift(current);if(current===parse(current).root)break;}
+  for(const current of ancestors){
+   let info;try{info=await lstat(current);}catch(error){if(error.code==='ENOENT')break;throw error;}
+   if(info.isSymbolicLink()||!info.isDirectory())throw Error('Candidate output ancestry refused');
+   const actual=await realpath(current),same=process.platform==='win32'?actual.toLowerCase()===current.toLowerCase():actual===current;
+   if(!same)throw Error('Candidate output ancestry refused');
+  }
+ }
+ await checkAncestors();
+ try{await lstat(packagePath);throw Error('Candidate package already exists');}catch(error){if(error.code!=='ENOENT')throw error;}
+ await mkdir(out,{recursive:true});await checkAncestors();
+ await writeFile(packagePath,packageBytes,{encoding:'utf8',flag:'wx'});
  const {buildRenderer}=await import('./renderer.mjs');
  await buildRenderer({baselinePath,expectedSha256,outputDir:join(out,'generated')});
  await cp(join(desktop,'src'),join(out,'src'),{recursive:true});
  const preload=await readFile(join(desktop,'src/preload.cjs'),'utf8');
  await writeFile(join(out,'generated/terminal-launch-preload.cjs'),preload+"\ncontextBridge.exposeInMainWorld('sirenTerminalLauncher',Object.freeze({getCapability:()=>ipcRenderer.invoke('siren:terminal-capability'),open:()=>ipcRenderer.invoke('siren:terminal-launch')}));\n");
  const receipt=await buildTerminalWindow(join(out,'generated'),{dependenciesRoot});
- await writeFile(join(out,'candidate-main.mjs'),"import {configureDesktopLaunch} from './src/desktop-launch.mjs';\nimport {createDesktopTerminalCandidate} from './src/terminal/candidate-initializer.mjs';\nconfigureDesktopLaunch(createDesktopTerminalCandidate());\nawait import('./src/main.mjs');\n");
+ const candidateMain="if(process.argv.some(arg=>arg.startsWith('--siren-pin-worker'))){\n await import('./src/start.mjs');\n}else{\n const {configureDesktopLaunch}=await import('./src/desktop-launch.mjs');\n const {createDesktopTerminalCandidate}=await import('./src/terminal/candidate-initializer.mjs');\n configureDesktopLaunch(createDesktopTerminalCandidate());\n await import('./src/start.mjs');\n}\n";
+ await writeFile(join(out,'candidate-main.mjs'),candidateMain);
  const nativeLayout=nativeSourceLayout?await buildTerminalNativeSourceLayout({outputDir:join(out,'native-runtime')}):null;
- await writeFile(join(out,'terminal-candidate-receipt.json'),JSON.stringify({...receipt,nativeFactoryConfigured:false,normalPackageChanged:false,...(nativeLayout?{nativeSourceLayout:nativeLayout}:{})},null,2)+'\n');return receipt;
+ const actualPackage=await readFile(packagePath),actualMain=await readFile(join(out,'candidate-main.mjs'));
+ if(!actualPackage.equals(Buffer.from(packageBytes))||!actualMain.equals(Buffer.from(candidateMain)))throw Error('Candidate package/main readback mismatch');
+ await writeFile(join(out,'terminal-candidate-receipt.json'),JSON.stringify({...receipt,nativeFactoryConfigured:false,normalPackageChanged:false,...(nativeLayout?{nativeSourceLayout:nativeLayout}:{}),candidatePackageSha256:hash(actualPackage),candidateMainSha256:hash(actualMain)},null,2)+'\n');return receipt;
 }

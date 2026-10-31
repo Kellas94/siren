@@ -86,7 +86,7 @@ class PrivateTerminalGraph {
   const cwdAuthority=new CwdAuthority({...cp,protectedRoots:roots,...cwdCallbacks(p.registry,p.projectId,policy)});
   const providers={getSystemDirectory:pp.getSystemDirectory,inspectExecutable:pp.inspectExecutable,readEnvironment:pp.readEnvironment,privateEnvironmentKeys:privateKeys,...(Object.hasOwn(pp,'modulePathPolicy')?{modulePathPolicy:pp.modulePathPolicy}:{}),...(Object.hasOwn(pp,'inspectModuleDirectory')?{inspectModuleDirectory:pp.inspectModuleDirectory}:{})};
   const profileCatalogueOwner=new TerminalProfileCatalogueOwner({registry:p.registry,policy,projectId:p.projectId,providers,grants});
-  desktopGraphBindings.set(this,Object.freeze({registry:p.registry,projectId:p.projectId}));
+  desktopGraphBindings.set(this,Object.freeze({registry:p.registry,projectId:p.projectId,lifetime:c}));
     this.#members={ownership:owner,policy,cwdAuthority,profileCatalogues:apply(catalogueOwner.initialSnapshot,profileCatalogueOwner,[]),profileCatalogueOwner,backend:null,manager:null,router:null,access:null};
   c.snapshots.push(apply(ownership.captureOwnershipSettlement,owner,[]).snapshot,apply(ownership.captureHostShutdownSettlement,owner,[]).snapshot);
   this.#handles.push({object:cwdAuthority,fn:cwd.retireCwd,handle:apply(cwd.captureCwdSettlement,cwdAuthority,[]),scope:'CWD_AUTHORITY'});
@@ -144,3 +144,10 @@ export function captureTerminalGraphAuthorities(graph,registry,projectId){
 }
 
 export function shutdownTerminalGraph(graph,request){if(types.isProxy(graph)||!desktopGraphBindings.has(graph))return null;return Reflect.apply(PrivateTerminalGraph.prototype.shutdown,graph,[request]);}
+
+// MAIN-only operation identity, captured from the actual graph lifetime.
+// A request is not native cleanup authority; it remains available after join.
+export function captureTerminalGraphShutdownRequest(graph,...extra){
+ if(extra.length||types.isProxy(graph))return null;
+ return desktopGraphBindings.get(graph)?.lifetime.request??null;
+}

@@ -1,0 +1,7 @@
+// Actual target-acquisition helper with inert page seams; no native claim.
+import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('./native/source-sync.mjs',import.meta.url),'utf8');
+const begin=source.indexOf('const inspectTail=async'),end=source.indexOf('\nconst confirmReplace=',begin);assert.ok(begin>=0&&end>begin);
+async function exercise(focused){const calls=[],page={async click(s){calls.push(['click',s])},async evaluate(s){calls.push(['evaluate',s]);return s.startsWith('document.activeElement')?focused:'def marker'},async waitFor(s){calls.push(['waitFor',s])}};const helper=vm.runInNewContext(source.slice(begin,end)+';inspectTail',{assert,JSON,keys:async(...args)=>calls.push(['keys',...args.slice(1)])});return {calls,run:()=>helper(page,'def marker')};}
+test('owned keyboard target is acquired and asserted before navigation and bounded render read',async()=>{const r=await exercise(true);assert.equal(await r.run(),'def marker');assert.deepEqual(r.calls.map(c=>c[0]),['click','evaluate','keys','waitFor','evaluate']);assert.equal(r.calls[0][1],'.cm-content');assert.deepEqual(r.calls[2].slice(1),['End','End',35,2]);assert.match(r.calls[3][1],/includes\("def marker"\)/);});
+test('lost focus refuses keyboard navigation and virtualized DOM inspection',async()=>{const r=await exercise(false);await assert.rejects(r.run(),/Owned Code editor must have keyboard focus/);assert.deepEqual(r.calls.map(c=>c[0]),['click','evaluate']);});

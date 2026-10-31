@@ -1,0 +1,10 @@
+{
+  "author": "/root",
+  "classification": "LOCAL_DERIVATION_INPUT_COPY_NOT_HOST_ORIGINAL_WORKFLOW",
+  "localOrigin": ".github/workflows/terminal-cmdlet-runtime.yml",
+  "retainedPath": "terminal-discovery-diagnostic-20261011/derivation-inputs/terminal-cmdlet-runtime.yml",
+  "bytes": 3864,
+  "sha256": "237826aeaa01028f90cec3fbb9c8340bd1b06d1e11c02d928ad6d7e5e7ad75c6",
+  "remoteV1OriginalSha256": "c6ef4ee79aac16b25fb1644502fffa0c51fad35b1d9a506a9e3089b1e5002967",
+  "purpose": "Preserve exact local workflow input for offline derivation; actual remote older workflow remains unchanged. No script execution."
+}

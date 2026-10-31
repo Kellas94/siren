@@ -1,0 +1,47 @@
+name: Terminal supplied reporting integration
+
+on:
+  pull_request:
+    paths:
+      - 'desktop/tests/supplied-terminal-five-business-v2/**'
+      - '.github/workflows/terminal-supplied-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reporting:
+    name: Terminal reporting integration (supplied)
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        id: python
+        with:
+          python-version: '3.12.10'
+          architecture: 'x64'
+          update-environment: false
+      - name: Check the fixed supplied reporting route
+        shell: pwsh
+        env:
+          SIREN_COHORT_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sirenCohort = (Resolve-Path -LiteralPath 'desktop/tests/supplied-terminal-five-business-v2').Path
+          Set-Location -LiteralPath $sirenCohort
+          & $env:SIREN_COHORT_PYTHON -B -I -S -X utf8 (Join-Path $sirenCohort 'invoke.py')
+          exit $LASTEXITCODE
+      - name: Retain supplied evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: terminal-supplied-reporting-evidence
+          path: |
+            desktop/tests/supplied-terminal-five-business-v2/evidence/**
+            desktop/tests/supplied-terminal-five-business-v2/CONSUMED
+          if-no-files-found: error
+          compression-level: 9

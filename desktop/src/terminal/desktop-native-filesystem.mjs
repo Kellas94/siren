@@ -9,6 +9,48 @@ const nativePath=fileURLToPath(new URL('../../native/terminal-filesystem-candida
 const requireNative=createRequire(import.meta.url);
 const NativePromise=Promise,promiseThen=Promise.prototype.then,promiseSpecies=Object.getOwnPropertyDescriptor(Promise,Symbol.species);
 const fail=code=>{throw Error(code);};
+// One fixed CJS binding per module/process incarnation. Cache identity is a
+// private prerequisite, not proof of complete resources or native provenance.
+let bindingState='empty',bindingCache=null,bindingRecord=null,bindingExports=null,bindingFactory=null;
+function dataOwn(value,key){
+ if(!value||types.isProxy(value)||!['object','function'].includes(typeof value))return null;
+ const d=Object.getOwnPropertyDescriptor(value,key);return d&&Object.hasOwn(d,'value')?d:null;
+}
+function cacheRefused(){bindingState='stale';fail('FS_CACHE_REFUSED');}
+function cacheRows(cache,initial){
+ if(!cache||types.isProxy(cache)||typeof cache!=='object')return false;
+ for(const key of Reflect.ownKeys(cache)){
+  if(typeof key!=='string')return false;
+  if(key.toLowerCase()===nativePath.toLowerCase()&&(initial||key!==nativePath))return false;
+  const row=dataOwn(cache,key)?.value;if(!row||types.isProxy(row)||!['object','function'].includes(typeof row))return false;
+  const filename=Object.getOwnPropertyDescriptor(row,'filename'),exports=Object.getOwnPropertyDescriptor(row,'exports');
+  if(filename&&!Object.hasOwn(filename,'value')||exports&&!Object.hasOwn(exports,'value'))return false;
+  if(typeof filename?.value==='string'&&filename.value.toLowerCase()===nativePath.toLowerCase()&&(initial||key!==nativePath||row!==bindingRecord))return false;
+  if(!initial&&key!==nativePath&&exports?.value===bindingExports)return false;
+ }
+ return true;
+}
+function cacheCurrent(){
+ if(bindingState==='empty')return;
+ if(bindingState!=='ready')cacheRefused();
+ const cache=dataOwn(requireNative,'cache')?.value;
+ if(cache!==bindingCache||dataOwn(cache,nativePath)?.value!==bindingRecord||dataOwn(bindingRecord,'filename')?.value!==nativePath||dataOwn(bindingRecord,'loaded')?.value!==true||dataOwn(bindingRecord,'exports')?.value!==bindingExports||!bindingExports||types.isProxy(bindingExports)||Reflect.ownKeys(bindingExports).length!==1||dataOwn(bindingExports,'createFilesystemInspector')?.value!==bindingFactory||!cacheRows(cache,false))cacheRefused();
+}
+function capturedAddon(){
+ if(bindingState==='ready'){cacheCurrent();return bindingExports;}
+ if(bindingState!=='empty')cacheRefused();bindingState='loading';
+ try{
+  const cache=dataOwn(requireNative,'cache')?.value,resolve=dataOwn(requireNative,'resolve')?.value;
+  if(!cacheRows(cache,true)||typeof resolve!=='function'||types.isProxy(resolve))cacheRefused();
+  let selected;try{selected=Reflect.apply(resolve,requireNative,[nativePath]);}catch{cacheRefused();}
+  if(bindingState!=='loading'||selected!==nativePath||dataOwn(requireNative,'cache')?.value!==cache||!cacheRows(cache,true))cacheRefused();
+  let addon;try{addon=requireNative(nativePath);}catch{bindingState='stale';fail('FS_NATIVE_UNAVAILABLE');}
+  if(bindingState!=='loading'||dataOwn(requireNative,'cache')?.value!==cache)cacheRefused();
+  const record=dataOwn(cache,nativePath)?.value,factory=own(addon,'createFilesystemInspector');
+  if(!factory||Reflect.ownKeys(addon).length!==1){bindingState='stale';fail('FS_NATIVE_REFUSED');}
+  bindingCache=cache;bindingRecord=record;bindingExports=addon;bindingFactory=factory;bindingState='ready';cacheCurrent();return addon;
+ }catch(error){bindingState='stale';throw error;}
+}
 const safeCodes=new Set(['FS_ARGUMENT_REFUSED','FS_CAPACITY','FS_RETIRED','FS_OPEN_FAILED','FS_REPARSE_REFUSED','FS_TYPE_REFUSED','FS_CANONICAL_REFUSED','FS_IDENTITY_FAILED','FS_CHANGED','FS_SYSTEM_DIRECTORY_FAILED','FS_INTERNAL']);
 function safeError(error){const d=error&&!types.isProxy(error)&&['object','function'].includes(typeof error)?Object.getOwnPropertyDescriptor(error,'code'):null;return Error(d&&Object.hasOwn(d,'value')&&safeCodes.has(d.value)?d.value:'FS_NATIVE_REFUSED');}
 function fields(value,keys,guard=false){
@@ -43,11 +85,11 @@ function prerequisite(options){
 // No caller path, loader, source selector, fallback or injected native instance.
 export async function loadDesktopNativeFilesystemProvider(options,...extra){
  const guard=extra.length?null:prerequisite(options);
- function current(){if(!guard)fail('FS_RESOURCE_REFUSED');let v;try{v=guard();}catch{fail('FS_RESOURCE_REFUSED');}if(v!==true)fail('FS_RESOURCE_REFUSED');}
+ function current(){if(!guard)fail('FS_RESOURCE_REFUSED');cacheCurrent();let v;try{v=guard();}catch{cacheCurrent();fail('FS_RESOURCE_REFUSED');}cacheCurrent();if(v!==true)fail('FS_RESOURCE_REFUSED');}
  current();let addon,instance;
- try{addon=requireNative(nativePath);}catch{fail('FS_NATIVE_UNAVAILABLE');}
- current();const factory=own(addon,'createFilesystemInspector');if(!factory||Reflect.ownKeys(addon).length!==1)fail('FS_NATIVE_REFUSED');
- try{instance=Reflect.apply(factory,addon,[]);}catch{fail('FS_NATIVE_REFUSED');}
+ addon=capturedAddon();
+ current();const factory=bindingFactory;
+ try{instance=Reflect.apply(factory,addon,[]);}catch{cacheCurrent();fail('FS_NATIVE_REFUSED');}
  const methods={};for(const key of ['getSystemDirectory','inspectDirectory','inspectFile','retire'])methods[key]=own(instance,key);
  let retired=false,retirementStarted=false,resolveRetirement,rejectRetirement;
  // Allocate while the adapter is unpublished: Promise-init hook reentry during
@@ -69,9 +111,9 @@ export async function loadDesktopNativeFilesystemProvider(options,...extra){
  try{if(Object.values(methods).some(v=>!v)||Reflect.ownKeys(instance).length!==4)fail('FS_NATIVE_REFUSED');current();}catch(error){await retire();throw error;}
  async function query(name,args){
   if(retired)fail('FS_RETIRED');current();if(retired)fail('FS_RETIRED');
-  let returned;try{returned=Reflect.apply(methods[name],instance,args);}catch(error){throw safeError(error);}
-  let pending;try{pending=settled(returned,value=>{if(name==='getSystemDirectory'){if(!nativePathString(value))fail('FS_NATIVE_REFUSED');return value;}return snapshot(value,name==='inspectFile'?'file':'directory');});}catch{fail('FS_NATIVE_REFUSED');}
-  const value=await pending;if(retired)fail('FS_RETIRED');current();if(retired)fail('FS_RETIRED');return value;
+  let returned;try{returned=Reflect.apply(methods[name],instance,args);}catch(error){cacheCurrent();throw safeError(error);}
+  let pending;try{pending=settled(returned,value=>{if(name==='getSystemDirectory'){if(!nativePathString(value))fail('FS_NATIVE_REFUSED');return value;}return snapshot(value,name==='inspectFile'?'file':'directory');});}catch{cacheCurrent();fail('FS_NATIVE_REFUSED');}
+  let value;try{value=await pending;}catch(error){if(!retired)cacheCurrent();throw error;}if(retired)fail('FS_RETIRED');current();if(retired)fail('FS_RETIRED');return value;
  }
  return Object.freeze(Object.assign(Object.create(null),{
   nativeExecutionAdmitted:false,

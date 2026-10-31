@@ -1,0 +1,61 @@
+{
+  "kind": "EXTERNAL_SUPPLY_CANDIDATE_SOURCE_REVIEW_V1",
+  "reviewId": "FIVE_BUSINESS_PORTABLE2_SOURCE_V2",
+  "author": "/root/burst_preflight_review",
+  "mode": "INDEPENDENT_READ_ONLY_SOURCE_REVIEW",
+  "verdict": "EXTERNAL_SUPPLY_SOURCE_ACCEPTED",
+  "sourceManifest": {
+    "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\SOURCE.json",
+    "bytes": 82823,
+    "sha256": "f6a4c0f8a2ad69732afc1104c14466b809c8a6bbc6e56ee72d90e79d7ca499d9"
+  },
+  "candidate": {
+    "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\runner.py",
+    "bytes": 15618,
+    "sha256": "a0efdb682cb85f9e601d87f0c45741e61d610f75999f481399b952640125094b"
+  },
+  "sourcePlan": {
+    "path": "C:\\Claude\\SIREN_WORK\\terminal-five-role-business-v2-20261024\\candidate\\source-plan.json",
+    "bytes": 8744,
+    "sha256": "e329701e0ff94ec41caf4839fdc262bf72afdc772918e166f0c18a936d08ddb6"
+  },
+  "declaration": {
+    "path": "C:\\Claude\\SIREN_WORK\\terminal-operational-four-stage-candidate-v1-20261022\\capture-external-declaration-v1.json",
+    "bytes": 11082,
+    "sha256": "211c8eea6a44517fc025d14dfba076bb570332b495c600d947f0e03f254d50e5"
+  },
+  "findings": [],
+  "verified": [
+    "All94 host-map inputs and both auxiliary-file pins match actual bytes. Current and refused predecessor packets remain unconsumed.",
+    "Compared the complete successor delta: README now explicitly describes one Python orchestration child, and RESULT annotates childProcesses=0 as the supplied-cohort actor scope excluding the outer runner invocation.",
+    "The only other runner change is its canonical review root. All92 source/data payloads, invoker bytes,54 production module bodies,21 bridges,19 programs,51 definitions and11 selected methods are unchanged.",
+    "Canonical review identities and updated runner/invoker logical rows agree with the portable-v2 namespace. Physical input reads remain confined to the reviewed relative host map.",
+    "The prior bounded inspection of the fixed invoker, negative refusal paths, guards, selected-helper closure and evidence retention remains applicable.",
+    "The unchanged workflow invokes the fixed helper command and retains evidence; this is source inspection, not hosted CI qualification."
+  ],
+  "evidencePins": [
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\invoke.py",
+      "bytes": 3967,
+      "sha256": "842fb3a8a1e65f6955bef866949272d5a8cf7920c6072fe9552a5d9ce348e675"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\portable-v2\\README.md",
+      "bytes": 2787,
+      "sha256": "1f1a74bb6251e6d1c6ab1d911492d95ed96146cdb3d95f1fd3c90873d564228c"
+    },
+    {
+      "path": "C:\\Claude\\SIREN_WORK\\terminal-five-business-c0-t0-integration-v2-20261024\\publication\\terminal-supplied-integration-v2.yml",
+      "bytes": 1693,
+      "sha256": "43bc316a1f9dd79df62407dbf40dc568155b2962fd6e9ad4f91bbf9e7bebb8dd"
+    }
+  ],
+  "scope": "The planned fresh original invocation, byte-identical relocation invocation and two fresh negative copies for missing review receipt and invalid outer arguments. Preserve each instance's actual evidence; do not reuse consumed roots.",
+  "limits": [
+    "No execution outcome, relocation success or expected-refusal result is predicted.",
+    "No selected imports, execution, tests, replay, writes or delegation occurred during review.",
+    "All four completed instances require independent DATA reconciliation before qualification.",
+    "The external interpreter/stdlib and hosted CI remain separate dependencies and evidence classes. The audit guard is not physical custody or a general IO sandbox.",
+    "No public, native, installed, whole-source, whole-clock, aggregate-capacity, merge or release qualification transfers."
+  ]
+}

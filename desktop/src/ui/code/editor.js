@@ -165,7 +165,9 @@ export function createCodeEditor({ container, client, theme = 'light', readonly 
     // Exact immutable raw Text; getState().doc is the display line projection.
     getSourceText: adapter.getSourceText, getState: adapter.getState,subscribe:adapter.subscribe,
     focus: () => view?.focus(),
-    select(from, to = from) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); view.focus(); } },
+    hasFocus: () => view?.hasFocus === true,
+    hasControlFocus: () => root.contains(document.activeElement) && document.activeElement !== view?.contentDOM,
+    select(from, to = from, {focus = true} = {}) { if (view) { view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true }); if (focus) view.focus(); } },
     setTheme(next) {
       if (disposed) return Object.freeze({ ok: false, code: 'EDITOR_DISPOSED' });
       if (!['light', 'dark'].includes(next)) return Object.freeze({ ok: false, code: 'INVALID_THEME' });

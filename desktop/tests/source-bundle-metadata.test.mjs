@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
 import {buildDiagramEmbedContract} from '../build/diagram-embed-contract.mjs';
 
 // Unit tests exercise the adapter boundary with deliberately observable frozen
@@ -18,10 +19,37 @@ async function fixture({prepare,validate,stamp}={}){
   sanitizePresentation:value=>structuredClone(value),sanitizeAgentReleases:value=>structuredClone(value),sanitizeAgentMeta:value=>structuredClone(value),sanitizeGovernanceReview:value=>structuredClone(value),
   sanitizeWorkpaperHtml:value=>value,sanitizeMapCard:value=>structuredClone(value),
  });
+ const baseline=await readFile(new URL('../baseline/R78.html',import.meta.url),'utf8'),start=baseline.indexOf('      function sanitizeNodeMetadata(metadata) {'),end=baseline.indexOf('      function makeCommentId()',start);
+ assert.ok(start>0&&end>start,'Use the actual frozen classic node sanitizer');vm.runInContext(baseline.slice(start,end),context);
  vm.runInContext(await buildDiagramEmbedContract(),context);vm.runInContext(script,context);return {context,calls,run:async value=>JSON.parse(await context.window.sirenDesktopValidateBundleMetadata(JSON.stringify(value),'chosen.siren-backup'))};
 }
 const pointer={sourceId:'source-a',version:1,sha256:'a'.repeat(64)};
 const workspace=()=>({diagrams:[{id:'diagram-a',source:'flowchart TD\nA-->B'}],workpapers:[{id:'doc-a',title:'Sparse native',blocks:[],agent:null,releases:[]}],codeFiles:[]});
+
+test('native bundle retains opaque node metadata and source pointers while the classic sanitizer remains lossy',async()=>{
+ const f=await fixture(),input=workspace();input.diagrams[0].nodeMetadata={A:{sourceRef:pointer,documentId:'doc-a',future:{nested:{literal:'Ș😀'}}}};
+ assert.deepEqual(await f.run(input),input);
+ const classic=vm.runInContext('sanitizeNodeMetadata('+JSON.stringify(input.diagrams[0].nodeMetadata)+')',f.context);assert.deepEqual(JSON.parse(JSON.stringify(classic)),{});
+});
+test('native bundle preserves managed-valid annotations, inactive empty strings and immutable managed-invalid values',async()=>{
+ const f=await fixture(),input=workspace();input.diagrams[0].nodeMetadata={A:{risk:'Ș😀',control:'C',owner:'O',system:'S',evidence:'E',reference:'R',frequency:'F',status:'review',opaque:17},B:{risk:'',control:'',future:true},C:{evidence:{sourceRef:pointer},owner:['opaque'],status:'imported-unsupported',risk:'x'.repeat(181)}};
+ assert.deepEqual(await f.run(input),input);
+});
+test('native bundle rejects malformed annotation maps/nodes and node count overflow',async()=>{
+ for(const metadata of [[],null,'bad',{A:'bad'},{'bad id':{risk:'r'}},Object.fromEntries(Array.from({length:501},(_,i)=>['A'+i,{risk:'r'}]))]){
+  const f=await fixture(),input=workspace();input.diagrams[0].nodeMetadata=metadata;await assert.rejects(f.run(input));
+ }
+});
+test('prototype-named annotation nodes preserve valid managed strings and opaque references without prototype writes',async()=>{
+ const f=await fixture(),input=workspace();input.diagrams[0].nodeMetadata=JSON.parse('{"__proto__":{"owner":"Exact Ș😀","sourceRef":'+JSON.stringify(pointer)+'},"constructor":{"reference":"Exact reference","opaque":{"prototype":{"literal":true}}}}');
+ const output=await f.run(input);assert.deepEqual(output,input);assert.equal(Object.hasOwn(output.diagrams[0].nodeMetadata,'__proto__'),true);assert.equal(Object.prototype.literal,undefined);
+});
+test('opaque annotation payloads retain the native contract depth, node and UTF16 character budgets',async()=>{
+ let deep={};for(let i=0;i<33;i++)deep={next:deep};
+ for(const payload of [deep,{text:'x'.repeat(2*1024*1024+1)},{items:Array(50000).fill(0)}]){
+  const f=await fixture(),input=workspace();input.diagrams[0].nodeMetadata={A:{opaque:payload}};await assert.rejects(f.run(input));
+ }
+});
 const diagramEmbed=()=>({id:'embed-a',kind:'diagram-embed',schema:1,diagramId:'diagram-a',mode:'live',scope:'selection',nodeIds:['A','B'],caption:'Retained flow',display:{height:320,fit:'contain'},snapshot:{sourceHash:'a'.repeat(64),sourceVersion:2,sourceAsset:{kind:'diagram-source',bytes:210,sha256:'a'.repeat(64)},visualAsset:{kind:'svg',bytes:4100,sha256:'b'.repeat(64)},rendererVersion:'mermaid@12.0.0/R78',styleHash:'c'.repeat(64)},status:'missing',missingNodeIds:['B']});
 
 test('typed diagram embeds survive the source bundle metadata gate in current and historical blocks',async()=>{

@@ -112,13 +112,17 @@ function candidate(){assert.equal(typeof api.deriveThreeLaneEndpointOwnership,'f
 const section=(s,start,end)=>{const a=s.indexOf(start),b=s.indexOf(end,a+start.length);assert.ok(a>=0&&b>a,'Expected unique source section');return s.slice(a,b);};
 const tags=s=>[...s.matchAll(/const napi_type_tag \w+=\{([^}]+)\};/g)].map(m=>m[1]);
 
+const historicalBaselinePath=path=>path==='.github/workflows/terminal-prerequisite.yml'?'./fixtures/terminal-peer-prerequisite-baseline.yml':path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':path==='desktop/package-lock.json'?'./fixtures/terminal-peer-package-lock-baseline.json':path==='desktop/tests/fixtures/terminal-job-list.cs'?'./fixtures/terminal-peer-job-list-baseline.cs':path==='desktop/tests/native/terminal-session-composition-derive.mjs'?'./fixtures/terminal-peer-session-composition-baseline.mjs':'../../'+path;
+function assertHistoricalRow(row,bytes){assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
+
 async function unchanged94(){
  assert.equal(PUBLICATION_INPUTS.length,94);assert.equal(baseline.rows.length,94);
  assert.deepEqual(baseline.rows.map(r=>r.path),[...PUBLICATION_INPUTS]);
  // This historical peer-preparation baseline retains its original input fence
- // and package bytes. Current fence behavior and runner compatibility have
- // separate tests; neither fixture qualifies the evolving native application.
- for(const row of baseline.rows){const path=row.path==='desktop/src/terminal/input-gate.mjs'?'./fixtures/terminal-peer-input-gate-baseline.mjs':row.path==='desktop/package.json'?'./fixtures/terminal-peer-package-baseline.json':'../../'+row.path;const bytes=await readFile(new URL(path,import.meta.url));assert.equal(bytes.length,row.bytes,row.path);assert.equal(hash(bytes),row.sha256,row.path);}
+ // and package bytes, plus exact historical fixture and Session recipe bytes.
+ // Current fence, runner and fixture-version behavior have separate tests;
+ // these raw historical inputs do not qualify the evolving native application.
+ for(const row of baseline.rows){const path=historicalBaselinePath(row.path);const bytes=await readFile(new URL(path,import.meta.url));assertHistoricalRow(row,bytes);}
 }
 
 test('all 94 frozen peer inputs match the captured raw-byte baseline before preparation',unchanged94);
@@ -257,4 +261,15 @@ test('runner compatibility refuses dependency, engine, other-script and command 
  for(const mutate of [p=>p.dependencies.jose='0.0.0',p=>p.devDependencies.electron='0.0.0',p=>p.engines.node='>=1',p=>p.main='elsewhere.mjs',p=>p.name='different',p=>p.extra=true,p=>p.scripts.start='node other.mjs',p=>p.scripts.extra='node injected.mjs',p=>delete p.scripts['native:shell']])changed(mutate);
  const command='node --expose-gc --experimental-vm-modules --test --test-concurrency=4 tests/*.test.mjs';
  for(const key of ['test','verify'])for(const bad of [historical.scripts[key],command.replace(' --expose-gc',''),command.replace(' --experimental-vm-modules',''),command.replace('=4','=0'),command.replace('=4','=8'),command.replace(' tests/*.test.mjs',' tests/subset.test.mjs'),command+' --allow-child-process'])changed(p=>p.scripts[key]=bad);
+});
+
+
+test('each historical Terminal baseline row is exact data and refuses independent byte corruption',async t=>{
+ for(const logical of ['desktop/tests/native/terminal-session-composition-derive.mjs','desktop/tests/fixtures/terminal-job-list.cs','desktop/package-lock.json'])await t.test(logical,async()=>{
+  const row=baseline.rows.find(value=>value.path===logical);assert.ok(row);
+  const historical=await readFile(new URL(historicalBaselinePath(logical),import.meta.url));assertHistoricalRow(row,historical);
+  const appended=Buffer.concat([historical,Buffer.from('\n')]),changed=Buffer.from(historical);changed[0]^=1;
+  assert.throws(()=>assertHistoricalRow(row,appended));assert.throws(()=>assertHistoricalRow(row,changed));
+  const current=await readFile(new URL('../../'+logical,import.meta.url));assert.notEqual(hash(current),row.sha256,'Current qualified version is separate from historical evidence');
+ });
 });
