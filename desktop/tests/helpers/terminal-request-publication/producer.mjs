@@ -16,12 +16,15 @@ export function createRequestPublisher({directory,actorPid,io=fs}){
   try{
    assert(names.has(filename)&&!used.has(filename),'ONE_EXACT_REQUEST_NAME_REQUIRED');used.add(filename);
    await ordinary(directory,true);assert.equal(request.actorPid,actorPid);const name=filename.slice(0,-'-request.json'.length).replace(/^ui-/,'');assert.equal(request.name,name);
+   const marker=join(directory,filename+'.published');let committed=false;
+   try{await io.lstat(marker);committed=true;}catch(e){if(e.code!=='ENOENT')throw e;}
+   assert(!committed,'REQUEST_ALREADY_COMMITTED');
    const body=Buffer.from(JSON.stringify(request,null,2)+'\n');assert(body.length>0&&body.length<=2097152,'REQUEST_METADATA_BOUND');
    const reference=await closed(join(directory,filename),body);
    const manifest={kind:'OWNED_REQUEST_COMPLETION_V1',scope:'R12_TC08_EIGHT_SESSIONS_AND_CLEANUP_ATTEMPT',actorPid,name,request:reference};
    const completion=await closed(join(directory,filename+'.completion.json'),Buffer.from(JSON.stringify(manifest,null,2)+'\n'));
    // Empty-file exclusive creation is the sole commit point; it has no partial JSON body.
-   const marker=join(directory,filename+'.published');await io.writeFile(marker,Buffer.alloc(0),{flag:'wx'});const s=await ordinary(marker);assert.equal(s.size,0);
+   await io.writeFile(marker,Buffer.alloc(0),{flag:'wx'});const s=await ordinary(marker);assert.equal(s.size,0);
    return {request:reference,completion,marker:{path:marker,bytes:0},authority:false};
   }catch(e){halted=true;throw e;}
  }});
